@@ -42,4 +42,23 @@ class Viagem_clientes_model extends CI_Model
         $this->db->where('cliente_id', $cliente_id);
         return $this->db->get('viagem_clientes')->num_rows() > 0;
     }
+
+    public function getClientesComEquipamentos($viagem_id)
+    {
+        $this->db->select('
+            viagem_clientes.*, 
+            clientes.nomeCliente, 
+            clientes.tamanho_colete, 
+            clientes.peso_lastro, 
+            clientes.tamanho_neoprene, 
+            clientes.tamanho_nadadeira, 
+            clientes.atestado_medico_validade
+        ');
+        $this->db->from('viagem_clientes');
+        $this->db->join('clientes', 'clientes.idClientes = viagem_clientes.cliente_id');
+        $this->db->where('viagem_clientes.viagem_id', $viagem_id);
+        $this->db->order_by('clientes.nomeCliente', 'ASC');
+        $query = $this->db->get();
+        return $query->result();
+    }
 }

@@ -10,6 +10,8 @@ class Viagens extends MY_Controller
         $this->load->model('viagem_custos_model');
         $this->load->model('viagem_cursos_model');
         $this->load->model('cursos_model');
+        $this->load->model('mapos_model');
+        $this->load->model('certificacao_mergulhador_model');
         $this->data['menuViagens'] = 'viagens';
     }
 
@@ -160,6 +162,72 @@ class Viagens extends MY_Controller
         $this->data['cursos_disponiveis'] = $this->cursos_model->get('cursos', 'id, nome_curso');
         $this->data['view'] = 'viagens/visualizarViagem';
         return $this->layout();
+    }
+
+    public function imprimir($id)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vViagem')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para imprimir a ficha da viagem.');
+            redirect(base_url());
+        }
+
+        $this->data['result'] = $this->viagens_model->getById($id);
+        if (!$this->data['result']) {
+            $this->session->set_flashdata('error', 'Viagem não encontrada.');
+            redirect(site_url('viagens'));
+        }
+
+        $this->data['clientes'] = $this->viagem_clientes_model->getByViagem($id);
+        $this->data['instrutores'] = $this->viagem_instrutores_model->getByViagem($id);
+        $this->data['emitente'] = $this->mapos_model->getEmitente();
+
+        $this->load->helper('mpdf');
+        $html = $this->load->view('viagens/imprimirViagem', $this->data, true);
+        pdf_create($html, 'ficha_viagem_' . $id, true);
+    }
+
+    public function imprimirOperacao($id)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vViagem')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para imprimir a ficha de operação.');
+            redirect(base_url());
+        }
+
+        $this->data['result'] = $this->viagens_model->getById($id);
+        if (!$this->data['result']) {
+            $this->session->set_flashdata('error', 'Viagem não encontrada.');
+            redirect(site_url('viagens'));
+        }
+
+        $clientes = $this->viagem_clientes_model->getClientesComEquipamentos($id);
+        
+        // Adiciona todas as certificações para cada cliente
+        foreach ($clientes as $cliente) {
+            $cliente->certificacoes = $this->certificacao_mergulhador_model->getByCliente($cliente->cliente_id);
+        }
+        $this->data['clientes'] = $clientes;
+
+        // Calcula o resumo de equipamentos
+        $resumoEquipamentos = [
+            'cilindro' => 0, 'regulador' => 0, 'lastro' => 0, 'colete' => [], 'nadadeira' => [], 'neoprene' => [],
+        ];
+
+        foreach ($clientes as $c) {
+            if ($c->locar_cilindro) $resumoEquipamentos['cilindro']++;
+            if ($c->locar_regulador) $resumoEquipamentos['regulador']++;
+            if ($c->locar_lastro) $resumoEquipamentos['lastro']++;
+            if ($c->locar_colete) $resumoEquipamentos['colete'][$c->tamanho_colete ?: 'N/I'] = ($resumoEquipamentos['colete'][$c->tamanho_colete ?: 'N/I'] ?? 0) + 1;
+            if ($c->locar_nadadeira) $resumoEquipamentos['nadadeira'][$c->tamanho_nadadeira ?: 'N/I'] = ($resumoEquipamentos['nadadeira'][$c->tamanho_nadadeira ?: 'N/I'] ?? 0) + 1;
+            if ($c->locar_neoprene) $resumoEquipamentos['neoprene'][$c->tamanho_neoprene ?: 'N/I'] = ($resumoEquipamentos['neoprene'][$c->tamanho_neoprene ?: 'N/I'] ?? 0) + 1;
+        }
+        $this->data['resumoEquipamentos'] = $resumoEquipamentos;
+
+        $this->data['instrutores'] = $this->viagem_instrutores_model->getByViagem($id);
+        $this->data['emitente'] = $this->mapos_model->getEmitente();
+
+        $this->load->helper('mpdf');
+        $html = $this->load->view('viagens/imprimirOperacao', $this->data, true);
+        pdf_create($html, 'ficha_operacao_' . $id, true);
     }
 
     public function excluir()
