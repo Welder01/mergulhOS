@@ -291,21 +291,19 @@
 </div>
 
 <div class="modal-footer" style="display:flex;justify-content: center">
-    <div class="span12" style="text-align: center; margin-left: 0">
-        <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'eViagem')) : ?>
-            <a title="Editar Viagem" class="button btn btn-mini btn-info" style="min-width: 140px; top:10px" href="<?= base_url() ?>index.php/viagens/editar/<?= $result->id ?>">
-                <span class="button__icon"><i class="bx bx-edit"></i></span> <span class="button__text2"> Editar</span>
-            </a>
-            <a title="Imprimir Ficha de Viagem" class="button btn btn-mini btn-inverse" style="min-width: 140px; top:10px" href="<?= base_url() ?>index.php/viagens/imprimir/<?= $result->id ?>">
-                <span class="button__icon"><i class="bx bx-printer"></i></span> <span class="button__text2"> Ficha Viagem</span>
-            </a>
-            <a title="Imprimir Ficha de Operação" class="button btn btn-mini btn-primary" style="min-width: 140px; top:10px" href="<?= base_url() ?>index.php/viagens/imprimirOperacao/<?= $result->id ?>">
-                <span class="button__icon"><i class="fas fa-ship"></i></span> <span class="button__text2"> Ficha Operação</span>
-            </a>
-        <?php endif; ?>
-        <a title="Voltar" class="button btn btn-mini btn-warning" style="min-width: 140px; top:10px" href="<?= site_url() ?>/viagens">
-            <span class="button__icon"><i class="bx bx-undo"></i></span><span class="button__text2">Voltar</span></a>
-    </div>
+    <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'eViagem')) : ?>
+        <a title="Editar Viagem" class="button btn btn-mini btn-info" href="<?= base_url() ?>index.php/viagens/editar/<?= $result->id ?>">
+            <span class="button__icon"><i class="bx bx-edit"></i></span> <span class="button__text2"> Editar</span>
+        </a>
+        <a title="Imprimir Ficha de Viagem" class="button btn btn-mini btn-inverse" href="<?= base_url() ?>index.php/viagens/imprimir/<?= $result->id ?>">
+            <span class="button__icon"><i class="bx bx-printer"></i></span> <span class="button__text2"> Ficha Viagem</span>
+        </a>
+        <a title="Imprimir Ficha de Operação" class="button btn btn-mini btn-primary" href="<?= base_url() ?>index.php/viagens/imprimirOperacao/<?= $result->id ?>">
+            <span class="button__icon"><i class="fas fa-ship"></i></span> <span class="button__text2"> Ficha Operação</span>
+        </a>
+    <?php endif; ?>
+    <a title="Voltar" class="button btn btn-mini btn-warning" href="<?= site_url() ?>/viagens">
+        <span class="button__icon"><i class="bx bx-undo"></i></span><span class="button__text2">Voltar</span></a>
 </div>
 
 <script>
