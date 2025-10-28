@@ -187,28 +187,37 @@ class Viagens extends MY_Controller
         $viagem_id = $this->input->post('viagem_id');
         $viagem = $this->viagens_model->getById($viagem_id);
 
-        if ($viagem->vagas > 0) {
-            $data = [
-                'viagem_id' => $viagem_id,
-                'cliente_id' => $this->input->post('cliente_id'),
-                'status_pagamento' => $this->input->post('status_pagamento'),
-                'precisa_embarque' => $this->input->post('precisa_embarque') ? 1 : 0,
-                'precisa_hospedagem' => $this->input->post('precisa_hospedagem') ? 1 : 0,
-                'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
-                'numero_bolsa' => $this->input->post('numero_bolsa'),
-            ];
-
-            if ($this->viagem_clientes_model->add($data)) {
-                // Decrementa o número de vagas
-                $this->db->set('vagas', 'vagas - 1', false);
-                $this->db->where('id', $viagem_id);
-                $this->db->update('viagens');
-                $this->session->set_flashdata('success', 'Cliente adicionado à viagem!');
-            } else {
-                $this->session->set_flashdata('error', 'Ocorreu um erro ao adicionar o cliente.');
-            }
+        if ($this->viagem_clientes_model->isClienteInViagem($viagem_id, $this->input->post('cliente_id'))) {
+            $this->session->set_flashdata('error', 'Este cliente já está inscrito nesta viagem.');
         } else {
-            $this->session->set_flashdata('error', 'Não há mais vagas disponíveis para esta viagem.');
+            if ($viagem->vagas > 0) {
+                $data = [
+                    'viagem_id' => $viagem_id,
+                    'cliente_id' => $this->input->post('cliente_id'),
+                    'status_pagamento' => $this->input->post('status_pagamento'),
+                    'precisa_embarque' => $this->input->post('precisa_embarque') ? 1 : 0,
+                    'precisa_hospedagem' => $this->input->post('precisa_hospedagem') ? 1 : 0,
+                    'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
+                    'locar_nadadeira' => $this->input->post('locar_nadadeira') ? 1 : 0,
+                    'locar_cilindro' => $this->input->post('locar_cilindro') ? 1 : 0,
+                    'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
+                    'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
+                    'locar_regulador' => $this->input->post('locar_regulador') ? 1 : 0,
+                    'numero_bolsa' => $this->input->post('numero_bolsa'),
+                ];
+
+                if ($this->viagem_clientes_model->add($data)) {
+                    // Decrementa o número de vagas
+                    $this->db->set('vagas', 'vagas - 1', false);
+                    $this->db->where('id', $viagem_id);
+                    $this->db->update('viagens');
+                    $this->session->set_flashdata('success', 'Cliente adicionado à viagem!');
+                } else {
+                    $this->session->set_flashdata('error', 'Ocorreu um erro ao adicionar o cliente.');
+                }
+            } else {
+                $this->session->set_flashdata('error', 'Não há mais vagas disponíveis para esta viagem.');
+            }
         }
         redirect('viagens/visualizar/' . $viagem_id);
     }
@@ -224,6 +233,11 @@ class Viagens extends MY_Controller
             'precisa_embarque' => $this->input->post('precisa_embarque') ? 1 : 0,
             'precisa_hospedagem' => $this->input->post('precisa_hospedagem') ? 1 : 0,
             'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
+            'locar_nadadeira' => $this->input->post('locar_nadadeira') ? 1 : 0,
+            'locar_cilindro' => $this->input->post('locar_cilindro') ? 1 : 0,
+            'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
+            'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
+            'locar_regulador' => $this->input->post('locar_regulador') ? 1 : 0,
             'numero_bolsa' => $this->input->post('numero_bolsa'),
         ];
         $this->viagem_clientes_model->edit($cliente_viagem_id, $data);
@@ -261,12 +275,18 @@ class Viagens extends MY_Controller
             redirect(base_url());
         }
         $viagem_id = $this->input->post('viagem_id');
-        $data = [
-            'viagem_id' => $viagem_id,
-            'usuario_id' => $this->input->post('usuario_id'),
-        ];
-        $this->viagem_instrutores_model->add($data);
-        redirect('viagens/visualizar/' . $viagem_id);
+        $usuario_id = $this->input->post('usuario_id');
+
+        if ($this->viagem_instrutores_model->isInstrutorInViagem($viagem_id, $usuario_id)) {
+            $this->session->set_flashdata('error', 'Este instrutor já está nesta viagem.');
+        } else {
+            $data = [
+                'viagem_id' => $viagem_id,
+                'usuario_id' => $usuario_id,
+            ];
+            $this->viagem_instrutores_model->add($data);
+        }
+        redirect('viagens/visualizar/' . $viagem_id . '#tabInstrutores');
     }
 
     public function remover_instrutor_viagem($id)
@@ -279,7 +299,7 @@ class Viagens extends MY_Controller
         $instrutor_viagem = $this->db->get('viagem_instrutores')->row();
         if ($instrutor_viagem) {
             $this->viagem_instrutores_model->delete($id);
-            redirect('viagens/visualizar/' . $instrutor_viagem->viagem_id);
+            redirect('viagens/visualizar/' . $instrutor_viagem->viagem_id . '#tabInstrutores');
         } else {
             redirect('viagens');
         }
@@ -299,7 +319,7 @@ class Viagens extends MY_Controller
             'valor' => $this->input->post('valor'),
         ];
         $this->viagem_custos_model->add($data);
-        redirect('viagens/visualizar/' . $viagem_id);
+        redirect('viagens/visualizar/' . $viagem_id . '#tabCustos');
     }
 
     public function remover_custo($id)
@@ -312,7 +332,7 @@ class Viagens extends MY_Controller
         $custo_viagem = $this->db->get('viagem_custos')->row();
         if ($custo_viagem) {
             $this->viagem_custos_model->delete($id);
-            redirect('viagens/visualizar/' . $custo_viagem->viagem_id);
+            redirect('viagens/visualizar/' . $custo_viagem->viagem_id . '#tabCustos');
         } else {
             redirect('viagens');
         }

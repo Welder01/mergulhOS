@@ -5,7 +5,7 @@
     <div class="widget-title">
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#tabDetalhes">Detalhes da Viagem</a></li>
-            <li><a data-toggle="tab" href="#tabClientes">Clientes / Embarque</a></li>
+            <li><a data-toggle="tab" href="#tabClientes">Clientes</a></li>
             <li><a data-toggle="tab" href="#tabHospedagem">Hospedagem</a></li>
             <li><a data-toggle="tab" href="#tabInstrutores">Instrutores</a></li>
             <li><a data-toggle="tab" href="#tabCustos">Custos Extras</a></li>
@@ -63,6 +63,16 @@
                         <label><input type="checkbox" name="precisa_hospedagem" value="1"> Precisa de Hospedagem</label>
                     </div>
                 </div>
+                <div class="control-group">
+                    <label class="control-label">Locar Equipamentos</label>
+                    <div class="controls">
+                        <label class="checkbox inline"><input type="checkbox" name="locar_nadadeira" value="1"> Nadadeira</label>
+                        <label class="checkbox inline"><input type="checkbox" name="locar_cilindro" value="1"> Cilindro</label>
+                        <label class="checkbox inline"><input type="checkbox" name="locar_colete" value="1"> Colete</label>
+                        <label class="checkbox inline"><input type="checkbox" name="locar_neoprene" value="1"> Neoprene</label>
+                        <label class="checkbox inline"><input type="checkbox" name="locar_regulador" value="1"> Regulador</label>
+                    </div>
+                </div>
                 <div class="form-actions" style="background-color:transparent;border:none;padding-left:180px;">
                     <button type="submit" class="btn btn-success">Adicionar Cliente</button>
                 </div>
@@ -74,23 +84,35 @@
                     <tr>
                         <th>Cliente</th>
                         <th>Bolsa Nº</th>
-                        <th>Pagamento</th>
                         <th>Embarque</th>
+                        <th>Hospedagem</th>
+                        <th>Equipamentos</th>
+                        <th>Pagamento</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($clientes as $cliente) : ?>
-                        <?php if ($cliente->precisa_embarque) : ?>
+                    <?php if (!empty($clientes)) : ?>
+                        <?php foreach ($clientes as $cliente) : ?>
                             <tr>
                                 <td><?= html_escape($cliente->nomeCliente) ?></td>
                                 <td><?= html_escape($cliente->numero_bolsa) ?></td>
+                                <td><?= $cliente->precisa_embarque ? '<span class="badge badge-success">Sim</span>' : '<span class="badge">Não</span>' ?></td>
+                                <td><?= $cliente->precisa_hospedagem ? '<span class="badge badge-success">Sim</span>' : '<span class="badge">Não</span>' ?></td>
+                                <td>
+                                    <?php if ($cliente->locar_nadadeira) echo '<i class="fas fa-water" title="Nadadeira"></i> '; ?>
+                                    <?php if ($cliente->locar_cilindro) echo '<i class="fas fa-database" title="Cilindro"></i> '; ?>
+                                    <?php if ($cliente->locar_colete) echo '<i class="fas fa-life-ring" title="Colete"></i> '; ?>
+                                    <?php if ($cliente->locar_neoprene) echo '<i class="fas fa-user-ninja" title="Neoprene"></i> '; ?>
+                                    <?php if ($cliente->locar_regulador) echo '<i class="fas fa-cogs" title="Regulador"></i> '; ?>
+                                </td>
                                 <td><?= html_escape($cliente->status_pagamento) ?></td>
-                                <td><span class="badge badge-success">Sim</span></td>
-                                <td><a href="<?= site_url('viagens/remover_cliente_viagem/' . $cliente->id) ?>" class="btn btn-danger btn-mini">Remover</a></td>
+                                <td><a href="<?= site_url('viagens/remover_cliente_viagem/' . $cliente->id) ?>" class="btn btn-danger btn-mini" onclick="return confirm('Deseja remover este cliente da viagem?')">Remover</a></td>
                             </tr>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    <?php else : ?>
+                        <tr><td colspan="7">Nenhum cliente inscrito nesta viagem.</td></tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>

@@ -20,4 +20,11 @@ class Viagem_instrutores_model extends CI_Model
         $this->db->where('id', $id);
         return $this->db->delete('viagem_instrutores');
     }
+
+    public function isInstrutorInViagem($viagem_id, $usuario_id)
+    {
+        $this->db->where('viagem_id', $viagem_id);
+        $this->db->where('usuario_id', $usuario_id);
+        return $this->db->get('viagem_instrutores')->num_rows() > 0;
+    }
 }

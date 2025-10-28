@@ -35,4 +35,11 @@ class Viagem_clientes_model extends CI_Model
         $this->db->where('id', $id);
         return $this->db->delete('viagem_clientes');
     }
+
+    public function isClienteInViagem($viagem_id, $cliente_id)
+    {
+        $this->db->where('viagem_id', $viagem_id);
+        $this->db->where('cliente_id', $cliente_id);
+        return $this->db->get('viagem_clientes')->num_rows() > 0;
+    }
 }

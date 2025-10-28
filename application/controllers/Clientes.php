@@ -137,6 +137,8 @@ class Clientes extends MY_Controller
                 $this->data['custom_error'] = '<div class="form_error"><p>Este e-mail já está sendo utilizado por outro cliente.</p></div>';
             } else {
                 $senha = $this->input->post('senha');
+                $this->load->library('upload');
+
             if ($senha != null) {
                 $senha = password_hash($senha, PASSWORD_DEFAULT);
 
@@ -203,7 +205,6 @@ class Clientes extends MY_Controller
                     mkdir($config['upload_path'], 0777, true);
                 }
 
-                $this->load->library('upload', $config);
                 $this->upload->initialize($config);
 
                 if ($this->upload->do_upload('atestado_medico_arquivo')) {
@@ -247,10 +248,14 @@ class Clientes extends MY_Controller
                     $configCert['allowed_types'] = 'pdf|jpg|jpeg|png';
                     $configCert['max_size'] = 5120;
                     $configCert['encrypt_name'] = true;
+                    
+                    if (!is_dir($configCert['upload_path'])) {
+                        mkdir($configCert['upload_path'], 0777, true);
+                    }
 
-                    $this->load->library('upload', $configCert, 'certUpload');
-                    if ($this->certUpload->do_upload('arquivo')) {
-                        $dataCertificacao['arquivo'] = $this->certUpload->data('file_name');
+                    $this->upload->initialize($configCert);
+                    if ($this->upload->do_upload('arquivo')) {
+                        $dataCertificacao['arquivo'] = $this->upload->data('file_name');
                     }
                 }
                 $this->certificacao_mergulhador_model->add($dataCertificacao);
@@ -319,6 +324,28 @@ class Clientes extends MY_Controller
         }
 
         redirect('clientes/editar/' . $restricao->cliente_id . '#restricoes');
+    }
+
+    public function remover_atestado($id = null)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCliente')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para editar clientes.');
+            redirect(base_url());
+        }
+
+        $cliente = $this->clientes_model->getById($id);
+        if ($cliente && $cliente->atestado_medico_arquivo) {
+            $arquivo = './assets/uploads/atestados/' . $cliente->atestado_medico_arquivo;
+            if (file_exists($arquivo)) {
+                unlink($arquivo);
+            }
+            $this->clientes_model->edit('clientes', ['atestado_medico_arquivo' => null], 'idClientes', $id);
+            $this->session->set_flashdata('success', 'Atestado médico removido com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao remover atestado médico.');
+        }
+
+        redirect('clientes/editar/' . $id . '#saude');
     }
 
     public function remover_certificacao($id = null)

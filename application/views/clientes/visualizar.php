@@ -475,6 +475,143 @@
                 </div>
             </div>
         </div>
+
+        <!--Tab 5 Cursos-->
+        <div id="tab5" class="tab-pane" style="min-height: 300px">
+            <?php if (!$cursos) { ?>
+                <table class="table table-bordered ">
+                    <thead>
+                        <tr>
+                            <th>Curso</th>
+                            <th>Data de Início</th>
+                            <th>Status</th>
+                            <th>Preço</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="4">Nenhum curso cadastrado</td>
+                        </tr>
+                    </tbody>
+                </table>
+            <?php } else { ?>
+                <table class="table table-bordered ">
+                    <thead>
+                        <tr>
+                            <th>Curso</th>
+                            <th>Data de Início</th>
+                            <th>Status</th>
+                            <th>Preço</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($cursos as $c) : ?>
+                            <tr>
+                                <td><a href="<?= base_url() ?>index.php/cursos/visualizar/<?= $c->curso_id ?>"><?= html_escape($c->nome_curso) ?></a></td>
+                                <td><?= date('d/m/Y', strtotime($c->data_inicio)) ?></td>
+                                <td><?= html_escape(ucfirst($c->status_aluno)) ?></td>
+                                <td>R$ <?= number_format($c->preco, 2, ',', '.') ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php } ?>
+        </div>
+
+        <!--Tab 6 Viagens-->
+        <div id="tab6" class="tab-pane" style="min-height: 300px">
+            <?php if (!$viagens) { ?>
+                <table class="table table-bordered ">
+                    <thead>
+                        <tr>
+                            <th>Viagem</th>
+                            <th>Data de Partida</th>
+                            <th>Status Pagamento</th>
+                            <th>Preço</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="4">Nenhuma viagem cadastrada</td>
+                        </tr>
+                    </tbody>
+                </table>
+            <?php } else { ?>
+                <table class="table table-bordered ">
+                    <thead>
+                        <tr>
+                            <th>Viagem</th>
+                            <th>Data de Partida</th>
+                            <th>Status Pagamento</th>
+                            <th>Preço</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($viagens as $v) : ?>
+                            <tr>
+                                <td><a href="<?= base_url() ?>index.php/viagens/visualizar/<?= $v->viagem_id ?>"><?= html_escape($v->nome_viagem) ?></a></td>
+                                <td><?= date('d/m/Y', strtotime($v->data_partida)) ?></td>
+                                <td><?= html_escape(ucfirst($v->status_pagamento)) ?></td>
+                                <td>R$ <?= number_format($v->preco_pessoa, 2, ',', '.') ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php } ?>
+        </div>
+
+        <!--Tab 7 Certificações-->
+        <div id="tab7" class="tab-pane" style="min-height: 300px">
+            <div class="accordion" id="collapse-group-cert">
+                <!-- Seção de Certificações de Mergulhador -->
+                <div class="accordion-group widget-box">
+                    <div class="accordion-heading">
+                        <div class="widget-title">
+                            <a data-parent="#collapse-group-cert" href="#collapseCertificacoes" data-toggle="collapse">
+                                <span><i class="icon-certificate icon-cli"></i></span>
+                                <h5 style="padding-left: 28px">Certificações de Mergulhador</h5>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="collapse in accordion-body" id="collapseCertificacoes">
+                        <div class="widget-content">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Certificação</th>
+                                        <th>Órgão Emissor</th>
+                                        <th>Emissão</th>
+                                        <th>Arquivo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (isset($certificacoes) && !empty($certificacoes)) : ?>
+                                        <?php foreach ($certificacoes as $c) : ?>
+                                            <tr>
+                                                <td><?= html_escape($c->nome_certificacao) ?></td>
+                                                <td><?= html_escape($c->orgao_emissor) ?></td>
+                                                <td><?= $c->data_emissao ? date('d/m/Y', strtotime($c->data_emissao)) : '-' ?></td>
+                                                <td>
+                                                    <?php if ($c->arquivo) : ?>
+                                                        <a href="<?= base_url('uploads/certificados/' . $c->arquivo) ?>" target="_blank" class="btn btn-mini"><i class="icon-download"></i> Baixar</a>
+                                                    <?php else : ?>
+                                                        Nenhum arquivo
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else : ?>
+                                        <tr>
+                                            <td colspan="4">Nenhuma certificação cadastrada.</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="modal-footer" style="display:flex;justify-content: center">
         <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'eCliente')) {
