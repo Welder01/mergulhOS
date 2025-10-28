@@ -65,6 +65,10 @@ class Cursos extends MY_Controller
             $data_inicio = $this->input->post('data_inicio');
             $data_fim = $this->input->post('data_fim');
 
+            $preco = $this->input->post('preco');
+            $preco = str_replace('.', '', $preco); // Remove separador de milhares
+            $preco = str_replace(',', '.', $preco); // Troca vírgula por ponto decimal
+
             try {
                 $data_inicio = DateTime::createFromFormat('d/m/Y', $data_inicio)->format('Y-m-d');
                 $data_fim = $data_fim ? DateTime::createFromFormat('d/m/Y', $data_fim)->format('Y-m-d') : null;
@@ -79,6 +83,7 @@ class Cursos extends MY_Controller
                 'data_inicio' => $data_inicio,
                 'data_fim' => $data_fim,
                 'status' => set_value('status'),
+                'preco' => $preco,
                 'data_cadastro' => date('Y-m-d H:i:s'),
             ];
 
@@ -120,6 +125,10 @@ class Cursos extends MY_Controller
             $data_inicio = $this->input->post('data_inicio');
             $data_fim = $this->input->post('data_fim');
 
+            $preco = $this->input->post('preco');
+            $preco = str_replace('.', '', $preco); // Remove separador de milhares
+            $preco = str_replace(',', '.', $preco); // Troca vírgula por ponto decimal
+
             try {
                 $data_inicio = DateTime::createFromFormat('d/m/Y', $data_inicio)->format('Y-m-d');
                 $data_fim = $data_fim ? DateTime::createFromFormat('d/m/Y', $data_fim)->format('Y-m-d') : null;
@@ -134,6 +143,7 @@ class Cursos extends MY_Controller
                 'data_inicio' => $data_inicio,
                 'data_fim' => $data_fim,
                 'status' => $this->input->post('status'),
+                'preco' => $preco,
             ];
 
             if ($this->cursos_model->edit('cursos', $data, 'id', $this->input->post('id')) == true) {

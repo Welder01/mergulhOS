@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
+<script src="<?= base_url() ?>assets/js/maskmoney.js"></script>
 <script src="<?php echo base_url() ?>assets/js/jquery.mask.min.js"></script>
 <script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
 <script src="<?php echo base_url() ?>assets/js/funcoes.js"></script>
@@ -55,6 +56,12 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="control-group">
+                            <label for="preco" class="control-label">Preço<span class="required">*</span></label>
+                            <div class="controls">
+                                <input id="preco" type="text" name="preco" value="<?= number_format($result->preco, 2, ',', '.'); ?>" class="money" />
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="form-actions">
@@ -84,16 +91,20 @@
             prevText: 'Anterior'
         });
 
+        $('.money').maskMoney({ decimal: ',', thousands: '.', allowZero: true });
+
         $('#formCurso').validate({
             rules: {
                 nome_curso: { required: true },
                 data_inicio: { required: true },
-                status: { required: true }
+                status: { required: true },
+                preco: { required: true }
             },
             messages: {
                 nome_curso: { required: 'Campo Requerido.' },
                 data_inicio: { required: 'Campo Requerido.' },
-                status: { required: 'Campo Requerido.' }
+                status: { required: 'Campo Requerido.' },
+                preco: { required: 'Campo Requerido.' }
             },
             errorClass: "help-inline",
             errorElement: "span",

@@ -36,6 +36,7 @@
                         <th>Nome do Curso</th>
                         <th>Data Início</th>
                         <th>Data Fim</th>
+                        <th>Preço</th>
                         <th>Status</th>
                         <th>Ações</th>
                     </tr>
@@ -43,7 +44,7 @@
                 <tbody>
                     <?php if (!$results) : ?>
                         <tr>
-                            <td colspan="6">Nenhum Curso Cadastrado</td>
+                            <td colspan="7">Nenhum Curso Cadastrado</td>
                         </tr>
                     <?php else : ?>
                         <?php foreach ($results as $r) : ?>
@@ -52,6 +53,7 @@
                                 <td><a href="<?= base_url() ?>index.php/cursos/visualizar/<?= $r->id ?>" style="margin-right: 1%"><?= html_escape($r->nome_curso) ?></a></td>
                                 <td><?= date('d/m/Y', strtotime($r->data_inicio)) ?></td>
                                 <td><?= $r->data_fim ? date('d/m/Y', strtotime($r->data_fim)) : 'N/A' ?></td>
+                                <td>R$ <?= number_format($r->preco, 2, ',', '.') ?></td>
                                 <td><?= html_escape(ucfirst($r->status)) ?></td>
                                 <td>
                                     <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vCurso')) : ?>

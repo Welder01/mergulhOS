@@ -46,6 +46,10 @@
                                         <td><?= $result->data_fim ? date('d/m/Y', strtotime($result->data_fim)) : 'N/A' ?></td>
                                     </tr>
                                     <tr>
+                                        <td style="text-align: right"><strong>Preço:</strong></td>
+                                        <td>R$ <?= number_format($result->preco, 2, ',', '.') ?></td>
+                                    </tr>
+                                    <tr>
                                         <td style="text-align: right"><strong>Status:</strong></td>
                                         <td><?= html_escape(ucfirst($result->status)) ?></td>
                                     </tr>

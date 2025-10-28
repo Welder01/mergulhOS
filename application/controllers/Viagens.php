@@ -48,6 +48,9 @@ class Viagens extends MY_Controller
             return $this->layout();
         }
 
+        $precoPessoa = $this->input->post('preco_pessoa');
+        $precoPessoa = str_replace('.', '', $precoPessoa); // Remove separador de milhares
+        $precoPessoa = str_replace(',', '.', $precoPessoa); // Troca vírgula por ponto decimal
         $dataPartida = $this->input->post('data_partida');
         $dataRetorno = $this->input->post('data_retorno');
 
@@ -64,8 +67,8 @@ class Viagens extends MY_Controller
             'descricao' => $this->input->post('descricao'),
             'data_partida' => $dataPartida,
             'data_retorno' => $dataRetorno,
-            'vagas' => $this->input->post('vagas'),
-            'preco_pessoa' => $this->input->post('preco_pessoa'),
+            'vagas' => (int)$this->input->post('vagas'),
+            'preco_pessoa' => (float)$precoPessoa,
             'status' => $this->input->post('status'),
         ];
 
@@ -102,6 +105,9 @@ class Viagens extends MY_Controller
             return $this->layout();
         }
 
+        $precoPessoa = $this->input->post('preco_pessoa');
+        $precoPessoa = str_replace('.', '', $precoPessoa); // Remove separador de milhares
+        $precoPessoa = str_replace(',', '.', $precoPessoa); // Troca vírgula por ponto decimal
         $dataPartida = $this->input->post('data_partida');
         $dataRetorno = $this->input->post('data_retorno');
 
@@ -118,8 +124,8 @@ class Viagens extends MY_Controller
             'descricao' => $this->input->post('descricao'),
             'data_partida' => $dataPartida,
             'data_retorno' => $dataRetorno,
-            'vagas' => $this->input->post('vagas'),
-            'preco_pessoa' => $this->input->post('preco_pessoa'),
+            'vagas' => (int)$this->input->post('vagas'),
+            'preco_pessoa' => (float)$precoPessoa,
             'status' => $this->input->post('status'),
         ];
 

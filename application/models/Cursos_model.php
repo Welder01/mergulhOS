@@ -12,7 +12,7 @@ class Cursos_model extends CI_Model
 
     public function get($table, $fields, $where = '', $perpage = 0, $start = 0, $one = false, $array = 'array')
     {
-        $this->db->select($fields);
+        $this->db->select('*');
         $this->db->from($table);
         $this->db->order_by('id', 'desc');
         $this->db->limit($perpage, $start);
@@ -29,6 +29,7 @@ class Cursos_model extends CI_Model
 
     public function getById($id)
     {
+        $this->db->select('*');
         $this->db->where('id', $id);
         $this->db->limit(1);
         return $this->db->get('cursos')->row();
