@@ -20,11 +20,11 @@ class Migration_create_viagens_table extends CI_Migration
                 'null' => true,
             ],
             'data_partida' => [
-                'type' => 'DATETIME',
+                'type' => 'DATE',
                 'null' => true,
             ],
             'data_retorno' => [
-                'type' => 'DATETIME',
+                'type' => 'DATE',
                 'null' => true,
             ],
             'vagas' => [

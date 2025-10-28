@@ -1,6 +1,7 @@
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <script src="<?php echo base_url() ?>assets/js/jquery.mask.min.js"></script>
+<script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery.ui.datepicker-pt-BR.js"></script>
 <script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
 <script src="<?php echo base_url() ?>assets/js/funcoes.js"></script>
 
@@ -54,15 +55,15 @@
                             </div>
                         </div>
                         <div class="control-group">
-                            <label for="data_partida" class="control-label">Data e Hora da Partida</label>
+                            <label for="data_partida" class="control-label">Data da Partida</label>
                             <div class="controls">
-                                <input id="data_partida" type="text" name="data_partida" value="<?= $result->data_partida ? date('d/m/Y', strtotime($result->data_partida)) : ''; ?>" class="datetimepicker" />
+                                <input id="data_partida" type="text" name="data_partida" value="<?= $result->data_partida ? date('d/m/Y', strtotime($result->data_partida)) : ''; ?>" class="datepicker" />
                             </div>
                         </div>
                         <div class="control-group">
-                            <label for="data_retorno" class="control-label">Data e Hora do Retorno</label>
+                            <label for="data_retorno" class="control-label">Data do Retorno</label>
                             <div class="controls">
-                                <input id="data_retorno" type="text" name="data_retorno" value="<?= $result->data_retorno ? date('d/m/Y', strtotime($result->data_retorno)) : ''; ?>" class="datetimepicker" />
+                                <input id="data_retorno" type="text" name="data_retorno" value="<?= $result->data_retorno ? date('d/m/Y', strtotime($result->data_retorno)) : ''; ?>" class="datepicker" />
                             </div>
                         </div>
                         <div class="control-group">
@@ -125,12 +126,11 @@
 <script type="text/javascript">
     $(document).ready(function() {
         // A inicialização do datetimepicker e validação permanecem as mesmas
-        $('.datetimepicker').datepicker({ dateFormat: 'dd/mm/yy' });
+        $(".datepicker").datepicker({ dateFormat: 'dd/mm/yy' });
         $('.money').maskMoney({ decimal: ',', thousands: '.', allowZero: true });
-        $('#formViagem').validate({ /* ... regras ... */ });
 
         $("#curso-autocomplete").autocomplete({
-            source: "<?= site_url('viagens/autoCompleteCurso'); ?>",
+            source: "<?= site_url('cursos/autoCompleteCurso'); ?>",
             minLength: 2,
             select: function(event, ui) {
                 $('#cursos-selecionados').append('<div class="curso-tag" data-id="' + ui.item.id + '">' + ui.item.label + ' <span class="remove-tag">x</span></div>');

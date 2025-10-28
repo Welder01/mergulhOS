@@ -50,7 +50,7 @@
                             <tr>
                                 <td><?= $r->id ?></td>
                                 <td><a href="<?= base_url() ?>index.php/viagens/visualizar/<?= $r->id ?>"><?= html_escape($r->nome_viagem) ?></a></td>
-                                <td><?= $r->data_partida ? date('d/m/Y H:i', strtotime($r->data_partida)) : 'N/A' ?></td>
+                                <td><?= $r->data_partida ? date('d/m/Y', strtotime($r->data_partida)) : 'N/A' ?></td>
                                 <td><?= $r->vagas ?></td>
                                 <td><?= html_escape($r->status) ?></td>
                                 <td>

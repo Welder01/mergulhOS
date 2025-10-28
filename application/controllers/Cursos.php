@@ -348,4 +348,19 @@ class Cursos extends MY_Controller
             }
         }
     }
+
+    public function autoCompleteCurso()
+    {
+        if (isset($_GET['term'])) {
+            $q = strtolower($this->input->get('term'));
+            $this->db->select('id, nome_curso');
+            $this->db->like('nome_curso', $q);
+            $this->db->limit(5);
+            $query = $this->db->get('cursos');
+            $result = array_map(function ($curso) {
+                return ['id' => $curso->id, 'label' => $curso->nome_curso];
+            }, $query->result());
+            echo json_encode($result);
+        }
+    }
 }
