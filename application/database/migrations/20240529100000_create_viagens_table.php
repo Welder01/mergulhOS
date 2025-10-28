@@ -43,14 +43,8 @@ class Migration_create_viagens_table extends CI_Migration
                 'default' => 'Prevista',
                 'null' => false,
             ],
-            'curso_id' => [
-                'type' => 'INT',
-                'unsigned' => true,
-                'null' => true,
-            ],
         ]);
         $this->dbforge->add_key('id', true);
-        $this->dbforge->add_field('CONSTRAINT fk_viagem_curso FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE SET NULL ON UPDATE CASCADE');
         $this->dbforge->create_table('viagens');
     }
 

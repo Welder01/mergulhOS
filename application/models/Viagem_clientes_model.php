@@ -6,7 +6,7 @@ class Viagem_clientes_model extends CI_Model
         $this->db->select('viagem_clientes.*, clientes.nomeCliente');
         $this->db->from('viagem_clientes');
         $this->db->join('clientes', 'clientes.idClientes = viagem_clientes.cliente_id');
-        $this->db->where('viagem_id', $viagem_id);
+        $this->db->where('viagem_clientes.viagem_id', $viagem_id);
         return $this->db->get()->result();
     }
 

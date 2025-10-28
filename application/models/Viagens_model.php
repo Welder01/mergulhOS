@@ -1,12 +1,13 @@
-<?php
+<?php 
+// <<< CORREÇÃO AQUI: Adicionada quebra de linha/espaço após <?php
+
 class Viagens_model extends CI_Model
 {
     public function get($table, $fields, $where = '', $perpage = 0, $start = 0, $one = false, $array = 'array')
     {
-        $this->db->select($fields . ', cursos.nome_curso');
+        $this->db->select($fields);
         $this->db->from($table);
-        $this->db->join('cursos', 'cursos.id = viagens.curso_id', 'left');
-        $this->db->order_by('id', 'desc');
+        $this->db->order_by('viagens.id', 'desc');
         $this->db->limit($perpage, $start);
         if ($where) {
             $this->db->like('nome_viagem', $where);
@@ -17,9 +18,8 @@ class Viagens_model extends CI_Model
 
     public function getById($id)
     {
-        $this->db->select('viagens.*, cursos.nome_curso');
+        $this->db->select('viagens.*');
         $this->db->from('viagens');
-        $this->db->join('cursos', 'cursos.id = viagens.curso_id', 'left');
         $this->db->where('viagens.id', $id);
         $this->db->limit(1);
         return $this->db->get()->row();

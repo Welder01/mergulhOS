@@ -16,6 +16,7 @@ class Migration_create_viagem_clientes_table extends CI_Migration
             ],
             'cliente_id' => [
                 'type' => 'INT',
+                'unsigned' => false,
             ],
             'status_pagamento' => [
                 'type' => 'ENUM("Pendente","Pago","Parcial")',

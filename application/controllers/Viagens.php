@@ -8,6 +8,7 @@ class Viagens extends MY_Controller
         $this->load->model('viagem_clientes_model');
         $this->load->model('viagem_instrutores_model');
         $this->load->model('viagem_custos_model');
+        $this->load->model('viagem_cursos_model');
         $this->load->model('cursos_model');
         $this->data['menuViagens'] = 'viagens';
     }
@@ -43,7 +44,6 @@ class Viagens extends MY_Controller
         $this->form_validation->set_rules('vagas', 'Vagas', 'required|integer');
 
         if ($this->form_validation->run() == false) {
-            $this->data['cursos'] = $this->cursos_model->get('cursos', 'id, nome_curso');
             $this->data['view'] = 'viagens/adicionarViagem';
             return $this->layout();
         }
@@ -56,10 +56,16 @@ class Viagens extends MY_Controller
             'vagas' => $this->input->post('vagas'),
             'preco_pessoa' => $this->input->post('preco_pessoa'),
             'status' => $this->input->post('status'),
-            'curso_id' => $this->input->post('curso_id') ?: null,
         ];
 
-        if ($this->viagens_model->add('viagens', $data)) {
+        $viagem_id = $this->viagens_model->add('viagens', $data);
+        if ($viagem_id) {
+            $cursos = $this->input->post('cursos');
+            if ($cursos) {
+                foreach ($cursos as $curso_id) {
+                    $this->viagem_cursos_model->add(['viagem_id' => $viagem_id, 'curso_id' => $curso_id]);
+                }
+            }
             $this->session->set_flashdata('success', 'Viagem adicionada com sucesso!');
             redirect(site_url('viagens'));
         } else {
@@ -80,7 +86,7 @@ class Viagens extends MY_Controller
 
         if ($this->form_validation->run() == false) {
             $this->data['result'] = $this->viagens_model->getById($id);
-            $this->data['cursos'] = $this->cursos_model->get('cursos', 'id, nome_curso');
+            $this->data['cursos_viagem'] = $this->viagem_cursos_model->getByViagem($id);
             $this->data['view'] = 'viagens/editarViagem';
             return $this->layout();
         }
@@ -93,10 +99,17 @@ class Viagens extends MY_Controller
             'vagas' => $this->input->post('vagas'),
             'preco_pessoa' => $this->input->post('preco_pessoa'),
             'status' => $this->input->post('status'),
-            'curso_id' => $this->input->post('curso_id') ?: null,
         ];
 
         if ($this->viagens_model->edit('viagens', $data, 'id', $id)) {
+            // Limpa os cursos antigos e adiciona os novos
+            $this->viagem_cursos_model->clearViagemCursos($id);
+            $cursos = $this->input->post('cursos');
+            if ($cursos) {
+                foreach ($cursos as $curso_id) {
+                    $this->viagem_cursos_model->add(['viagem_id' => $id, 'curso_id' => $curso_id]);
+                }
+            }
             $this->session->set_flashdata('success', 'Viagem editada com sucesso!');
             redirect(site_url('viagens/editar/' . $id));
         } else {
@@ -115,6 +128,8 @@ class Viagens extends MY_Controller
         $this->data['clientes'] = $this->viagem_clientes_model->getByViagem($id);
         $this->data['instrutores'] = $this->viagem_instrutores_model->getByViagem($id);
         $this->data['custos'] = $this->viagem_custos_model->getByViagem($id);
+        $this->data['cursos_associados'] = $this->viagem_cursos_model->getByViagem($id);
+        $this->data['cursos_disponiveis'] = $this->cursos_model->get('cursos', 'id, nome_curso');
         $this->data['view'] = 'viagens/visualizarViagem';
         return $this->layout();
     }
@@ -255,6 +270,37 @@ class Viagens extends MY_Controller
         }
     }
 
+    // Métodos para gerenciar cursos na viagem
+    public function adicionar_curso_viagem()
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aViagem')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para adicionar cursos à viagem.');
+            redirect(base_url());
+        }
+        $viagem_id = $this->input->post('viagem_id');
+        $data = [
+            'viagem_id' => $viagem_id,
+            'curso_id' => $this->input->post('curso_id'),
+        ];
+        $this->viagem_cursos_model->add($data);
+        redirect('viagens/visualizar/' . $viagem_id . '#tabCursos');
+    }
+
+    public function remover_curso_viagem($id)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dViagem')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para remover cursos da viagem.');
+            redirect(base_url());
+        }
+        $curso_viagem = $this->viagem_cursos_model->getById($id);
+        if ($curso_viagem) {
+            $this->viagem_cursos_model->delete($id);
+            redirect('viagens/visualizar/' . $curso_viagem->viagem_id . '#tabCursos');
+        } else {
+            redirect('viagens');
+        }
+    }
+
     // Autocomplete
     public function autoCompleteCliente()
     {
@@ -279,6 +325,21 @@ class Viagens extends MY_Controller
             $query = $this->db->get('usuarios');
             $result = array_map(function ($usuario) {
                 return ['id' => $usuario->idUsuarios, 'label' => $usuario->nome];
+            }, $query->result());
+            echo json_encode($result);
+        }
+    }
+
+    public function autoCompleteCurso()
+    {
+        if (isset($_GET['term'])) {
+            $q = strtolower($this->input->get('term'));
+            $this->db->select('id, nome_curso');
+            $this->db->like('nome_curso', $q);
+            $this->db->limit(5);
+            $query = $this->db->get('cursos');
+            $result = array_map(function ($curso) {
+                return ['id' => $curso->id, 'label' => $curso->nome_curso];
             }, $query->result());
             echo json_encode($result);
         }
