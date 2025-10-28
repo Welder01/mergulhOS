@@ -48,11 +48,22 @@ class Viagens extends MY_Controller
             return $this->layout();
         }
 
+        $dataPartida = $this->input->post('data_partida');
+        $dataRetorno = $this->input->post('data_retorno');
+
+        try {
+            $dataPartida = $dataPartida ? DateTime::createFromFormat('d/m/Y', $dataPartida)->format('Y-m-d') : null;
+            $dataRetorno = $dataRetorno ? DateTime::createFromFormat('d/m/Y', $dataRetorno)->format('Y-m-d') : null;
+        } catch (Exception $e) {
+            $dataPartida = null;
+            $dataRetorno = null;
+        }
+
         $data = [
             'nome_viagem' => $this->input->post('nome_viagem'),
             'descricao' => $this->input->post('descricao'),
-            'data_partida' => $this->input->post('data_partida'),
-            'data_retorno' => $this->input->post('data_retorno'),
+            'data_partida' => $dataPartida,
+            'data_retorno' => $dataRetorno,
             'vagas' => $this->input->post('vagas'),
             'preco_pessoa' => $this->input->post('preco_pessoa'),
             'status' => $this->input->post('status'),
@@ -91,11 +102,22 @@ class Viagens extends MY_Controller
             return $this->layout();
         }
 
+        $dataPartida = $this->input->post('data_partida');
+        $dataRetorno = $this->input->post('data_retorno');
+
+        try {
+            $dataPartida = $dataPartida ? DateTime::createFromFormat('d/m/Y', $dataPartida)->format('Y-m-d') : null;
+            $dataRetorno = $dataRetorno ? DateTime::createFromFormat('d/m/Y', $dataRetorno)->format('Y-m-d') : null;
+        } catch (Exception $e) {
+            $dataPartida = null;
+            $dataRetorno = null;
+        }
+
         $data = [
             'nome_viagem' => $this->input->post('nome_viagem'),
             'descricao' => $this->input->post('descricao'),
-            'data_partida' => $this->input->post('data_partida'),
-            'data_retorno' => $this->input->post('data_retorno'),
+            'data_partida' => $dataPartida,
+            'data_retorno' => $dataRetorno,
             'vagas' => $this->input->post('vagas'),
             'preco_pessoa' => $this->input->post('preco_pessoa'),
             'status' => $this->input->post('status'),
@@ -157,19 +179,33 @@ class Viagens extends MY_Controller
             redirect(base_url());
         }
         $viagem_id = $this->input->post('viagem_id');
-        $data = [
-            'viagem_id' => $viagem_id,
-            'cliente_id' => $this->input->post('cliente_id'),
-            'status_pagamento' => $this->input->post('status_pagamento'),
-            'precisa_embarque' => $this->input->post('precisa_embarque') ? 1 : 0,
-            'precisa_hospedagem' => $this->input->post('precisa_hospedagem') ? 1 : 0,
-            'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
-            'numero_bolsa' => $this->input->post('numero_bolsa'),
-        ];
-        $this->viagem_clientes_model->add($data);
+        $viagem = $this->viagens_model->getById($viagem_id);
+
+        if ($viagem->vagas > 0) {
+            $data = [
+                'viagem_id' => $viagem_id,
+                'cliente_id' => $this->input->post('cliente_id'),
+                'status_pagamento' => $this->input->post('status_pagamento'),
+                'precisa_embarque' => $this->input->post('precisa_embarque') ? 1 : 0,
+                'precisa_hospedagem' => $this->input->post('precisa_hospedagem') ? 1 : 0,
+                'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
+                'numero_bolsa' => $this->input->post('numero_bolsa'),
+            ];
+
+            if ($this->viagem_clientes_model->add($data)) {
+                // Decrementa o número de vagas
+                $this->db->set('vagas', 'vagas - 1', false);
+                $this->db->where('id', $viagem_id);
+                $this->db->update('viagens');
+                $this->session->set_flashdata('success', 'Cliente adicionado à viagem!');
+            } else {
+                $this->session->set_flashdata('error', 'Ocorreu um erro ao adicionar o cliente.');
+            }
+        } else {
+            $this->session->set_flashdata('error', 'Não há mais vagas disponíveis para esta viagem.');
+        }
         redirect('viagens/visualizar/' . $viagem_id);
     }
-
     public function editar_cliente_viagem($cliente_viagem_id)
     {
         if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eViagem')) {
@@ -198,7 +234,13 @@ class Viagens extends MY_Controller
         $this->db->where('id', $id);
         $cliente_viagem = $this->db->get('viagem_clientes')->row();
         if ($cliente_viagem) {
-            $this->viagem_clientes_model->delete($id);
+            if ($this->viagem_clientes_model->delete($id)) {
+                // Incrementa o número de vagas
+                $this->db->set('vagas', 'vagas + 1', false);
+                $this->db->where('id', $cliente_viagem->viagem_id);
+                $this->db->update('viagens');
+                $this->session->set_flashdata('success', 'Cliente removido da viagem!');
+            }
             redirect('viagens/visualizar/' . $cliente_viagem->viagem_id);
         } else {
             redirect('viagens');

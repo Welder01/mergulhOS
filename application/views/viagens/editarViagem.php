@@ -56,13 +56,13 @@
                         <div class="control-group">
                             <label for="data_partida" class="control-label">Data e Hora da Partida</label>
                             <div class="controls">
-                                <input id="data_partida" type="text" name="data_partida" value="<?= $result->data_partida ? date('d/m/Y H:i', strtotime($result->data_partida)) : ''; ?>" class="datetimepicker" />
+                                <input id="data_partida" type="text" name="data_partida" value="<?= $result->data_partida ? date('d/m/Y', strtotime($result->data_partida)) : ''; ?>" class="datetimepicker" />
                             </div>
                         </div>
                         <div class="control-group">
                             <label for="data_retorno" class="control-label">Data e Hora do Retorno</label>
                             <div class="controls">
-                                <input id="data_retorno" type="text" name="data_retorno" value="<?= $result->data_retorno ? date('d/m/Y H:i', strtotime($result->data_retorno)) : ''; ?>" class="datetimepicker" />
+                                <input id="data_retorno" type="text" name="data_retorno" value="<?= $result->data_retorno ? date('d/m/Y', strtotime($result->data_retorno)) : ''; ?>" class="datetimepicker" />
                             </div>
                         </div>
                         <div class="control-group">

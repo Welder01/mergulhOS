@@ -19,8 +19,8 @@
                 <tbody>
                     <tr> <td><strong>Nome:</strong></td> <td><?= html_escape($result->nome_viagem) ?></td> </tr>
                     <tr> <td><strong>Descrição:</strong></td> <td><?= html_escape($result->descricao) ?></td> </tr>
-                    <tr> <td><strong>Partida:</strong></td> <td><?= $result->data_partida ? date('d/m/Y H:i', strtotime($result->data_partida)) : '' ?></td> </tr>
-                    <tr> <td><strong>Retorno:</strong></td> <td><?= $result->data_retorno ? date('d/m/Y H:i', strtotime($result->data_retorno)) : '' ?></td> </tr>
+                    <tr> <td><strong>Partida:</strong></td> <td><?= $result->data_partida ? date('d/m/Y', strtotime($result->data_partida)) : '' ?></td> </tr>
+                    <tr> <td><strong>Retorno:</strong></td> <td><?= $result->data_retorno ? date('d/m/Y', strtotime($result->data_retorno)) : '' ?></td> </tr>
                     <tr> <td><strong>Vagas:</strong></td> <td><?= $result->vagas ?></td> </tr>
                     <tr> <td><strong>Preço/Pessoa:</strong></td> <td>R$ <?= number_format($result->preco_pessoa, 2, ',', '.') ?></td> </tr>
                     <tr> <td><strong>Status:</strong></td> <td><?= html_escape($result->status) ?></td> </tr>
@@ -206,41 +206,25 @@
         </div>
         <!-- Aba Cursos Associados -->
         <div id="tabCursos" class="tab-pane">
-            <h4>Adicionar Curso</h4>
-            <form action="<?= site_url('viagens/adicionar_curso_viagem') ?>" method="post" class="form-horizontal">
-                <input type="hidden" name="viagem_id" value="<?= $result->id ?>">
-                <div class="control-group">
-                    <label for="curso_id" class="control-label">Curso</label>
-                    <div class="controls">
-                        <select name="curso_id" id="curso_id" class="span6">
-                            <?php
-                            foreach ($cursos_disponiveis as $curso) {
-                                echo '<option value="' . $curso->id . '">' . html_escape($curso->nome_curso) . '</option>';
-                            }
-                            ?>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-actions" style="background-color:transparent;border:none;padding-left:180px;">
-                    <button type="submit" class="btn btn-success">Adicionar Curso</button>
-                </div>
-            </form>
-            <hr>
             <h4>Cursos Associados a esta Viagem</h4>
             <table class="table table-bordered">
                 <thead>
                     <tr>
                         <th>Nome do Curso</th>
-                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($cursos_associados as $curso) : ?>
+                    <?php if (!empty($cursos_associados)) : ?>
+                        <?php foreach ($cursos_associados as $curso) : ?>
+                            <tr>
+                                <td><?= html_escape($curso->nome_curso) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else : ?>
                         <tr>
-                            <td><?= html_escape($curso->nome_curso) ?></td>
-                            <td><a href="<?= site_url('viagens/remover_curso_viagem/' . $curso->id) ?>" class="btn btn-danger btn-mini">Remover</a></td>
+                            <td>Nenhum curso associado a esta viagem.</td>
                         </tr>
-                    <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
