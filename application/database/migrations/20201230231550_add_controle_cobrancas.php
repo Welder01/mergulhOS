@@ -7,13 +7,11 @@ class Migration_add_controle_cobrancas extends CI_Migration
         $this->dbforge->add_field([
             'idCobranca' => [
                 'type' => 'INT',
-                'constraint' => 11,
                 'null' => false,
                 'auto_increment' => true,
             ],
             'charge_id' => [
                 'type' => 'INT',
-                'constraint' => 11,
                 'null' => false,
             ],
             'conditional_discount_date' => [
@@ -26,7 +24,6 @@ class Migration_add_controle_cobrancas extends CI_Migration
             ],
             'custom_id' => [
                 'type' => 'INT',
-                'constraint' => 11,
                 'null' => true,
             ],
             'expire_at' => [
@@ -85,12 +82,10 @@ class Migration_add_controle_cobrancas extends CI_Migration
             ],
             'vendas_id' => [
                 'type' => 'INT',
-                'constraint' => 11,
                 'null' => true,
             ],
             'os_id' => [
                 'type' => 'INT',
-                'constraint' => 11,
                 'null' => true,
             ],
         ]);

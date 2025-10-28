@@ -7,7 +7,6 @@ class Migration_add_cobrancas_cliente extends CI_Migration
         $this->dbforge->add_column('cobrancas', [
             'clientes_id' => [
                 'type' => 'INT',
-                'constraint' => 11,
                 'null' => true,
             ],
         ]);

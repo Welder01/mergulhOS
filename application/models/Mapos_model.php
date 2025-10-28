@@ -183,6 +183,17 @@ class Mapos_model extends CI_Model
         return $this->db->get()->result();
     }
 
+    public function getCursosAndamento()
+    {
+        $this->db->select('*');
+        $this->db->from('cursos');
+        $this->db->where('status', 'Em Andamento');
+        $this->db->order_by('id', 'DESC');
+        $this->db->limit(10);
+
+        return $this->db->get()->result();
+    }
+
     public function getOsStatus($status)
     {
         $this->db->select('os.*, clientes.nomeCliente');
@@ -217,6 +228,21 @@ class Mapos_model extends CI_Model
 
         $query = $this->db->get();
         return $query->result();
+    }
+
+    public function calendarioCursos($start, $end, $status = null)
+    {
+        $this->db->select('cursos.*');
+        $this->db->from('cursos');
+        $this->db->where('data_inicio >=', $start);
+        $this->db->where('data_inicio <=', $end);
+        $this->db->order_by('data_inicio', 'ASC');
+
+        if (! empty($status)) {
+            $this->db->where('cursos.status', $status);
+        }
+
+        return $this->db->get()->result();
     }
 
     public function calendario($start, $end, $status = null)

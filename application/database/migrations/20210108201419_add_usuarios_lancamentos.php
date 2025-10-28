@@ -7,7 +7,6 @@ class Migration_add_usuarios_lancamentos extends CI_Migration
         $this->dbforge->add_column('lancamentos', [
             'usuarios_id' => [
                 'type' => 'INT',
-                'constraint' => 11,
                 'null' => true,
             ],
         ]);

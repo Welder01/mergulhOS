@@ -145,6 +145,86 @@
                                 </label>
                             </div>
                         </div>
+<<<<<<< Updated upstream
+=======
+                        <fieldset id="equipamentos">
+                            <legend>Equipamentos de Mergulho</legend>
+                            <div class="control-group">
+                                <label for="tamanho_colete" class="control-label">Tamanho do Colete</label>
+                                <div class="controls">
+                                    <input id="tamanho_colete" type="text" name="tamanho_colete" value="<?= $result->tamanho_colete ?? '' ?>" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="peso_lastro" class="control-label">Peso do Lastro (kg)</label>
+                                <div class="controls">
+                                    <input id="peso_lastro" type="text" name="peso_lastro" value="<?= $result->peso_lastro ?? '' ?>" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="tamanho_neoprene" class="control-label">Tamanho do Neoprene</label>
+                                <div class="controls">
+                                    <input id="tamanho_neoprene" type="text" name="tamanho_neoprene" value="<?= $result->tamanho_neoprene ?? '' ?>" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="tamanho_nadadeira" class="control-label">Tamanho da Nadadeira</label>
+                                <div class="controls">
+                                    <input id="tamanho_nadadeira" type="text" name="tamanho_nadadeira" value="<?= $result->tamanho_nadadeira ?? '' ?>" />
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset id="emergencia">
+                            <legend>Contato de Emergência</legend>
+                            <div class="control-group">
+                                <label for="contato_emergencia_nome" class="control-label">Nome</label>
+                                <div class="controls">
+                                    <input id="contato_emergencia_nome" type="text" name="contato_emergencia_nome" value="<?= $result->contato_emergencia_nome ?? '' ?>" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="contato_emergencia_telefone" class="control-label">Telefone</label>
+                                <div class="controls">
+                                    <input id="contato_emergencia_telefone" type="text" name="contato_emergencia_telefone" value="<?= $result->contato_emergencia_telefone ?? '' ?>" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="contato_emergencia_parentesco" class="control-label">Parentesco</label>
+                                <div class="controls">
+                                    <input id="contato_emergencia_parentesco" type="text" name="contato_emergencia_parentesco" value="<?= $result->contato_emergencia_parentesco ?? '' ?>" />
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset id="atestado">
+                            <legend>Atestado Médico</legend>
+                            <div class="control-group">
+                                <label for="atestado_medico_validade" class="control-label">Validade</label>
+                                <div class="controls">
+                                    <input id="atestado_medico_validade" type="date" name="atestado_medico_validade" value="<?= $result->atestado_medico_validade ?? '' ?>" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="atestado_medico_arquivo" class="control-label">Arquivo (PDF, JPG, PNG)</label>
+                                <div class="controls">
+                                    <input id="atestado_medico_arquivo" type="file" name="atestado_medico_arquivo" accept=".pdf,.jpg,.jpeg,.png" />
+                                </div>
+                            </div>
+                            <?php if (isset($result->atestado_medico_arquivo) && $result->atestado_medico_arquivo) : ?>
+                                <div class="control-group">
+                                    <label class="control-label">Arquivo Atual</label>
+                                    <div class="controls">
+                                        <a href="<?= base_url('assets/uploads/atestados/' . $result->atestado_medico_arquivo) ?>" target="_blank">
+                                            <i class="fas fa-file-alt"></i> <?= $result->atestado_medico_arquivo ?>
+                                        </a>
+                                        <input type="hidden" name="atestado_medico_arquivo_atual" value="<?= $result->atestado_medico_arquivo ?>">
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        </fieldset>
+
+>>>>>>> Stashed changes
                     </div>
 
                     <div class="span6">

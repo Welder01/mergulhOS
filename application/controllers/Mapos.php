@@ -19,6 +19,7 @@ class Mapos extends MY_Controller {
         $this->data['ordens_finalizadas'] = $this->mapos_model->getOsFinalizadas();
         $this->data['ordens_aguardando'] = $this->mapos_model->getOsAguardandoPecas();
         $this->data['ordens_andamento'] = $this->mapos_model->getOsAndamento();
+        $this->data['cursos_andamento'] = $this->mapos_model->getCursosAndamento();
         $this->data['produtos'] = $this->mapos_model->getProdutosMinimo();
         $this->data['os'] = $this->mapos_model->getOsEstatisticas();
         $this->data['estatisticas_financeiro'] = $this->mapos_model->getEstatisticasFinanceiro();
@@ -550,6 +551,12 @@ class Mapos extends MY_Controller {
             $end,
             $status
         );
+        $allCursos = $this->mapos_model->calendarioCursos(
+            $start,
+            $end,
+            $status
+        );
+
         $events = array_map(function ($os) {
             switch ($os->status) {
                 case 'Aberto':
@@ -608,10 +615,29 @@ class Mapos extends MY_Controller {
             ];
         }, $allOs);
 
+        $eventosCursos = array_map(function ($curso) {
+            return [
+                'title' => "Curso: {$curso->nome_curso}",
+                'start' => $curso->data_inicio,
+                'end' => $curso->data_fim ?: $curso->data_inicio,
+                'color' => '#8A2BE2', // Cor roxa para cursos
+                'extendedProps' => [
+                    'id' => $curso->id,
+                    'cliente' => "<b>Curso:</b> {$curso->nome_curso}",
+                    'dataInicial' => '<b>Data Inicial:</b> ' . date('d/m/Y', strtotime($curso->data_inicio)),
+                    'dataFinal' => '<b>Data Final:</b> ' . ($curso->data_fim ? date('d/m/Y', strtotime($curso->data_fim)) : 'N/A'),
+                    'status' => '<b>Status:</b> ' . html_escape(ucfirst($curso->status)),
+                    'description' => '<b>Descrição:</b> ' . strip_tags(html_entity_decode($curso->descricao)),
+                    'defeito' => '',
+                    'observacoes' => '',
+                ],
+            ];
+        }, $allCursos);
+
         return $this->output
             ->set_content_type('application/json')
             ->set_status_header(200)
-            ->set_output(json_encode($events));
+            ->set_output(json_encode(array_merge($events, $eventosCursos)));
     }
 
     private function editDontEnv(array $data)

@@ -273,8 +273,213 @@
                     </tr>
                     </tbody>
                 </table>
+<<<<<<< Updated upstream
                 <?php
             } ?>
+=======
+            <?php endif; ?>
+        </div>
+        <!--Tab 4-->
+        <div id="tab4" class="tab-pane" style="min-height: 300px">
+            <!-- Seção de Equipamentos de Mergulho -->
+            <div class="accordion" id="collapse-group-extra">
+                <!-- Seção de Equipamentos de Mergulho -->
+                <div class="accordion-group widget-box">
+                    <div class="accordion-heading">
+                        <div class="widget-title">
+                            <a data-parent="#collapse-group-extra" href="#collapseEquipamentos" data-toggle="collapse">
+                                <span><i class="icon-tag icon-cli"></i></span>
+                                <h5 style="padding-left: 28px">Equipamentos de Mergulho</h5>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="collapse in accordion-body" id="collapseEquipamentos">
+                        <div class="widget-content">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align: right; width: 30%;"><strong>Tamanho do Colete:</strong></td>
+                                        <td><?= html_escape($result->tamanho_colete ?? 'Não informado') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Peso do Lastro (kg):</strong></td>
+                                        <td><?= html_escape($result->peso_lastro ?? 'Não informado') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Tamanho do Neoprene:</strong></td>
+                                        <td><?= html_escape($result->tamanho_neoprene ?? 'Não informado') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Tamanho da Nadadeira:</strong></td>
+                                        <td><?= html_escape($result->tamanho_nadadeira ?? 'Não informado') ?></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Restrições Alimentares -->
+                <div class="accordion-group widget-box">
+                    <div class="accordion-heading">
+                        <div class="widget-title">
+                            <a data-parent="#collapse-group-extra" href="#collapseRestricoes" data-toggle="collapse">
+                                <span><i class="icon-ban-circle icon-cli"></i></span>
+                                <h5 style="padding-left: 28px">Restrições Alimentares</h5>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="collapse accordion-body" id="collapseRestricoes">
+                        <div class="widget-content">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Restrição</th>
+                                        <th>Observações</th>
+                                        <th>Data</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (isset($restricoes) && !empty($restricoes)): ?>
+                                        <?php foreach ($restricoes as $r): ?>
+                                        <tr>
+                                            <td><?= html_escape($r->restricao) ?></td>
+                                            <td><?= html_escape($r->observacoes) ?></td>
+                                            <td><?= date('d/m/Y', strtotime($r->data_cadastro)) ?></td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="3">Nenhuma restrição cadastrada.</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Atestado Médico -->
+                <div class="accordion-group widget-box">
+                    <div class="accordion-heading">
+                        <div class="widget-title">
+                            <a data-parent="#collapse-group-extra" href="#collapseAtestado" data-toggle="collapse">
+                                <span><i class="fas fa-file-medical-alt icon-cli"></i></span>
+                                <h5 style="padding-left: 28px">Atestado Médico</h5>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="collapse accordion-body" id="collapseAtestado">
+                        <div class="widget-content">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align: right; width: 30%;"><strong>Validade:</strong></td>
+                                        <td><?= isset($result->atestado_medico_validade) && $result->atestado_medico_validade ? date('d/m/Y', strtotime($result->atestado_medico_validade)) : 'Não informado' ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Arquivo:</strong></td>
+                                        <td>
+                                            <?php if (isset($result->atestado_medico_arquivo) && $result->atestado_medico_arquivo): ?>
+                                                <a href="<?= base_url('assets/uploads/atestados/' . $result->atestado_medico_arquivo) ?>" target="_blank" class="btn btn-mini">
+                                                    <i class="icon-download"></i> Baixar Atestado
+                                                </a>
+                                            <?php else: ?>
+                                                Nenhum arquivo
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Contato de Emergência -->
+                <div class="accordion-group widget-box">
+                    <div class="accordion-heading">
+                        <div class="widget-title">
+                            <a data-parent="#collapse-group-extra" href="#collapseEmergencia" data-toggle="collapse">
+                                <span><i class="fas fa-first-aid icon-cli"></i></span>
+                                <h5 style="padding-left: 28px">Contato de Emergência</h5>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="collapse accordion-body" id="collapseEmergencia">
+                        <div class="widget-content">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align: right; width: 30%;"><strong>Nome:</strong></td>
+                                        <td><?= html_escape($result->contato_emergencia_nome ?? 'Não informado') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Telefone:</strong></td>
+                                        <td><?= html_escape($result->contato_emergencia_telefone ?? 'Não informado') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Parentesco:</strong></td>
+                                        <td><?= html_escape($result->contato_emergencia_parentesco ?? 'Não informado') ?></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Certificações de Mergulhador -->
+                <div class="accordion-group widget-box">
+                    <div class="accordion-heading">
+                        <div class="widget-title">
+                            <a data-parent="#collapse-group-extra" href="#collapseCertificacoes" data-toggle="collapse">
+                                <span><i class="icon-certificate icon-cli"></i></span>
+                                <h5 style="padding-left: 28px">Certificações de Mergulhador</h5>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="collapse accordion-body" id="collapseCertificacoes">
+                        <div class="widget-content">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Certificação</th>
+                                        <th>Órgão Emissor</th>
+                                        <th>Emissão</th>
+                                        <th>Validade</th>
+                                        <th>Arquivo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (isset($certificacoes) && !empty($certificacoes)): ?>
+                                        <?php foreach ($certificacoes as $c): ?>
+                                        <tr>
+                                            <td><?= html_escape($c->nome_certificacao) ?></td>
+                                            <td><?= html_escape($c->orgao_emissor) ?></td>
+                                            <td><?= $c->data_emissao ? date('d/m/Y', strtotime($c->data_emissao)) : '-' ?></td>
+                                            <td><?= $c->data_validade ? date('d/m/Y', strtotime($c->data_validade)) : '-' ?></td>
+                                            <td>
+                                                <?php if ($c->arquivo): ?>
+                                                <a href="<?= base_url('uploads/certificados/' . $c->arquivo) ?>" target="_blank" class="btn btn-mini">
+                                                    <i class="icon-download"></i> Baixar
+                                                </a>
+                                                <?php else: ?>
+                                                Nenhum arquivo
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="5">Nenhuma certificação cadastrada.</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+>>>>>>> Stashed changes
         </div>
     </div>
     <div class="modal-footer" style="display:flex;justify-content: center">

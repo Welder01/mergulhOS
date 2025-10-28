@@ -73,6 +73,17 @@
                     </li>
                 <?php } ?>
 
+                <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vCurso')) { ?>
+                    <li class="<?php if (isset($menuCursos)) {
+                        echo 'active';
+                    }; ?>">
+                        <a class="tip-bottom" title="" href="<?= site_url('cursos') ?>"><i class='fas fa-graduation-cap iconX'></i>
+                            <span class="title">Cursos</span>
+                            <span class="title-tooltip">Cursos</span>
+                        </a>
+                    </li>
+                <?php } ?>
+
                 <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vVenda')) { ?>
                     <li class="<?php if (isset($menuVendas)) {
                         echo 'active';

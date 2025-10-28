@@ -696,6 +696,53 @@
                 <div class="accordion-group widget-box">
                     <div class="accordion-heading">
                         <div class="widget-title">
+                            <a data-parent="#collapse-group" href="#collapseGCurso" data-toggle="collapse">
+                                <span><i class='fas fa-graduation-cap icon-cli'></i></span>
+                                <h5 style="padding-left: 28px">Cursos</h5>
+                                <span><i class='bx bx-chevron-right icon-clic'></i></span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="collapse accordion-body" id="collapseGCurso">
+                        <div class="widget-content">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <td colspan="4"></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <label>
+                                            <input <?php if (isset($permissoes['vCurso']) && $permissoes['vCurso'] == '1') { echo 'checked'; } ?> name="vCurso" class="marcar" type="checkbox" value="1" />
+                                            <span class="lbl"> Visualizar Curso</span>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            <input <?php if (isset($permissoes['aCurso']) && $permissoes['aCurso'] == '1') { echo 'checked'; } ?> name="aCurso" class="marcar" type="checkbox" value="1" />
+                                            <span class="lbl"> Adicionar Curso</span>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            <input <?php if (isset($permissoes['eCurso']) && $permissoes['eCurso'] == '1') { echo 'checked'; } ?> name="eCurso" class="marcar" type="checkbox" value="1" />
+                                            <span class="lbl"> Editar Curso</span>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            <input <?php if (isset($permissoes['dCurso']) && $permissoes['dCurso'] == '1') { echo 'checked'; } ?> name="dCurso" class="marcar" type="checkbox" value="1" />
+                                            <span class="lbl"> Excluir Curso</span>
+                                        </label>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-group widget-box">
+                    <div class="accordion-heading">
+                        <div class="widget-title">
                             <a data-parent="#collapse-group" href="#collapseGTen" data-toggle="collapse">
                                 <span><i class='bx bx-chart icon-cli' ></i></span>
                                 <h5 style="padding-left: 28px">Relatórios</h5>
