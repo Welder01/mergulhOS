@@ -1,0 +1,46 @@
+<?php
+if (! defined('BASEPATH')) {
+    exit('No direct script access allowed');
+}
+
+class Curso_alunos_model extends CI_Model
+{
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    public function getByCurso($curso_id)
+    {
+        $this->db->select('curso_alunos.*, clientes.nomeCliente as nome_aluno');
+        $this->db->from('curso_alunos');
+        $this->db->join('clientes', 'clientes.idClientes = curso_alunos.cliente_id');
+        $this->db->where('curso_id', $curso_id);
+        return $this->db->get()->result();
+    }
+
+    public function add($data)
+    {
+        return $this->db->insert('curso_alunos', $data);
+    }
+
+    public function getById($id)
+    {
+        $this->db->where('id', $id);
+        return $this->db->get('curso_alunos')->row();
+    }
+
+    public function delete($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->delete('curso_alunos');
+        return $this->db->affected_rows() > 0;
+    }
+
+    public function isAlunoInCurso($curso_id, $cliente_id)
+    {
+        $this->db->where('curso_id', $curso_id);
+        $this->db->where('cliente_id', $cliente_id);
+        return $this->db->get('curso_alunos')->num_rows() > 0;
+    }
+}

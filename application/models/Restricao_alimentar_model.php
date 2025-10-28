@@ -1,28 +1,37 @@
 <?php
-if (!defined('BASEPATH')) {
+if (! defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
-class Restricao_alimentar_model extends CI_Model {
-    
-    public function getByCliente($cliente_id) {
+class Restricao_alimentar_model extends CI_Model
+{
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    public function getByCliente($cliente_id)
+    {
         $this->db->where('cliente_id', $cliente_id);
-        $this->db->order_by('data_cadastro', 'DESC');
         return $this->db->get('restricoes_alimentares')->result();
     }
-    
-    public function get($id) {
+
+    public function add($data)
+    {
+        return $this->db->insert('restricoes_alimentares', $data);
+    }
+
+    public function getById($id)
+    {
         $this->db->where('id', $id);
         return $this->db->get('restricoes_alimentares')->row();
     }
-    
-    public function add($data) {
-        $data['data_cadastro'] = date('Y-m-d H:i:s');
-        return $this->db->insert('restricoes_alimentares', $data);
-    }
-    
-    public function delete($id) {
+
+    public function delete($id)
+    {
         $this->db->where('id', $id);
-        return $this->db->delete('restricoes_alimentares');
+        $this->db->delete('restricoes_alimentares');
+
+        return $this->db->affected_rows() > 0;
     }
 }

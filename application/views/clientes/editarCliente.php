@@ -145,6 +145,33 @@
                                 </label>
                             </div>
                         </div>
+                        <fieldset>
+                            <legend>Equipamentos de Mergulho</legend>
+                            <div class="control-group">
+                                <label for="tamanho_colete" class="control-label">Tamanho do Colete</label>
+                                <div class="controls">
+                                    <input id="tamanho_colete" type="text" name="tamanho_colete" value="<?= $result->tamanho_colete ?? '' ?>" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="peso_lastro" class="control-label">Peso do Lastro (kg)</label>
+                                <div class="controls">
+                                    <input id="peso_lastro" type="text" name="peso_lastro" value="<?= $result->peso_lastro ?? '' ?>" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="tamanho_neoprene" class="control-label">Tamanho do Neoprene</label>
+                                <div class="controls">
+                                    <input id="tamanho_neoprene" type="text" name="tamanho_neoprene" value="<?= $result->tamanho_neoprene ?? '' ?>" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="tamanho_nadadeira" class="control-label">Tamanho da Nadadeira</label>
+                                <div class="controls">
+                                    <input id="tamanho_nadadeira" type="text" name="tamanho_nadadeira" value="<?= $result->tamanho_nadadeira ?? '' ?>" />
+                                </div>
+                            </div>
+                        </fieldset>
                     </div>
 
                     <div class="span6">

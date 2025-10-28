@@ -11,7 +11,10 @@ class Clientes extends MY_Controller
         parent::__construct();
 
         $this->load->model('clientes_model');
+        $this->load->model('restricao_alimentar_model');
+        $this->load->model('certificacao_mergulhador_model');
         $this->data['menuClientes'] = 'clientes';
+        $this->data['menuCursos'] = 'cursos'; // Adicione esta linha
     }
 
     public function index()
@@ -152,6 +155,10 @@ class Clientes extends MY_Controller
                     'estado' => $this->input->post('estado'),
                     'cep' => $this->input->post('cep'),
                     'fornecedor' => (set_value('fornecedor') == true ? 1 : 0),
+                    'tamanho_colete' => $this->input->post('tamanho_colete'),
+                    'peso_lastro' => $this->input->post('peso_lastro'),
+                    'tamanho_neoprene' => $this->input->post('tamanho_neoprene'),
+                    'tamanho_nadadeira' => $this->input->post('tamanho_nadadeira'),
                 ];
             } else {
                 $data = [
@@ -169,6 +176,10 @@ class Clientes extends MY_Controller
                     'estado' => $this->input->post('estado'),
                     'cep' => $this->input->post('cep'),
                     'fornecedor' => (set_value('fornecedor') == true ? 1 : 0),
+                    'tamanho_colete' => $this->input->post('tamanho_colete'),
+                    'peso_lastro' => $this->input->post('peso_lastro'),
+                    'tamanho_neoprene' => $this->input->post('tamanho_neoprene'),
+                    'tamanho_nadadeira' => $this->input->post('tamanho_nadadeira'),
                 ];
             }
 
@@ -184,27 +195,6 @@ class Clientes extends MY_Controller
 
         $this->data['result'] = $this->clientes_model->getById($this->uri->segment(3));
         $this->data['view'] = 'clientes/editarCliente';
-
-        return $this->layout();
-    }
-
-    public function visualizar()
-    {
-        if (! $this->uri->segment(3) || ! is_numeric($this->uri->segment(3))) {
-            $this->session->set_flashdata('error', 'Item não pode ser encontrado, parâmetro não foi passado corretamente.');
-            redirect('mapos');
-        }
-
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'vCliente')) {
-            $this->session->set_flashdata('error', 'Você não tem permissão para visualizar clientes.');
-            redirect(base_url());
-        }
-
-        $this->data['custom_error'] = '';
-        $this->data['result'] = $this->clientes_model->getById($this->uri->segment(3));
-        $this->data['results'] = $this->clientes_model->getOsByCliente($this->uri->segment(3));
-        $this->data['result_vendas'] = $this->clientes_model->getAllVendasByClient($this->uri->segment(3));
-        $this->data['view'] = 'clientes/visualizar';
 
         return $this->layout();
     }
@@ -248,20 +238,25 @@ public function adicionar_restricao() {
         redirect(base_url());
     }
 
-    $this->load->model('restricao_alimentar_model');
-    
-    $data = array(
-        'cliente_id' => $this->input->post('cliente_id'),
-        'restricao' => $this->input->post('restricao'),
-        'observacoes' => $this->input->post('observacoes')
-    );
+    $this->load->library('form_validation');
+    $this->form_validation->set_rules('restricao', 'Restrição', 'trim|required');
 
-    if ($this->restricao_alimentar_model->add($data)) {
-        $this->session->set_flashdata('success', 'Restrição alimentar adicionada com sucesso!');
+    if ($this->form_validation->run() == false) {
+        $this->session->set_flashdata('error', 'Erro de validação: ' . validation_errors());
     } else {
-        $this->session->set_flashdata('error', 'Erro ao adicionar restrição alimentar.');
-    }
+        $data = [
+            'cliente_id' => $this->input->post('cliente_id'),
+            'restricao' => $this->input->post('restricao'),
+            'observacoes' => $this->input->post('observacoes')
+        ];
 
+        if ($this->restricao_alimentar_model->add($data)) {
+            $this->session->set_flashdata('success', 'Restrição alimentar adicionada com sucesso!');
+            log_info('Adicionou restrição alimentar ao cliente ID: ' . $this->input->post('cliente_id'));
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao adicionar restrição alimentar.');
+        }
+    }
     redirect('clientes/visualizar/' . $this->input->post('cliente_id') . '#restricoes');
 }
 
@@ -276,8 +271,7 @@ public function remover_restricao($id = null) {
         redirect(base_url());
     }
 
-    $this->load->model('restricao_alimentar_model');
-    $restricao = $this->restricao_alimentar_model->get($id);
+    $restricao = $this->restricao_alimentar_model->getById($id);
     
     if ($restricao && $this->restricao_alimentar_model->delete($id)) {
         $this->session->set_flashdata('success', 'Restrição alimentar removida com sucesso!');
@@ -294,45 +288,51 @@ public function adicionar_certificacao() {
         redirect(base_url());
     }
 
-    $this->load->model('certificacao_mergulhador_model');
-    
-    $data = array(
-        'cliente_id' => $this->input->post('cliente_id'),
-        'nome_certificacao' => $this->input->post('nome_certificacao'),
-        'orgao_emissor' => $this->input->post('orgao_emissor'),
-        'data_emissao' => $this->input->post('data_emissao'),
-        'data_validade' => $this->input->post('data_validade'),
-        'observacoes' => $this->input->post('observacoes')
-    );
+    $this->load->library('form_validation');
+    $this->form_validation->set_rules('nome_certificacao', 'Nome da Certificação', 'trim|required');
 
-    // Upload do arquivo
-    if (!empty($_FILES['arquivo']['name'])) {
-        $config['upload_path'] = './uploads/certificados/';
-        $config['allowed_types'] = 'pdf|jpg|jpeg|png';
-        $config['max_size'] = 1024 * 5; // 5MB
-        $config['encrypt_name'] = TRUE;
-
-        if (!is_dir($config['upload_path'])) {
-            mkdir($config['upload_path'], 0777, true);
-        }
-
-        $this->load->library('upload', $config);
-
-        if ($this->upload->do_upload('arquivo')) {
-            $upload_data = $this->upload->data();
-            $data['arquivo'] = $upload_data['file_name'];
-        } else {
-            $this->session->set_flashdata('error', $this->upload->display_errors());
-            redirect('clientes/visualizar/' . $this->input->post('cliente_id') . '#certificacoes');
-        }
-    }
-
-    if ($this->certificacao_mergulhador_model->add($data)) {
-        $this->session->set_flashdata('success', 'Certificação adicionada com sucesso!');
+    if ($this->form_validation->run() == false) {
+        $this->session->set_flashdata('error', 'Erro de validação: ' . validation_errors());
     } else {
-        $this->session->set_flashdata('error', 'Erro ao adicionar certificação.');
-    }
+        $data = [
+            'cliente_id' => $this->input->post('cliente_id'),
+            'nome_certificacao' => $this->input->post('nome_certificacao'),
+            'orgao_emissor' => $this->input->post('orgao_emissor'),
+            'data_emissao' => $this->input->post('data_emissao') ?: null,
+            'data_validade' => $this->input->post('data_validade') ?: null,
+            'observacoes' => $this->input->post('observacoes')
+        ];
 
+        // Upload do arquivo
+        if (!empty($_FILES['arquivo']['name'])) {
+            $config['upload_path'] = './uploads/certificados/';
+            $config['allowed_types'] = 'pdf|jpg|jpeg|png';
+            $config['max_size'] = 5120; // 5MB
+            $config['encrypt_name'] = true;
+
+            if (!is_dir($config['upload_path'])) {
+                mkdir($config['upload_path'], 0777, true);
+            }
+
+            $this->load->library('upload', $config);
+
+            if ($this->upload->do_upload('arquivo')) {
+                $upload_data = $this->upload->data();
+                $data['arquivo'] = $upload_data['file_name'];
+            } else {
+                $this->session->set_flashdata('error', 'Erro no upload: ' . $this->upload->display_errors());
+                redirect('clientes/visualizar/' . $this->input->post('cliente_id') . '#certificacoes');
+                return;
+            }
+        }
+
+        if ($this->certificacao_mergulhador_model->add($data)) {
+            $this->session->set_flashdata('success', 'Certificação adicionada com sucesso!');
+            log_info('Adicionou certificação ao cliente ID: ' . $this->input->post('cliente_id'));
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao adicionar certificação.');
+        }
+    }
     redirect('clientes/visualizar/' . $this->input->post('cliente_id') . '#certificacoes');
 }
 
@@ -347,11 +347,15 @@ public function remover_certificacao($id = null) {
         redirect(base_url());
     }
 
-    $this->load->model('certificacao_mergulhador_model');
-    $certificacao = $this->certificacao_mergulhador_model->get($id);
+    $certificacao = $this->certificacao_mergulhador_model->getById($id);
     
     if ($certificacao && $this->certificacao_mergulhador_model->delete($id)) {
         $this->session->set_flashdata('success', 'Certificação removida com sucesso!');
+        log_info('Removeu certificação ID ' . $id . ' do cliente ID: ' . $certificacao->cliente_id);
+        // Remove o arquivo se existir
+        if ($certificacao->arquivo && file_exists('./uploads/certificados/' . $certificacao->arquivo)) {
+            unlink('./uploads/certificados/' . $certificacao->arquivo);
+        }
     } else {
         $this->session->set_flashdata('error', 'Erro ao remover certificação.');
     }
@@ -359,33 +363,29 @@ public function remover_certificacao($id = null) {
     redirect('clientes/visualizar/' . $certificacao->cliente_id . '#certificacoes');
 }
 
-// Atualize o método visualizar para carregar os dados
-public function visualizar()
-{
-    if (! $this->uri->segment(3) || ! is_numeric($this->uri->segment(3))) {
-        $this->session->set_flashdata('error', 'Item não pode ser encontrado, parâmetro não foi passado corretamente.');
-        redirect('mapos');
+    // Atualize o método visualizar para carregar os dados
+    public function visualizar()
+    {
+        if (! $this->uri->segment(3) || ! is_numeric($this->uri->segment(3))) {
+            $this->session->set_flashdata('error', 'Item não pode ser encontrado, parâmetro não foi passado corretamente.');
+            redirect('mapos');
+        }
+
+        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'vCliente')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para visualizar clientes.');
+            redirect(base_url());
+        }
+
+        $cliente_id = $this->uri->segment(3);
+        
+        $this->data['custom_error'] = '';
+        $this->data['result'] = $this->clientes_model->getById($cliente_id);
+        $this->data['results'] = $this->clientes_model->getOsByCliente($cliente_id);
+        $this->data['result_vendas'] = $this->clientes_model->getAllVendasByClient($cliente_id);
+        $this->data['restricoes'] = $this->restricao_alimentar_model->getByCliente($cliente_id);
+        $this->data['certificacoes'] = $this->certificacao_mergulhador_model->getByCliente($cliente_id);
+        $this->data['view'] = 'clientes/visualizar';
+
+        return $this->layout();
     }
-
-    if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'vCliente')) {
-        $this->session->set_flashdata('error', 'Você não tem permissão para visualizar clientes.');
-        redirect(base_url());
-    }
-
-    $this->load->model('restricao_alimentar_model');
-    $this->load->model('certificacao_mergulhador_model');
-
-    $cliente_id = $this->uri->segment(3);
-    
-    $this->data['custom_error'] = '';
-    $this->data['result'] = $this->clientes_model->getById($cliente_id);
-    $this->data['results'] = $this->clientes_model->getOsByCliente($cliente_id);
-    $this->data['result_vendas'] = $this->clientes_model->getAllVendasByClient($cliente_id);
-    $this->data['restricoes'] = $this->restricao_alimentar_model->getByCliente($cliente_id);
-    $this->data['certificacoes'] = $this->certificacao_mergulhador_model->getByCliente($cliente_id);
-    $this->data['view'] = 'clientes/visualizar';
-
-    return $this->layout();
-}
-
 }
