@@ -16,6 +16,7 @@ class Migration_create_viagem_instrutores_table extends CI_Migration
             ],
             'usuario_id' => [
                 'type' => 'INT',
+                'unsigned' => true,
             ],
         ]);
         $this->dbforge->add_key('id', true);
