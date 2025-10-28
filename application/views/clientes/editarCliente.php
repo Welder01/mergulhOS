@@ -145,8 +145,7 @@
                                 </label>
                             </div>
                         </div>
-<<<<<<< Updated upstream
-=======
+
                         <fieldset id="equipamentos">
                             <legend>Equipamentos de Mergulho</legend>
                             <div class="control-group">
@@ -197,34 +196,6 @@
                             </div>
                         </fieldset>
 
-                        <fieldset id="atestado">
-                            <legend>Atestado Médico</legend>
-                            <div class="control-group">
-                                <label for="atestado_medico_validade" class="control-label">Validade</label>
-                                <div class="controls">
-                                    <input id="atestado_medico_validade" type="date" name="atestado_medico_validade" value="<?= $result->atestado_medico_validade ?? '' ?>" />
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <label for="atestado_medico_arquivo" class="control-label">Arquivo (PDF, JPG, PNG)</label>
-                                <div class="controls">
-                                    <input id="atestado_medico_arquivo" type="file" name="atestado_medico_arquivo" accept=".pdf,.jpg,.jpeg,.png" />
-                                </div>
-                            </div>
-                            <?php if (isset($result->atestado_medico_arquivo) && $result->atestado_medico_arquivo) : ?>
-                                <div class="control-group">
-                                    <label class="control-label">Arquivo Atual</label>
-                                    <div class="controls">
-                                        <a href="<?= base_url('assets/uploads/atestados/' . $result->atestado_medico_arquivo) ?>" target="_blank">
-                                            <i class="fas fa-file-alt"></i> <?= $result->atestado_medico_arquivo ?>
-                                        </a>
-                                        <input type="hidden" name="atestado_medico_arquivo_atual" value="<?= $result->atestado_medico_arquivo ?>">
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-                        </fieldset>
-
->>>>>>> Stashed changes
                     </div>
 
                     <div class="span6">
@@ -272,6 +243,117 @@
                                 </select>
                             </div>
                         </div>
+
+                        <fieldset id="atestado">
+                            <legend>Atestado Médico</legend>
+                            <div class="control-group">
+                                <label for="atestado_medico_validade" class="control-label">Validade</label>
+                                <div class="controls">
+                                    <input id="atestado_medico_validade" type="date" name="atestado_medico_validade" value="<?= $result->atestado_medico_validade ?? '' ?>" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="atestado_medico_arquivo" class="control-label">Arquivo (PDF, JPG, PNG)</label>
+                                <div class="controls">
+                                    <input id="atestado_medico_arquivo" type="file" name="atestado_medico_arquivo" accept=".pdf,.jpg,.jpeg,.png" />
+                                </div>
+                            </div>
+                            <?php if (isset($result->atestado_medico_arquivo) && $result->atestado_medico_arquivo) : ?>
+                                <div class="control-group">
+                                    <label class="control-label">Arquivo Atual</label>
+                                    <div class="controls">
+                                        <a href="<?= base_url('assets/uploads/atestados/' . $result->atestado_medico_arquivo) ?>" target="_blank">
+                                            <i class="fas fa-file-alt"></i> <?= $result->atestado_medico_arquivo ?>
+                                        </a>
+                                        <input type="hidden" name="atestado_medico_arquivo_atual" value="<?= $result->atestado_medico_arquivo ?>">
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        </fieldset>
+
+                        <fieldset id="restricoes">
+                            <legend>Restrições Alimentares</legend>
+                            <div class="control-group">
+                                <label for="restricao" class="control-label">Nova Restrição</label>
+                                <div class="controls">
+                                    <input id="restricao" type="text" name="restricao" placeholder="Ex: Lactose, Glúten" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="observacoes_restricao" class="control-label">Observações</label>
+                                <div class="controls">
+                                    <input id="observacoes_restricao" type="text" name="observacoes_restricao" placeholder="Ex: Leite e derivados" />
+                                </div>
+                            </div>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Restrição</th>
+                                        <th>Observações</th>
+                                        <th>Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (isset($restricoes) && !empty($restricoes)) : ?>
+                                        <?php foreach ($restricoes as $r) : ?>
+                                            <tr>
+                                                <td><?= html_escape($r->restricao) ?></td>
+                                                <td><?= html_escape($r->observacoes) ?></td>
+                                                <td>
+                                                    <a href="<?= base_url() ?>index.php/clientes/remover_restricao/<?= $r->id ?>" class="btn btn-danger btn-mini" onclick="return confirm('Deseja realmente excluir esta restrição?')">
+                                                        <i class="icon-trash icon-white"></i> Excluir
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else : ?>
+                                        <tr>
+                                            <td colspan="3">Nenhuma restrição cadastrada.</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </fieldset>
+
+                        <fieldset id="certificacoes">
+                            <legend>Certificações de Mergulhador</legend>
+                            <div class="control-group">
+                                <label for="nome_certificacao" class="control-label">Nova Certificação</label>
+                                <div class="controls">
+                                    <input id="nome_certificacao" type="text" name="nome_certificacao" placeholder="Ex: Open Water Diver" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="orgao_emissor" class="control-label">Órgão Emissor</label>
+                                <div class="controls">
+                                    <input id="orgao_emissor" type="text" name="orgao_emissor" placeholder="Ex: PADI, NAUI" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="data_emissao" class="control-label">Data de Emissão</label>
+                                <div class="controls">
+                                    <input id="data_emissao" type="date" name="data_emissao" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="data_validade" class="control-label">Data de Validade</label>
+                                <div class="controls">
+                                    <input id="data_validade" type="date" name="data_validade" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="arquivo" class="control-label">Arquivo</label>
+                                <div class="controls">
+                                    <input id="arquivo" type="file" name="arquivo" accept=".pdf,.jpg,.jpeg,.png" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="observacoes_cert" class="control-label">Observações</label>
+                                <div class="controls">
+                                    <input id="observacoes_cert" type="text" name="observacoes_cert" />
+                                </div>
+                            </div>
+                        </fieldset>
                     </div>
                 </div>
                 <div class="form-actions">

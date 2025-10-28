@@ -4,6 +4,7 @@
             <li class="active"><a data-toggle="tab" href="#tab1">Dados do Cliente</a></li>
             <li><a data-toggle="tab" href="#tab2">Ordens de Serviço</a></li>
             <li><a data-toggle="tab" href="#tab3">Vendas</a></li>
+            <li><a data-toggle="tab" href="#tab4">Dados Extras</a></li>
         </ul>
     </div>
     <div class="widget-content tab-content">
@@ -273,16 +274,13 @@
                     </tr>
                     </tbody>
                 </table>
-<<<<<<< Updated upstream
                 <?php
             } ?>
-=======
-            <?php endif; ?>
         </div>
         <!--Tab 4-->
         <div id="tab4" class="tab-pane" style="min-height: 300px">
-            <!-- Seção de Equipamentos de Mergulho -->
             <div class="accordion" id="collapse-group-extra">
+
                 <!-- Seção de Equipamentos de Mergulho -->
                 <div class="accordion-group widget-box">
                     <div class="accordion-heading">
@@ -319,46 +317,6 @@
                     </div>
                 </div>
 
-                <!-- Seção de Restrições Alimentares -->
-                <div class="accordion-group widget-box">
-                    <div class="accordion-heading">
-                        <div class="widget-title">
-                            <a data-parent="#collapse-group-extra" href="#collapseRestricoes" data-toggle="collapse">
-                                <span><i class="icon-ban-circle icon-cli"></i></span>
-                                <h5 style="padding-left: 28px">Restrições Alimentares</h5>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="collapse accordion-body" id="collapseRestricoes">
-                        <div class="widget-content">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Restrição</th>
-                                        <th>Observações</th>
-                                        <th>Data</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (isset($restricoes) && !empty($restricoes)): ?>
-                                        <?php foreach ($restricoes as $r): ?>
-                                        <tr>
-                                            <td><?= html_escape($r->restricao) ?></td>
-                                            <td><?= html_escape($r->observacoes) ?></td>
-                                            <td><?= date('d/m/Y', strtotime($r->data_cadastro)) ?></td>
-                                        </tr>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <tr>
-                                            <td colspan="3">Nenhuma restrição cadastrada.</td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Seção de Atestado Médico -->
                 <div class="accordion-group widget-box">
                     <div class="accordion-heading">
@@ -380,11 +338,11 @@
                                     <tr>
                                         <td style="text-align: right;"><strong>Arquivo:</strong></td>
                                         <td>
-                                            <?php if (isset($result->atestado_medico_arquivo) && $result->atestado_medico_arquivo): ?>
+                                            <?php if (isset($result->atestado_medico_arquivo) && $result->atestado_medico_arquivo) : ?>
                                                 <a href="<?= base_url('assets/uploads/atestados/' . $result->atestado_medico_arquivo) ?>" target="_blank" class="btn btn-mini">
                                                     <i class="icon-download"></i> Baixar Atestado
                                                 </a>
-                                            <?php else: ?>
+                                            <?php else : ?>
                                                 Nenhum arquivo
                                             <?php endif; ?>
                                         </td>
@@ -427,6 +385,44 @@
                     </div>
                 </div>
 
+                <!-- Seção de Restrições Alimentares -->
+                <div class="accordion-group widget-box">
+                    <div class="accordion-heading">
+                        <div class="widget-title">
+                            <a data-parent="#collapse-group-extra" href="#collapseRestricoes" data-toggle="collapse">
+                                <span><i class="icon-ban-circle icon-cli"></i></span>
+                                <h5 style="padding-left: 28px">Restrições Alimentares</h5>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="collapse accordion-body" id="collapseRestricoes">
+                        <div class="widget-content">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Restrição</th>
+                                        <th>Observações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (isset($restricoes) && !empty($restricoes)) : ?>
+                                        <?php foreach ($restricoes as $r) : ?>
+                                            <tr>
+                                                <td><?= html_escape($r->restricao) ?></td>
+                                                <td><?= html_escape($r->observacoes) ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else : ?>
+                                        <tr>
+                                            <td colspan="2">Nenhuma restrição cadastrada.</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Seção de Certificações de Mergulhador -->
                 <div class="accordion-group widget-box">
                     <div class="accordion-heading">
@@ -445,32 +441,28 @@
                                         <th>Certificação</th>
                                         <th>Órgão Emissor</th>
                                         <th>Emissão</th>
-                                        <th>Validade</th>
                                         <th>Arquivo</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php if (isset($certificacoes) && !empty($certificacoes)): ?>
-                                        <?php foreach ($certificacoes as $c): ?>
-                                        <tr>
-                                            <td><?= html_escape($c->nome_certificacao) ?></td>
-                                            <td><?= html_escape($c->orgao_emissor) ?></td>
-                                            <td><?= $c->data_emissao ? date('d/m/Y', strtotime($c->data_emissao)) : '-' ?></td>
-                                            <td><?= $c->data_validade ? date('d/m/Y', strtotime($c->data_validade)) : '-' ?></td>
-                                            <td>
-                                                <?php if ($c->arquivo): ?>
-                                                <a href="<?= base_url('uploads/certificados/' . $c->arquivo) ?>" target="_blank" class="btn btn-mini">
-                                                    <i class="icon-download"></i> Baixar
-                                                </a>
-                                                <?php else: ?>
-                                                Nenhum arquivo
-                                                <?php endif; ?>
-                                            </td>
-                                        </tr>
+                                    <?php if (isset($certificacoes) && !empty($certificacoes)) : ?>
+                                        <?php foreach ($certificacoes as $c) : ?>
+                                            <tr>
+                                                <td><?= html_escape($c->nome_certificacao) ?></td>
+                                                <td><?= html_escape($c->orgao_emissor) ?></td>
+                                                <td><?= $c->data_emissao ? date('d/m/Y', strtotime($c->data_emissao)) : '-' ?></td>
+                                                <td>
+                                                    <?php if ($c->arquivo) : ?>
+                                                        <a href="<?= base_url('uploads/certificados/' . $c->arquivo) ?>" target="_blank" class="btn btn-mini"><i class="icon-download"></i> Baixar</a>
+                                                    <?php else : ?>
+                                                        Nenhum arquivo
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
                                         <?php endforeach; ?>
-                                    <?php else: ?>
+                                    <?php else : ?>
                                         <tr>
-                                            <td colspan="5">Nenhuma certificação cadastrada.</td>
+                                            <td colspan="4">Nenhuma certificação cadastrada.</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -479,7 +471,6 @@
                     </div>
                 </div>
             </div>
->>>>>>> Stashed changes
         </div>
     </div>
     <div class="modal-footer" style="display:flex;justify-content: center">
