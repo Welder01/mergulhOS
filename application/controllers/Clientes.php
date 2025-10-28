@@ -10,6 +10,8 @@ class Clientes extends MY_Controller
     {
         parent::__construct();
 
+        $this->load->model('curso_alunos_model');
+        $this->load->model('viagem_clientes_model');
         $this->load->model('restricao_alimentar_model');
         $this->load->model('certificacao_mergulhador_model');
         $this->load->model('clientes_model');
@@ -289,6 +291,8 @@ class Clientes extends MY_Controller
         $this->data['results'] = $this->clientes_model->getOsByCliente($this->uri->segment(3));
         $this->data['result_vendas'] = $this->clientes_model->getAllVendasByClient($this->uri->segment(3));
         $this->data['restricoes'] = $this->restricao_alimentar_model->getByCliente($this->uri->segment(3));
+        $this->data['cursos'] = $this->curso_alunos_model->getByCliente($this->uri->segment(3));
+        $this->data['viagens'] = $this->viagem_clientes_model->getByCliente($this->uri->segment(3));
         $this->data['certificacoes'] = $this->certificacao_mergulhador_model->getByCliente($this->uri->segment(3));
         $this->data['view'] = 'clientes/visualizar';
 

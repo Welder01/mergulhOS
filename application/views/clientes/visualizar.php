@@ -4,7 +4,10 @@
             <li class="active"><a data-toggle="tab" href="#tab1">Dados do Cliente</a></li>
             <li><a data-toggle="tab" href="#tab2">Ordens de Serviço</a></li>
             <li><a data-toggle="tab" href="#tab3">Vendas</a></li>
-            <li><a data-toggle="tab" href="#tab4">Dados Extras</a></li>
+            <li><a data-toggle="tab" href="#tab4">Restrições Alimentares</a></li>
+            <li><a data-toggle="tab" href="#tab5">Cursos</a></li>
+            <li><a data-toggle="tab" href="#tab6">Viagens</a></li>
+            <li><a data-toggle="tab" href="#tab7">Certificações</a></li>
         </ul>
     </div>
     <div class="widget-content tab-content">

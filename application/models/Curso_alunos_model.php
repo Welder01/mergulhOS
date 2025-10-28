@@ -19,6 +19,15 @@ class Curso_alunos_model extends CI_Model
         return $this->db->get()->result();
     }
 
+    public function getByCliente($cliente_id)
+    {
+        $this->db->select('curso_alunos.*, cursos.nome_curso, cursos.data_inicio, cursos.preco');
+        $this->db->from('curso_alunos');
+        $this->db->join('cursos', 'cursos.id = curso_alunos.curso_id');
+        $this->db->where('cliente_id', $cliente_id);
+        return $this->db->get()->result();
+    }
+
     public function add($data)
     {
         return $this->db->insert('curso_alunos', $data);

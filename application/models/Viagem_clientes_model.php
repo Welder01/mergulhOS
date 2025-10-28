@@ -10,6 +10,15 @@ class Viagem_clientes_model extends CI_Model
         return $this->db->get()->result();
     }
 
+    public function getByCliente($cliente_id)
+    {
+        $this->db->select('viagem_clientes.*, viagens.nome_viagem, viagens.data_partida, viagens.preco_pessoa');
+        $this->db->from('viagem_clientes');
+        $this->db->join('viagens', 'viagens.id = viagem_clientes.viagem_id');
+        $this->db->where('cliente_id', $cliente_id);
+        return $this->db->get()->result();
+    }
+
     public function add($data)
     {
         return $this->db->insert('viagem_clientes', $data);
