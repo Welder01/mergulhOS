@@ -84,6 +84,17 @@
                     </li>
                 <?php } ?>
 
+                <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vViagem')) { ?>
+                    <li class="<?php if (isset($menuViagens)) {
+                        echo 'active';
+                    }; ?>">
+                        <a class="tip-bottom" title="" href="<?= site_url('viagens') ?>"><i class='fas fa-route iconX'></i>
+                            <span class="title">Viagens</span>
+                            <span class="title-tooltip">Viagens</span>
+                        </a>
+                    </li>
+                <?php } ?>
+
                 <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vVenda')) { ?>
                     <li class="<?php if (isset($menuVendas)) {
                         echo 'active';

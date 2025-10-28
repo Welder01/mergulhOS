@@ -1,0 +1,219 @@
+<link rel="stylesheet" href="<?= base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
+<script type="text/javascript" src="<?= base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
+
+<div class="widget-box">
+    <div class="widget-title">
+        <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#tabDetalhes">Detalhes da Viagem</a></li>
+            <li><a data-toggle="tab" href="#tabClientes">Clientes / Embarque</a></li>
+            <li><a data-toggle="tab" href="#tabHospedagem">Hospedagem</a></li>
+            <li><a data-toggle="tab" href="#tabInstrutores">Instrutores</a></li>
+            <li><a data-toggle="tab" href="#tabCustos">Custos Extras</a></li>
+        </ul>
+    </div>
+    <div class="widget-content tab-content">
+        <!-- Aba Detalhes -->
+        <div id="tabDetalhes" class="tab-pane active">
+            <table class="table table-bordered">
+                <tbody>
+                    <tr> <td><strong>Nome:</strong></td> <td><?= html_escape($result->nome_viagem) ?></td> </tr>
+                    <tr> <td><strong>Descrição:</strong></td> <td><?= html_escape($result->descricao) ?></td> </tr>
+                    <tr> <td><strong>Partida:</strong></td> <td><?= date('d/m/Y H:i', strtotime($result->data_partida)) ?></td> </tr>
+                    <tr> <td><strong>Retorno:</strong></td> <td><?= date('d/m/Y H:i', strtotime($result->data_retorno)) ?></td> </tr>
+                    <tr> <td><strong>Vagas:</strong></td> <td><?= $result->vagas ?></td> </tr>
+                    <tr> <td><strong>Preço/Pessoa:</strong></td> <td>R$ <?= number_format($result->preco_pessoa, 2, ',', '.') ?></td> </tr>
+                    <tr> <td><strong>Status:</strong></td> <td><?= html_escape($result->status) ?></td> </tr>
+                    <tr> <td><strong>Curso Atrelado:</strong></td> <td><?= $result->nome_curso ?: 'Nenhum' ?></td> </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Aba Clientes / Embarque -->
+        <div id="tabClientes" class="tab-pane">
+            <h4>Adicionar Cliente</h4>
+            <form action="<?= site_url('viagens/adicionar_cliente') ?>" method="post">
+                <input type="hidden" name="viagem_id" value="<?= $result->id ?>">
+                <div class="span3">
+                    <label>Cliente</label>
+                    <input type="text" class="span12" id="cliente" placeholder="Pesquisar cliente">
+                    <input type="hidden" name="cliente_id" id="cliente_id">
+                </div>
+                <div class="span2">
+                    <label>Bolsa Nº</label>
+                    <input type="text" class="span12" name="numero_bolsa">
+                </div>
+                <div class="span2">
+                    <label>Pagamento</label>
+                    <select name="status_pagamento" class="span12">
+                        <option value="Pendente">Pendente</option>
+                        <option value="Pago">Pago</option>
+                        <option value="Parcial">Parcial</option>
+                    </select>
+                </div>
+                <div class="span2">
+                    <label>Embarque?</label>
+                    <input type="checkbox" name="precisa_embarque" value="1">
+                </div>
+                <div class="span2">
+                    <label>Hospedagem?</label>
+                    <input type="checkbox" name="precisa_hospedagem" value="1">
+                </div>
+                <div class="span12" style="margin-left:0">
+                    <button type="submit" class="btn btn-success">Adicionar</button>
+                </div>
+            </form>
+            <hr>
+            <h4>Clientes na Viagem</h4>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Bolsa Nº</th>
+                        <th>Pagamento</th>
+                        <th>Embarque</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($clientes as $cliente) : ?>
+                        <?php if ($cliente->precisa_embarque) : ?>
+                            <tr>
+                                <td><?= html_escape($cliente->nomeCliente) ?></td>
+                                <td><?= html_escape($cliente->numero_bolsa) ?></td>
+                                <td><?= html_escape($cliente->status_pagamento) ?></td>
+                                <td><span class="badge badge-success">Sim</span></td>
+                                <td><a href="<?= site_url('viagens/remover_cliente_viagem/' . $cliente->id) ?>" class="btn btn-danger btn-mini">Remover</a></td>
+                            </tr>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Aba Hospedagem -->
+        <div id="tabHospedagem" class="tab-pane">
+            <h4>Clientes com Hospedagem</h4>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Detalhes da Hospedagem</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($clientes as $cliente) : ?>
+                        <?php if ($cliente->precisa_hospedagem) : ?>
+                            <tr>
+                                <td><?= html_escape($cliente->nomeCliente) ?></td>
+                                <td>
+                                    <form action="<?= site_url('viagens/editar_cliente_viagem/' . $cliente->id) ?>" method="post">
+                                        <input type="hidden" name="viagem_id" value="<?= $result->id ?>">
+                                        <textarea name="detalhes_hospedagem" rows="2" class="span12"><?= html_escape($cliente->detalhes_hospedagem) ?></textarea>
+                                        <button type="submit" class="btn btn-primary btn-mini">Salvar</button>
+                                    </form>
+                                </td>
+                                <td><a href="<?= site_url('viagens/remover_cliente_viagem/' . $cliente->id) ?>" class="btn btn-danger btn-mini">Remover</a></td>
+                            </tr>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Aba Instrutores -->
+        <div id="tabInstrutores" class="tab-pane">
+            <h4>Adicionar Instrutor</h4>
+            <form action="<?= site_url('viagens/adicionar_instrutor_viagem') ?>" method="post">
+                <input type="hidden" name="viagem_id" value="<?= $result->id ?>">
+                <div class="span4">
+                    <label>Instrutor</label>
+                    <input type="text" class="span12" id="instrutor" placeholder="Pesquisar usuário">
+                    <input type="hidden" name="usuario_id" id="usuario_id">
+                </div>
+                <div class="span2">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn btn-success">Adicionar</button>
+                </div>
+            </form>
+            <hr>
+            <h4>Instrutores na Viagem</h4>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($instrutores as $instrutor) : ?>
+                        <tr>
+                            <td><?= html_escape($instrutor->nome_instrutor) ?></td>
+                            <td><a href="<?= site_url('viagens/remover_instrutor_viagem/' . $instrutor->id) ?>" class="btn btn-danger btn-mini">Remover</a></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Aba Custos -->
+        <div id="tabCustos" class="tab-pane">
+            <h4>Adicionar Custo</h4>
+            <form action="<?= site_url('viagens/adicionar_custo') ?>" method="post">
+                <input type="hidden" name="viagem_id" value="<?= $result->id ?>">
+                <div class="span4">
+                    <label>Descrição</label>
+                    <input type="text" name="descricao" class="span12">
+                </div>
+                <div class="span2">
+                    <label>Valor</label>
+                    <input type="text" name="valor" class="span12 money">
+                </div>
+                <div class="span2">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn btn-success">Adicionar</button>
+                </div>
+            </form>
+            <hr>
+            <h4>Custos da Viagem</h4>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Valor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($custos as $custo) : ?>
+                        <tr>
+                            <td><?= html_escape($custo->descricao) ?></td>
+                            <td>R$ <?= number_format($custo->valor, 2, ',', '.') ?></td>
+                            <td><a href="<?= site_url('viagens/remover_custo/' . $custo->id) ?>" class="btn btn-danger btn-mini">Remover</a></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $("#cliente").autocomplete({
+        source: "<?= site_url('viagens/autoCompleteCliente'); ?>",
+        minLength: 2,
+        select: function(event, ui) {
+            $("#cliente_id").val(ui.item.id);
+        }
+    });
+    $("#instrutor").autocomplete({
+        source: "<?= site_url('viagens/autoCompleteUsuario'); ?>",
+        minLength: 2,
+        select: function(event, ui) {
+            $("#usuario_id").val(ui.item.id);
+        }
+    });
+    $('.money').mask('#.##0,00', {reverse: true});
+});
+</script>

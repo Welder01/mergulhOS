@@ -743,6 +743,53 @@
                 <div class="accordion-group widget-box">
                     <div class="accordion-heading">
                         <div class="widget-title">
+                            <a data-parent="#collapse-group" href="#collapseGViagem" data-toggle="collapse">
+                                <span><i class='fas fa-route icon-cli'></i></span>
+                                <h5 style="padding-left: 28px">Viagens</h5>
+                                <span><i class='bx bx-chevron-right icon-clic'></i></span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="collapse accordion-body" id="collapseGViagem">
+                        <div class="widget-content">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <td colspan="4"></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <label>
+                                            <input <?php if (isset($permissoes['vViagem']) && $permissoes['vViagem'] == '1') { echo 'checked'; } ?> name="vViagem" class="marcar" type="checkbox" value="1" />
+                                            <span class="lbl"> Visualizar Viagem</span>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            <input <?php if (isset($permissoes['aViagem']) && $permissoes['aViagem'] == '1') { echo 'checked'; } ?> name="aViagem" class="marcar" type="checkbox" value="1" />
+                                            <span class="lbl"> Adicionar Viagem</span>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            <input <?php if (isset($permissoes['eViagem']) && $permissoes['eViagem'] == '1') { echo 'checked'; } ?> name="eViagem" class="marcar" type="checkbox" value="1" />
+                                            <span class="lbl"> Editar Viagem</span>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            <input <?php if (isset($permissoes['dViagem']) && $permissoes['dViagem'] == '1') { echo 'checked'; } ?> name="dViagem" class="marcar" type="checkbox" value="1" />
+                                            <span class="lbl"> Excluir Viagem</span>
+                                        </label>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-group widget-box">
+                    <div class="accordion-heading">
+                        <div class="widget-title">
                             <a data-parent="#collapse-group" href="#collapseGTen" data-toggle="collapse">
                                 <span><i class='bx bx-chart icon-cli' ></i></span>
                                 <h5 style="padding-left: 28px">Relatórios</h5>

@@ -106,6 +106,11 @@ class Permissoes extends MY_Controller
                 'dCurso' => $this->input->post('dCurso'),
                 'vCurso' => $this->input->post('vCurso'),
 
+                'aViagem' => $this->input->post('aViagem'),
+                'eViagem' => $this->input->post('eViagem'),
+                'dViagem' => $this->input->post('dViagem'),
+                'vViagem' => $this->input->post('vViagem'),
+
                 'cUsuario' => $this->input->post('cUsuario'),
                 'cEmitente' => $this->input->post('cEmitente'),
                 'cPermissao' => $this->input->post('cPermissao'),
@@ -211,6 +216,11 @@ class Permissoes extends MY_Controller
                 'eCurso' => $this->input->post('eCurso'),
                 'dCurso' => $this->input->post('dCurso'),
                 'vCurso' => $this->input->post('vCurso'),
+
+                'aViagem' => $this->input->post('aViagem'),
+                'eViagem' => $this->input->post('eViagem'),
+                'dViagem' => $this->input->post('dViagem'),
+                'vViagem' => $this->input->post('vViagem'),
 
                 'cUsuario' => $this->input->post('cUsuario'),
                 'cEmitente' => $this->input->post('cEmitente'),
