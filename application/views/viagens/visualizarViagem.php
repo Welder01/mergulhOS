@@ -67,10 +67,15 @@
                     <label class="control-label">Locar Equipamentos</label>
                     <div class="controls">
                         <label class="checkbox inline"><input type="checkbox" name="locar_nadadeira" value="1"> Nadadeira</label>
-                        <label class="checkbox inline"><input type="checkbox" name="locar_cilindro" value="1"> Cilindro</label>
                         <label class="checkbox inline"><input type="checkbox" name="locar_colete" value="1"> Colete</label>
                         <label class="checkbox inline"><input type="checkbox" name="locar_neoprene" value="1"> Neoprene</label>
-                        <label class="checkbox inline"><input type="checkbox" name="locar_regulador" value="1"> Regulador</label>
+                        <label class="checkbox inline"><input type="checkbox" name="locar_lastro" value="1"> Lastro</label>
+                    </div>
+                    <div class="controls" style="margin-top: 5px;">
+                        <label class="control-label" style="width: 60px; text-align: left;">Cilindros:</label>
+                        <input type="number" name="locar_cilindro" value="0" class="span1" min="0">
+                        <label class="control-label" style="width: 80px; text-align: left; margin-left: 10px;">Reguladores:</label>
+                        <input type="number" name="locar_regulador" value="0" class="span1" min="0">
                     </div>
                 </div>
                 <div class="form-actions" style="background-color:transparent;border:none;padding-left:180px;">
@@ -160,6 +165,27 @@
                         <input type="hidden" name="usuario_id" id="usuario_id">
                     </div>
                 </div>
+                <div class="control-group">
+                    <label class="control-label">Bolsa Nº</label>
+                    <div class="controls">
+                        <input type="text" class="span2" name="numero_bolsa_instrutor">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Locar Equipamentos</label>
+                    <div class="controls">
+                        <label class="checkbox inline"><input type="checkbox" name="locar_nadadeira_instrutor" value="1"> Nadadeira</label>
+                        <label class="checkbox inline"><input type="checkbox" name="locar_colete_instrutor" value="1"> Colete</label>
+                        <label class="checkbox inline"><input type="checkbox" name="locar_neoprene_instrutor" value="1"> Neoprene</label>
+                        <label class="checkbox inline"><input type="checkbox" name="locar_lastro_instrutor" value="1"> Lastro</label>
+                    </div>
+                    <div class="controls" style="margin-top: 5px;">
+                        <label class="control-label" style="width: 60px; text-align: left;">Cilindros:</label>
+                        <input type="number" name="locar_cilindro_instrutor" value="0" class="span1" min="0">
+                        <label class="control-label" style="width: 80px; text-align: left; margin-left: 10px;">Reguladores:</label>
+                        <input type="number" name="locar_regulador_instrutor" value="0" class="span1" min="0">
+                    </div>
+                </div>
                 <div class="form-actions" style="background-color:transparent;border:none;padding-left:180px;">
                     <button type="submit" class="btn btn-success">Adicionar Instrutor</button>
                 </div>
@@ -170,6 +196,8 @@
                 <thead>
                     <tr>
                         <th>Nome</th>
+                        <th>Bolsa Nº</th>
+                        <th>Equipamentos</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -177,7 +205,16 @@
                     <?php foreach ($instrutores as $instrutor) : ?>
                         <tr>
                             <td><?= html_escape($instrutor->nome_instrutor) ?></td>
-                            <td><a href="<?= site_url('viagens/remover_instrutor_viagem/' . $instrutor->id) ?>" class="btn btn-danger btn-mini">Remover</a></td>
+                            <td><?= html_escape($instrutor->numero_bolsa) ?></td>
+                            <td>
+                                <?php if ($instrutor->locar_nadadeira) echo '<i class="fas fa-water" title="Nadadeira"></i> '; ?>
+                                <?php if ($instrutor->locar_cilindro > 0) echo '<i class="fas fa-database" title="Cilindro"></i> ' . $instrutor->locar_cilindro . ' '; ?>
+                                <?php if ($instrutor->locar_colete) echo '<i class="fas fa-life-ring" title="Colete"></i> '; ?>
+                                <?php if ($instrutor->locar_neoprene) echo '<i class="fas fa-user-ninja" title="Neoprene"></i> '; ?>
+                                <?php if ($instrutor->locar_regulador > 0) echo '<i class="fas fa-cogs" title="Regulador"></i> ' . $instrutor->locar_regulador . ' '; ?>
+                                <?php if ($instrutor->locar_lastro) echo '<i class="fas fa-weight-hanging" title="Lastro"></i> '; ?>
+                            </td>
+                            <td><a href="<?= site_url('viagens/remover_instrutor_viagem/' . $instrutor->id) ?>" class="btn btn-danger btn-mini" onclick="return confirm('Deseja remover este instrutor da viagem?')">Remover</a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

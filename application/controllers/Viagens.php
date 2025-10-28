@@ -223,6 +223,23 @@ class Viagens extends MY_Controller
         $this->data['resumoEquipamentos'] = $resumoEquipamentos;
 
         $this->data['instrutores'] = $this->viagem_instrutores_model->getByViagem($id);
+
+        // Adiciona equipamentos dos instrutores ao resumo
+        foreach ($this->data['instrutores'] as $instrutor) {
+            if ($instrutor->locar_cilindro > 0) $this->data['resumoEquipamentos']['cilindro'] += $instrutor->locar_cilindro;
+            if ($instrutor->locar_regulador > 0) $this->data['resumoEquipamentos']['regulador'] += $instrutor->locar_regulador;
+            if ($instrutor->locar_lastro) $this->data['resumoEquipamentos']['lastro']++;
+            if ($instrutor->locar_colete) {
+                $this->data['resumoEquipamentos']['colete'][$instrutor->tamanho_colete ?: 'N/I'] = ($this->data['resumoEquipamentos']['colete'][$instrutor->tamanho_colete ?: 'N/I'] ?? 0) + 1;
+            }
+            if ($instrutor->locar_nadadeira) {
+                $this->data['resumoEquipamentos']['nadadeira'][$instrutor->tamanho_nadadeira ?: 'N/I'] = ($this->data['resumoEquipamentos']['nadadeira'][$instrutor->tamanho_nadadeira ?: 'N/I'] ?? 0) + 1;
+            }
+            if ($instrutor->locar_neoprene) {
+                $this->data['resumoEquipamentos']['neoprene'][$instrutor->tamanho_neoprene ?: 'N/I'] = ($this->data['resumoEquipamentos']['neoprene'][$instrutor->tamanho_neoprene ?: 'N/I'] ?? 0) + 1;
+            }
+        }
+
         $this->data['emitente'] = $this->mapos_model->getEmitente();
 
         $this->load->helper('mpdf');
@@ -351,6 +368,13 @@ class Viagens extends MY_Controller
             $data = [
                 'viagem_id' => $viagem_id,
                 'usuario_id' => $usuario_id,
+                'numero_bolsa' => $this->input->post('numero_bolsa_instrutor'),
+                'locar_nadadeira' => $this->input->post('locar_nadadeira_instrutor') ? 1 : 0,
+                'locar_cilindro' => (int)$this->input->post('locar_cilindro_instrutor') ?: 0,
+                'locar_colete' => $this->input->post('locar_colete_instrutor') ? 1 : 0,
+                'locar_neoprene' => $this->input->post('locar_neoprene_instrutor') ? 1 : 0,
+                'locar_regulador' => (int)$this->input->post('locar_regulador_instrutor') ?: 0,
+                'locar_lastro' => $this->input->post('locar_lastro_instrutor') ? 1 : 0,
             ];
             $this->viagem_instrutores_model->add($data);
         }

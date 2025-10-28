@@ -3,7 +3,7 @@ class Viagem_instrutores_model extends CI_Model
 {
     public function getByViagem($viagem_id)
     {
-        $this->db->select('viagem_instrutores.*, usuarios.nome as nome_instrutor');
+        $this->db->select('viagem_instrutores.*, usuarios.nome as nome_instrutor, usuarios.tamanho_colete, usuarios.peso_lastro, usuarios.tamanho_neoprene, usuarios.tamanho_nadadeira');
         $this->db->from('viagem_instrutores');
         $this->db->join('usuarios', 'usuarios.idUsuarios = viagem_instrutores.usuario_id');
         $this->db->where('viagem_id', $viagem_id);

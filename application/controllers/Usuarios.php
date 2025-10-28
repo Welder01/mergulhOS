@@ -17,6 +17,7 @@ class Usuarios extends MY_Controller
 
         $this->load->helper('form');
         $this->load->model('usuarios_model');
+        $this->load->model('certificacao_usuario_model');
         $this->data['menuUsuarios'] = 'Usuários';
         $this->data['menuConfiguracoes'] = 'Configurações';
     }
@@ -117,6 +118,7 @@ class Usuarios extends MY_Controller
                 redirect(base_url() . 'index.php/usuarios/editar/' . $this->input->post('idUsuarios'));
             }
 
+            $this->load->library('upload');
             $senha = $this->input->post('senha');
             if ($senha != null) {
                 $senha = password_hash($senha, PASSWORD_DEFAULT);
@@ -138,6 +140,13 @@ class Usuarios extends MY_Controller
                     'dataExpiracao' => set_value('dataExpiracao'),
                     'situacao' => $this->input->post('situacao'),
                     'permissoes_id' => $this->input->post('permissoes_id'),
+                    'tamanho_colete' => $this->input->post('tamanho_colete'),
+                    'peso_lastro' => $this->input->post('peso_lastro'),
+                    'tamanho_neoprene' => $this->input->post('tamanho_neoprene'),
+                    'tamanho_nadadeira' => $this->input->post('tamanho_nadadeira'),
+                    'atestado_medico_validade' => $this->input->post('atestado_medico_validade') ?: null,
+                    'contato_emergencia_nome' => $this->input->post('contato_emergencia_nome'),
+                    'contato_emergencia_telefone' => $this->input->post('contato_emergencia_telefone'),
                 ];
             } else {
                 $data = [
@@ -156,7 +165,68 @@ class Usuarios extends MY_Controller
                     'dataExpiracao' => set_value('dataExpiracao'),
                     'situacao' => $this->input->post('situacao'),
                     'permissoes_id' => $this->input->post('permissoes_id'),
+                    'tamanho_colete' => $this->input->post('tamanho_colete'),
+                    'peso_lastro' => $this->input->post('peso_lastro'),
+                    'tamanho_neoprene' => $this->input->post('tamanho_neoprene'),
+                    'tamanho_nadadeira' => $this->input->post('tamanho_nadadeira'),
+                    'atestado_medico_validade' => $this->input->post('atestado_medico_validade') ?: null,
+                    'contato_emergencia_nome' => $this->input->post('contato_emergencia_nome'),
+                    'contato_emergencia_telefone' => $this->input->post('contato_emergencia_telefone'),
                 ];
+            }
+
+            // Upload do atestado médico
+            if (!empty($_FILES['atestado_medico_arquivo']['name'])) {
+                $config['upload_path'] = './assets/uploads/atestados_usuarios/';
+                $config['allowed_types'] = 'pdf|jpg|jpeg|png';
+                $config['max_size'] = 5120; // 5MB
+                $config['encrypt_name'] = true;
+
+                if (!is_dir($config['upload_path'])) {
+                    mkdir($config['upload_path'], 0777, true);
+                }
+
+                $this->upload->initialize($config);
+
+                if ($this->upload->do_upload('atestado_medico_arquivo')) {
+                    $upload_data = $this->upload->data();
+                    $data['atestado_medico_arquivo'] = $upload_data['file_name'];
+
+                    if ($this->input->post('atestado_medico_arquivo_atual')) {
+                        $old_file = './assets/uploads/atestados_usuarios/' . $this->input->post('atestado_medico_arquivo_atual');
+                        if (file_exists($old_file)) {
+                            unlink($old_file);
+                        }
+                    }
+                } else {
+                    $this->data['custom_error'] = '<div class="form_error"><p>Erro no upload do atestado: ' . $this->upload->display_errors() . '</p></div>';
+                }
+            }
+
+            // Adicionar nova certificação, se houver
+            if ($this->input->post('nome_certificacao')) {
+                $dataCertificacao = [
+                    'usuario_id' => $this->input->post('idUsuarios'),
+                    'nome_certificacao' => $this->input->post('nome_certificacao'),
+                    'orgao_emissor' => $this->input->post('orgao_emissor'),
+                    'data_emissao' => $this->input->post('data_emissao') ?: null,
+                ];
+
+                if (!empty($_FILES['arquivo_certificacao']['name'])) {
+                    $configCert['upload_path'] = './uploads/certificados_usuarios/';
+                    $configCert['allowed_types'] = 'pdf|jpg|jpeg|png';
+                    $configCert['max_size'] = 5120;
+                    $configCert['encrypt_name'] = true;
+
+                    if (!is_dir($configCert['upload_path'])) {
+                        mkdir($configCert['upload_path'], 0777, true);
+                    }
+                    $this->upload->initialize($configCert);
+                    if ($this->upload->do_upload('arquivo_certificacao')) {
+                        $dataCertificacao['arquivo'] = $this->upload->data('file_name');
+                    }
+                }
+                $this->certificacao_usuario_model->add($dataCertificacao);
             }
 
             if ($this->usuarios_model->edit('usuarios', $data, 'idUsuarios', $this->input->post('idUsuarios')) == true) {
@@ -171,10 +241,53 @@ class Usuarios extends MY_Controller
         $this->data['result'] = $this->usuarios_model->getById($this->uri->segment(3));
         $this->load->model('permissoes_model');
         $this->data['permissoes'] = $this->permissoes_model->getActive('permissoes', 'permissoes.idPermissao,permissoes.nome');
+        $this->data['certificacoes'] = $this->certificacao_usuario_model->getByUsuario($this->uri->segment(3));
 
         $this->data['view'] = 'usuarios/editarUsuario';
 
         return $this->layout();
+    }
+
+    public function remover_atestado_usuario($id = null)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eUsuario')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para editar usuários.');
+            redirect(base_url());
+        }
+
+        $usuario = $this->usuarios_model->getById($id);
+        if ($usuario && $usuario->atestado_medico_arquivo) {
+            $arquivo = './assets/uploads/atestados_usuarios/' . $usuario->atestado_medico_arquivo;
+            if (file_exists($arquivo)) {
+                unlink($arquivo);
+            }
+            $this->usuarios_model->edit('usuarios', ['atestado_medico_arquivo' => null, 'atestado_medico_validade' => null], 'idUsuarios', $id);
+            $this->session->set_flashdata('success', 'Atestado médico removido com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao remover atestado médico.');
+        }
+
+        redirect('usuarios/editar/' . $id . '#saude');
+    }
+
+    public function remover_certificacao_usuario($id = null)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eUsuario')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para editar usuários.');
+            redirect(base_url());
+        }
+
+        $certificacao = $this->certificacao_usuario_model->getById($id);
+        if ($certificacao && $this->certificacao_usuario_model->delete($id)) {
+            $this->session->set_flashdata('success', 'Certificação removida com sucesso!');
+            if ($certificacao->arquivo && file_exists('./uploads/certificados_usuarios/' . $certificacao->arquivo)) {
+                unlink('./uploads/certificados_usuarios/' . $certificacao->arquivo);
+            }
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao remover certificação.');
+        }
+
+        redirect('usuarios/editar/' . $certificacao->usuario_id . '#certificacoes');
     }
 
     public function excluir()
