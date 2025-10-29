@@ -297,7 +297,8 @@ class Clientes extends MY_Controller
         $this->data['result_vendas'] = $this->clientes_model->getAllVendasByClient($this->uri->segment(3));
         $this->data['restricoes'] = $this->restricao_alimentar_model->getByCliente($this->uri->segment(3));
         $this->data['cursos'] = $this->curso_alunos_model->getByCliente($this->uri->segment(3));
-        $this->data['viagens'] = $this->viagem_clientes_model->getByCliente($this->uri->segment(3));
+        $pesquisaViagem = $this->input->get('pesquisa_viagem');
+        $this->data['viagens'] = $this->viagem_clientes_model->getByCliente($this->uri->segment(3), $pesquisaViagem);
         $this->data['certificacoes'] = $this->certificacao_mergulhador_model->getByCliente($this->uri->segment(3));
         $this->data['view'] = 'clientes/visualizar';
 

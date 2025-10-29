@@ -289,6 +289,7 @@ class Viagens extends MY_Controller
                     'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
                     'locar_regulador' => $this->input->post('locar_regulador') ? 1 : 0,
                     'numero_bolsa' => $this->input->post('numero_bolsa'),
+                    'proposito' => $this->input->post('proposito'),
                 ];
 
                 if ($this->viagem_clientes_model->add($data)) {
@@ -314,19 +315,38 @@ class Viagens extends MY_Controller
         }
         $viagem_id = $this->input->post('viagem_id');
         $data = [
-            'status_pagamento' => $this->input->post('status_pagamento'),
-            'precisa_embarque' => $this->input->post('precisa_embarque') ? 1 : 0,
-            'precisa_hospedagem' => $this->input->post('precisa_hospedagem') ? 1 : 0,
             'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
-            'locar_nadadeira' => $this->input->post('locar_nadadeira') ? 1 : 0,
-            'locar_cilindro' => $this->input->post('locar_cilindro') ? 1 : 0,
-            'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
-            'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
-            'locar_regulador' => $this->input->post('locar_regulador') ? 1 : 0,
-            'numero_bolsa' => $this->input->post('numero_bolsa'),
+            'hospedagem_quarto_numero' => $this->input->post('hospedagem_quarto_numero'),
+            'hospedagem_tipo_quarto' => $this->input->post('hospedagem_tipo_quarto'),
+            'hospedagem_numero_camas' => $this->input->post('hospedagem_numero_camas'),
         ];
-        $this->viagem_clientes_model->edit($cliente_viagem_id, $data);
-        redirect('viagens/visualizar/' . $viagem_id);
+        if ($this->viagem_clientes_model->edit($cliente_viagem_id, $data)) {
+            $this->session->set_flashdata('success', 'Detalhes de hospedagem atualizados com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Ocorreu um erro ao atualizar os detalhes da hospedagem.');
+        }
+        redirect('viagens/visualizar/' . $viagem_id . '#tabHospedagem');
+    }
+
+    public function editar_instrutor_viagem($instrutor_viagem_id)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eViagem')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para editar instrutores da viagem.');
+            redirect(base_url());
+        }
+        $viagem_id = $this->input->post('viagem_id');
+        $data = [
+            'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
+            'hospedagem_quarto_numero' => $this->input->post('hospedagem_quarto_numero'),
+            'hospedagem_tipo_quarto' => $this->input->post('hospedagem_tipo_quarto'),
+            'hospedagem_numero_camas' => $this->input->post('hospedagem_numero_camas'),
+        ];
+        if ($this->viagem_instrutores_model->edit($instrutor_viagem_id, $data)) {
+            $this->session->set_flashdata('success', 'Detalhes de hospedagem do instrutor atualizados com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Ocorreu um erro ao atualizar os detalhes da hospedagem.');
+        }
+        redirect('viagens/visualizar/' . $viagem_id . '#tabHospedagem');
     }
 
     public function remover_cliente_viagem($id)
@@ -375,6 +395,7 @@ class Viagens extends MY_Controller
                 'locar_neoprene' => $this->input->post('locar_neoprene_instrutor') ? 1 : 0,
                 'locar_regulador' => (int)$this->input->post('locar_regulador_instrutor') ?: 0,
                 'locar_lastro' => $this->input->post('locar_lastro_instrutor') ? 1 : 0,
+                'precisa_hospedagem' => $this->input->post('precisa_hospedagem_instrutor') ? 1 : 0,
             ];
             $this->viagem_instrutores_model->add($data);
         }

@@ -520,12 +520,20 @@
 
         <!--Tab 6 Viagens-->
         <div id="tab6" class="tab-pane" style="min-height: 300px">
+            <form class="form-inline" method="get" action="<?= current_url(); ?>" style="margin-bottom: 20px;">
+                <input type="hidden" name="id" value="<?= $result->idClientes; ?>">
+                <div class="input-append">
+                    <input type="text" name="pesquisa_viagem" placeholder="Pesquisar por nome da viagem..." class="span4">
+                    <button class="btn"><i class="icon-search"></i></button>
+                </div>
+            </form>
             <?php if (!$viagens) { ?>
                 <table class="table table-bordered ">
                     <thead>
                         <tr>
                             <th>Viagem</th>
                             <th>Data de Partida</th>
+                            <th>Status da Viagem</th>
                             <th>Status Pagamento</th>
                             <th>Preço</th>
                         </tr>
@@ -542,6 +550,7 @@
                         <tr>
                             <th>Viagem</th>
                             <th>Data de Partida</th>
+                            <th>Status da Viagem</th>
                             <th>Status Pagamento</th>
                             <th>Preço</th>
                         </tr>
@@ -551,6 +560,7 @@
                             <tr>
                                 <td><a href="<?= base_url() ?>index.php/viagens/visualizar/<?= $v->viagem_id ?>"><?= html_escape($v->nome_viagem) ?></a></td>
                                 <td><?= date('d/m/Y', strtotime($v->data_partida)) ?></td>
+                                <td><?= html_escape(ucfirst($v->status_viagem)) ?></td>
                                 <td><?= html_escape(ucfirst($v->status_pagamento)) ?></td>
                                 <td>R$ <?= number_format($v->preco_pessoa, 2, ',', '.') ?></td>
                             </tr>

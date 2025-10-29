@@ -82,6 +82,8 @@
                             <label for="status" class="control-label">Status<span class="required">*</span></label>
                             <div class="controls">
                                 <select id="status" name="status">
+                                    <option value="Aberta" <?= ($result->status == 'Aberta') ? 'selected' : ''; ?>>Aberta</option>
+                                    <option value="Concluida" <?= ($result->status == 'Concluida') ? 'selected' : ''; ?>>Concluída</option>
                                     <option value="Prevista" <?= ($result->status == 'Prevista') ? 'selected' : ''; ?>>Prevista</option>
                                     <option value="Disponível" <?= ($result->status == 'Disponível') ? 'selected' : ''; ?>>Disponível</option>
                                     <option value="Indisponível" <?= ($result->status == 'Indisponível') ? 'selected' : ''; ?>>Indisponível</option>

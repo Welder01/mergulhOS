@@ -15,6 +15,12 @@ class Viagem_instrutores_model extends CI_Model
         return $this->db->insert('viagem_instrutores', $data);
     }
 
+    public function edit($id, $data)
+    {
+        $this->db->where('id', $id);
+        return $this->db->update('viagem_instrutores', $data);
+    }
+
     public function delete($id)
     {
         $this->db->where('id', $id);

@@ -10,12 +10,15 @@ class Viagem_clientes_model extends CI_Model
         return $this->db->get()->result();
     }
 
-    public function getByCliente($cliente_id)
+    public function getByCliente($cliente_id, $pesquisa = null)
     {
-        $this->db->select('viagem_clientes.*, viagens.nome_viagem, viagens.data_partida, viagens.preco_pessoa');
+        $this->db->select('viagem_clientes.*, viagens.nome_viagem, viagens.data_partida, viagens.preco_pessoa, viagens.status as status_viagem');
         $this->db->from('viagem_clientes');
         $this->db->join('viagens', 'viagens.id = viagem_clientes.viagem_id');
         $this->db->where('cliente_id', $cliente_id);
+        if ($pesquisa) {
+            $this->db->like('viagens.nome_viagem', $pesquisa);
+        }
         return $this->db->get()->result();
     }
 
