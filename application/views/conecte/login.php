@@ -85,15 +85,18 @@ $parse_cpfcnpj = $this->input->get('c');
                                     <a href="<?= site_url('mine/cadastrar') ?>" class="btn btn-success btn-large">Cadastrar-me</a>
                                     <div class="links-uteis"><a href="<?= site_url('mine/resetarSenha') ?>">
                                             <p style="margin:0px 0 18px">Esqueceu a senha?</p>
-                                        </a></div>
-                                    <div class="links-uteis"><a href="https://github.com/RamonSilva20/mapos">
-                                            <p><?= date('Y'); ?> &copy; Ramon Silva</p>
-                                        </a></div>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+        </div>
+    </div>
+    <div class="row-fluid">
+        <div class="span12" style="text-align: center; font-size: 10px; color: #c3c3c3;">
+            <p><?= $this->config->item('app_footer') ?> - Versão: <?= $this->config->item('app_version'); ?></p>
         </div>
     </div>
 

@@ -413,6 +413,7 @@ class Mapos extends MY_Controller {
         $this->form_validation->set_rules('app_name', 'Nome do Sistema', 'required|trim');
         $this->form_validation->set_rules('per_page', 'Registros por página', 'required|numeric|trim');
         $this->form_validation->set_rules('app_theme', 'Tema do Sistema', 'required|trim');
+        $this->form_validation->set_rules('app_footer', 'Rodapé do Sistema', 'required|trim');
         $this->form_validation->set_rules('os_notification', 'Notificação de OS', 'required|trim');
         $this->form_validation->set_rules('email_automatico', 'Enviar Email Automático', 'required|trim');
         $this->form_validation->set_rules('control_estoque', 'Controle de Estoque', 'required|trim');
@@ -466,6 +467,7 @@ class Mapos extends MY_Controller {
                 'app_name' => $this->input->post('app_name'),
                 'per_page' => $this->input->post('per_page'),
                 'app_theme' => $this->input->post('app_theme'),
+                'app_footer' => $this->input->post('app_footer'),
                 'os_notification' => $this->input->post('os_notification'),
                 'email_automatico' => $this->input->post('email_automatico'),
                 'control_estoque' => $this->input->post('control_estoque'),

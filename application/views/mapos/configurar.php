@@ -66,6 +66,13 @@
                                 <span class="help-inline">Ativar ou desativar a visualização em tabelas dinâmicas</span>
                             </div>
                         </div>
+                        <div class="control-group">
+                            <label for="app_footer" class="control-label">Texto do Rodapé</label>
+                            <div class="controls">
+                                <input type="text" required name="app_footer" value="<?= $configuration['app_footer'] ?? '2025 © Ramon Silva - Map-OS' ?>">
+                                <span class="help-inline">Texto que aparecerá no rodapé do sistema.</span>
+                            </div>
+                        </div>
                         <div class="form-actions">
                             <div class="span8">
                                 <div class="span9">
@@ -265,6 +272,13 @@
                                     <option value="0" <?= $configuration['control_estoque'] == '0' ? 'selected' : ''; ?>>Desativar</option>
                                 </select>
                                 <span class="help-inline">Ativar ou desativar o controle de estoque.</span>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label for="app_footer" class="control-label">Texto do Rodapé</label>
+                            <div class="controls">
+                                <input type="text" required name="app_footer" value="<?= $configuration['app_footer'] ?? '2025 © Ramon Silva - Map-OS' ?>">
+                                <span class="help-inline">Texto que aparecerá no rodapé do sistema.</span>
                             </div>
                         </div>
                         <div class="form-actions">
