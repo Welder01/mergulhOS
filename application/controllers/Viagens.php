@@ -26,11 +26,13 @@ class Viagens extends MY_Controller
             $this->session->set_flashdata('error', 'Você não tem permissão para visualizar viagens.');
             redirect(base_url());
         }
+        $pesquisa = $this->input->get('pesquisa');
+
         $this->load->library('pagination');
         $this->data['configuration']['base_url'] = site_url('viagens/gerenciar/');
-        $this->data['configuration']['total_rows'] = $this->viagens_model->count('viagens');
+        $this->data['configuration']['total_rows'] = $this->viagens_model->count('viagens', $pesquisa);
         $this->pagination->initialize($this->data['configuration']);
-        $this->data['results'] = $this->viagens_model->get('viagens', '*', '', $this->data['configuration']['per_page'], $this->uri->segment(3));
+        $this->data['results'] = $this->viagens_model->get('viagens', '*', $pesquisa, $this->data['configuration']['per_page'], $this->uri->segment(3));
         $this->data['view'] = 'viagens/viagens';
         return $this->layout();
     }
@@ -292,7 +294,7 @@ class Viagens extends MY_Controller
                     'proposito' => $this->input->post('proposito'),
                 ];
 
-                if ($this->viagem_clientes_model->add($data)) {
+                if ($this->viagem_clientes_model->add('viagem_clientes', $data)) {
                     // Decrementa o número de vagas
                     $this->db->set('vagas', 'vagas - 1', false);
                     $this->db->where('id', $viagem_id);
@@ -314,13 +316,26 @@ class Viagens extends MY_Controller
             redirect(base_url());
         }
         $viagem_id = $this->input->post('viagem_id');
-        $data = [
-            'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
-            'hospedagem_quarto_numero' => $this->input->post('hospedagem_quarto_numero'),
-            'hospedagem_tipo_quarto' => $this->input->post('hospedagem_tipo_quarto'),
-            'hospedagem_numero_camas' => $this->input->post('hospedagem_numero_camas'),
-        ];
-        if ($this->viagem_clientes_model->edit($cliente_viagem_id, $data)) {
+        $data = array_merge(
+            [
+                'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
+                'hospedagem_quarto_numero' => $this->input->post('hospedagem_quarto_numero'),
+                'hospedagem_tipo_quarto' => $this->input->post('hospedagem_tipo_quarto'),
+                'hospedagem_numero_camas' => $this->input->post('hospedagem_numero_camas'),
+                'numero_bolsa' => $this->input->post('numero_bolsa'),
+                'status_pagamento' => $this->input->post('status_pagamento'),
+                'proposito' => $this->input->post('proposito'),
+                'precisa_embarque' => $this->input->post('precisa_embarque') ? 1 : 0,
+                'precisa_hospedagem' => $this->input->post('precisa_hospedagem') ? 1 : 0,
+                'locar_nadadeira' => $this->input->post('locar_nadadeira') ? 1 : 0,
+                'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
+                'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
+                'locar_lastro' => $this->input->post('locar_lastro') ? 1 : 0,
+                'locar_cilindro' => (int)$this->input->post('locar_cilindro'),
+                'locar_regulador' => (int)$this->input->post('locar_regulador'),
+            ]
+        );
+        if ($this->viagem_clientes_model->edit('viagem_clientes', $data, 'id', $cliente_viagem_id)) {
             $this->session->set_flashdata('success', 'Detalhes de hospedagem atualizados com sucesso!');
         } else {
             $this->session->set_flashdata('error', 'Ocorreu um erro ao atualizar os detalhes da hospedagem.');
@@ -359,7 +374,7 @@ class Viagens extends MY_Controller
         $this->db->where('id', $id);
         $cliente_viagem = $this->db->get('viagem_clientes')->row();
         if ($cliente_viagem) {
-            if ($this->viagem_clientes_model->delete($id)) {
+            if ($this->viagem_clientes_model->delete('viagem_clientes', 'id', $id)) {
                 // Incrementa o número de vagas
                 $this->db->set('vagas', 'vagas + 1', false);
                 $this->db->where('id', $cliente_viagem->viagem_id);

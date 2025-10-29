@@ -29,6 +29,32 @@ class Viagens_model extends MY_Model
         $this->db->where("id NOT IN ($subquery)", null, false);
         return $this->db->get()->result();
     }
+
+    public function get($table, $fields, $where = '', $perpage = 0, $start = 0, $one = false, $array = 'array')
+    {
+        $this->db->select($fields);
+        $this->db->from($table);
+        $this->db->order_by('id', 'desc');
+        $this->db->limit($perpage, $start);
+        if ($where) {
+            $this->db->like('nome_viagem', $where);
+        }
+
+        $query = $this->db->get();
+
+        $result = !$one ? $query->result() : $query->row();
+
+        return $result;
+    }
+
+    public function count($table, $where = '')
+    {
+        $this->db->from($table);
+        if ($where) {
+            $this->db->like('nome_viagem', $where);
+        }
+        return $this->db->count_all_results();
+    }
 }
 
 /* End of file viagens_model.php */

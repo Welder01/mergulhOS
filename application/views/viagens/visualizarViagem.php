@@ -35,6 +35,7 @@
             <form action="<?= site_url('viagens/adicionar_cliente') ?>" method="post" class="form-horizontal">
                 <div class="row-fluid">
                     <div class="span6">
+                        <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
                         <input type="hidden" name="viagem_id" value="<?= $result->id ?>">
                         <div class="control-group">
                             <label class="control-label">Cliente<span class="required">*</span></label>
@@ -129,7 +130,10 @@
                                     <?php if ($cliente->locar_nadadeira) echo '<i class="fas fa-water" title="Nadadeira"></i> '; ?> <?php if ($cliente->locar_cilindro > 0) echo '<i class="fas fa-database" title="Cilindro"></i> ' . $cliente->locar_cilindro . ' '; ?> <?php if ($cliente->locar_colete) echo '<i class="fas fa-life-ring" title="Colete"></i> '; ?> <?php if ($cliente->locar_neoprene) echo '<i class="fas fa-user-ninja" title="Neoprene"></i> '; ?> <?php if ($cliente->locar_regulador > 0) echo '<i class="fas fa-cogs" title="Regulador"></i> ' . $cliente->locar_regulador . ' '; ?> <?php if ($cliente->locar_lastro) echo '<i class="fas fa-weight-hanging" title="Lastro"></i> '; ?>
                                 </td>
                                 <td><?= html_escape($cliente->status_pagamento) ?></td>
-                                <td><a href="<?= site_url('viagens/remover_cliente_viagem/' . $cliente->id) ?>" class="btn btn-danger btn-mini" onclick="return confirm('Deseja remover este cliente da viagem?')">Remover</a></td>
+                                <td>
+                                    <a href="#modalEditarCliente" data-toggle="modal" class="btn btn-info btn-mini" title="Editar Cliente" data-cliente-id="<?= $cliente->id ?>" data-cliente-nome="<?= html_escape($cliente->nomeCliente) ?>" data-cliente-data='<?= json_encode($cliente) ?>'>Editar</a>
+                                    <a href="<?= site_url('viagens/remover_cliente_viagem/' . $cliente->id) ?>" class="btn btn-danger btn-mini" onclick="return confirm('Deseja remover este cliente da viagem?')">Remover</a>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else : ?>
@@ -158,6 +162,7 @@
                     <?php if (!empty($clientes_hospedagem)) : ?>
                         <?php foreach ($clientes_hospedagem as $cliente) : ?>
                             <form action="<?= site_url('viagens/editar_cliente_viagem/' . $cliente->id) ?>" method="post">
+                                <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
                                 <input type="hidden" name="viagem_id" value="<?= $result->id ?>">
                                 <tr>
                                     <td rowspan="4" style="vertical-align: top;"><?= html_escape($cliente->nomeCliente) ?></td>
@@ -212,6 +217,7 @@
                     <?php if (!empty($instrutores_hospedagem)) : ?>
                         <?php foreach ($instrutores_hospedagem as $instrutor) : ?>
                             <form action="<?= site_url('viagens/editar_instrutor_viagem/' . $instrutor->id) ?>" method="post">
+                                <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
                                 <input type="hidden" name="viagem_id" value="<?= $result->id ?>">
                                 <tr>
                                     <td rowspan="4" style="vertical-align: top;"><?= html_escape($instrutor->nome_instrutor) ?></td>
@@ -254,6 +260,7 @@
         <div id="tabInstrutores" class="tab-pane">
             <h4>Adicionar Instrutor</h4>
             <form action="<?= site_url('viagens/adicionar_instrutor_viagem') ?>" method="post" class="form-horizontal">
+                <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
                 <input type="hidden" name="viagem_id" value="<?= $result->id ?>">
                 <div class="control-group">
                     <label for="instrutor" class="control-label">Instrutor</label>
@@ -323,6 +330,7 @@
         <div id="tabCustos" class="tab-pane">
             <h4>Adicionar Custo</h4>
             <form action="<?= site_url('viagens/adicionar_custo') ?>" method="post" class="form-horizontal">
+                <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
                 <input type="hidden" name="viagem_id" value="<?= $result->id ?>">
                 <div class="control-group">
                     <label for="descricao_custo" class="control-label">Descrição</label>
@@ -404,6 +412,80 @@
         <span class="button__icon"><i class="bx bx-undo"></i></span><span class="button__text2">Voltar</span></a>
 </div>
 
+<!-- Modal Editar Cliente -->
+<div id="modalEditarCliente" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <form id="formEditarCliente" action="" method="post">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h5 id="myModalLabel">Editar Cliente: <span id="nomeClienteModal"></span></h5>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
+            <input type="hidden" name="viagem_id" value="<?php echo $result->id; ?>">
+            <div class="row-fluid">
+                <div class="span6">
+                    <div class="control-group">
+                        <label class="control-label">Bolsa Nº</label>
+                        <div class="controls">
+                            <input type="text" class="span6" name="numero_bolsa" id="edit_numero_bolsa">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Pagamento</label>
+                        <div class="controls">
+                            <select name="status_pagamento" id="edit_status_pagamento" class="span8">
+                                <option value="Pendente">Pendente</option>
+                                <option value="Pago">Pago</option>
+                                <option value="Parcial">Parcial</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Propósito</label>
+                        <div class="controls">
+                            <select name="proposito" id="edit_proposito" class="span8">
+                                <option value=""></option>
+                                <option value="Checkout">Checkout</option>
+                                <option value="Acompanhante">Acompanhante</option>
+                                <option value="Turismo">Turismo</option>
+                                <option value="Batismo">Batismo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Opções</label>
+                        <div class="controls">
+                            <label class="checkbox inline"><input type="checkbox" name="precisa_embarque" id="edit_precisa_embarque" value="1"> Embarque</label>
+                            <label class="checkbox inline"><input type="checkbox" name="precisa_hospedagem" id="edit_precisa_hospedagem" value="1"> Hospedagem</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="span6">
+                    <div class="control-group">
+                        <label class="control-label">Locar Equipamentos</label>
+                        <div class="controls">
+                            <label class="checkbox inline"><input type="checkbox" name="locar_nadadeira" id="edit_locar_nadadeira" value="1"> Nadadeira</label>
+                            <label class="checkbox inline"><input type="checkbox" name="locar_colete" id="edit_locar_colete" value="1"> Colete</label>
+                            <label class="checkbox inline"><input type="checkbox" name="locar_neoprene" id="edit_locar_neoprene" value="1"> Neoprene</label>
+                            <label class="checkbox inline"><input type="checkbox" name="locar_lastro" id="edit_locar_lastro" value="1"> Lastro</label>
+                        </div>
+                        <div class="controls" style="margin-top: 10px;">
+                            <label class="control-label" style="width: 60px; text-align: left;">Cilindros:</label>
+                            <input type="number" name="locar_cilindro" id="edit_locar_cilindro" value="0" class="span2" min="0">
+                            <label class="control-label" style="width: 80px; text-align: left; margin-left: 10px;">Reguladores:</label>
+                            <input type="number" name="locar_regulador" id="edit_locar_regulador" value="0" class="span2" min="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+            <button class="btn btn-primary">Salvar Alterações</button>
+        </div>
+    </form>
+</div>
+
 <script>
 $(document).ready(function() {
     $("#cliente").autocomplete({
@@ -421,5 +503,26 @@ $(document).ready(function() {
         }
     });
     $('.money').mask('#.##0,00', {reverse: true});
+
+    $(document).on('click', 'a[data-toggle="modal"]', function() {
+        var clienteId = $(this).data('cliente-id');
+        var clienteNome = $(this).data('cliente-nome');
+        var clienteData = $(this).data('cliente-data');
+
+        $('#formEditarCliente').attr('action', '<?= site_url('viagens/editar_cliente_viagem/') ?>' + clienteId);
+        $('#nomeClienteModal').text(clienteNome);
+
+        $('#edit_numero_bolsa').val(clienteData.numero_bolsa);
+        $('#edit_status_pagamento').val(clienteData.status_pagamento);
+        $('#edit_proposito').val(clienteData.proposito);
+        $('#edit_precisa_embarque').prop('checked', clienteData.precisa_embarque == 1);
+        $('#edit_precisa_hospedagem').prop('checked', clienteData.precisa_hospedagem == 1);
+        $('#edit_locar_nadadeira').prop('checked', clienteData.locar_nadadeira == 1);
+        $('#edit_locar_colete').prop('checked', clienteData.locar_colete == 1);
+        $('#edit_locar_neoprene').prop('checked', clienteData.locar_neoprene == 1);
+        $('#edit_locar_lastro').prop('checked', clienteData.locar_lastro == 1);
+        $('#edit_locar_cilindro').val(clienteData.locar_cilindro);
+        $('#edit_locar_regulador').val(clienteData.locar_regulador);
+    });
 });
 </script>
