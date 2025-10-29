@@ -1,51 +1,35 @@
-<?php 
-// <<< CORREÇÃO AQUI: Adicionada quebra de linha/espaço após <?php
+<?php
+if (! defined('BASEPATH')) {
+    exit('No direct script access allowed');
+}
 
-class Viagens_model extends CI_Model
+class Viagens_model extends MY_Model
 {
-    public function get($table, $fields, $where = '', $perpage = 0, $start = 0, $one = false, $array = 'array')
+    public function __construct()
     {
-        $this->db->select($fields);
-        $this->db->from($table);
-        $this->db->order_by('viagens.id', 'desc');
-        $this->db->limit($perpage, $start);
-        if ($where) {
-            $this->db->like('nome_viagem', $where);
-        }
-        $query = $this->db->get();
-        return !$one ? $query->result() : $query->row();
+        parent::__construct();
+        $this->table = 'viagens';
+        $this->primary_key = 'id';
     }
-
-    public function getById($id)
+    public function getViagensByCliente($cliente_id)
     {
-        $this->db->select('viagens.*');
+        $this->db->select('viagens.*, viagem_clientes.id as viagem_cliente_id, viagem_clientes.viagem_id, viagem_clientes.status_pagamento');
         $this->db->from('viagens');
-        $this->db->where('viagens.id', $id);
-        $this->db->limit(1);
-        return $this->db->get()->row();
+        $this->db->join('viagem_clientes', 'viagem_clientes.viagem_id = viagens.id');
+        $this->db->where('viagem_clientes.cliente_id', $cliente_id);
+        return $this->db->get()->result();
     }
 
-    public function add($table, $data)
+    public function getViagensDisponiveis($cliente_id)
     {
-        $this->db->insert($table, $data);
-        return $this->db->insert_id();
-    }
-
-    public function edit($table, $data, $fieldID, $ID)
-    {
-        $this->db->where($fieldID, $ID);
-        $this->db->update($table, $data);
-        return $this->db->affected_rows() >= 0;
-    }
-
-    public function delete($table, $fieldID, $ID)
-    {
-        $this->db->where($fieldID, $ID);
-        return $this->db->delete($table);
-    }
-
-    public function count($table)
-    {
-        return $this->db->count_all($table);
+        $subquery = $this->db->select('viagem_id')->from('viagem_clientes')->where('cliente_id', $cliente_id)->get_compiled_select();
+        
+        $this->db->select('*');
+        $this->db->from('viagens');
+        $this->db->where("id NOT IN ($subquery)", null, false);
+        return $this->db->get()->result();
     }
 }
+
+/* End of file viagens_model.php */
+/* Location: ./application/models/viagens_model.php */
