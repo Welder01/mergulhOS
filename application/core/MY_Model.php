@@ -35,6 +35,14 @@ class MY_Model extends CI_Model
         return $this->db->get()->row();
     }
 
+    public function edit($table, $data, $fieldID, $ID)
+    {
+        $this->db->where($fieldID, $ID);
+        $this->db->update($table, $data);
+
+        return $this->db->affected_rows() >= 0;
+    }
+
     public function add($table, $data, $returnId = false)
     {
         $this->db->insert($table, $data);

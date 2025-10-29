@@ -29,4 +29,13 @@ class Viagem_clientes_model extends MY_Model
         $this->db->where('viagem_clientes.viagem_id', $viagem_id);
         return $this->db->get()->result();
     }
+
+    public function getClientesComEquipamentos($viagem_id)
+    {
+        $this->db->select('viagem_clientes.*, clientes.*');
+        $this->db->from('viagem_clientes');
+        $this->db->join('clientes', 'clientes.idClientes = viagem_clientes.cliente_id');
+        $this->db->where('viagem_clientes.viagem_id', $viagem_id);
+        return $this->db->get()->result();
+    }
 }
