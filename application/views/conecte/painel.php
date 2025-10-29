@@ -1,4 +1,18 @@
 <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+<style>
+    .cardBox .card {
+        min-height: 130px; /* Aumenta a altura mínima do card */
+    }
+    .cardBox .card a {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
+</style>
 
 <div class="quick-actions_homepage">
     <ul class="cardBox">
@@ -7,39 +21,31 @@
                 <div class="lord-icon04">
                     <i class='bx bx-file iconBx04'></i>
                 </div>
-            </a>
-            <a href="<?php echo base_url() ?>index.php/mine/os">
-                <div style="font-size: 1.2em" class="numbers">Ordens de Serviço</div>
+                <div class="numbers">Ordens de Serviço</div>
             </a>
         </li>
-
         <li class="card">
             <a href="<?php echo base_url() ?>index.php/mine/compras">
                 <div class="lord-icon05">
                     <i class='bx bx-cart-alt iconBx05'></i>
                 </div>
+                <div class="numbers">Compras</div>
             </a>
-            <a href="<?php echo base_url() ?>index.php/mine/compras">
-                <div style="font-size: 1.2em" class="numbers">Compras&nbsp;&nbsp;&nbsp;&nbsp;</div>
-            </a>
+        </li>
         <li class="card">
             <a href="<?php echo base_url() ?>index.php/mine/cobrancas">
                 <div class="lord-icon05">
                     <i class='bx bx-credit-card-front iconBx05'></i>
                 </div>
-            </a>
-            <a href="<?php echo base_url() ?>index.php/mine/cobrancas">
-                <div style="font-size: 1.2em" class="numbers">Cobranças&nbsp;&nbsp;&nbsp;&nbsp;</div>
+                <div class="numbers">Cobranças</div>
             </a>
         </li>
         <li class="card">
             <a href="<?php echo base_url() ?>index.php/mine/conta">
                 <div class="lord-icon07">
-                    <i class='bx bx-user-circle iconBx07'></i></span>
+                    <i class='bx bx-user-circle iconBx07'></i>
                 </div>
-            </a>
-            <a href="<?php echo base_url() ?>index.php/mine/conta">
-                <div style="font-size: 1.2em" class="numbers">Minha Conta</div>
+                <div class="numbers">Minha Conta</div>
             </a>
         </li>
     </ul>

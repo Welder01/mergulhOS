@@ -414,6 +414,7 @@ class Mapos extends MY_Controller {
         $this->form_validation->set_rules('per_page', 'Registros por página', 'required|numeric|trim');
         $this->form_validation->set_rules('app_theme', 'Tema do Sistema', 'required|trim');
         $this->form_validation->set_rules('app_footer', 'Rodapé do Sistema', 'required|trim');
+        $this->form_validation->set_rules('app_url_footer', 'Link do Rodapé', 'required|trim');
         $this->form_validation->set_rules('os_notification', 'Notificação de OS', 'required|trim');
         $this->form_validation->set_rules('email_automatico', 'Enviar Email Automático', 'required|trim');
         $this->form_validation->set_rules('control_estoque', 'Controle de Estoque', 'required|trim');
@@ -456,6 +457,7 @@ class Mapos extends MY_Controller {
                 'EMAIL_SMTP_PORT' => $this->input->post('EMAIL_SMTP_PORT'),
                 'EMAIL_SMTP_USER' => $this->input->post('EMAIL_SMTP_USER'),
                 'EMAIL_SMTP_PASS' => $this->input->post('EMAIL_SMTP_PASS'),
+                'APP_URL_FOOTER' => $this->input->post('app_url_footer'),
             ];
 
             if (!$this->editDontEnv($dataDotEnv)) {
@@ -654,7 +656,11 @@ class Mapos extends MY_Controller {
                 $env_file = str_replace("$constante=" . '"' . $_ENV[$constante] . '"', "$constante={$valor}", $env_file);
             } else {
                 if (isset($_ENV[$constante])) {
-                    $env_file = str_replace("$constante={$_ENV[$constante]}", "$constante={$valor}", $env_file);
+                    if ($constante === 'APP_URL_FOOTER') {
+                        $env_file = preg_replace("/^$constante=.*/m", "$constante=$valor", $env_file);
+                    } else {
+                        $env_file = str_replace("$constante={$_ENV[$constante]}", "$constante={$valor}", $env_file);
+                    }
                 } else {
                     file_put_contents($env_file_path, $env_file . "\n{$constante}={$valor}\n");
                     $env_file = file_get_contents($env_file_path);
