@@ -1,6 +1,17 @@
 <style>
     .nav-tabs { margin-bottom: 20px; }
     .tab-content { padding-top: 20px; }
+    .trip-cards-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .trip-card {
+        flex: 1 1 300px; /* Flex-grow, flex-shrink, and flex-basis */
+        max-width: 400px;
+        display: flex;
+        flex-direction: column;
+    }
     #calendario-viagens { margin-top: 30px; }
     .trip-card {
         background-color: #fff;
@@ -9,6 +20,7 @@
         margin-bottom: 20px;
         padding: 20px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-radius: 12px; /* Bordas mais arredondadas */
         transition: box-shadow 0.3s ease;
     }
     .trip-card:hover {
@@ -30,6 +42,9 @@
     .trip-card-body p {
         margin: 0 0 10px;
         color: #555;
+    }
+    .trip-card-body {
+        flex-grow: 1; /* Faz o corpo do card ocupar o espaço disponível */
     }
     .trip-card-footer {
         text-align: right;
@@ -68,44 +83,46 @@
 
         <div class="tab-content">
             <div id="minhas" class="tab-pane fade in active">
-                <?php if (!$minhas_viagens) : ?>
-                    <div class="alert alert-info">Você não está inscrito em nenhuma viagem.</div>
-                <?php else : ?>
-                    <?php foreach ($minhas_viagens as $r) :
-                        $dataPartida = date('d/m/Y', strtotime($r->data_partida));
-                        $dataRetorno = $r->data_retorno ? date('d/m/Y', strtotime($r->data_retorno)) : 'Não definida';
-                        $cor = '#E0E4CC'; $corTexto = '#000';
-                        switch ($r->status) {
-                            case 'Agendada': $cor = '#8A2BE2'; $corTexto = '#fff'; break;
-                            case 'Em andamento': $cor = '#436eee'; $corTexto = '#fff'; break;
-                            case 'Finalizada': $cor = '#333'; $corTexto = '#fff'; break;
-                        }
-                    ?>
-                        <div class="trip-card">
-                            <div class="trip-card-header">
-                                <h5><?php echo htmlspecialchars($r->nome_viagem); ?></h5>
-                                <span class="status-badge" style="background-color: <?php echo $cor; ?>; color: <?php echo $corTexto; ?>;"><?php echo htmlspecialchars($r->status); ?></span>
+                <div class="trip-cards-container">
+                    <?php if (!$minhas_viagens) : ?>
+                        <div class="alert alert-info">Você não está inscrito em nenhuma viagem.</div>
+                    <?php else : ?>
+                        <?php foreach ($minhas_viagens as $r) :
+                            $dataPartida = date('d/m/Y', strtotime($r->data_partida));
+                            $dataRetorno = $r->data_retorno ? date('d/m/Y', strtotime($r->data_retorno)) : 'Não definida';
+                            $cor = '#E0E4CC'; $corTexto = '#000';
+                            switch ($r->status) {
+                                case 'Agendada': $cor = '#8A2BE2'; $corTexto = '#fff'; break;
+                                case 'Em andamento': $cor = '#436eee'; $corTexto = '#fff'; break;
+                                case 'Finalizada': $cor = '#333'; $corTexto = '#fff'; break;
+                            }
+                        ?>
+                            <div class="trip-card">
+                                <div class="trip-card-header">
+                                    <h5><?php echo htmlspecialchars($r->nome_viagem); ?></h5>
+                                    <span class="status-badge" style="background-color: <?php echo $cor; ?>; color: <?php echo $corTexto; ?>;"><?php echo htmlspecialchars($r->status); ?></span>
+                                </div>
+                                <div class="trip-card-body">
+                                    <p><strong><i class="fas fa-calendar-alt"></i> Partida:</strong> <?php echo $dataPartida; ?></p>
+                                    <p><strong><i class="fas fa-calendar-check"></i> Retorno:</strong> <?php echo $dataRetorno; ?></p>
+                                </div>
+                                <div class="trip-card-footer">
+                                    <?php if ($r->status_pagamento != 'Pago' && $r->status != 'Finalizada') : ?>
+                                        <a href="<?php echo base_url() . 'index.php/mine/pagarViagem/' . $r->viagem_cliente_id; ?>" class="button btn btn-success"><span class="button__icon"><i class='bx bx-dollar-circle'></i></span><span class="button__text2">Pagar</span></a>
+                                    <?php endif; ?>
+                                    <a href="<?php echo base_url() . 'index.php/mine/visualizarViagem/' . $r->viagem_id; ?>" class="button btn btn-info"><span class="button__icon"><i class='bx bx-show'></i></span><span class="button__text2">Ver Detalhes</span></a>
+                                </div>
                             </div>
-                            <div class="trip-card-body">
-                                <p><strong><i class="fas fa-calendar-alt"></i> Partida:</strong> <?php echo $dataPartida; ?></p>
-                                <p><strong><i class="fas fa-calendar-check"></i> Retorno:</strong> <?php echo $dataRetorno; ?></p>
-                            </div>
-                            <div class="trip-card-footer">
-                                <?php if ($r->status_pagamento != 'Pago' && $r->status != 'Finalizada') : ?>
-                                    <a href="<?php echo base_url() . 'index.php/mine/pagarViagem/' . $r->viagem_cliente_id; ?>" class="button btn btn-success"><span class="button__icon"><i class='bx bx-dollar-circle'></i></span><span class="button__text2">Pagar</span></a>
-                                <?php endif; ?>
-                                <a href="<?php echo base_url() . 'index.php/mine/visualizarViagem/' . $r->viagem_id; ?>" class="button btn btn-info"><span class="button__icon"><i class='bx bx-show'></i></span><span class="button__text2">Ver Detalhes</span></a>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <div id="disponiveis" class="tab-pane fade">
                 <div class="filter-buttons">
                     <strong>Filtrar por status:</strong><br>
                     <button class="btn btn-mini filter-btn active" data-status="all">Todos</button>
-                    <button class="btn btn-mini filter-btn" data-status="Agendada">Prevista</button>
+                    <button class="btn btn-mini filter-btn" data-status="Agendada">Agendada</button>
                     <button class="btn btn-mini filter-btn" data-status="Disponível">Disponível</button>
                     <button class="btn btn-mini filter-btn" data-status="Indisponível">Indisponível</button>
                     <button class="btn btn-mini filter-btn" data-status="Adiada">Adiada</button>
@@ -114,25 +131,27 @@
                 <?php if (!$viagens_disponiveis) : ?>
                     <div class="alert alert-info">Nenhuma viagem disponível no momento.</div>
                 <?php else : ?>
-                    <?php foreach ($viagens_disponiveis as $r) :
-                        $dataPartida = date('d/m/Y', strtotime($r->data_partida));
-                        $dataRetorno = $r->data_retorno ? date('d/m/Y', strtotime($r->data_retorno)) : 'Não definida';
-                    ?>
-                        <div class="trip-card" data-status="<?php echo htmlspecialchars($r->status); ?>">
-                            <div class="trip-card-header">
-                                <h5><?php echo htmlspecialchars($r->nome_viagem); ?></h5>
-                                <span class="badge badge-info" style="text-transform: capitalize;"><?php echo htmlspecialchars($r->status); ?></span>
+                    <div class="trip-cards-container">
+                        <?php foreach ($viagens_disponiveis as $r) :
+                            $dataPartida = date('d/m/Y', strtotime($r->data_partida));
+                            $dataRetorno = $r->data_retorno ? date('d/m/Y', strtotime($r->data_retorno)) : 'Não definida';
+                        ?>
+                            <div class="trip-card" data-status="<?php echo htmlspecialchars($r->status); ?>">
+                                <div class="trip-card-header">
+                                    <h5><?php echo htmlspecialchars($r->nome_viagem); ?></h5>
+                                    <span class="badge badge-info" style="text-transform: capitalize;"><?php echo htmlspecialchars($r->status); ?></span>
+                                </div>
+                                <div class="trip-card-body">
+                                    <p><strong><i class="fas fa-calendar-alt"></i> Partida:</strong> <?php echo $dataPartida; ?></p>
+                                    <p><strong><i class="fas fa-calendar-check"></i> Retorno:</strong> <?php echo $dataRetorno; ?></p>
+                                    <p><strong><i class="fas fa-users"></i> Vagas:</strong> <?php echo $r->vagas; ?></p>
+                                </div>
+                                <div class="trip-card-footer">
+                                    <a href="<?php echo base_url() . 'index.php/mine/visualizarViagem/' . $r->id; ?>" class="button btn btn-primary"><span class="button__icon"><i class='bx bx-search-alt'></i></span><span class="button__text2">Saber Mais</span></a>
+                                </div>
                             </div>
-                            <div class="trip-card-body">
-                                <p><strong><i class="fas fa-calendar-alt"></i> Partida:</strong> <?php echo $dataPartida; ?></p>
-                                <p><strong><i class="fas fa-calendar-check"></i> Retorno:</strong> <?php echo $dataRetorno; ?></p>
-                                <p><strong><i class="fas fa-users"></i> Vagas:</strong> <?php echo $r->vagas; ?></p>
-                            </div>
-                            <div class="trip-card-footer">
-                                <a href="<?php echo base_url() . 'index.php/mine/visualizarViagem/' . $r->id; ?>" class="button btn btn-primary"><span class="button__icon"><i class='bx bx-search-alt'></i></span><span class="button__text2">Saber Mais</span></a>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    </div>
                 <?php endif; ?>
             </div>
 

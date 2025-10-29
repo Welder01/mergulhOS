@@ -19,7 +19,7 @@
         <li class="card">
             <a href="<?php echo base_url() ?>index.php/mine/minhasViagens">
                 <div class="lord-icon04">
-                    <i class='bx bx-plane-alt iconBx04'></i>
+                    <i class='bx bx-paper-plane iconBx04'></i>
                 </div>
                 <div class="numbers">Minhas Viagens</div>
             </a>
