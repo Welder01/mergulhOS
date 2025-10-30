@@ -80,6 +80,20 @@
                                 <span class="help-inline">Link que o rodapé irá redirecionar.</span>
                             </div>
                         </div>
+                        <div class="control-group">
+                            <label for="certificacao_tipos" class="control-label">Tipos de Certificação</label>
+                            <div class="controls">
+                                <textarea rows="5" cols="50" name="certificacao_tipos" id="certificacao_tipos" placeholder="Ex: Open Water Diver, Advanced Open Water, etc."><?= $configuration['certificacao_tipos'] ?? '' ?></textarea>
+                                <span class="help-inline">Digite os nomes dos certificados separados por vírgula.</span>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label for="certificadora_tipos" class="control-label">Certificadoras</label>
+                            <div class="controls">
+                                <textarea rows="5" cols="50" name="certificadora_tipos" id="certificadora_tipos" placeholder="Ex: PADI, SSI, NAUI, etc."><?= $configuration['certificadora_tipos'] ?? '' ?></textarea>
+                                <span class="help-inline">Digite os nomes das certificadoras separados por vírgula.</span>
+                            </div>
+                        </div>
                         <div class="form-actions">
                             <div class="span8">
                                 <div class="span9">

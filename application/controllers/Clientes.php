@@ -15,6 +15,7 @@ class Clientes extends MY_Controller
         $this->load->model('restricao_alimentar_model');
         $this->load->model('certificacao_mergulhador_model');
         $this->load->model('clientes_model');
+        $this->load->model('mapos_model');
         $this->data['menuClientes'] = 'clientes';
     }
 
@@ -140,6 +141,14 @@ class Clientes extends MY_Controller
             } else {
                 $this->load->library('upload');
 
+                $atestado_emissao = $this->input->post('atestado_medico_emissao');
+                $atestado_validade = null;
+                if ($atestado_emissao) {
+                    $date = new DateTime($atestado_emissao);
+                    $date->add(new DateInterval('P1Y')); // Adiciona 1 ano
+                    $atestado_validade = $date->format('Y-m-d');
+                }
+
                 $data = [
                     'nomeCliente' => $this->input->post('nomeCliente'),
                     'contato' => $this->input->post('contato'),
@@ -167,7 +176,11 @@ class Clientes extends MY_Controller
                     'qtd_reguladores' => $this->input->post('qtd_reguladores') ?: 0,
                     'qtd_lanterna' => $this->input->post('qtd_lanterna') ?: 0,
                     'qtd_computador' => $this->input->post('qtd_computador') ?: 0,
-                    'atestado_medico_validade' => $this->input->post('atestado_medico_validade') ?: null,
+                    'atestado_medico_emissao' => $atestado_emissao ?: null,
+                    'atestado_medico_validade' => $atestado_validade,
+                    'nome_medico' => $this->input->post('nome_medico'),
+                    'crm_medico' => $this->input->post('crm_medico'),
+                    'codigo_validacao_atestado' => $this->input->post('codigo_validacao_atestado'),
                 ];
 
                 $senha = $this->input->post('senha');
@@ -182,22 +195,21 @@ class Clientes extends MY_Controller
                 $config['max_size'] = 5120; // 5MB
                 $config['encrypt_name'] = true;
 
-                if (!is_dir($config['upload_path'])) {
-                    mkdir($config['upload_path'], 0777, true);
-                }
-
                 $this->upload->initialize($config);
 
                 if ($this->upload->do_upload('atestado_medico_arquivo')) {
-                    $upload_data = $this->upload->data();
-                    $data['atestado_medico_arquivo'] = $upload_data['file_name'];
-
-                    if ($this->input->post('atestado_medico_arquivo_atual')) {
-                        $old_file = './assets/uploads/atestados/' . $this->input->post('atestado_medico_arquivo_atual');
+                    // Remove o arquivo antigo, se existir
+                    $clienteAtual = $this->clientes_model->getById($this->input->post('idClientes'));
+                    if ($clienteAtual && $clienteAtual->atestado_medico_arquivo) {
+                        $old_file = './assets/uploads/atestados/' . $clienteAtual->atestado_medico_arquivo;
                         if (file_exists($old_file)) {
                             unlink($old_file);
                         }
                     }
+
+                    // Adiciona o novo arquivo aos dados a serem salvos
+                    $upload_data = $this->upload->data();
+                    $data['atestado_medico_arquivo'] = $upload_data['file_name'];
                 } else {
                     $this->data['custom_error'] = '<div class="form_error"><p>Erro no upload do atestado: ' . $this->upload->display_errors() . '</p></div>';
                 }
@@ -219,6 +231,7 @@ class Clientes extends MY_Controller
                     'cliente_id' => $this->input->post('idClientes'),
                     'nome_certificacao' => $this->input->post('nome_certificacao'),
                     'orgao_emissor' => $this->input->post('orgao_emissor'),
+                    'numero_certificacao' => $this->input->post('numero_certificacao'),
                     'data_emissao' => $this->input->post('data_emissao') ?: null,
                     'data_validade' => $this->input->post('data_validade') ?: null,
                     'observacoes' => $this->input->post('observacoes_cert')
@@ -244,8 +257,9 @@ class Clientes extends MY_Controller
 
             if ($this->clientes_model->edit('clientes', $data, 'idClientes', $this->input->post('idClientes')) == true) {
                 $this->session->set_flashdata('success', 'Cliente editado com sucesso!');
+                $activeTab = ltrim($this->input->post('active_tab'), '#');
                 log_info('Alterou um cliente. ID' . $this->input->post('idClientes'));
-                redirect(site_url('clientes/editar/') . $this->input->post('idClientes'));
+                redirect(site_url('clientes/editar/') . $this->input->post('idClientes') . '?tab=' . $activeTab);
             } else {
                 $this->data['custom_error'] = '<div class="form_error"><p>Ocorreu um erro</p></div>';
             }
@@ -255,6 +269,14 @@ class Clientes extends MY_Controller
         $this->data['result'] = $this->clientes_model->getById($this->uri->segment(3));
         $this->data['restricoes'] = $this->restricao_alimentar_model->getByCliente($this->uri->segment(3));
         $this->data['certificacoes'] = $this->certificacao_mergulhador_model->getByCliente($this->uri->segment(3));
+        $this->data['active_tab'] = $this->input->get('tab');
+        
+        $tipos_certificacao_str = $this->mapos_model->get_ci_config('certificacao_tipos');
+        $this->data['tipos_certificacao'] = !empty($tipos_certificacao_str) ? explode(',', $tipos_certificacao_str) : [];
+
+        $tipos_certificadora_str = $this->mapos_model->get_ci_config('certificadora_tipos');
+        $this->data['tipos_certificadora'] = !empty($tipos_certificadora_str) ? explode(',', $tipos_certificadora_str) : [];
+
         $this->data['view'] = 'clientes/editarCliente';
 
         return $this->layout();

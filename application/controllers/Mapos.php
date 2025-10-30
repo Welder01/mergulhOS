@@ -468,6 +468,8 @@ class Mapos extends MY_Controller {
             $data = [
                 'app_name' => $this->input->post('app_name'),
                 'per_page' => $this->input->post('per_page'),
+                'certificacao_tipos' => $this->input->post('certificacao_tipos'),
+                'certificadora_tipos' => $this->input->post('certificadora_tipos'),
                 'app_theme' => $this->input->post('app_theme'),
                 'app_footer' => $this->input->post('app_footer'),
                 'os_notification' => $this->input->post('os_notification'),

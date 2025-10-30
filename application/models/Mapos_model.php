@@ -34,6 +34,17 @@ class Mapos_model extends CI_Model
         return $this->db->get()->row();
     }
 
+    public function get_ci_config($config)
+    {
+        $this->db->where('config', $config);
+        $query = $this->db->get('configuracoes', 1);
+        if ($query->num_rows() > 0) {
+            return $query->row()->valor;
+        }
+
+        return null;
+    }
+
     public function alterarSenha($senha)
     {
         $this->db->set('senha', password_hash($senha, PASSWORD_DEFAULT));

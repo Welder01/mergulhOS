@@ -123,6 +123,7 @@
                 } ?>
 
                 <form action="<?php echo current_url(); ?>" id="formCliente" method="post" class="form-horizontal" enctype="multipart/form-data">
+                    <input type="hidden" name="active_tab" id="active_tab" value="#pessoal">
 
                     <ul class="nav nav-tabs" role="tablist">
                         <li class="active"><a data-toggle="tab" href="#pessoal"><i class="bx bx-user"></i> Dados Pessoais</a></li>
@@ -334,11 +335,24 @@
                                 </div>
                             </div>
                             <hr>
-                            <h4>Atestado Médico</h4>
+                            <h4>Atestado Médico
+                                <?php
+                                if (isset($result->atestado_medico_validade) && $result->atestado_medico_validade) {
+                                    $dataValidade = new DateTime($result->atestado_medico_validade);
+                                    $dataAtual = new DateTime();
+                                    if ($dataValidade >= $dataAtual) {
+                                        echo '<span class="badge badge-success" style="margin-left: 10px; vertical-align: middle;">Válido</span>';
+                                    } else {
+                                        echo '<span class="badge badge-important" style="margin-left: 10px; vertical-align: middle;">Vencido</span>';
+                                    }
+                                }
+                                ?>
+                            </h4>
                             <div class="control-group">
-                                <label for="atestado_medico_validade" class="control-label">Validade</label>
+                                <label for="atestado_medico_emissao" class="control-label">Data de Emissão</label>
                                 <div class="controls">
-                                    <input id="atestado_medico_validade" type="date" name="atestado_medico_validade" value="<?= $result->atestado_medico_validade ?? '' ?>" class="monitor-input" />
+                                    <input id="atestado_medico_emissao" type="date" name="atestado_medico_emissao" value="<?= $result->atestado_medico_emissao ?? '' ?>" class="monitor-input" />
+                                    <span class="help-inline">A validade será calculada para 1 ano a partir desta data.</span>
                                 </div>
                             </div>
                             <?php if (isset($result->atestado_medico_arquivo) && $result->atestado_medico_arquivo) : ?>
@@ -373,6 +387,25 @@
                                 <label for="atestado_medico_arquivo" class="control-label"><?= (isset($result->atestado_medico_arquivo) && $result->atestado_medico_arquivo) ? 'Substituir Atestado' : 'Arquivo do Atestado' ?></label>
                                 <div class="controls">
                                     <input id="atestado_medico_arquivo" type="file" name="atestado_medico_arquivo" />
+                                    <span class="help-inline">Enviar um novo arquivo substituirá o atual.</span>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="nome_medico" class="control-label">Nome do Médico</label>
+                                <div class="controls">
+                                    <input id="nome_medico" type="text" name="nome_medico" value="<?= $result->nome_medico ?? '' ?>" class="monitor-input" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="crm_medico" class="control-label">CRM do Médico</label>
+                                <div class="controls">
+                                    <input id="crm_medico" type="text" name="crm_medico" value="<?= $result->crm_medico ?? '' ?>" class="monitor-input" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="codigo_validacao_atestado" class="control-label">Código de Validação</label>
+                                <div class="controls">
+                                    <input id="codigo_validacao_atestado" type="text" name="codigo_validacao_atestado" value="<?= $result->codigo_validacao_atestado ?? '' ?>" class="monitor-input" />
                                 </div>
                             </div>
                         </div>
@@ -425,28 +458,44 @@
                         <!-- Aba Certificações -->
                         <div id="certificacoes" class="tab-pane">
                             <h4>Adicionar Certificação</h4>
-                            <div class="control-group">
-                                <label for="nome_certificacao" class="control-label">Nome</label>
+                             <div class="control-group">
+                                <label for="nome_certificacao" class="control-label">Formação</label>
                                 <div class="controls">
-                                    <input id="nome_certificacao" type="text" name="nome_certificacao" value="" />
+                                    <select id="nome_certificacao" name="nome_certificacao" class="span12" required>
+                                        <option value="">Selecione ou digite</option>
+                                        <?php foreach ($tipos_certificacao as $tipo) : ?>
+                                            <option value="<?= trim($tipo) ?>"><?= trim($tipo) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
                                 </div>
                             </div>
                             <div class="control-group">
-                                <label for="orgao_emissor" class="control-label">Órgão Emissor</label>
+                                <label for="orgao_emissor" class="control-label">Certificadora</label>
                                 <div class="controls">
-                                    <input id="orgao_emissor" type="text" name="orgao_emissor" value="" />
+                                    <select id="orgao_emissor" name="orgao_emissor" class="span12" required>
+                                        <option value="">Selecione</option>
+                                        <?php foreach ($tipos_certificadora as $certificadora) : ?>
+                                            <option value="<?= trim($certificadora) ?>"><?= trim($certificadora) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="numero_certificacao" class="control-label">Nº do Certificado</label>
+                                <div class="controls">
+                                    <input id="numero_certificacao" type="text" name="numero_certificacao" class="span12" value="" />
                                 </div>
                             </div>
                             <div class="control-group">
                                 <label for="data_emissao" class="control-label">Data de Emissão</label>
                                 <div class="controls">
-                                    <input id="data_emissao" type="date" name="data_emissao" value="" />
+                                    <input id="data_emissao" type="date" name="data_emissao" class="span12" value="" />
                                 </div>
                             </div>
                             <div class="control-group">
                                 <label for="arquivo" class="control-label">Arquivo</label>
                                 <div class="controls">
-                                    <input id="arquivo" type="file" name="arquivo" />
+                                    <input id="arquivo" type="file" name="arquivo" class="span12" />
                                 </div>
                             </div>
                             <hr>
@@ -454,8 +503,9 @@
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>Certificação</th>
-                                        <th>Órgão Emissor</th>
+                                        <th>Formação</th>
+                                        <th>Certificadora</th>
+                                        <th>Nº Certificado</th>
                                         <th>Emissão</th>
                                         <th>Ações</th>
                                     </tr>
@@ -466,6 +516,7 @@
                                             <tr>
                                                 <td><?= html_escape($c->nome_certificacao) ?></td>
                                                 <td><?= html_escape($c->orgao_emissor) ?></td>
+                                                <td><?= html_escape($c->numero_certificacao) ?></td>
                                                 <td><?= $c->data_emissao ? date('d/m/Y', strtotime($c->data_emissao)) : '-' ?></td>
                                                 <td>
                                                     <?php if ($c->arquivo) : ?>
@@ -477,7 +528,7 @@
                                         <?php endforeach; ?>
                                     <?php else : ?>
                                         <tr>
-                                            <td colspan="4">Nenhuma certificação cadastrada.</td>
+                                            <td colspan="5">Nenhuma certificação cadastrada.</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -574,6 +625,7 @@
         $('#cep').mask('00000-000');
         $('#telefone').mask('(00) 0000-0000');
         $('#celular').mask('(00) 00000-0000');
+        $('#contato_emergencia_telefone').mask('(00) 00000-0000');
         $('#altura').mask('0,00', {reverse: true});
         $('#peso').mask('000,00', {reverse: true});
 
@@ -617,5 +669,19 @@
         $('.equip-toggle').on('change', function() {
             toggleEquipInput($(this));
         });
+
+        // Lógica para manter a aba ativa após salvar
+        var activeTabFromUrl = '<?php echo $active_tab ?? ''; ?>';
+        if (activeTabFromUrl) {
+            $('a[href="#' + activeTabFromUrl + '"]').tab('show');
+            $('#active_tab').val('#' + activeTabFromUrl);
+        }
+
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            var currentTab = $(e.target).attr('href');
+            $('#active_tab').val(currentTab);
+        });
+
+
     });
 </script>

@@ -345,7 +345,19 @@
                     <div class="accordion-heading">
                         <div class="widget-title">
                             <a data-parent="#collapse-group-extra" href="#collapseAtestado" data-toggle="collapse">
-                                <span><i class="fas fa-file-medical-alt icon-cli"></i></span>
+                                <span><i class="fas fa-file-medical-alt icon-cli"></i>
+                                    <?php
+                                    if (isset($result->atestado_medico_validade) && $result->atestado_medico_validade) {
+                                        $dataValidade = new DateTime($result->atestado_medico_validade);
+                                        $dataAtual = new DateTime();
+                                        if ($dataValidade >= $dataAtual) {
+                                            echo '<span class="badge badge-success" style="margin-left: 5px; vertical-align: text-top;">Válido</span>';
+                                        } else {
+                                            echo '<span class="badge badge-important" style="margin-left: 5px; vertical-align: text-top;">Vencido</span>';
+                                        }
+                                    }
+                                    ?>
+                                </span>
                                 <h5 style="padding-left: 28px">Atestado Médico</h5>
                             </a>
                         </div>
@@ -355,8 +367,24 @@
                             <table class="table table-bordered">
                                 <tbody>
                                     <tr>
+                                        <td style="text-align: right; width: 30%;"><strong>Data de Emissão:</strong></td>
+                                        <td><?= isset($result->atestado_medico_emissao) && $result->atestado_medico_emissao ? date('d/m/Y', strtotime($result->atestado_medico_emissao)) : 'Não informado' ?></td>
+                                    </tr>
+                                    <tr>
                                         <td style="text-align: right; width: 30%;"><strong>Validade:</strong></td>
                                         <td><?= isset($result->atestado_medico_validade) && $result->atestado_medico_validade ? date('d/m/Y', strtotime($result->atestado_medico_validade)) : 'Não informado' ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Nome do Médico:</strong></td>
+                                        <td><?= html_escape($result->nome_medico ?? 'Não informado') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>CRM do Médico:</strong></td>
+                                        <td><?= html_escape($result->crm_medico ?? 'Não informado') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Código de Validação:</strong></td>
+                                        <td><?= html_escape($result->codigo_validacao_atestado ?? 'Não informado') ?></td>
                                     </tr>
                                     <tr>
                                         <td style="text-align: right;"><strong>Arquivo:</strong></td>
@@ -461,8 +489,9 @@
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>Certificação</th>
-                                        <th>Órgão Emissor</th>
+                                        <th>Formação</th>
+                                        <th>Certificadora</th>
+                                        <th>Nº Certificado</th>
                                         <th>Emissão</th>
                                         <th>Arquivo</th>
                                     </tr>
@@ -473,6 +502,7 @@
                                             <tr>
                                                 <td><?= html_escape($c->nome_certificacao) ?></td>
                                                 <td><?= html_escape($c->orgao_emissor) ?></td>
+                                                <td><?= html_escape($c->numero_certificacao) ?></td>
                                                 <td><?= $c->data_emissao ? date('d/m/Y', strtotime($c->data_emissao)) : '-' ?></td>
                                                 <td>
                                                     <?php if ($c->arquivo) : ?>
@@ -485,7 +515,7 @@
                                         <?php endforeach; ?>
                                     <?php else : ?>
                                         <tr>
-                                            <td colspan="4">Nenhuma certificação cadastrada.</td>
+                                            <td colspan="5">Nenhuma certificação cadastrada.</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -608,8 +638,9 @@
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>Certificação</th>
-                                        <th>Órgão Emissor</th>
+                                        <th>Formação</th>
+                                        <th>Certificadora</th>
+                                        <th>Nº Certificado</th>
                                         <th>Emissão</th>
                                         <th>Arquivo</th>
                                     </tr>
@@ -620,6 +651,7 @@
                                             <tr>
                                                 <td><?= html_escape($c->nome_certificacao) ?></td>
                                                 <td><?= html_escape($c->orgao_emissor) ?></td>
+                                                <td><?= html_escape($c->numero_certificacao) ?></td>
                                                 <td><?= $c->data_emissao ? date('d/m/Y', strtotime($c->data_emissao)) : '-' ?></td>
                                                 <td>
                                                     <?php if ($c->arquivo) : ?>
@@ -632,7 +664,7 @@
                                         <?php endforeach; ?>
                                     <?php else : ?>
                                         <tr>
-                                            <td colspan="4">Nenhuma certificação cadastrada.</td>
+                                            <td colspan="5">Nenhuma certificação cadastrada.</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
