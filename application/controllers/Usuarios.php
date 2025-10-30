@@ -17,6 +17,8 @@ class Usuarios extends MY_Controller
 
         $this->load->helper('form');
         $this->load->model('usuarios_model');
+        $this->load->model('mapos_model');
+        $this->load->model('restricao_alimentar_usuario_model');
         $this->load->model('certificacao_usuario_model');
         $this->data['menuUsuarios'] = 'Usuários';
         $this->data['menuConfiguracoes'] = 'Configurações';
@@ -206,6 +208,7 @@ class Usuarios extends MY_Controller
             // Adicionar nova certificação, se houver
             if ($this->input->post('nome_certificacao')) {
                 $dataCertificacao = [
+                    'numero_certificacao' => $this->input->post('numero_certificacao'),
                     'usuario_id' => $this->input->post('idUsuarios'),
                     'nome_certificacao' => $this->input->post('nome_certificacao'),
                     'orgao_emissor' => $this->input->post('orgao_emissor'),
@@ -229,10 +232,21 @@ class Usuarios extends MY_Controller
                 $this->certificacao_usuario_model->add($dataCertificacao);
             }
 
+            // Adicionar nova restrição, se houver
+            if ($this->input->post('restricao')) {
+                $dataRestricao = [
+                    'usuario_id' => $this->input->post('idUsuarios'),
+                    'restricao' => $this->input->post('restricao'),
+                    'observacoes' => $this->input->post('observacoes_restricao')
+                ];
+                $this->restricao_alimentar_usuario_model->add($dataRestricao);
+            }
+
             if ($this->usuarios_model->edit('usuarios', $data, 'idUsuarios', $this->input->post('idUsuarios')) == true) {
                 $this->session->set_flashdata('success', 'Usuário editado com sucesso!');
+                $activeTab = ltrim($this->input->post('active_tab'), '#');
                 log_info('Alterou um usuário. ID: ' . $this->input->post('idUsuarios'));
-                redirect(site_url('usuarios/editar/') . $this->input->post('idUsuarios'));
+                redirect(site_url('usuarios/editar/') . $this->input->post('idUsuarios') . '?tab=' . $activeTab);
             } else {
                 $this->data['custom_error'] = '<div class="form_error"><p>Ocorreu um erro</p></div>';
             }
@@ -241,7 +255,15 @@ class Usuarios extends MY_Controller
         $this->data['result'] = $this->usuarios_model->getById($this->uri->segment(3));
         $this->load->model('permissoes_model');
         $this->data['permissoes'] = $this->permissoes_model->getActive('permissoes', 'permissoes.idPermissao,permissoes.nome');
+        $this->data['restricoes'] = $this->restricao_alimentar_usuario_model->getByUsuario($this->uri->segment(3));
         $this->data['certificacoes'] = $this->certificacao_usuario_model->getByUsuario($this->uri->segment(3));
+        $this->data['active_tab'] = $this->input->get('tab');
+
+        $tipos_certificacao_str = $this->mapos_model->get_ci_config('certificacao_tipos');
+        $this->data['tipos_certificacao'] = !empty($tipos_certificacao_str) ? explode(',', $tipos_certificacao_str) : [];
+
+        $tipos_certificadora_str = $this->mapos_model->get_ci_config('certificadora_tipos');
+        $this->data['tipos_certificadora'] = !empty($tipos_certificadora_str) ? explode(',', $tipos_certificadora_str) : [];
 
         $this->data['view'] = 'usuarios/editarUsuario';
 
@@ -287,7 +309,28 @@ class Usuarios extends MY_Controller
             $this->session->set_flashdata('error', 'Erro ao remover certificação.');
         }
 
-        redirect('usuarios/editar/' . $certificacao->usuario_id . '#certificacoes');
+        redirect('usuarios/editar/' . $certificacao->usuario_id . '?tab=certificacoes');
+    }
+
+    public function remover_restricao_usuario($id = null)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eUsuario')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para editar usuários.');
+            redirect(base_url());
+        }
+
+        if ($id == null || !is_numeric($id)) {
+            $this->session->set_flashdata('error', 'Erro! A restrição não existe.');
+            redirect(base_url());
+        }
+
+        $restricao = $this->restricao_alimentar_usuario_model->getById($id);
+        if ($restricao && $this->restricao_alimentar_usuario_model->delete($id)) {
+            $this->session->set_flashdata('success', 'Restrição alimentar removida com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao remover restrição alimentar.');
+        }
+        redirect('usuarios/editar/' . $restricao->usuario_id . '?tab=restricoes');
     }
 
     public function excluir()
