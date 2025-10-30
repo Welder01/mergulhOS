@@ -111,6 +111,18 @@
                             </div>
                         </div>
                         <div class="control-group">
+                            <label for="altura" class="control-label">Altura (m)</label>
+                            <div class="controls">
+                                <input id="altura" type="text" name="altura" value="<?php echo set_value('altura'); ?>" />
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label for="peso" class="control-label">Peso (kg)</label>
+                            <div class="controls">
+                                <input id="peso" type="text" name="peso" value="<?php echo set_value('peso'); ?>" />
+                            </div>
+                        </div>
+                        <div class="control-group">
                             <label for="telefone" class="control-label">Telefone</label>
                             <div class="controls">
                                 <input id="telefone" type="text" name="telefone" value="<?php echo set_value('telefone'); ?>" />

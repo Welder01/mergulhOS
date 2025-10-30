@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS `clientes` (
   `asaas_id` VARCHAR(255) DEFAULT NULL,
   `nomeCliente` VARCHAR(255) NOT NULL,
   `sexo` VARCHAR(20) NULL,
+  `altura` DECIMAL(5,2) NULL,
+  `peso` DECIMAL(5,2) NULL,
   `pessoa_fisica` BOOLEAN NOT NULL DEFAULT 1,
   `documento` VARCHAR(20) NOT NULL,
   `telefone` VARCHAR(20) NOT NULL,
@@ -40,6 +42,7 @@ CREATE TABLE IF NOT EXISTS `clientes` (
   `contato` varchar(45) DEFAULT NULL,
   `complemento` varchar(45) DEFAULT NULL,
   `fornecedor` BOOLEAN NOT NULL DEFAULT 0,
+  `possui_regulador` BOOLEAN NOT NULL DEFAULT 0,
   PRIMARY KEY (`idClientes`))
 ENGINE = InnoDB
 AUTO_INCREMENT = 1

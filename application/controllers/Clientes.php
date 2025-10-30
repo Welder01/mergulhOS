@@ -81,6 +81,8 @@ class Clientes extends MY_Controller
                 'nomeCliente' => set_value('nomeCliente'),
                 'contato' => set_value('contato'),
                 'pessoa_fisica' => $pessoa_fisica,
+                'altura' => str_replace(',', '.', set_value('altura')),
+                'peso' => str_replace(',', '.', set_value('peso')),
                 'documento' => set_value('documento'),
                 'telefone' => set_value('telefone'),
                 'celular' => set_value('celular'),
@@ -136,63 +138,42 @@ class Clientes extends MY_Controller
             if ($email && $this->clientes_model->emailExists($email, $idCliente)) {
                 $this->data['custom_error'] = '<div class="form_error"><p>Este e-mail já está sendo utilizado por outro cliente.</p></div>';
             } else {
-                $senha = $this->input->post('senha');
                 $this->load->library('upload');
 
-            if ($senha != null) {
-                $senha = password_hash($senha, PASSWORD_DEFAULT);
+                $data = [
+                    'nomeCliente' => $this->input->post('nomeCliente'),
+                    'contato' => $this->input->post('contato'),
+                    'altura' => str_replace(',', '.', $this->input->post('altura')),
+                    'peso' => str_replace(',', '.', $this->input->post('peso')),
+                    'documento' => $this->input->post('documento'),
+                    'telefone' => $this->input->post('telefone'),
+                    'celular' => $this->input->post('celular'),
+                    'email' => $this->input->post('email'),
+                    'rua' => $this->input->post('rua'),
+                    'numero' => $this->input->post('numero'),
+                    'complemento' => $this->input->post('complemento'),
+                    'bairro' => $this->input->post('bairro'),
+                    'cidade' => $this->input->post('cidade'),
+                    'estado' => $this->input->post('estado'),
+                    'cep' => $this->input->post('cep'),
+                    'tamanho_colete' => $this->input->post('tamanho_colete') ?: null,
+                    'peso_lastro' => $this->input->post('peso_lastro') ?: null,
+                    'tamanho_neoprene' => $this->input->post('tamanho_neoprene') ?: null,
+                    'tamanho_nadadeira' => $this->input->post('tamanho_nadadeira') ?: null,
+                    'fornecedor' => $this->input->post('fornecedor') ? 1 : 0,
+                    'contato_emergencia_nome' => $this->input->post('contato_emergencia_nome'),
+                    'contato_emergencia_telefone' => $this->input->post('contato_emergencia_telefone'),
+                    'contato_emergencia_parentesco' => $this->input->post('contato_emergencia_parentesco'),
+                    'qtd_reguladores' => $this->input->post('qtd_reguladores') ?: 0,
+                    'qtd_lanterna' => $this->input->post('qtd_lanterna') ?: 0,
+                    'qtd_computador' => $this->input->post('qtd_computador') ?: 0,
+                    'atestado_medico_validade' => $this->input->post('atestado_medico_validade') ?: null,
+                ];
 
-                $data = [
-                    'nomeCliente' => $this->input->post('nomeCliente'),
-                    'contato' => $this->input->post('contato'),
-                    'documento' => $this->input->post('documento'),
-                    'telefone' => $this->input->post('telefone'),
-                    'celular' => $this->input->post('celular'),
-                    'email' => $this->input->post('email'),
-                    'senha' => $senha,
-                    'rua' => $this->input->post('rua'),
-                    'numero' => $this->input->post('numero'),
-                    'complemento' => $this->input->post('complemento'),
-                    'bairro' => $this->input->post('bairro'),
-                    'cidade' => $this->input->post('cidade'),
-                    'estado' => $this->input->post('estado'),
-                    'cep' => $this->input->post('cep'),
-                    'fornecedor' => $this->input->post('fornecedor') ? 1 : 0,
-                    'tamanho_colete' => $this->input->post('tamanho_colete'),
-                    'peso_lastro' => $this->input->post('peso_lastro'),
-                    'tamanho_neoprene' => $this->input->post('tamanho_neoprene'),
-                    'tamanho_nadadeira' => $this->input->post('tamanho_nadadeira'),
-                    'contato_emergencia_nome' => $this->input->post('contato_emergencia_nome'),
-                    'contato_emergencia_telefone' => $this->input->post('contato_emergencia_telefone'),
-                    'contato_emergencia_parentesco' => $this->input->post('contato_emergencia_parentesco'),
-                    'atestado_medico_validade' => $this->input->post('atestado_medico_validade') ?: null,
-                ];
-            } else {
-                $data = [
-                    'nomeCliente' => $this->input->post('nomeCliente'),
-                    'contato' => $this->input->post('contato'),
-                    'documento' => $this->input->post('documento'),
-                    'telefone' => $this->input->post('telefone'),
-                    'celular' => $this->input->post('celular'),
-                    'email' => $this->input->post('email'),
-                    'rua' => $this->input->post('rua'),
-                    'numero' => $this->input->post('numero'),
-                    'complemento' => $this->input->post('complemento'),
-                    'bairro' => $this->input->post('bairro'),
-                    'cidade' => $this->input->post('cidade'),
-                    'estado' => $this->input->post('estado'),
-                    'cep' => $this->input->post('cep'),
-                    'fornecedor' => $this->input->post('fornecedor') ? 1 : 0,
-                    'tamanho_colete' => $this->input->post('tamanho_colete'),
-                    'peso_lastro' => $this->input->post('peso_lastro'),
-                    'tamanho_neoprene' => $this->input->post('tamanho_neoprene'),
-                    'tamanho_nadadeira' => $this->input->post('tamanho_nadadeira'),
-                    'contato_emergencia_nome' => $this->input->post('contato_emergencia_nome'),
-                    'contato_emergencia_telefone' => $this->input->post('contato_emergencia_telefone'),
-                    'contato_emergencia_parentesco' => $this->input->post('contato_emergencia_parentesco'),
-                    'atestado_medico_validade' => $this->input->post('atestado_medico_validade') ?: null,
-                ];
-            }
+                $senha = $this->input->post('senha');
+                if ($senha) {
+                    $data['senha'] = password_hash($senha, PASSWORD_DEFAULT);
+                }
 
             // Upload do atestado médico
             if (!empty($_FILES['atestado_medico_arquivo']['name'])) {

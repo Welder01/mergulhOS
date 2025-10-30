@@ -2,24 +2,52 @@
 <script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
 <script src="<?php echo base_url() ?>assets/js/funcoes.js"></script>
 <style>
-    /* Custom styles for the wizard */
-    .wizard-content {
-        margin-top: 20px;
-    }
+    /* --- MODERN PROGRESS BAR --- */
     .progress {
         margin-bottom: 20px;
         height: 25px;
         border-radius: 15px;
+        background-color: #e9ecef;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
     }
     .progress-bar {
         font-size: 14px;
         line-height: 25px;
-        color: #fff;
+        color: #333; /* Cor do texto escura para melhor legibilidade */
         font-weight: bold;
-        text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+        text-align: center;
+        transition: width .6s ease;
+    }
+    .progress-bar-success { background-color: #28a745; color: #fff; }
+    .progress-bar-warning { background-color: #ffc107; }
+    .progress-bar-danger { background-color: #dc3545; color: #fff; }
+
+    /* --- MODERN TABS --- */
+    .nav-tabs {
+        border-bottom: 2px solid #dee2e6;
+        margin-bottom: 0;
     }
     .nav-tabs > li > a {
         font-size: 1.1em;
+        font-weight: 500;
+        border: none;
+        border-radius: 8px 8px 0 0;
+        color: #495057;
+        margin-right: 5px;
+        background-color: #f8f9fa;
+        border-bottom: 2px solid transparent;
+    }
+    .nav-tabs > li > a:hover {
+        border-color: transparent;
+        background-color: #e9ecef;
+    }
+    .nav-tabs > li.active > a,
+    .nav-tabs > li.active > a:hover,
+    .nav-tabs > li.active > a:focus {
+        color: #007bff;
+        background-color: #fff;
+        border: 2px solid #dee2e6;
+        border-bottom-color: transparent;
     }
     .tab-content {
         border: 1px solid #ddd;
@@ -31,6 +59,46 @@
         border-top: 0;
         background-color: transparent;
         padding: 20px 0 0 0;
+    }
+    /* Estilos para o Toggle Switch */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background-color: #28a745;
+    }
+    input:checked + .slider:before {
+        transform: translateX(26px);
     }
 </style>
 <div class="row-fluid" style="margin-top:0">
@@ -56,14 +124,14 @@
 
                 <form action="<?php echo current_url(); ?>" id="formCliente" method="post" class="form-horizontal" enctype="multipart/form-data">
 
-                    <ul class="nav nav-tabs">
-                        <li class="active"><a data-toggle="tab" href="#pessoal">Dados Pessoais</a></li>
-                        <li><a data-toggle="tab" href="#contato">Contato</a></li>
-                        <li><a data-toggle="tab" href="#endereco">Endereço</a></li>
-                        <li><a data-toggle="tab" href="#equipamentos">Equipamentos</a></li>
-                        <li><a data-toggle="tab" href="#saude">Saúde e Segurança</a></li>
-                        <li><a data-toggle="tab" href="#restricoes">Restrições</a></li>
-                        <li><a data-toggle="tab" href="#certificacoes">Certificações</a></li>
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="active"><a data-toggle="tab" href="#pessoal"><i class="bx bx-user"></i> Dados Pessoais</a></li>
+                        <li><a data-toggle="tab" href="#contato"><i class="bx bx-phone"></i> Contato</a></li>
+                        <li><a data-toggle="tab" href="#endereco"><i class="bx bx-map"></i> Endereço</a></li>
+                        <li><a data-toggle="tab" href="#equipamentos"><i class="bx bx-swim"></i> Equipamentos</a></li>
+                        <li><a data-toggle="tab" href="#saude"><i class="bx bx-first-aid"></i> Saúde e Segurança</a></li>
+                        <li><a data-toggle="tab" href="#restricoes"><i class="bx bx-food-menu"></i> Restrições</a></li>
+                        <li><a data-toggle="tab" href="#certificacoes"><i class="bx bx-certification"></i> Certificações</a></li>
                     </ul>
 
                     <div class="tab-content">
@@ -83,12 +151,25 @@
                                 </div>
                             </div>
                             <div class="control-group">
+                                <label for="altura" class="control-label">Altura (m)</label>
+                                <div class="controls">
+                                    <input id="altura" type="text" name="altura" value="<?= $result->altura ?? '' ?>" class="monitor-input" />
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="peso" class="control-label">Peso (kg)</label>
+                                <div class="controls">
+                                    <input id="peso" type="text" name="peso" value="<?= $result->peso ?? '' ?>" class="monitor-input" />
+                                </div>
+                            </div>
+                            <div class="control-group">
                                 <label for="fornecedor" class="control-label">Tipo de Cliente</label>
                                 <div class="controls">
-                                    <label>
-                                        <input name="fornecedor" type="checkbox" value="1" <?php if ($result->fornecedor) echo 'checked'; ?> />
-                                        <span class="lbl"> Fornecedor</span>
+                                    <label class="switch">
+                                        <input name="fornecedor" type="checkbox" value="1" <?php if ($result->fornecedor) echo 'checked'; ?>>
+                                        <span class="slider"></span>
                                     </label>
+                                    <span style="margin-left: 10px; vertical-align: middle;">É um fornecedor</span>
                                 </div>
                             </div>
                         </div>
@@ -176,30 +257,59 @@
 
                         <!-- Aba Equipamentos -->
                         <div id="equipamentos" class="tab-pane">
-                            <div class="control-group">
-                                <label for="tamanho_colete" class="control-label">Tamanho do Colete</label>
-                                <div class="controls">
-                                    <input id="tamanho_colete" type="text" name="tamanho_colete" value="<?= $result->tamanho_colete ?? '' ?>" class="monitor-input" />
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <label for="peso_lastro" class="control-label">Peso do Lastro (kg)</label>
-                                <div class="controls">
-                                    <input id="peso_lastro" type="text" name="peso_lastro" value="<?= $result->peso_lastro ?? '' ?>" class="monitor-input" />
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <label for="tamanho_neoprene" class="control-label">Tamanho do Neoprene</label>
-                                <div class="controls">
-                                    <input id="tamanho_neoprene" type="text" name="tamanho_neoprene" value="<?= $result->tamanho_neoprene ?? '' ?>" class="monitor-input" />
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <label for="tamanho_nadadeira" class="control-label">Tamanho da Nadadeira</label>
-                                <div class="controls">
-                                    <input id="tamanho_nadadeira" type="text" name="tamanho_nadadeira" value="<?= $result->tamanho_nadadeira ?? '' ?>" class="monitor-input" />
-                                </div>
-                            </div>
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td style="width: 30%;"><strong>Possui Colete?</strong></td>
+                                        <td>
+                                            <label class="switch"><input type="checkbox" class="equip-toggle" data-target="#tamanho_colete" <?= ($result->tamanho_colete ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <input id="tamanho_colete" type="text" name="tamanho_colete" value="<?= $result->tamanho_colete ?? '' ?>" placeholder="Qual tamanho?" class="span3 monitor-input" style="margin-left: 10px; display: none;"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Possui Lastro?</strong></td>
+                                        <td>
+                                            <label class="switch"><input type="checkbox" class="equip-toggle" data-target="#peso_lastro" <?= ($result->peso_lastro ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <input id="peso_lastro" type="text" name="peso_lastro" value="<?= $result->peso_lastro ?? '' ?>" placeholder="Qual peso (kg)?" class="span3 monitor-input" style="margin-left: 10px; display: none;"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Possui Neoprene?</strong></td>
+                                        <td>
+                                            <label class="switch"><input type="checkbox" class="equip-toggle" data-target="#tamanho_neoprene" <?= ($result->tamanho_neoprene ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <input id="tamanho_neoprene" type="text" name="tamanho_neoprene" value="<?= $result->tamanho_neoprene ?? '' ?>" placeholder="Qual tamanho?" class="span3 monitor-input" style="margin-left: 10px; display: none;"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Possui Nadadeira?</strong></td>
+                                        <td>
+                                            <label class="switch"><input type="checkbox" class="equip-toggle" data-target="#tamanho_nadadeira" <?= ($result->tamanho_nadadeira ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <input id="tamanho_nadadeira" type="text" name="tamanho_nadadeira" value="<?= $result->tamanho_nadadeira ?? '' ?>" placeholder="Qual tamanho?" class="span3 monitor-input" style="margin-left: 10px; display: none;"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Possui Regulador?</strong></td>
+                                        <td>
+                                            <label class="switch"><input type="checkbox" class="equip-toggle" data-target="#qtd_reguladores" <?= ($result->qtd_reguladores ?? 0) > 0 ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <input id="qtd_reguladores" type="number" name="qtd_reguladores" value="<?= $result->qtd_reguladores ?? 0 ?>" placeholder="Quantos?" class="span2 monitor-input" style="margin-left: 10px; display: none;" min="0"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Possui Lanterna?</strong></td>
+                                        <td>
+                                            <label class="switch"><input type="checkbox" class="equip-toggle" data-target="#qtd_lanterna" <?= ($result->qtd_lanterna ?? 0) > 0 ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <input id="qtd_lanterna" type="number" name="qtd_lanterna" value="<?= $result->qtd_lanterna ?? 0 ?>" placeholder="Quantas?" class="span2 monitor-input" style="margin-left: 10px; display: none;" min="0"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Possui Computador de Mergulho?</strong></td>
+                                        <td>
+                                            <label class="switch"><input type="checkbox" class="equip-toggle" data-target="#qtd_computador" <?= ($result->qtd_computador ?? 0) > 0 ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <input id="qtd_computador" type="number" name="qtd_computador" value="<?= $result->qtd_computador ?? 0 ?>" placeholder="Quantos?" class="span2 monitor-input" style="margin-left: 10px; display: none;" min="0"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
 
                         <!-- Aba Saúde e Segurança -->
@@ -391,7 +501,7 @@
     </div>
 </div>
 <script src="<?php echo base_url() ?>assets/js/jquery.validate.js"></script>
-<script src="<?php echo base_url() ?>assets/js/jquery.mask.js"></script>
+<script src="<?php echo base_url() ?>assets/js/jquery.mask.min.js"></script>
 <script type="text/javascript">
     $(document).ready(function() {
         $.getJSON('<?php echo base_url() ?>assets/json/estados.json', function(data) {
@@ -464,6 +574,8 @@
         $('#cep').mask('00000-000');
         $('#telefone').mask('(00) 0000-0000');
         $('#celular').mask('(00) 00000-0000');
+        $('#altura').mask('0,00', {reverse: true});
+        $('#peso').mask('000,00', {reverse: true});
 
         // Busca de CEP
         $("#cep").blur(function() {
@@ -482,6 +594,28 @@
                     });
                 }
             }
+        });
+
+        // Lógica para mostrar/ocultar campos de equipamento
+        function toggleEquipInput(checkbox) {
+            var targetSelector = checkbox.data('target'); // ex: "#tamanho_colete"
+            // Só executa a lógica se o atributo data-target não for vazio
+            if (targetSelector) {
+                var target = $(targetSelector);
+                if (checkbox.is(':checked')) {
+                    target.show();
+                } else {
+                    target.hide().val(''); // Oculta e limpa o valor
+                }
+            }
+        }
+
+        $('.equip-toggle').each(function() {
+            toggleEquipInput($(this)); // Verifica o estado inicial ao carregar a página
+        });
+
+        $('.equip-toggle').on('change', function() {
+            toggleEquipInput($(this));
         });
     });
 </script>

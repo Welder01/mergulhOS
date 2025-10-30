@@ -122,7 +122,7 @@
 
 <script type="text/javascript">
     $(document).ready(function () {
-        $(document).on('click', 'a', function (event) {
+        $(document).on('click', 'a[title="Excluir Cliente"]', function (event) {
             var cliente = $(this).attr('cliente');
             $('#idCliente').val(cliente);
         });

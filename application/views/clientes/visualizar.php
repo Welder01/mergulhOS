@@ -39,6 +39,14 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td style="text-align: right"><strong>Altura</strong></td>
+                                    <td><?php echo isset($result->altura) ? $result->altura . ' m' : 'Não informado'; ?></td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right"><strong>Peso</strong></td>
+                                    <td><?php echo isset($result->peso) ? $result->peso . ' kg' : 'Não informado'; ?></td>
+                                </tr>
+                                <tr>
                                     <td style="text-align: right"><strong>Data de Cadastro</strong></td>
                                     <td>
                                         <?php echo date('d/m/Y', strtotime($result->dataCadastro)) ?>
@@ -313,6 +321,18 @@
                                     <tr>
                                         <td style="text-align: right;"><strong>Tamanho da Nadadeira:</strong></td>
                                         <td><?= html_escape($result->tamanho_nadadeira ?? 'Não informado') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Reguladores:</strong></td>
+                                        <td><?= html_escape($result->qtd_reguladores ?? '0') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Possui Lanterna:</strong></td>
+                                        <td><?= html_escape($result->qtd_lanterna ?? '0') ?> unidade(s)</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Possui Computador:</strong></td>
+                                        <td><?= html_escape($result->qtd_computador ?? '0') ?> unidade(s)</td>
                                     </tr>
                                 </tbody>
                             </table>
