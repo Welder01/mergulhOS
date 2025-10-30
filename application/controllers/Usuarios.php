@@ -10,11 +10,7 @@ class Usuarios extends MY_Controller
     {
         parent::__construct();
 
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cUsuario')) {
-            $this->session->set_flashdata('error', 'Você não tem permissão para configurar os usuários.');
-            redirect(base_url());
-        }
-
+        $this->load->library('upload');
         $this->load->helper('form');
         $this->load->model('usuarios_model');
         $this->load->model('mapos_model');
@@ -98,18 +94,8 @@ class Usuarios extends MY_Controller
 
         $this->load->library('form_validation');
         $this->data['custom_error'] = '';
+
         $this->form_validation->set_rules('nome', 'Nome', 'trim|required');
-        $this->form_validation->set_rules('rg', 'RG', 'trim|required');
-        $this->form_validation->set_rules('cpf', 'CPF', 'trim|required');
-        $this->form_validation->set_rules('cep', 'CEP', 'trim|required');
-        $this->form_validation->set_rules('rua', 'Rua', 'trim|required');
-        $this->form_validation->set_rules('numero', 'Número', 'trim|required');
-        $this->form_validation->set_rules('bairro', 'Bairro', 'trim|required');
-        $this->form_validation->set_rules('cidade', 'Cidade', 'trim|required');
-        $this->form_validation->set_rules('estado', 'Estado', 'trim|required');
-        $this->form_validation->set_rules('email', 'Email', 'trim|required');
-        $this->form_validation->set_rules('telefone', 'Telefone', 'trim|required');
-        $this->form_validation->set_rules('situacao', 'Situação', 'trim|required');
         $this->form_validation->set_rules('permissoes_id', 'Permissão', 'trim|required');
 
         if ($this->form_validation->run() == false) {
@@ -120,14 +106,23 @@ class Usuarios extends MY_Controller
                 redirect(base_url() . 'index.php/usuarios/editar/' . $this->input->post('idUsuarios'));
             }
 
-            $this->load->library('upload');
             $senha = $this->input->post('senha');
             if ($senha != null) {
+                $atestado_emissao = $this->input->post('atestado_medico_emissao');
+                $atestado_validade = null;
+                if ($atestado_emissao) {
+                    $date = new DateTime($atestado_emissao);
+                    $date->add(new DateInterval('P1Y')); // Adiciona 1 ano
+                    $atestado_validade = $date->format('Y-m-d');
+                }
+
                 $senha = password_hash($senha, PASSWORD_DEFAULT);
 
                 $data = [
                     'nome' => $this->input->post('nome'),
                     'rg' => $this->input->post('rg'),
+                    'sexo' => $this->input->post('sexo'),
+                    'altura' => str_replace(',', '.', $this->input->post('altura')),
                     'cpf' => $this->input->post('cpf'),
                     'cep' => $this->input->post('cep'),
                     'rua' => $this->input->post('rua'),
@@ -138,6 +133,7 @@ class Usuarios extends MY_Controller
                     'email' => $this->input->post('email'),
                     'senha' => $senha,
                     'telefone' => $this->input->post('telefone'),
+                    'peso' => str_replace(',', '.', $this->input->post('peso')),
                     'celular' => $this->input->post('celular'),
                     'dataExpiracao' => set_value('dataExpiracao'),
                     'situacao' => $this->input->post('situacao'),
@@ -145,15 +141,33 @@ class Usuarios extends MY_Controller
                     'tamanho_colete' => $this->input->post('tamanho_colete'),
                     'peso_lastro' => $this->input->post('peso_lastro'),
                     'tamanho_neoprene' => $this->input->post('tamanho_neoprene'),
+                    'qtd_reguladores' => $this->input->post('qtd_reguladores') ?: 0,
+                    'qtd_lanterna' => $this->input->post('qtd_lanterna') ?: 0,
+                    'qtd_computador' => $this->input->post('qtd_computador') ?: 0,
                     'tamanho_nadadeira' => $this->input->post('tamanho_nadadeira'),
-                    'atestado_medico_validade' => $this->input->post('atestado_medico_validade') ?: null,
+                    'atestado_medico_emissao' => $atestado_emissao ?: null,
+                    'atestado_medico_validade' => $atestado_validade,
+                    'nome_medico' => $this->input->post('nome_medico'),
+                    'crm_medico' => $this->input->post('crm_medico'),
+                    'codigo_validacao_atestado' => $this->input->post('codigo_validacao_atestado'),
                     'contato_emergencia_nome' => $this->input->post('contato_emergencia_nome'),
+                    'contato_emergencia_parentesco' => $this->input->post('contato_emergencia_parentesco'),
                     'contato_emergencia_telefone' => $this->input->post('contato_emergencia_telefone'),
                 ];
             } else {
+                $atestado_emissao = $this->input->post('atestado_medico_emissao');
+                $atestado_validade = null;
+                if ($atestado_emissao) {
+                    $date = new DateTime($atestado_emissao);
+                    $date->add(new DateInterval('P1Y')); // Adiciona 1 ano
+                    $atestado_validade = $date->format('Y-m-d');
+                }
+
                 $data = [
                     'nome' => $this->input->post('nome'),
                     'rg' => $this->input->post('rg'),
+                    'sexo' => $this->input->post('sexo'),
+                    'altura' => str_replace(',', '.', $this->input->post('altura')),
                     'cpf' => $this->input->post('cpf'),
                     'cep' => $this->input->post('cep'),
                     'rua' => $this->input->post('rua'),
@@ -163,6 +177,7 @@ class Usuarios extends MY_Controller
                     'estado' => $this->input->post('estado'),
                     'email' => $this->input->post('email'),
                     'telefone' => $this->input->post('telefone'),
+                    'peso' => str_replace(',', '.', $this->input->post('peso')),
                     'celular' => $this->input->post('celular'),
                     'dataExpiracao' => set_value('dataExpiracao'),
                     'situacao' => $this->input->post('situacao'),
@@ -170,9 +185,17 @@ class Usuarios extends MY_Controller
                     'tamanho_colete' => $this->input->post('tamanho_colete'),
                     'peso_lastro' => $this->input->post('peso_lastro'),
                     'tamanho_neoprene' => $this->input->post('tamanho_neoprene'),
+                    'qtd_reguladores' => $this->input->post('qtd_reguladores') ?: 0,
+                    'qtd_lanterna' => $this->input->post('qtd_lanterna') ?: 0,
+                    'qtd_computador' => $this->input->post('qtd_computador') ?: 0,
                     'tamanho_nadadeira' => $this->input->post('tamanho_nadadeira'),
-                    'atestado_medico_validade' => $this->input->post('atestado_medico_validade') ?: null,
+                    'atestado_medico_emissao' => $atestado_emissao ?: null,
+                    'atestado_medico_validade' => $atestado_validade,
+                    'nome_medico' => $this->input->post('nome_medico'),
+                    'crm_medico' => $this->input->post('crm_medico'),
+                    'codigo_validacao_atestado' => $this->input->post('codigo_validacao_atestado'),
                     'contato_emergencia_nome' => $this->input->post('contato_emergencia_nome'),
+                    'contato_emergencia_parentesco' => $this->input->post('contato_emergencia_parentesco'),
                     'contato_emergencia_telefone' => $this->input->post('contato_emergencia_telefone'),
                 ];
             }
@@ -227,6 +250,10 @@ class Usuarios extends MY_Controller
                     $this->upload->initialize($configCert);
                     if ($this->upload->do_upload('arquivo_certificacao')) {
                         $dataCertificacao['arquivo'] = $this->upload->data('file_name');
+                    } else {
+                        $this->data['custom_error'] = '<div class="alert alert-danger">Erro no upload do arquivo de certificação: ' . $this->upload->display_errors() . '</div>';
+                        $this->editar(); // Recarrega a view com o erro
+                        return; // Interrompe a execução
                     }
                 }
                 $this->certificacao_usuario_model->add($dataCertificacao);
@@ -294,7 +321,7 @@ class Usuarios extends MY_Controller
 
     public function remover_certificacao_usuario($id = null)
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eUsuario')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cUsuario')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar usuários.');
             redirect(base_url());
         }
@@ -314,7 +341,7 @@ class Usuarios extends MY_Controller
 
     public function remover_restricao_usuario($id = null)
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eUsuario')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cUsuario')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar usuários.');
             redirect(base_url());
         }

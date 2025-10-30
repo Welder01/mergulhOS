@@ -497,6 +497,16 @@
                 },
                 email: {
                     required: true
+                },
+                contato_emergencia_nome: {
+                    required: function(element) {
+                        return $("#contato_emergencia_telefone").val() != '' || $("#contato_emergencia_parentesco").val() != '';
+                    }
+                },
+                contato_emergencia_telefone: {
+                    required: function(element) {
+                        return $("#contato_emergencia_nome").val() != '' || $("#contato_emergencia_parentesco").val() != '';
+                    }
                 }
             },
             messages: {
@@ -511,6 +521,12 @@
                 },
                 email: {
                     required: 'Campo Requerido.'
+                },
+                contato_emergencia_nome: {
+                    required: 'Preencha o nome do contato de emergência.'
+                },
+                contato_emergencia_telefone: {
+                    required: 'Preencha o telefone do contato de emergência.'
                 }
             },
             errorClass: "help-inline",
