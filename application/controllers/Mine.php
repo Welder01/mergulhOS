@@ -343,6 +343,7 @@ class Mine extends MY_Controller
 
         $data = [
             'nomeCliente' => $this->input->post('nomeCliente'),
+            'sexo' => $this->input->post('sexo'),
             'documento' => $this->input->post('documento'),
             'telefone' => $this->input->post('telefone'),
             'celular' => $this->input->post('celular'),

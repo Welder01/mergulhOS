@@ -50,6 +50,12 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td style="text-align: right"><strong>Sexo</strong></td>
+                                    <td>
+                                        <?php echo $result->sexo ?>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td style="text-align: right"><strong>Altura</strong></td>
                                     <td><?php echo isset($result->altura) ? $result->altura . ' m' : 'Não informado'; ?></td>
                                 </tr>

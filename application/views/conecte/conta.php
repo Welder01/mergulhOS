@@ -81,6 +81,16 @@
                                 </div>
                             </div>
                             <div class="control-group">
+                                <label for="sexo" class="control-label">Sexo</label>
+                                <div class="controls">
+                                    <select name="sexo" id="sexo" class="monitor-input">
+                                        <option value="">Selecione</option>
+                                        <option value="Masculino" <?php if (($result->sexo ?? '') == 'Masculino') echo 'selected'; ?>>Masculino</option>
+                                        <option value="Feminino" <?php if (($result->sexo ?? '') == 'Feminino') echo 'selected'; ?>>Feminino</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="control-group">
                                 <label for="altura" class="control-label">Altura (m)</label>
                                 <div class="controls">
                                     <input id="altura" type="text" name="altura" value="<?= $result->altura ?? '' ?>" class="monitor-input" />

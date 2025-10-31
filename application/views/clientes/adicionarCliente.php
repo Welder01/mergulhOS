@@ -111,6 +111,16 @@
                             </div>
                         </div>
                         <div class="control-group">
+                            <label for="sexo" class="control-label">Sexo</label>
+                            <div class="controls">
+                                <select name="sexo" id="sexo">
+                                    <option value="">Selecione</option>
+                                    <option value="Masculino" <?php echo set_select('sexo', 'Masculino'); ?>>Masculino</option>
+                                    <option value="Feminino" <?php echo set_select('sexo', 'Feminino'); ?>>Feminino</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="control-group">
                             <label for="altura" class="control-label">Altura (m)</label>
                             <div class="controls">
                                 <input id="altura" type="text" name="altura" value="<?php echo set_value('altura'); ?>" />

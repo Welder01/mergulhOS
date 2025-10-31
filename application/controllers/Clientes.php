@@ -81,6 +81,7 @@ class Clientes extends MY_Controller
                 $data = [
                 'nomeCliente' => set_value('nomeCliente'),
                 'contato' => set_value('contato'),
+                'sexo' => set_value('sexo'),
                 'pessoa_fisica' => $pessoa_fisica,
                 'altura' => str_replace(',', '.', set_value('altura')),
                 'peso' => str_replace(',', '.', set_value('peso')),
@@ -152,6 +153,7 @@ class Clientes extends MY_Controller
                 $data = [
                     'nomeCliente' => $this->input->post('nomeCliente'),
                     'contato' => $this->input->post('contato'),
+                    'sexo' => $this->input->post('sexo'),
                     'altura' => str_replace(',', '.', $this->input->post('altura')),
                     'peso' => str_replace(',', '.', $this->input->post('peso')),
                     'documento' => $this->input->post('documento'),
