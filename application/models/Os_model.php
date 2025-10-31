@@ -143,6 +143,16 @@ class Os_model extends CI_Model
         return $this->db->get()->result();
     }
 
+    public function getViagens($id = null)
+    {
+        $this->db->select('viagens_os.*, viagens.nome_viagem');
+        $this->db->from('viagens_os');
+        $this->db->join('viagens', 'viagens.id = viagens_os.viagens_id');
+        $this->db->where('os_id', $id);
+
+        return $this->db->get()->result();
+    }
+
     public function add($table, $data, $returnId = false)
     {
         $this->db->insert($table, $data);

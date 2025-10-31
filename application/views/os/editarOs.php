@@ -65,8 +65,9 @@
                         <li id="tabProdutos"><a href="#tab3" data-toggle="tab">Produtos</a></li>
                         <li id="tabServicos"><a href="#tab4" data-toggle="tab">Serviços</a></li>
                         <li id="tabCursos"><a href="#tab5" data-toggle="tab">Cursos</a></li>
-                        <li id="tabAnexos"><a href="#tab6" data-toggle="tab">Anexos</a></li>
-                        <li id="tabAnotacoes"><a href="#tab7" data-toggle="tab">Anotações</a></li>
+                        <li id="tabViagens"><a href="#tab6" data-toggle="tab">Viagens</a></li>
+                        <li id="tabAnexos"><a href="#tab7" data-toggle="tab">Anexos</a></li>
+                        <li id="tabAnotacoes"><a href="#tab8" data-toggle="tab">Anotações</a></li>
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane active" id="tab1">
@@ -390,8 +391,61 @@
                             </div>
                         </div>
 
-                        <!--Anexos-->
+                        <!-- Viagens -->
                         <div class="tab-pane" id="tab6">
+                            <div class="span12 well" style="padding: 1%; margin-left: 0">
+                                <form id="formViagens" action="<?php echo base_url() ?>index.php/os/adicionarViagem" method="post">
+                                    <div class="span6">
+                                        <input type="hidden" name="idViagem" id="idViagem" />
+                                        <input type="hidden" name="idOsViagem" id="idOsViagem" value="<?php echo $result->idOs; ?>" />
+                                        <label for="">Viagem</label>
+                                        <input type="text" class="span12" name="viagem" id="viagem" placeholder="Digite o nome da viagem" />
+                                    </div>
+                                    <div class="span2">
+                                        <label for="">Preço</label>
+                                        <input type="text" placeholder="Preço" id="preco_viagem" name="preco" class="span12 money" />
+                                    </div>
+                                    <div class="span2">
+                                        <label for="">&nbsp;</label>
+                                        <button class="button btn btn-success" id="btnAdicionarViagem"><span class="button__icon"><i class='bx bx-plus-circle'></i></span><span class="button__text2">Adicionar</span></button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="widget-box" id="divViagens-OS">
+                                <div class="widget_content nopadding">
+                                    <table width="100%" class="table table-bordered" id="tblViagens">
+                                        <thead>
+                                            <tr>
+                                                <th>Viagem</th>
+                                                <th>Preço</th>
+                                                <th width="6%">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php
+                                            $totalViagens = 0;
+                                            foreach ($viagens as $v) {
+                                                $totalViagens += $v->preco;
+                                                echo '<tr>';
+                                                echo '<td>' . $v->nome_viagem . '</td>';
+                                                echo '<td>R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
+                                                echo '<td><div align="center"><a href="" idAcao="' . $v->idViagens_os . '" title="Excluir Viagem" class="btn-nwe4 viagem"><i class="bx bx-trash-alt"></i></a></div></td>';
+                                                echo '</tr>';
+                                            } ?>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2" style="text-align: right"><strong>Total:</strong></td>
+                                                <td><strong>R$ <?php echo number_format($totalViagens, 2, ',', '.'); ?></strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Anexos-->
+                        <div class="tab-pane" id="tab7">
                             <div class="span12" style="padding: 1%; margin-left: 0">
                                 <div class="span12 well" style="padding: 1%; margin-left: 0" id="form-anexos">
                                     <form id="formAnexos" enctype="multipart/form-data" action="javascript:;"
@@ -433,7 +487,7 @@
                         </div>
 
                         <!--Anotações-->
-                        <div class="tab-pane" id="tab7">
+                        <div class="tab-pane" id="tab8">
                             <div class="span12" style="padding: 1%; margin-left: 0">
 
                                 <div class="span12" id="divAnotacoes" style="margin-left: 0">
@@ -947,6 +1001,19 @@
             $(this).tab('show');
         });
 
+        $('#tabViagens a').one('click', function(e) {
+            e.preventDefault();
+            $("#viagem").autocomplete({
+                source: "<?php echo base_url(); ?>index.php/viagens/autoCompleteViagem",
+                minLength: 2,
+                select: function(event, ui) {
+                    $("#idViagem").val(ui.item.id);
+                    $("#preco_viagem").val(ui.item.preco);
+                }
+            });
+            $(this).tab('show');
+        });
+
         $("#formOs").validate({
             rules: {
                 cliente: {
@@ -1137,6 +1204,45 @@
             }
         });
 
+        $("#formViagens").validate({
+            rules: {
+                viagem: {
+                    required: true
+                }
+            },
+            messages: {
+                viagem: {
+                    required: 'Insira uma viagem'
+                }
+            },
+            submitHandler: function(form) {
+                var dados = $(form).serialize();
+                $("#divViagens-OS").html("<div class='progress progress-info progress-striped active'><div class='bar' style='width: 100%'></div></div>");
+                $.ajax({
+                    type: "POST",
+                    url: "<?php echo base_url(); ?>index.php/os/adicionarViagem",
+                    data: dados,
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.result == true) {
+                            $("#divViagens-OS").load("<?php echo current_url(); ?> #divViagens-OS");
+                            $("#viagem").val('');
+                            $("#preco_viagem").val('');
+                            $("#idViagem").val('');
+                            $("#viagem").focus();
+                        } else {
+                            Swal.fire({
+                                type: "error",
+                                title: "Atenção",
+                                text: "Ocorreu um erro ao tentar adicionar viagem."
+                            });
+                        }
+                    }
+                });
+                return false;
+            }
+        });
+
         $("#formAnotacao").validate({
             rules: {
                 anotacao: {
@@ -1265,6 +1371,26 @@
                                 title: "Atenção",
                                 text: "Ocorreu um erro ao tentar excluir serviço."
                             });
+                        }
+                    }
+                });
+                return false;
+            }
+        });
+
+        $(document).on('click', '.viagem', function(event) {
+            var idViagem = $(this).attr('idAcao');
+            var idOs = "<?php echo $result->idOs ?>"
+            if ((idViagem % 1) == 0) {
+                $("#divViagens-OS").html("<div class='progress progress-info progress-striped active'><div class='bar' style='width: 100%'></div></div>");
+                $.ajax({
+                    type: "POST",
+                    url: "<?php echo base_url(); ?>index.php/os/excluirViagem",
+                    data: "idViagem=" + idViagem + "&idOs=" + idOs,
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.result == true) {
+                            $("#divViagens-OS").load("<?php echo current_url(); ?> #divViagens-OS");
                         }
                     }
                 });

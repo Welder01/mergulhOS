@@ -30,7 +30,7 @@
                     <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vOs')) {
                         $this->load->model('os_model');
                         $zapnumber = preg_replace("/[^0-9]/", "", $result->celular_cliente);
-                        $troca = [$result->nomeCliente, $result->idOs, $result->status, 'R$ ' . ($result->desconto != 0 && $result->valor_desconto != 0 ? number_format($result->valor_desconto, 2, ',', '.') : number_format($totalProdutos + $totalServico + ($cursos ? array_sum(array_column($cursos, 'preco')) : 0), 2, ',', '.')), strip_tags($result->descricaoProduto), ($emitente ? $emitente->nome : ''), ($emitente ? $emitente->telefone : ''), strip_tags($result->observacoes), strip_tags($result->defeito), strip_tags($result->laudoTecnico), date('d/m/Y', strtotime($result->dataFinal)), date('d/m/Y', strtotime($result->dataInicial)), $result->garantia . ' dias'];
+                        $troca = [$result->nomeCliente, $result->idOs, $result->status, 'R$ ' . ($result->desconto != 0 && $result->valor_desconto != 0 ? number_format($result->valor_desconto, 2, ',', '.') : number_format($totalProdutos + $totalServico + ($cursos ? array_sum(array_column($cursos, 'preco')) : 0) + ($viagens ? array_sum(array_column($viagens, 'preco')) : 0), 2, ',', '.')), strip_tags($result->descricaoProduto), ($emitente ? $emitente->nome : ''), ($emitente ? $emitente->telefone : ''), strip_tags($result->observacoes), strip_tags($result->defeito), strip_tags($result->laudoTecnico), date('d/m/Y', strtotime($result->dataFinal)), date('d/m/Y', strtotime($result->dataInicial)), $result->garantia . ' dias'];
                         $texto_de_notificacao = $this->os_model->criarTextoWhats($texto_de_notificacao, $troca);
                         if (!empty($zapnumber)) {
                             echo '<a title="Enviar Por WhatsApp" class="button btn btn-mini btn-success" id="enviarWhatsApp" target="_blank" href="https://api.whatsapp.com/send?phone=55' . $zapnumber . '&text=' . $texto_de_notificacao . '">
@@ -338,23 +338,58 @@
                             </table>
                         <?php } ?>
                         <table class="table table-bordered table-condensed">
-                            <?php
+                            <?php $totalCursos = 0;
+                            if ($cursos) {
+                                foreach ($cursos as $c) {
+                                    $totalCursos += $c->preco;
+                                }
+                            } ?>
+                            <?php if ($totalCursos != 0) { ?>
+                            <table class="table table-bordered table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>CURSO</th>
+                                        <th>PREÇO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($cursos as $c) {
+                                        echo '<tr>';
+                                        echo '<td>' . $c->nome_curso . '</td>';
+                                        echo '<td>R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
+                                        echo '</tr>';
+                                    } ?>
+                                    <tr>
+                                        <td style="text-align: right"><strong>TOTAL:</strong></td>
+                                        <td><strong>R$ <?php echo number_format($totalCursos, 2, ',', '.'); ?></strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <?php } ?>
+                        <table class="table table-bordered table-condensed">
+                            <?php 
                             $totalCursos = 0;
                             if ($cursos) {
                                 foreach ($cursos as $c) {
                                     $totalCursos += $c->preco;
                                 }
                             }
-                            if ($totalProdutos != 0 || $totalServico != 0 || $totalCursos != 0) {
+                            $totalViagens = 0;
+                            if ($viagens) {
+                                foreach ($viagens as $v) {
+                                    $totalViagens += $v->preco;
+                                }
+                            }
+                            if ($totalProdutos != 0 || $totalServico != 0 || $totalCursos != 0 || $totalViagens != 0) {
                                 if ($result->valor_desconto != 0) {
                                     echo "<td>";
-                                    echo "<h4 style='text-align: right'>SUBTOTAL: R$ " . number_format($totalProdutos + $totalServico + $totalCursos, 2, ',', '.') . "</h4>";
-                                    echo $result->valor_desconto != 0 ? "<h4 style='text-align: right'>DESCONTO: R$ " . number_format(($totalProdutos + $totalServico + $totalCursos) - $result->valor_desconto, 2, ',', '.') . "</h4>" : "";
+                                    echo "<h4 style='text-align: right'>SUBTOTAL: R$ " . number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, ',', '.') . "</h4>";
+                                    echo $result->valor_desconto != 0 ? "<h4 style='text-align: right'>DESCONTO: R$ " . number_format(($totalProdutos + $totalServico + $totalCursos + $totalViagens) - $result->valor_desconto, 2, ',', '.') . "</h4>" : "";
                                     echo "<h4 style='text-align: right'>TOTAL: R$ " . number_format($result->valor_desconto, 2, ',', '.') . "</h4>";
                                     echo "</td>";
                                 } else {
                                     echo "<td>";
-                                    echo "<h4 style='text-align: right'>TOTAL: R$ " . number_format($totalProdutos + $totalServico + $totalCursos, 2, ',', '.') . "</h4>";
+                                    echo "<h4 style='text-align: right'>TOTAL: R$ " . number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, ',', '.') . "</h4>";
                                     echo "</td>";
                                 }
                             } ?>

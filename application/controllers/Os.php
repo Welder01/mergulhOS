@@ -289,6 +289,7 @@ class Os extends MY_Controller
         $this->data['servicos'] = $this->os_model->getServicos($this->uri->segment(3));
         $this->data['anexos'] = $this->os_model->getAnexos($this->uri->segment(3));
         $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
+        $this->data['viagens'] = $this->os_model->getViagens($this->uri->segment(3));
         $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
         $this->data['anotacoes'] = $this->os_model->getAnotacoes($this->uri->segment(3));
 
@@ -326,6 +327,7 @@ class Os extends MY_Controller
         $this->data['servicos'] = $this->os_model->getServicos($this->uri->segment(3));
         $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
         $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
+        $this->data['viagens'] = $this->os_model->getViagens($this->uri->segment(3));
         $this->data['emitente'] = $this->mapos_model->getEmitente();
         $this->data['anexos'] = $this->os_model->getAnexos($this->uri->segment(3));
         $this->data['anotacoes'] = $this->os_model->getAnotacoes($this->uri->segment(3));
@@ -435,6 +437,7 @@ class Os extends MY_Controller
         $this->data['produtos'] = $this->os_model->getProdutos($this->uri->segment(3));
         $this->data['servicos'] = $this->os_model->getServicos($this->uri->segment(3));
         $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
+        $this->data['viagens'] = $this->os_model->getViagens($this->uri->segment(3));
         $this->data['anexos'] = $this->os_model->getAnexos($this->uri->segment(3));
         $this->data['emitente'] = $this->mapos_model->getEmitente();
         if ($this->data['configuration']['pix_key']) {
@@ -854,6 +857,49 @@ class Os extends MY_Controller
 
         if ($this->os_model->delete('cursos_os', 'idCursos_os', $id) == true) {
             log_info('Removeu curso de uma OS. ID (OS): ' . $idOs);
+            echo json_encode(['result' => true]);
+        } else {
+            echo json_encode(['result' => false]);
+        }
+    }
+
+    public function adicionarViagem()
+    {
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('idViagem', 'Viagem', 'trim|required');
+        $this->form_validation->set_rules('preco', 'Preço', 'trim|required');
+        $this->form_validation->set_rules('idOsViagem', 'OS', 'trim|required');
+
+        if ($this->form_validation->run() == false) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(400)
+                ->set_output(json_encode(['message' => validation_errors()]));
+        }
+
+        $data = [
+            'viagens_id' => $this->input->post('idViagem'),
+            'os_id' => $this->input->post('idOsViagem'),
+            'preco' => $this->input->post('preco'),
+            'data_vinculo' => date('Y-m-d'),
+        ];
+
+        if ($this->os_model->add('viagens_os', $data) == true) {
+            log_info('Adicionou viagem a uma OS. ID (OS): ' . $this->input->post('idOsViagem'));
+
+            return $this->output->set_content_type('application/json')->set_status_header(200)->set_output(json_encode(['result' => true]));
+        }
+
+        return $this->output->set_content_type('application/json')->set_status_header(500)->set_output(json_encode(['result' => false]));
+    }
+
+    public function excluirViagem()
+    {
+        $id = $this->input->post('idViagem');
+        $idOs = $this->input->post('idOs');
+
+        if ($this->os_model->delete('viagens_os', 'idViagens_os', $id) == true) {
+            log_info('Removeu viagem de uma OS. ID (OS): ' . $idOs);
             echo json_encode(['result' => true]);
         } else {
             echo json_encode(['result' => false]);

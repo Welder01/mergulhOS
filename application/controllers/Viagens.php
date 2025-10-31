@@ -538,4 +538,23 @@ class Viagens extends MY_Controller
         // Este método foi movido para o controller de Cursos para melhor organização.
         // A view agora aponta para 'cursos/autoCompleteCurso'
     }
+
+    public function autoCompleteViagem()
+    {
+        if (isset($_GET['term'])) {
+            $q = strtolower($this->input->get('term'));
+            $this->db->select('id, nome_viagem, data_partida, preco_pessoa');
+            $this->db->like('nome_viagem', $q);
+            $this->db->limit(5);
+            $query = $this->db->get('viagens');
+            $result = array_map(function ($viagem) {
+                return [
+                    'id' => $viagem->id,
+                    'label' => 'ID: ' . $viagem->id . ' | Viagem: ' . $viagem->nome_viagem . ' | Partida: ' . date('d/m/Y', strtotime($viagem->data_partida)),
+                    'preco' => $viagem->preco_pessoa,
+                ];
+            }, $query->result());
+            echo json_encode($result);
+        }
+    }
 }
