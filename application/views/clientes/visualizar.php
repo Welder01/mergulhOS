@@ -1,16 +1,17 @@
+<?php $this->load->view('clientes/editarCliente_style'); ?>
 <div class="widget-box">
     <div class="widget-title" style="margin: 0;font-size: 1.1em">
         <span class="icon"><i class="fas fa-user"></i></span><h5>Dados do Cliente</h5>
         <ul class="nav nav-tabs">
-            <li class="active"><a data-toggle="tab" href="#tab1">Dados do Cliente</a></li>
-            <li><a data-toggle="tab" href="#tabEquipamentos">Equipamentos</a></li>
-            <li><a data-toggle="tab" href="#tabSaude">Saúde e Segurança</a></li>
-            <li><a data-toggle="tab" href="#tabRestricoes">Restrições Alimentares</a></li>
-            <li><a data-toggle="tab" href="#tabOs">Ordens de Serviço</a></li>
-            <li><a data-toggle="tab" href="#tabVendas">Vendas</a></li>
-            <li><a data-toggle="tab" href="#tabCursos">Cursos</a></li>
-            <li><a data-toggle="tab" href="#tabViagens">Viagens</a></li>
-            <li><a data-toggle="tab" href="#tabCertificacoes">Certificações</a></li>
+            <li class="active"><a data-toggle="tab" href="#tab1"><i class="bx bx-user"></i> Dados do Cliente</a></li>
+            <li><a data-toggle="tab" href="#tabEquipamentos"><i class="bx bx-swim"></i> Equipamentos</a></li>
+            <li><a data-toggle="tab" href="#tabSaude"><i class="bx bx-first-aid"></i> Saúde e Segurança</a></li>
+            <li><a data-toggle="tab" href="#tabRestricoes"><i class="bx bx-food-menu"></i> Restrições Alimentares</a></li>
+            <li><a data-toggle="tab" href="#tabOs"><i class="bx bx-spreadsheet"></i> Ordens de Serviço</a></li>
+            <li><a data-toggle="tab" href="#tabVendas"><i class="bx bx-cart-alt"></i> Vendas</a></li>
+            <li><a data-toggle="tab" href="#tabCursos"><i class="bx bxs-graduation"></i> Cursos</a></li>
+            <li><a data-toggle="tab" href="#tabViagens"><i class="bx bxs-plane-alt"></i> Viagens</a></li>
+            <li><a data-toggle="tab" href="#tabCertificacoes"><i class="bx bx-certification"></i> Certificações</a></li>
         </ul>
     </div>
     <div class="widget-content tab-content">
