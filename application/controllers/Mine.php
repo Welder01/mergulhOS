@@ -12,6 +12,7 @@ class Mine extends MY_Controller
         $this->load->model('viagens_model');
         $this->load->model('cursos_model');
         $this->load->model('mapos_model');
+        $this->load->library('upload');
         $this->load->model('Conecte_model');
         $this->load->helper('Security_helper');
 
@@ -308,7 +309,6 @@ class Mine extends MY_Controller
 
         $this->data['menuConta'] = 'conta';
         $this->data['result'] = $this->Conecte_model->getDados();
-
         $this->data['output'] = 'conecte/conta';
         $this->load->view('conecte/template', $this->data);
     }
@@ -319,62 +319,95 @@ class Mine extends MY_Controller
             redirect(base_url() . 'index.php/mine/login');
         }
 
-        $data['menuConta'] = 'conta';
+        $this->data['menuConta'] = 'conta';
+        $this->data['result'] = $this->Conecte_model->getDados();
+
+        $this->data['output'] = 'conecte/conta';
 
         $this->load->library('form_validation');
-        $data['custom_error'] = '';
+        $this->form_validation->set_rules('nomeCliente', 'Nome', 'trim|required');
 
-        if ($this->form_validation->run('clientes') == false) {
-            $this->data['custom_error'] = (validation_errors() ? '<div class="form_error">' . validation_errors() . '</div>' : false);
-        } else {
-            $senha = $this->input->post('senha');
-            if ($senha != null) {
-                $senha = password_hash($senha, PASSWORD_DEFAULT);
-                $data = [
-                    'nomeCliente' => $this->input->post('nomeCliente'),
-                    'documento' => $this->input->post('documento'),
-                    'telefone' => $this->input->post('telefone'),
-                    'celular' => $this->input->post('celular'),
-                    'email' => $this->input->post('email'),
-                    'senha' => $senha,
-                    'rua' => $this->input->post('rua'),
-                    'numero' => $this->input->post('numero'),
-                    'complemento' => $this->input->post('complemento'),
-                    'bairro' => $this->input->post('bairro'),
-                    'cidade' => $this->input->post('cidade'),
-                    'estado' => $this->input->post('estado'),
-                    'cep' => $this->input->post('cep'),
-                    'contato' => $this->input->post('contato'),
-                ];
-            } else {
-                $data = [
-                    'nomeCliente' => $this->input->post('nomeCliente'),
-                    'documento' => $this->input->post('documento'),
-                    'telefone' => $this->input->post('telefone'),
-                    'celular' => $this->input->post('celular'),
-                    'email' => $this->input->post('email'),
-                    'rua' => $this->input->post('rua'),
-                    'numero' => $this->input->post('numero'),
-                    'complemento' => $this->input->post('complemento'),
-                    'bairro' => $this->input->post('bairro'),
-                    'cidade' => $this->input->post('cidade'),
-                    'estado' => $this->input->post('estado'),
-                    'cep' => $this->input->post('cep'),
-                    'contato' => $this->input->post('contato'),
-                ];
+        if ($this->form_validation->run() == false) {
+            $this->session->set_flashdata('error', 'Erro de validação: ' . validation_errors());
+            $this->load->view('conecte/template', $this->data);
+            return;
+        }
+
+        $atestado_emissao = $this->input->post('atestado_medico_emissao');
+        $atestado_validade = null;
+        if ($atestado_emissao) {
+            $date = new DateTime($atestado_emissao);
+            $date->add(new DateInterval('P1Y')); // Adiciona 1 ano
+            $atestado_validade = $date->format('Y-m-d');
+        }
+
+        $data = [
+            'nomeCliente' => $this->input->post('nomeCliente'),
+            'documento' => $this->input->post('documento'),
+            'telefone' => $this->input->post('telefone'),
+            'celular' => $this->input->post('celular'),
+            'email' => $this->input->post('email'),
+            'rua' => $this->input->post('rua'),
+            'numero' => $this->input->post('numero'),
+            'complemento' => $this->input->post('complemento'),
+            'bairro' => $this->input->post('bairro'),
+            'cidade' => $this->input->post('cidade'),
+            'estado' => $this->input->post('estado'),
+            'cep' => $this->input->post('cep'),
+            'contato' => $this->input->post('contato'),
+            'altura' => str_replace(',', '.', $this->input->post('altura')),
+            'peso' => str_replace(',', '.', $this->input->post('peso')),
+            'tamanho_colete' => $this->input->post('tamanho_colete') ?: null,
+            'peso_lastro' => $this->input->post('peso_lastro') ?: null,
+            'tamanho_neoprene' => $this->input->post('tamanho_neoprene') ?: null,
+            'tamanho_nadadeira' => $this->input->post('tamanho_nadadeira') ?: null,
+            'qtd_reguladores' => $this->input->post('qtd_reguladores') ?: 0,
+            'qtd_lanterna' => $this->input->post('qtd_lanterna') ?: 0,
+            'qtd_computador' => $this->input->post('qtd_computador') ?: 0,
+            'contato_emergencia_nome' => $this->input->post('contato_emergencia_nome'),
+            'contato_emergencia_telefone' => $this->input->post('contato_emergencia_telefone'),
+            'contato_emergencia_parentesco' => $this->input->post('contato_emergencia_parentesco'),
+            'atestado_medico_emissao' => $atestado_emissao ?: null,
+            'atestado_medico_validade' => $atestado_validade,
+            'nome_medico' => $this->input->post('nome_medico'),
+            'crm_medico' => $this->input->post('crm_medico'),
+            'codigo_validacao_atestado' => $this->input->post('codigo_validacao_atestado'),
+        ];
+
+        $senha = $this->input->post('senha');
+        if ($senha) {
+            $data['senha'] = password_hash($senha, PASSWORD_DEFAULT);
+        }
+
+        // Upload do atestado médico
+        if (!empty($_FILES['atestado_medico_arquivo']['name'])) {
+            $config['upload_path'] = './assets/uploads/atestados/';
+            $config['allowed_types'] = 'pdf|jpg|jpeg|png';
+            $config['max_size'] = 5120; // 5MB
+            $config['encrypt_name'] = true;
+
+            if (!is_dir($config['upload_path'])) {
+                mkdir($config['upload_path'], 0777, true);
             }
 
-             if ($this->Conecte_model->edit('clientes', $data, 'idClientes', $this->session->userdata('cliente_id')) == true) {
-                $this->session->set_flashdata('success', 'Dados editados com sucesso!');
-                redirect(base_url() . 'index.php/mine/conta');
+            $this->upload->initialize($config);
+
+            if ($this->upload->do_upload('atestado_medico_arquivo')) {
+                $upload_data = $this->upload->data();
+                $data['atestado_medico_arquivo'] = $upload_data['file_name'];
             } else {
+                $this->session->set_flashdata('error', 'Erro no upload do atestado: ' . $this->upload->display_errors());
+                redirect(site_url('mine/conta'));
             }
         }
 
-        $data['result'] = $this->Conecte_model->getDados();
-
-        $data['output'] = 'conecte/editar_dados';
-        $this->load->view('conecte/template', $data);
+        if ($this->Conecte_model->edit('clientes', $data, 'idClientes', $this->session->userdata('cliente_id')) == true) {
+                $this->session->set_flashdata('success', 'Dados editados com sucesso!');
+                redirect(base_url() . 'index.php/mine/conta');
+            } else {
+                $this->session->set_flashdata('error', 'Ocorreu um erro ao editar os dados.');
+                redirect(base_url() . 'index.php/mine/conta');
+            }
     }
 
     public function compras()
@@ -932,6 +965,27 @@ class Mine extends MY_Controller
             $this->zip->read_file($path . '/' . $file->anexo);
             $this->zip->download('file' . date('d-m-Y-H.i.s') . '.zip');
         }
+    }
+
+    public function remover_atestado()
+    {
+        if (!$this->session->userdata('cliente_id') || !$this->session->userdata('conectado')) {
+            redirect(base_url() . 'index.php/mine/login');
+        }
+
+        $cliente = $this->Conecte_model->getDados();
+        if ($cliente && $cliente->atestado_medico_arquivo) {
+            $arquivo = './assets/uploads/atestados/' . $cliente->atestado_medico_arquivo;
+            if (file_exists($arquivo)) {
+                unlink($arquivo);
+            }
+            $this->Conecte_model->edit('clientes', ['atestado_medico_arquivo' => null, 'atestado_medico_validade' => null], 'idClientes', $cliente->idClientes);
+            $this->session->set_flashdata('success', 'Atestado médico removido com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao remover atestado médico.');
+        }
+
+        redirect('mine/conta?tab=saude');
     }
 
     public function minhasViagens()
