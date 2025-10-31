@@ -133,6 +133,16 @@ class Os_model extends CI_Model
         return $this->db->get()->result();
     }
 
+    public function getCursos($id = null)
+    {
+        $this->db->select('cursos_os.*, cursos.nome_curso');
+        $this->db->from('cursos_os');
+        $this->db->join('cursos', 'cursos.id = cursos_os.cursos_id');
+        $this->db->where('os_id', $id);
+
+        return $this->db->get()->result();
+    }
+
     public function add($table, $data, $returnId = false)
     {
         $this->db->insert($table, $data);

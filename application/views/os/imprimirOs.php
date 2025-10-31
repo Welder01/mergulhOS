@@ -1,5 +1,6 @@
 <?php
     $totalServico  = 0;
+    $totalCursos = 0;
     $totalProdutos = 0;
 ?>
 <!DOCTYPE html>
@@ -228,21 +229,17 @@
                                     <tbody>
                                         <?php if ($result->valor_desconto != 0) : ?>
                                             <tr>
-                                                <td width="65%">SUBTOTAL</td>
-                                                <td>R$ <b><?= number_format($totalProdutos + $totalServico, 2, ',', '.') ?></b></td>
-                                            </tr>
-                                            <tr>
                                                 <td>DESCONTO</td>
-                                                <td>R$ <b><?= number_format($result->valor_desconto != 0 ? $result->valor_desconto - ($totalProdutos + $totalServico) : 0.00, 2, ',', '.') ?></b></td>
+                                                <td>R$ <b><?= number_format(($totalProdutos + $totalServico + $totalCursos) - $result->valor_desconto, 2, ',', '.') ?></b></td>
                                             </tr>
                                             <tr>
                                                 <td>TOTAL</td>
-                                                <td>R$ <?= number_format($result->valor_desconto, 2, ',', '.') ?></td>
+                                                <td>R$ <b><?= number_format($result->valor_desconto, 2, ',', '.') ?></b></td>
                                             </tr>
                                         <?php else : ?>
                                             <tr>
                                                 <td style="width:290px">TOTAL</td>
-                                                <td>R$ <?= number_format($totalProdutos + $totalServico, 2, ',', '.') ?></td>
+                                                <td>R$ <?= number_format($totalProdutos + $totalServico + $totalCursos, 2, ',', '.') ?></td>
                                             </tr>
                                         <?php endif; ?>
                                     </tbody>

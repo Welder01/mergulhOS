@@ -64,8 +64,9 @@
                         <li id="tabDesconto"><a href="#tab2" data-toggle="tab">Desconto</a></li>
                         <li id="tabProdutos"><a href="#tab3" data-toggle="tab">Produtos</a></li>
                         <li id="tabServicos"><a href="#tab4" data-toggle="tab">Serviços</a></li>
-                        <li id="tabAnexos"><a href="#tab5" data-toggle="tab">Anexos</a></li>
-                        <li id="tabAnotacoes"><a href="#tab6" data-toggle="tab">Anotações</a></li>
+                        <li id="tabCursos"><a href="#tab5" data-toggle="tab">Cursos</a></li>
+                        <li id="tabAnexos"><a href="#tab6" data-toggle="tab">Anexos</a></li>
+                        <li id="tabAnotacoes"><a href="#tab7" data-toggle="tab">Anotações</a></li>
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane active" id="tab1">
@@ -233,9 +234,9 @@
                                                 $total = $total + $p->subTotal;
                                                 echo '<tr>';
                                                 echo '<td>' . $p->descricao . '</td>';
-                                                echo '<td><div align="center">' . $p->quantidade . '</td>';
+                                                echo '<td><div align="center">' . $p->quantidade . '</div></td>';
                                                 echo '<td><div align="center">R$: ' . ($p->preco ?: $p->precoVenda) . '</td>';
-                                                echo (strtolower($result->status) != "cancelado") ? '<td><div align="center"><a href="" idAcao="' . $p->idProdutos_os . '" prodAcao="' . $p->idProdutos . '" quantAcao="' . $p->quantidade . '" title="Excluir Produto" class="btn-nwe4"><i class="bx bx-trash-alt"></i></a></td>' : '<td></td>';
+                                                echo (strtolower($result->status) != "cancelado") ? '<td><div align="center"><a href="" idAcao="' . $p->idProdutos_os . '" prodAcao="' . $p->idProdutos . '" quantAcao="' . $p->quantidade . '" title="Excluir Produto" class="btn-nwe4 produto"><i class="bx bx-trash-alt"></i></a></td>' : '<td></td>';
                                                 echo '<td><div align="center">R$: ' . number_format($p->subTotal, 2, ',', '.') . '</td>';
                                                 echo '</tr>';
                                             } ?>
@@ -336,8 +337,61 @@
                             </div>
                         </div>
 
-                        <!--Anexos-->
+                        <!-- Cursos -->
                         <div class="tab-pane" id="tab5">
+                            <div class="span12 well" style="padding: 1%; margin-left: 0">
+                                <form id="formCursos" action="<?php echo base_url() ?>index.php/os/adicionarCurso" method="post">
+                                    <div class="span6">
+                                        <input type="hidden" name="idCurso" id="idCurso" />
+                                        <input type="hidden" name="idOsCurso" id="idOsCurso" value="<?php echo $result->idOs; ?>" />
+                                        <label for="">Curso</label>
+                                        <input type="text" class="span12" name="curso" id="curso" placeholder="Digite o nome do curso" />
+                                    </div>
+                                    <div class="span2">
+                                        <label for="">Preço</label>
+                                        <input type="text" placeholder="Preço" id="preco_curso" name="preco" class="span12 money" />
+                                    </div>
+                                    <div class="span2">
+                                        <label for="">&nbsp;</label>
+                                        <button class="button btn btn-success" id="btnAdicionarCurso"><span class="button__icon"><i class='bx bx-plus-circle'></i></span><span class="button__text2">Adicionar</span></button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="widget-box" id="divCursos-OS">
+                                <div class="widget_content nopadding">
+                                    <table width="100%" class="table table-bordered" id="tblCursos">
+                                        <thead>
+                                            <tr>
+                                                <th>Curso</th>
+                                                <th>Preço</th>
+                                                <th width="6%">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php
+                                            $totalCursos = 0;
+                                            foreach ($cursos as $c) {
+                                                $totalCursos += $c->preco;
+                                                echo '<tr>';
+                                                echo '<td>' . $c->nome_curso . '</td>';
+                                                echo '<td>R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
+                                                echo '<td><div align="center"><a href="" idAcao="' . $c->idCursos_os . '" title="Excluir Curso" class="btn-nwe4 curso"><i class="bx bx-trash-alt"></i></a></div></td>';
+                                                echo '</tr>';
+                                            } ?>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2" style="text-align: right"><strong>Total:</strong></td>
+                                                <td><strong>R$ <?php echo number_format($totalCursos, 2, ',', '.'); ?></strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Anexos-->
+                        <div class="tab-pane" id="tab6">
                             <div class="span12" style="padding: 1%; margin-left: 0">
                                 <div class="span12 well" style="padding: 1%; margin-left: 0" id="form-anexos">
                                     <form id="formAnexos" enctype="multipart/form-data" action="javascript:;"
@@ -379,7 +433,7 @@
                         </div>
 
                         <!--Anotações-->
-                        <div class="tab-pane" id="tab6">
+                        <div class="tab-pane" id="tab7">
                             <div class="span12" style="padding: 1%; margin-left: 0">
 
                                 <div class="span12" id="divAnotacoes" style="margin-left: 0">
@@ -879,6 +933,20 @@
             }
         });
 
+        // Carrega o autocomplete de cursos apenas quando a aba for clicada
+        $('#tabCursos a').one('click', function(e) {
+            e.preventDefault();
+            $("#curso").autocomplete({
+                source: "<?php echo base_url(); ?>index.php/cursos/autoCompleteCurso",
+                minLength: 2,
+                select: function(event, ui) {
+                    $("#idCurso").val(ui.item.id);
+                    $("#preco_curso").val(ui.item.preco);
+                }
+            });
+            $(this).tab('show');
+        });
+
         $("#formOs").validate({
             rules: {
                 cliente: {
@@ -1030,6 +1098,45 @@
             }
         });
 
+        $("#formCursos").validate({
+            rules: {
+                curso: {
+                    required: true
+                }
+            },
+            messages: {
+                curso: {
+                    required: 'Insira um curso'
+                }
+            },
+            submitHandler: function(form) {
+                var dados = $(form).serialize();
+                $("#divCursos-OS").html("<div class='progress progress-info progress-striped active'><div class='bar' style='width: 100%'></div></div>");
+                $.ajax({
+                    type: "POST",
+                    url: "<?php echo base_url(); ?>index.php/os/adicionarCurso",
+                    data: dados,
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.result == true) {
+                            $("#divCursos-OS").load("<?php echo current_url(); ?> #divCursos-OS");
+                            $("#curso").val('');
+                            $("#preco_curso").val('');
+                            $("#idCurso").val('');
+                            $("#curso").focus();
+                        } else {
+                            Swal.fire({
+                                type: "error",
+                                title: "Atenção",
+                                text: "Ocorreu um erro ao tentar adicionar curso."
+                            });
+                        }
+                    }
+                });
+                return false;
+            }
+        });
+
         $("#formAnotacao").validate({
             rules: {
                 anotacao: {
@@ -1102,7 +1209,7 @@
             }
         });
 
-        $(document).on('click', 'a', function (event) {
+        $(document).on('click', '.produto', function(event) {
             var idProduto = $(this).attr('idAcao');
             var quantidade = $(this).attr('quantAcao');
             var produto = $(this).attr('prodAcao');
@@ -1175,6 +1282,26 @@
 
             $("#download").attr('href', "<?php echo base_url(); ?>index.php/os/downloadanexo/" + id);
 
+        });
+
+        $(document).on('click', '.curso', function(event) {
+            var idCurso = $(this).attr('idAcao');
+            var idOs = "<?php echo $result->idOs ?>"
+            if ((idCurso % 1) == 0) {
+                $("#divCursos-OS").html("<div class='progress progress-info progress-striped active'><div class='bar' style='width: 100%'></div></div>");
+                $.ajax({
+                    type: "POST",
+                    url: "<?php echo base_url(); ?>index.php/os/excluirCurso",
+                    data: "idCurso=" + idCurso + "&idOs=" + idOs,
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.result == true) {
+                            $("#divCursos-OS").load("<?php echo current_url(); ?> #divCursos-OS");
+                        }
+                    }
+                });
+                return false;
+            }
         });
 
         $(document).on('click', '#excluir-anexo', function (event) {

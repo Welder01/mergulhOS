@@ -288,6 +288,8 @@ class Os extends MY_Controller
         $this->data['produtos'] = $this->os_model->getProdutos($this->uri->segment(3));
         $this->data['servicos'] = $this->os_model->getServicos($this->uri->segment(3));
         $this->data['anexos'] = $this->os_model->getAnexos($this->uri->segment(3));
+        $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
+        $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
         $this->data['anotacoes'] = $this->os_model->getAnotacoes($this->uri->segment(3));
 
         if ($return = $this->os_model->valorTotalOS($this->uri->segment(3))) {
@@ -322,6 +324,8 @@ class Os extends MY_Controller
         $this->data['result'] = $this->os_model->getById($this->uri->segment(3));
         $this->data['produtos'] = $this->os_model->getProdutos($this->uri->segment(3));
         $this->data['servicos'] = $this->os_model->getServicos($this->uri->segment(3));
+        $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
+        $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
         $this->data['emitente'] = $this->mapos_model->getEmitente();
         $this->data['anexos'] = $this->os_model->getAnexos($this->uri->segment(3));
         $this->data['anotacoes'] = $this->os_model->getAnotacoes($this->uri->segment(3));
@@ -430,6 +434,7 @@ class Os extends MY_Controller
         $this->data['result'] = $this->os_model->getById($this->uri->segment(3));
         $this->data['produtos'] = $this->os_model->getProdutos($this->uri->segment(3));
         $this->data['servicos'] = $this->os_model->getServicos($this->uri->segment(3));
+        $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
         $this->data['anexos'] = $this->os_model->getAnexos($this->uri->segment(3));
         $this->data['emitente'] = $this->mapos_model->getEmitente();
         if ($this->data['configuration']['pix_key']) {
@@ -810,6 +815,48 @@ class Os extends MY_Controller
                 ->set_content_type('application/json')
                 ->set_status_header(500)
                 ->set_output(json_encode(['result' => false]));
+        }
+    }
+
+    public function adicionarCurso()
+    {
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('idCurso', 'Curso', 'trim|required');
+        $this->form_validation->set_rules('preco', 'Preço', 'trim|required');
+        $this->form_validation->set_rules('idOsCurso', 'OS', 'trim|required');
+
+        if ($this->form_validation->run() == false) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(400)
+                ->set_output(json_encode(['message' => validation_errors()]));
+        }
+
+        $data = [
+            'cursos_id' => $this->input->post('idCurso'),
+            'os_id' => $this->input->post('idOsCurso'),
+            'preco' => $this->input->post('preco'),
+            'data_vinculo' => date('Y-m-d'),
+        ];
+
+        if ($this->os_model->add('cursos_os', $data) == true) {
+            log_info('Adicionou curso a uma OS. ID (OS): ' . $this->input->post('idOsCurso'));
+            return $this->output->set_content_type('application/json')->set_status_header(200)->set_output(json_encode(['result' => true]));
+        }
+
+        return $this->output->set_content_type('application/json')->set_status_header(500)->set_output(json_encode(['result' => false]));
+    }
+
+    public function excluirCurso()
+    {
+        $id = $this->input->post('idCurso');
+        $idOs = $this->input->post('idOs');
+
+        if ($this->os_model->delete('cursos_os', 'idCursos_os', $id) == true) {
+            log_info('Removeu curso de uma OS. ID (OS): ' . $idOs);
+            echo json_encode(['result' => true]);
+        } else {
+            echo json_encode(['result' => false]);
         }
     }
 

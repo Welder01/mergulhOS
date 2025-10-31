@@ -363,12 +363,16 @@ class Cursos extends MY_Controller
     {
         if (isset($_GET['term'])) {
             $q = strtolower($this->input->get('term'));
-            $this->db->select('id, nome_curso');
+            $this->db->select('id, nome_curso, data_inicio, preco');
             $this->db->like('nome_curso', $q);
             $this->db->limit(5);
             $query = $this->db->get('cursos');
             $result = array_map(function ($curso) {
-                return ['id' => $curso->id, 'label' => $curso->nome_curso];
+                return [
+                    'id' => $curso->id,
+                    'label' => 'ID: ' . $curso->id . ' | Curso: ' . $curso->nome_curso . ' | Início: ' . date('d/m/Y', strtotime($curso->data_inicio)),
+                    'preco' => $curso->preco,
+                ];
             }, $query->result());
             echo json_encode($result);
         }
