@@ -798,16 +798,16 @@ class Mine extends MY_Controller
             // function recieving => x = (y - 44023) / 7653
 
             // Example ID = 2 | y = 59329
-
             $y = intval($y);
             $id = ($y - 44023) / 7653;
 
-            $data['menuOs'] = 'os';
+            $this->data['menuOs'] = 'os';
             $this->data['custom_error'] = '';
             $this->load->model('mapos_model');
             $this->load->model('os_model');
-            $data['result'] = $this->os_model->getById($id);
-            if ($data['result'] == null) {
+            $this->data['result'] = $this->os_model->getById($id);
+
+            if ($this->data['result'] == null) {
                 // Resposta em caso de não encontrar a ordem de serviço
                 //$this->load->view('conecte/login');
             } else {
@@ -815,7 +815,7 @@ class Mine extends MY_Controller
                 $data['servicos'] = $this->os_model->getServicos($id);
                 $data['emitente'] = $this->mapos_model->getEmitente();
 
-                $this->load->view('conecte/minha_os', $data);
+                $this->load->view('conecte/minha_os', array_merge($this->data, $data));
             }
         } else {
             // Resposta em caso de não encontrar a ordem de serviço

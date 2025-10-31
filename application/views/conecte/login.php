@@ -97,7 +97,7 @@ $parse_cpfcnpj = $this->input->get('c');
     <div class="row-fluid">
         <div class="span12" style="text-align: center; font-size: 10px; color: #c3c3c3;">
             <a class="pecolor" href="<?= $_ENV['APP_URL_FOOTER'] ?? 'https://github.com/RamonSilva20/mapos' ?>" target="_blank">
-                <p><?= $configuration['app_footer'] ?? date('Y') . ' &copy; Ramon Silva - ' . $this->config->item('app_name') ?> - Versão: <?= $this->config->item('app_version'); ?></p>
+                <p><?= $configuration['app_footer'] ?? date('Y') . ' &copy; ' . $this->config->item('app_name') ?> - Versão: <?= $this->config->item('app_version'); ?></p>
             </a>
         </div>
     </div>
