@@ -123,7 +123,9 @@
     <!--Footer-part-->
     <div class="row-fluid">
         <div id="footer" class="span12">
-            <?= $this->config->item('app_footer') ?> - Versão: <?= $this->config->item('app_version'); ?>
+            <a class="pecolor" href="<?= $_ENV['APP_URL_FOOTER'] ?? 'https://github.com/RamonSilva20/mapos' ?>" target="_blank">
+                <?= $configuration['app_footer'] ?? date('Y') . ' &copy; Ramon Silva - ' . $this->config->item('app_name') ?> - Versão: <?= $this->config->item('app_version'); ?>
+            </a>
         </div>
     </div>
 

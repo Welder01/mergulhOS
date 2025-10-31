@@ -29,12 +29,14 @@ class Mine extends MY_Controller
             redirect(base_url() . 'index.php/mine/painel');
         }
 
+        $this->data['view'] = 'conecte/login';
         $this->load->view('conecte/login', $this->data);
     }
 
     public function sair()
     {
         $this->session->sess_destroy();
+        log_info('O cliente saiu da área do cliente.');
         redirect(base_url() . 'index.php/mine/login');
     }
 
@@ -104,7 +106,7 @@ class Mine extends MY_Controller
         if ($this->form_validation->run('token') == false) {
             $this->session->set_flashdata(['error' => (validation_errors() ? 'Por favor digite o token' : false)]);
 
-            return $this->load->view('conecte/token_digita');
+            return $this->load->view('conecte/token_digita', $this->data);
         }
             $token = $this->check_token($this->input->post('token'));
 
@@ -114,7 +116,7 @@ class Mine extends MY_Controller
                 $this->session->set_userdata($session_mine_data);
                 log_info('Digitou Token. Porém, Token expirado');
 
-                return redirect(base_url() . 'index.php/mine/login');
+                return redirect(base_url() . 'index.php/mine/login', $this->data);
             } else {
                 if ($token) {
                     if (($cliente = $this->check_credentials($token->email)) == null) {
@@ -123,7 +125,7 @@ class Mine extends MY_Controller
                         $this->session->set_userdata($session_mine_data);
                         log_info('Digitou Token. Porém, os dados de acesso estão incorretos.');
 
-                        return $this->load->view('conecte/token_digita');
+                        return $this->load->view('conecte/token_digita', $this->data);
                     } else {
                         if ($token->email == $cliente->email && $token->token_utilizado == false) {
                             return $this->load->view('conecte/nova_senha', $token);
@@ -133,7 +135,7 @@ class Mine extends MY_Controller
                             $this->session->set_userdata($session_mine_data);
                             log_info('Digitou Token. Porém, dados divergentes ou Token invalido.');
 
-                            return redirect(base_url() . 'index.php/mine/login');
+                            return redirect(base_url() . 'index.php/mine/login', $this->data);
                         }
                     }
                 } else {
@@ -142,10 +144,10 @@ class Mine extends MY_Controller
                     $this->session->set_userdata($session_mine_data);
                     log_info('Digitou Token. Porém, Token invalido.');
 
-                    return $this->load->view('conecte/token_digita');
+                    return $this->load->view('conecte/token_digita', $this->data);
                 }
             }
-        $this->load->view('conecte/token_digita');
+        $this->load->view('conecte/token_digita', $this->data);
     }
 
     public function verifyTokenSenha()
@@ -159,7 +161,7 @@ class Mine extends MY_Controller
             $this->session->set_userdata($session_mine_data);
             log_info('Acesso via link do email (Token). Porém, Token invalido.');
 
-            return $this->load->view('conecte/token_digita');
+            return $this->load->view('conecte/token_digita', $this->data);
         } else {
             if ($this->validateDate($token->data_expiracao)) {
                 $this->session->set_flashdata(['error' => 'Token expirado']);
@@ -167,7 +169,7 @@ class Mine extends MY_Controller
                 $this->session->set_userdata($session_mine_data);
                 log_info('Acesso via link do email (Token). Porém, Token expirado');
 
-                return redirect(base_url() . 'index.php/mine/login');
+                return redirect(base_url() . 'index.php/mine/login', $this->data);
             } else {
                 if ($token) {
                     if (($cliente = $this->check_credentials($token->email)) == null) {
@@ -176,7 +178,7 @@ class Mine extends MY_Controller
                         $this->session->set_userdata($session_mine_data);
                         log_info('Acesso via link do email (Token). Porém, dados de acesso estão incorretos.');
 
-                        return $this->load->view('conecte/token_digita');
+                        return $this->load->view('conecte/token_digita', $this->data);
                     } else {
                         if ($token->email == $cliente->email && $token->token_utilizado == false) {
                             return $this->load->view('conecte/nova_senha', $token);
@@ -186,7 +188,7 @@ class Mine extends MY_Controller
                             $this->session->set_userdata($session_mine_data);
                             log_info('Acesso via link do email (Token). Porém, dados divergentes ou Token invalido.');
 
-                            return redirect(base_url() . 'index.php/mine/login');
+                            return redirect(base_url() . 'index.php/mine/login', $this->data);
                         }
                     }
                 } else {
@@ -195,7 +197,7 @@ class Mine extends MY_Controller
                     $this->session->set_userdata($session_mine_data);
                     log_info('Acesso via link do email (Token). Porém, Token invalido.');
 
-                    return $this->load->view('conecte/token_digita');
+                    return $this->load->view('conecte/token_digita', $this->data);
                 }
 
                 return $this->load->view('conecte/nova_senha', $token);
@@ -956,6 +958,7 @@ class Mine extends MY_Controller
             }
         }
 
+        $this->data['view'] = 'conecte/cadastrar';
         $this->load->view('conecte/cadastrar', $this->data);
     }
 
