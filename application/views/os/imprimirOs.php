@@ -205,7 +205,37 @@
                     </div>
                 <?php endif; ?>
 
-                <?php if ($e class="table table-bordered">
+                <?php if ($cursos) : ?>
+                    <div class="tabela">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr class="table-secondary">
+                                    <th>CURSO(S)</th>
+                                    <th class="text-end" width="15%" >PREÇO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                    foreach ($cursos as $c) {
+                                        $totalCursos += $c->preco;
+                                        echo '<tr>';
+                                        echo '<td>' . $c->nome_curso . '</td>';
+                                        echo '<td class="text-end">R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
+                                        echo '</tr>';
+                                    }
+                                ?>
+                                <tr>
+                                    <td class="text-end"><b>TOTAL CURSOS:</b></td>
+                                    <td class="text-end"><b>R$ <?= number_format($totalCursos, 2, ',', '.') ?></b></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($viagens) : ?>
+                    <div class="tabela">
+                        <table class="table table-bordered">
                             <thead>
                                 <tr class="table-secondary">
                                     <th>VIAGEM(NS)</th>
@@ -256,9 +286,15 @@
                                     <tbody>
                                         <?php if ($result->valor_desconto != 0) : ?>
                                             <tr>
-                                                <td>DESCONTO</td>
-                                                <td>R$ <b><?
+                                                <td width="65%">SUB-TOTAL</td>
+                                                <td>R$ <b><?= number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, ',', '.') ?></b></td>
+                                            </tr>
                                             <tr>
+                                                <td>DESCONTO</td>
+                                                <td>R$ <b><?= number_format(($totalProdutos + $totalServico + $totalCursos + $totalViagens) - $result->valor_desconto, 2, ',', '.') ?></b></td>
+                                            </tr>
+                                            <tr>
+                                                <td>TOTAL</td>
                                                 <td>R$ <b><?= number_format($result->valor_desconto, 2, ',', '.') ?></b></td>
                                             </tr>
                                         <?php else : ?>
@@ -266,6 +302,7 @@
                                                 <td style="width:290px">TOTAL</td>
                                                 <td>R$ <?= number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, ',', '.') ?></td>
                                             </tr>
+                                        <?php endif; ?>
                                     </tbody>
                                 </table>
                         </div>
