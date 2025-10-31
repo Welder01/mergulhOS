@@ -2,12 +2,14 @@
     <div class="widget-title" style="margin: 0;font-size: 1.1em">
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#tab1">Dados do Cliente</a></li>
-            <li><a data-toggle="tab" href="#tab2">Ordens de Serviço</a></li>
-            <li><a data-toggle="tab" href="#tab3">Vendas</a></li>
-            <li><a data-toggle="tab" href="#tab4">Restrições Alimentares</a></li>
-            <li><a data-toggle="tab" href="#tab5">Cursos</a></li>
-            <li><a data-toggle="tab" href="#tab6">Viagens</a></li>
-            <li><a data-toggle="tab" href="#tab7">Certificações</a></li>
+            <li><a data-toggle="tab" href="#tabEquipamentos">Equipamentos</a></li>
+            <li><a data-toggle="tab" href="#tabSaude">Saúde e Segurança</a></li>
+            <li><a data-toggle="tab" href="#tabRestricoes">Restrições Alimentares</a></li>
+            <li><a data-toggle="tab" href="#tabOs">Ordens de Serviço</a></li>
+            <li><a data-toggle="tab" href="#tabVendas">Vendas</a></li>
+            <li><a data-toggle="tab" href="#tabCursos">Cursos</a></li>
+            <li><a data-toggle="tab" href="#tabViagens">Viagens</a></li>
+            <li><a data-toggle="tab" href="#tabCertificacoes">Certificações</a></li>
         </ul>
     </div>
     <div class="widget-content tab-content">
@@ -162,8 +164,186 @@
                 </div>
             </div>
         </div>
-        <!--Tab 2-->
-        <div id="tab2" class="tab-pane" style="min-height: 300px">
+
+        <!-- Aba Equipamentos -->
+        <div id="tabEquipamentos" class="tab-pane" style="min-height: 300px">
+            <div class="accordion" id="collapse-equipamentos">
+                <div class="accordion-group widget-box">
+                    <div class="accordion-heading">
+                        <div class="widget-title">
+                            <a data-parent="#collapse-equipamentos" href="#collapseEquip" data-toggle="collapse">
+                                <span><i class='bx bx-swim icon-cli'></i></span>
+                                <h5 style="padding-left: 28px">Equipamentos de Mergulho</h5>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="collapse in accordion-body" id="collapseEquip">
+                        <div class="widget-content">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align: right; width: 30%;"><strong>Tamanho do Colete:</strong></td>
+                                        <td><?= html_escape($result->tamanho_colete ?? 'Não informado') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Peso do Lastro (kg):</strong></td>
+                                        <td><?= html_escape($result->peso_lastro ?? 'Não informado') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Tamanho do Neoprene:</strong></td>
+                                        <td><?= html_escape($result->tamanho_neoprene ?? 'Não informado') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Tamanho da Nadadeira:</strong></td>
+                                        <td><?= html_escape($result->tamanho_nadadeira ?? 'Não informado') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Reguladores:</strong></td>
+                                        <td><?= html_escape($result->qtd_reguladores ?? '0') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Lanternas:</strong></td>
+                                        <td><?= html_escape($result->qtd_lanterna ?? '0') ?> unidade(s)</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Computadores:</strong></td>
+                                        <td><?= html_escape($result->qtd_computador ?? '0') ?> unidade(s)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba Saúde e Segurança -->
+        <div id="tabSaude" class="tab-pane" style="min-height: 300px">
+            <div class="accordion" id="collapse-saude">
+                <!-- Seção de Contato de Emergência -->
+                <div class="accordion-group widget-box">
+                    <div class="accordion-heading">
+                        <div class="widget-title">
+                            <a data-parent="#collapse-saude" href="#collapseEmergencia" data-toggle="collapse">
+                                <span><i class="fas fa-first-aid icon-cli"></i></span>
+                                <h5 style="padding-left: 28px">Contato de Emergência</h5>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="collapse in accordion-body" id="collapseEmergencia">
+                        <div class="widget-content">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align: right; width: 30%;"><strong>Nome:</strong></td>
+                                        <td><?= html_escape($result->contato_emergencia_nome ?? 'Não informado') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Telefone:</strong></td>
+                                        <td><?= html_escape($result->contato_emergencia_telefone ?? 'Não informado') ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Parentesco:</strong></td>
+                                        <td><?= html_escape($result->contato_emergencia_parentesco ?? 'Não informado') ?></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Atestado Médico -->
+                <div class="accordion-group widget-box">
+                    <div class="accordion-heading">
+                        <div class="widget-title">
+                            <a data-parent="#collapse-saude" href="#collapseAtestado" data-toggle="collapse">
+                                <span><i class="fas fa-file-medical-alt icon-cli"></i>
+                                    <?php
+                                    if (isset($result->atestado_medico_validade) && $result->atestado_medico_validade) {
+                                        $dataValidade = new DateTime($result->atestado_medico_validade);
+                                        $dataAtual = new DateTime();
+                                        echo '<span class="badge ' . ($dataValidade >= $dataAtual ? 'badge-success' : 'badge-important') . '" style="margin-left: 5px; vertical-align: text-top;">' . ($dataValidade >= $dataAtual ? 'Válido' : 'Vencido') . '</span>';
+                                    }
+                                    ?>
+                                </span>
+                                <h5 style="padding-left: 28px">Atestado Médico</h5>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="collapse accordion-body" id="collapseAtestado">
+                        <div class="widget-content">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align: right; width: 30%;"><strong>Data de Emissão:</strong></td>
+                                        <td><?= isset($result->atestado_medico_emissao) && $result->atestado_medico_emissao ? date('d/m/Y', strtotime($result->atestado_medico_emissao)) : 'Não informado' ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Validade:</strong></td>
+                                        <td><?= isset($result->atestado_medico_validade) && $result->atestado_medico_validade ? date('d/m/Y', strtotime($result->atestado_medico_validade)) : 'Não informado' ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right;"><strong>Arquivo:</strong></td>
+                                        <td>
+                                            <?php if (isset($result->atestado_medico_arquivo) && $result->atestado_medico_arquivo) : ?>
+                                                <a href="<?= base_url('assets/uploads/atestados/' . $result->atestado_medico_arquivo) ?>" target="_blank" class="btn btn-mini"><i class="icon-download"></i> Baixar Atestado</a>
+                                            <?php else : ?>
+                                                Nenhum arquivo
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba Restrições Alimentares -->
+        <div id="tabRestricoes" class="tab-pane" style="min-height: 300px">
+            <div class="accordion" id="collapse-restricoes">
+                <div class="accordion-group widget-box">
+                    <div class="accordion-heading">
+                        <div class="widget-title">
+                            <a data-parent="#collapse-restricoes" href="#collapseRestricao" data-toggle="collapse">
+                                <span><i class='bx bx-food-menu icon-cli'></i></span>
+                                <h5 style="padding-left: 28px">Restrições Alimentares</h5>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="collapse in accordion-body" id="collapseRestricao">
+                        <div class="widget-content">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Restrição</th>
+                                        <th>Observações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (isset($restricoes) && !empty($restricoes)) : ?>
+                                        <?php foreach ($restricoes as $r) : ?>
+                                            <tr>
+                                                <td><?= html_escape($r->restricao) ?></td>
+                                                <td><?= html_escape($r->observacoes) ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else : ?>
+                                        <tr>
+                                            <td colspan="2">Nenhuma restrição cadastrada.</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Aba Ordens de Serviço-->
+        <div id="tabOs" class="tab-pane" style="min-height: 300px">
             <?php if (!$results) { ?>
                 <table class="table table-bordered ">
                     <thead>
@@ -225,309 +405,9 @@
                 <?php
             } ?>
         </div>
-        <!--Tab 3-->
-        <div id="tab3" class="tab-pane" style="min-height: 300px">
-            <?php if (!$result_vendas) { ?>
-                <table class="table table-bordered ">
-                    <thead>
-                    <tr>
-                        <th>N° Venda</th>
-                        <th>Data</th>
-                        <th>Faturado</th>
-                        <th>Total</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td colspan="6">Nenhuma OS Cadastrada</td>
-                    </tr>
-                    </tbody>
-                </table>
-                <?php
-            } else { ?>
-                <table class="table table-bordered ">
-                    <thead>
-                    <tr>
-			<th>N° Venda</th>
-                        <th>Data</th>
-                        <th>Faturado</th>
-                        <th>Total</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php
-                    foreach ($result_vendas as $r) {
-                        $dataVenda = date(('d/m/Y'), strtotime($r->dataVenda));
-                        if ($r->faturado == 1) {
-                            $faturado = 'Sim';
-                        } else {
-                            $faturado = 'Não';
-                        }
-                        echo '<tr>';
-                        echo '<td>' . $r->idVendas . '</td>';
-                        echo '<td>' . $dataVenda . '</td>';
-                        echo '<td>' . $faturado . '</td>';
-                        echo '<td>R$' . $r->valorTotal. '</td>';
 
-                        echo '<td>';
-                        if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vOs')) {
-                            echo '<a href="' . base_url() . 'index.php/vendas/visualizar/' . $r->idVendas . '" style="margin-right: 1%" class="btn tip-top" title="Ver mais detalhes"><i class="fas fa-eye"></i></a>';
-                        }
-                        if ($this->permission->checkPermission($this->session->userdata('permissao'), 'eOs')) {
-                            echo '<a href="' . base_url() . 'index.php/vendas/editar/' . $r->idVendas . '" class="btn btn-info tip-top" title="Editar OS"><i class="fas fa-edit"></i></a>';
-                        }
-                        echo  '</td>';
-                        echo '</tr>';
-                    } ?>
-                    <tr>
-                    </tr>
-                    </tbody>
-                </table>
-                <?php
-            } ?>
-        </div>
-        <!--Tab 4-->
-        <div id="tab4" class="tab-pane" style="min-height: 300px">
-            <div class="accordion" id="collapse-group-extra">
-
-                <!-- Seção de Equipamentos de Mergulho -->
-                <div class="accordion-group widget-box">
-                    <div class="accordion-heading">
-                        <div class="widget-title">
-                            <a data-parent="#collapse-group-extra" href="#collapseEquipamentos" data-toggle="collapse">
-                                <span><i class="icon-tag icon-cli"></i></span>
-                                <h5 style="padding-left: 28px">Equipamentos de Mergulho</h5>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="collapse in accordion-body" id="collapseEquipamentos">
-                        <div class="widget-content">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    <tr>
-                                        <td style="text-align: right; width: 30%;"><strong>Tamanho do Colete:</strong></td>
-                                        <td><?= html_escape($result->tamanho_colete ?? 'Não informado') ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="text-align: right;"><strong>Peso do Lastro (kg):</strong></td>
-                                        <td><?= html_escape($result->peso_lastro ?? 'Não informado') ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="text-align: right;"><strong>Tamanho do Neoprene:</strong></td>
-                                        <td><?= html_escape($result->tamanho_neoprene ?? 'Não informado') ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="text-align: right;"><strong>Tamanho da Nadadeira:</strong></td>
-                                        <td><?= html_escape($result->tamanho_nadadeira ?? 'Não informado') ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="text-align: right;"><strong>Reguladores:</strong></td>
-                                        <td><?= html_escape($result->qtd_reguladores ?? '0') ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="text-align: right;"><strong>Possui Lanterna:</strong></td>
-                                        <td><?= html_escape($result->qtd_lanterna ?? '0') ?> unidade(s)</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="text-align: right;"><strong>Possui Computador:</strong></td>
-                                        <td><?= html_escape($result->qtd_computador ?? '0') ?> unidade(s)</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Seção de Atestado Médico -->
-                <div class="accordion-group widget-box">
-                    <div class="accordion-heading">
-                        <div class="widget-title">
-                            <a data-parent="#collapse-group-extra" href="#collapseAtestado" data-toggle="collapse">
-                                <span><i class="fas fa-file-medical-alt icon-cli"></i>
-                                    <?php
-                                    if (isset($result->atestado_medico_validade) && $result->atestado_medico_validade) {
-                                        $dataValidade = new DateTime($result->atestado_medico_validade);
-                                        $dataAtual = new DateTime();
-                                        if ($dataValidade >= $dataAtual) {
-                                            echo '<span class="badge badge-success" style="margin-left: 5px; vertical-align: text-top;">Válido</span>';
-                                        } else {
-                                            echo '<span class="badge badge-important" style="margin-left: 5px; vertical-align: text-top;">Vencido</span>';
-                                        }
-                                    }
-                                    ?>
-                                </span>
-                                <h5 style="padding-left: 28px">Atestado Médico</h5>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="collapse accordion-body" id="collapseAtestado">
-                        <div class="widget-content">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    <tr>
-                                        <td style="text-align: right; width: 30%;"><strong>Data de Emissão:</strong></td>
-                                        <td><?= isset($result->atestado_medico_emissao) && $result->atestado_medico_emissao ? date('d/m/Y', strtotime($result->atestado_medico_emissao)) : 'Não informado' ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="text-align: right; width: 30%;"><strong>Validade:</strong></td>
-                                        <td><?= isset($result->atestado_medico_validade) && $result->atestado_medico_validade ? date('d/m/Y', strtotime($result->atestado_medico_validade)) : 'Não informado' ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="text-align: right;"><strong>Nome do Médico:</strong></td>
-                                        <td><?= html_escape($result->nome_medico ?? 'Não informado') ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="text-align: right;"><strong>CRM do Médico:</strong></td>
-                                        <td><?= html_escape($result->crm_medico ?? 'Não informado') ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="text-align: right;"><strong>Código de Validação:</strong></td>
-                                        <td><?= html_escape($result->codigo_validacao_atestado ?? 'Não informado') ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="text-align: right;"><strong>Arquivo:</strong></td>
-                                        <td>
-                                            <?php if (isset($result->atestado_medico_arquivo) && $result->atestado_medico_arquivo) : ?>
-                                                <a href="<?= base_url('assets/uploads/atestados/' . $result->atestado_medico_arquivo) ?>" target="_blank" class="btn btn-mini">
-                                                    <i class="icon-download"></i> Baixar Atestado
-                                                </a>
-                                            <?php else : ?>
-                                                Nenhum arquivo
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Seção de Contato de Emergência -->
-                <div class="accordion-group widget-box">
-                    <div class="accordion-heading">
-                        <div class="widget-title">
-                            <a data-parent="#collapse-group-extra" href="#collapseEmergencia" data-toggle="collapse">
-                                <span><i class="fas fa-first-aid icon-cli"></i></span>
-                                <h5 style="padding-left: 28px">Contato de Emergência</h5>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="collapse accordion-body" id="collapseEmergencia">
-                        <div class="widget-content">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    <tr>
-                                        <td style="text-align: right; width: 30%;"><strong>Nome:</strong></td>
-                                        <td><?= html_escape($result->contato_emergencia_nome ?? 'Não informado') ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="text-align: right;"><strong>Telefone:</strong></td>
-                                        <td><?= html_escape($result->contato_emergencia_telefone ?? 'Não informado') ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="text-align: right;"><strong>Parentesco:</strong></td>
-                                        <td><?= html_escape($result->contato_emergencia_parentesco ?? 'Não informado') ?></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Seção de Restrições Alimentares -->
-                <div class="accordion-group widget-box">
-                    <div class="accordion-heading">
-                        <div class="widget-title">
-                            <a data-parent="#collapse-group-extra" href="#collapseRestricoes" data-toggle="collapse">
-                                <span><i class="icon-ban-circle icon-cli"></i></span>
-                                <h5 style="padding-left: 28px">Restrições Alimentares</h5>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="collapse accordion-body" id="collapseRestricoes">
-                        <div class="widget-content">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Restrição</th>
-                                        <th>Observações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (isset($restricoes) && !empty($restricoes)) : ?>
-                                        <?php foreach ($restricoes as $r) : ?>
-                                            <tr>
-                                                <td><?= html_escape($r->restricao) ?></td>
-                                                <td><?= html_escape($r->observacoes) ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else : ?>
-                                        <tr>
-                                            <td colspan="2">Nenhuma restrição cadastrada.</td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Seção de Certificações de Mergulhador -->
-                <div class="accordion-group widget-box">
-                    <div class="accordion-heading">
-                        <div class="widget-title">
-                            <a data-parent="#collapse-group-extra" href="#collapseCertificacoes" data-toggle="collapse">
-                                <span><i class="icon-certificate icon-cli"></i></span>
-                                <h5 style="padding-left: 28px">Certificações de Mergulhador</h5>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="collapse accordion-body" id="collapseCertificacoes">
-                        <div class="widget-content">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Formação</th>
-                                        <th>Certificadora</th>
-                                        <th>Nº Certificado</th>
-                                        <th>Emissão</th>
-                                        <th>Arquivo</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (isset($certificacoes) && !empty($certificacoes)) : ?>
-                                        <?php foreach ($certificacoes as $c) : ?>
-                                            <tr>
-                                                <td><?= html_escape($c->nome_certificacao) ?></td>
-                                                <td><?= html_escape($c->orgao_emissor) ?></td>
-                                                <td><?= html_escape($c->numero_certificacao) ?></td>
-                                                <td><?= $c->data_emissao ? date('d/m/Y', strtotime($c->data_emissao)) : '-' ?></td>
-                                                <td>
-                                                    <?php if ($c->arquivo) : ?>
-                                                        <a href="<?= base_url('uploads/certificados/' . $c->arquivo) ?>" target="_blank" class="btn btn-mini"><i class="icon-download"></i> Baixar</a>
-                                                    <?php else : ?>
-                                                        Nenhum arquivo
-                                                    <?php endif; ?>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else : ?>
-                                        <tr>
-                                            <td colspan="5">Nenhuma certificação cadastrada.</td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!--Tab 5 Cursos-->
-        <div id="tab5" class="tab-pane" style="min-height: 300px">
+        <!--Aba Cursos-->
+        <div id="tabCursos" class="tab-pane" style="min-height: 300px">
             <?php if (!$cursos) { ?>
                 <table class="table table-bordered ">
                     <thead>
@@ -568,8 +448,8 @@
             <?php } ?>
         </div>
 
-        <!--Tab 6 Viagens-->
-        <div id="tab6" class="tab-pane" style="min-height: 300px">
+        <!--Aba Viagens-->
+        <div id="tabViagens" class="tab-pane" style="min-height: 300px">
             <form class="form-inline" method="get" action="<?= current_url(); ?>" style="margin-bottom: 20px;">
                 <input type="hidden" name="id" value="<?= $result->idClientes; ?>">
                 <div class="input-append">
@@ -620,8 +500,8 @@
             <?php } ?>
         </div>
 
-        <!--Tab 7 Certificações-->
-        <div id="tab7" class="tab-pane" style="min-height: 300px">
+        <!--Aba Certificações-->
+        <div id="tabCertificacoes" class="tab-pane" style="min-height: 300px">
             <div class="accordion" id="collapse-group-cert">
                 <!-- Seção de Certificações de Mergulhador -->
                 <div class="accordion-group widget-box">
