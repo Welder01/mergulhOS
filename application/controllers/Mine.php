@@ -359,6 +359,12 @@ class Mine extends MY_Controller
             'peso' => str_replace(',', '.', $this->input->post('peso')),
             'tamanho_colete' => $this->input->post('tamanho_colete') ?: null,
             'peso_lastro' => $this->input->post('peso_lastro') ?: null,
+            'possui_colete' => $this->input->post('possui_colete') ? 1 : 0,
+            'possui_lastro' => $this->input->post('possui_lastro') ? 1 : 0,
+            'possui_neoprene' => $this->input->post('possui_neoprene') ? 1 : 0,
+            'possui_nadadeira' => $this->input->post('possui_nadadeira') ? 1 : 0,
+            'possui_lanterna' => $this->input->post('possui_lanterna') ? 1 : 0,
+            'possui_computador' => $this->input->post('possui_computador') ? 1 : 0,
             'tamanho_neoprene' => $this->input->post('tamanho_neoprene') ?: null,
             'tamanho_nadadeira' => $this->input->post('tamanho_nadadeira') ?: null,
             'qtd_reguladores' => $this->input->post('qtd_reguladores') ?: 0,
@@ -402,12 +408,13 @@ class Mine extends MY_Controller
         }
 
         if ($this->Conecte_model->edit('clientes', $data, 'idClientes', $this->session->userdata('cliente_id')) == true) {
-                $this->session->set_flashdata('success', 'Dados editados com sucesso!');
-                redirect(base_url() . 'index.php/mine/conta');
-            } else {
-                $this->session->set_flashdata('error', 'Ocorreu um erro ao editar os dados.');
-                redirect(base_url() . 'index.php/mine/conta');
-            }
+            $this->session->set_flashdata('success', 'Dados editados com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Ocorreu um erro ao editar os dados.');
+        }
+
+        $activeTab = ltrim($this->input->post('active_tab'), '#');
+        redirect(base_url() . 'index.php/mine/conta?tab=' . $activeTab);
     }
 
     public function compras()

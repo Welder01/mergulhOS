@@ -98,3 +98,41 @@
         transform: translateX(26px);
     }
 </style>
+<style>
+    /* Toggles menores para uma UI mais limpa */
+    .small-toggle.switch {
+        width: 40px;
+        height: 20px;
+    }
+    .small-toggle .slider:before {
+        height: 12px;
+        width: 12px;
+        left: 4px;
+        bottom: 4px;
+    }
+    .small-toggle input:checked + .slider:before {
+        transform: translateX(20px);
+    }
+    .equip-row {
+        display: flex; align-items: center; gap: 15px;
+    }
+</style>
+<style>
+    /* Toggles menores para uma UI mais limpa */
+    .small-toggle.switch {
+        width: 40px;
+        height: 20px;
+    }
+    .small-toggle .slider:before {
+        height: 12px;
+        width: 12px;
+        left: 4px;
+        bottom: 4px;
+    }
+    .small-toggle input:checked + .slider:before {
+        transform: translateX(20px);
+    }
+    .equip-row {
+        display: flex; align-items: center; gap: 15px;
+    }
+</style>
