@@ -1,5 +1,6 @@
 <div class="widget-box">
     <div class="widget-title" style="margin: 0;font-size: 1.1em">
+        <span class="icon"><i class="fas fa-user"></i></span><h5>Dados do Cliente</h5>
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#tab1">Dados do Cliente</a></li>
             <li><a data-toggle="tab" href="#tabEquipamentos">Equipamentos</a></li>
@@ -13,6 +14,13 @@
         </ul>
     </div>
     <div class="widget-content tab-content">
+        <div class="progress" style="margin: 10px 20px;">
+            <div id="progressBar" class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                0%
+            </div>
+        </div>
+
+
         <div id="tab1" class="tab-pane active" style="min-height: 300px">
             <div class="accordion" id="collapse-group">
                 <div class="accordion-group widget-box">
@@ -167,18 +175,9 @@
 
         <!-- Aba Equipamentos -->
         <div id="tabEquipamentos" class="tab-pane" style="min-height: 300px">
-            <div class="accordion" id="collapse-equipamentos">
-                <div class="accordion-group widget-box">
-                    <div class="accordion-heading">
-                        <div class="widget-title">
-                            <a data-parent="#collapse-equipamentos" href="#collapseEquip" data-toggle="collapse">
-                                <span><i class='bx bx-swim icon-cli'></i></span>
-                                <h5 style="padding-left: 28px">Equipamentos de Mergulho</h5>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="collapse in accordion-body" id="collapseEquip">
-                        <div class="widget-content">
+            <div class="widget-box">
+                <div class="widget-title"><h5><i class='bx bx-swim icon-cli'></i> Equipamentos de Mergulho</h5></div>
+                <div class="widget-content">
                             <table class="table table-bordered">
                                 <tbody>
                                     <tr>
@@ -211,8 +210,6 @@
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -221,7 +218,7 @@
         <div id="tabSaude" class="tab-pane" style="min-height: 300px">
             <div class="accordion" id="collapse-saude">
                 <!-- Seção de Contato de Emergência -->
-                <div class="accordion-group widget-box">
+                <div class="accordion-group widget-box" style="margin-bottom: 10px;">
                     <div class="accordion-heading">
                         <div class="widget-title">
                             <a data-parent="#collapse-saude" href="#collapseEmergencia" data-toggle="collapse">
@@ -230,7 +227,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="collapse in accordion-body" id="collapseEmergencia">
+                    <div class="collapse accordion-body" id="collapseEmergencia">
                         <div class="widget-content">
                             <table class="table table-bordered">
                                 <tbody>
@@ -270,7 +267,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="collapse accordion-body" id="collapseAtestado">
+                    <div class="collapse in accordion-body" id="collapseAtestado">
                         <div class="widget-content">
                             <table class="table table-bordered">
                                 <tbody>
@@ -302,18 +299,9 @@
 
         <!-- Aba Restrições Alimentares -->
         <div id="tabRestricoes" class="tab-pane" style="min-height: 300px">
-            <div class="accordion" id="collapse-restricoes">
-                <div class="accordion-group widget-box">
-                    <div class="accordion-heading">
-                        <div class="widget-title">
-                            <a data-parent="#collapse-restricoes" href="#collapseRestricao" data-toggle="collapse">
-                                <span><i class='bx bx-food-menu icon-cli'></i></span>
-                                <h5 style="padding-left: 28px">Restrições Alimentares</h5>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="collapse in accordion-body" id="collapseRestricao">
-                        <div class="widget-content">
+            <div class="widget-box">
+                <div class="widget-title"><h5><i class='bx bx-food-menu icon-cli'></i> Restrições Alimentares</h5></div>
+                <div class="widget-content">
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
@@ -336,8 +324,6 @@
                                     <?php endif; ?>
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -400,6 +386,56 @@
                     } ?>
                     <tr>
                     </tr>
+                    </tbody>
+                </table>
+                <?php
+            } ?>
+        </div>
+
+        <!--Aba Vendas-->
+        <div id="tabVendas" class="tab-pane" style="min-height: 300px">
+            <?php if (!$result_vendas) { ?>
+                <table class="table table-bordered ">
+                    <thead>
+                    <tr>
+                        <th>N° Venda</th>
+                        <th>Data</th>
+                        <th>Faturado</th>
+                        <th>Total</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td colspan="5">Nenhuma Venda Cadastrada</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <?php
+            } else { ?>
+                <table class="table table-bordered ">
+                    <thead>
+                    <tr>
+                        <th>N° Venda</th>
+                        <th>Data</th>
+                        <th>Faturado</th>
+                        <th>Total</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php
+                    foreach ($result_vendas as $r) {
+                        $dataVenda = date(('d/m/Y'), strtotime($r->dataVenda));
+                        $faturado = $r->faturado == 1 ? 'Sim' : 'Não';
+                        echo '<tr>';
+                        echo '<td>' . $r->idVendas . '</td>';
+                        echo '<td>' . $dataVenda . '</td>';
+                        echo '<td>' . $faturado . '</td>';
+                        echo '<td>R$ ' . number_format($r->valorTotal, 2, ',', '.') . '</td>';
+                        echo '<td><a href="' . base_url() . 'index.php/vendas/visualizar/' . $r->idVendas . '" class="btn tip-top" title="Ver mais detalhes"><i class="fas fa-eye"></i></a></td>';
+                        echo '</tr>';
+                    } ?>
                     </tbody>
                 </table>
                 <?php
@@ -564,3 +600,39 @@
           <span class="button__icon"><i class="bx bx-undo"></i></span><span class="button__text2">Voltar</span></a>
     </div>
 </div>
+
+<script>
+$(document).ready(function() {
+    // Função para atualizar a barra de progresso
+    function updateProgressBar() {
+        var fields = [
+            'nomeCliente', 'documento', 'altura', 'peso', 'contato', 'telefone', 'celular', 'email',
+            'cep', 'rua', 'numero', 'bairro', 'cidade', 'estado',
+            'tamanho_colete', 'peso_lastro', 'tamanho_neoprene', 'tamanho_nadadeira',
+            'contato_emergencia_nome', 'contato_emergencia_telefone', 'contato_emergencia_parentesco',
+            'atestado_medico_emissao'
+        ];
+        
+        var result = <?= json_encode($result) ?>;
+        var totalFields = fields.length;
+        var filledFields = 0;
+
+        fields.forEach(function(field) {
+            if (result[field] && result[field].trim() !== '') {
+                filledFields++;
+            }
+        });
+
+        var progress = (totalFields > 0) ? (filledFields / totalFields) * 100 : 0;
+        var progressBar = $('#progressBar');
+        progressBar.css('width', progress + '%').text(Math.round(progress) + '%');
+
+        progressBar.removeClass('progress-bar-danger progress-bar-warning progress-bar-success');
+        if (progress < 40) progressBar.addClass('progress-bar-danger');
+        else if (progress < 80) progressBar.addClass('progress-bar-warning');
+        else progressBar.addClass('progress-bar-success');
+    }
+
+    updateProgressBar();
+});
+</script>
