@@ -307,7 +307,8 @@ class Viagens extends MY_Controller
                 $this->session->set_flashdata('error', 'Não há mais vagas disponíveis para esta viagem.');
             }
         }
-        redirect('viagens/visualizar/' . $viagem_id);
+        $activeTab = ltrim($this->input->post('active_tab'), '#');
+        redirect('viagens/visualizar/' . $viagem_id . '?tab=' . $activeTab);
     }
     public function editar_cliente_viagem($cliente_viagem_id)
     {
@@ -316,6 +317,7 @@ class Viagens extends MY_Controller
             redirect(base_url());
         }
         $viagem_id = $this->input->post('viagem_id');
+        $activeTab = ltrim($this->input->post('active_tab'), '#');
         $data = array_merge(
             [
                 'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
@@ -340,7 +342,7 @@ class Viagens extends MY_Controller
         } else {
             $this->session->set_flashdata('error', 'Ocorreu um erro ao atualizar os detalhes da hospedagem.');
         }
-        redirect('viagens/visualizar/' . $viagem_id . '#tabHospedagem');
+        redirect('viagens/visualizar/' . $viagem_id . '?tab=' . $activeTab);
     }
 
     public function editar_instrutor_viagem($instrutor_viagem_id)
@@ -350,6 +352,7 @@ class Viagens extends MY_Controller
             redirect(base_url());
         }
         $viagem_id = $this->input->post('viagem_id');
+        $activeTab = ltrim($this->input->post('active_tab'), '#');
         $data = [
             'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
             'hospedagem_quarto_numero' => $this->input->post('hospedagem_quarto_numero'),
@@ -361,7 +364,7 @@ class Viagens extends MY_Controller
         } else {
             $this->session->set_flashdata('error', 'Ocorreu um erro ao atualizar os detalhes da hospedagem.');
         }
-        redirect('viagens/visualizar/' . $viagem_id . '#tabHospedagem');
+        redirect('viagens/visualizar/' . $viagem_id . '?tab=' . $activeTab);
     }
 
     public function remover_cliente_viagem($id)
@@ -381,7 +384,7 @@ class Viagens extends MY_Controller
                 $this->db->update('viagens');
                 $this->session->set_flashdata('success', 'Cliente removido da viagem!');
             }
-            redirect('viagens/visualizar/' . $cliente_viagem->viagem_id);
+            redirect('viagens/visualizar/' . $cliente_viagem->viagem_id . '?tab=tabClientes');
         } else {
             redirect('viagens');
         }
@@ -395,6 +398,7 @@ class Viagens extends MY_Controller
             redirect(base_url());
         }
         $viagem_id = $this->input->post('viagem_id');
+        $activeTab = ltrim($this->input->post('active_tab'), '#');
         $usuario_id = $this->input->post('usuario_id');
 
         if ($this->viagem_instrutores_model->isInstrutorInViagem($viagem_id, $usuario_id)) {
@@ -403,6 +407,7 @@ class Viagens extends MY_Controller
             $data = [
                 'viagem_id' => $viagem_id,
                 'usuario_id' => $usuario_id,
+                'precisa_embarque' => $this->input->post('precisa_embarque_instrutor') ? 1 : 0,
                 'numero_bolsa' => $this->input->post('numero_bolsa_instrutor'),
                 'locar_nadadeira' => $this->input->post('locar_nadadeira_instrutor') ? 1 : 0,
                 'locar_cilindro' => (int)$this->input->post('locar_cilindro_instrutor') ?: 0,
@@ -414,7 +419,7 @@ class Viagens extends MY_Controller
             ];
             $this->viagem_instrutores_model->add($data);
         }
-        redirect('viagens/visualizar/' . $viagem_id . '#tabInstrutores');
+        redirect('viagens/visualizar/' . $viagem_id . '?tab=' . $activeTab);
     }
 
     public function remover_instrutor_viagem($id)
@@ -427,7 +432,7 @@ class Viagens extends MY_Controller
         $instrutor_viagem = $this->db->get('viagem_instrutores')->row();
         if ($instrutor_viagem) {
             $this->viagem_instrutores_model->delete($id);
-            redirect('viagens/visualizar/' . $instrutor_viagem->viagem_id . '#tabInstrutores');
+            redirect('viagens/visualizar/' . $instrutor_viagem->viagem_id . '?tab=tabInstrutores');
         } else {
             redirect('viagens');
         }
@@ -441,13 +446,14 @@ class Viagens extends MY_Controller
             redirect(base_url());
         }
         $viagem_id = $this->input->post('viagem_id');
+        $activeTab = ltrim($this->input->post('active_tab'), '#');
         $data = [
             'viagem_id' => $viagem_id,
             'descricao' => $this->input->post('descricao'),
             'valor' => $this->input->post('valor'),
         ];
         $this->viagem_custos_model->add($data);
-        redirect('viagens/visualizar/' . $viagem_id . '#tabCustos');
+        redirect('viagens/visualizar/' . $viagem_id . '?tab=' . $activeTab);
     }
 
     public function remover_custo($id)
@@ -460,7 +466,7 @@ class Viagens extends MY_Controller
         $custo_viagem = $this->db->get('viagem_custos')->row();
         if ($custo_viagem) {
             $this->viagem_custos_model->delete($id);
-            redirect('viagens/visualizar/' . $custo_viagem->viagem_id . '#tabCustos');
+            redirect('viagens/visualizar/' . $custo_viagem->viagem_id . '?tab=tabCustos');
         } else {
             redirect('viagens');
         }
@@ -474,12 +480,13 @@ class Viagens extends MY_Controller
             redirect(base_url());
         }
         $viagem_id = $this->input->post('viagem_id');
+        $activeTab = ltrim($this->input->post('active_tab'), '#');
         $data = [
             'viagem_id' => $viagem_id,
             'curso_id' => $this->input->post('curso_id'),
         ];
         $this->viagem_cursos_model->add($data);
-        redirect('viagens/visualizar/' . $viagem_id . '#tabCursos');
+        redirect('viagens/visualizar/' . $viagem_id . '?tab=' . $activeTab);
     }
 
     public function remover_curso_viagem($id)
@@ -491,7 +498,7 @@ class Viagens extends MY_Controller
         $curso_viagem = $this->viagem_cursos_model->getById($id);
         if ($curso_viagem) {
             $this->viagem_cursos_model->delete($id);
-            redirect('viagens/visualizar/' . $curso_viagem->viagem_id . '#tabCursos');
+            redirect('viagens/visualizar/' . $curso_viagem->viagem_id . '?tab=tabCursos');
         } else {
             redirect('viagens');
         }

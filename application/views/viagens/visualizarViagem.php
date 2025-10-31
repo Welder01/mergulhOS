@@ -1,6 +1,29 @@
 <link rel="stylesheet" href="<?= base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
 <script type="text/javascript" src="<?= base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <script src="<?php echo base_url() ?>assets/js/jquery.mask.min.js"></script>
+<?php $this->load->view('clientes/editarCliente_style'); ?>
+<style>
+    /* Toggles menores para uma UI mais limpa */
+    .small-toggle.switch {
+        width: 40px;
+        height: 20px;
+    }
+    .small-toggle .slider:before {
+        height: 12px;
+        width: 12px;
+        left: 4px;
+        bottom: 4px;
+    }
+    .small-toggle input:checked + .slider:before {
+        transform: translateX(20px);
+    }
+    /* Alinhamento dos toggles com seus labels */
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+</style>
 
 <div class="widget-box">
     <div class="widget-title">
@@ -34,6 +57,7 @@
             <h4>Adicionar Cliente</h4>
             <form action="<?= site_url('viagens/adicionar_cliente') ?>" method="post" class="form-horizontal">
                 <div class="row-fluid">
+                    <input type="hidden" name="active_tab" value="#tabClientes">
                     <div class="span6">
                         <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
                         <input type="hidden" name="viagem_id" value="<?= $result->id ?>">
@@ -75,21 +99,39 @@
                         <div class="control-group">
                             <label class="control-label">Opções</label>
                             <div class="controls">
-                                <label class="checkbox inline"><input type="checkbox" name="precisa_embarque" value="1"> Embarque</label>
-                                <label class="checkbox inline"><input type="checkbox" name="precisa_hospedagem" value="1"> Hospedagem</label>
+                                <div class="toggle-container">
+                                    <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="precisa_embarque" value="1"><span class="slider"></span></label>
+                                    <span>Embarque</span>
+                                </div>
+                                <div class="toggle-container">
+                                    <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="precisa_hospedagem" value="1"><span class="slider"></span></label>
+                                    <span>Hospedagem</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="span6">
                         <div class="control-group">
                             <label class="control-label">Locar Equipamentos</label>
-                            <div class="controls">
-                                <label class="checkbox inline"><input type="checkbox" name="locar_nadadeira" value="1"> Nadadeira</label>
-                                <label class="checkbox inline"><input type="checkbox" name="locar_colete" value="1"> Colete</label>
-                                <label class="checkbox inline"><input type="checkbox" name="locar_neoprene" value="1"> Neoprene</label>
-                                <label class="checkbox inline"><input type="checkbox" name="locar_lastro" value="1"> Lastro</label>
+                            <div class="controls" style="display: flex; flex-wrap: wrap; gap: 15px;">
+                                <div class="toggle-container">
+                                    <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="locar_nadadeira" value="1"><span class="slider"></span></label>
+                                    <span>Nadadeira</span>
+                                </div>
+                                <div class="toggle-container">
+                                    <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="locar_colete" value="1"><span class="slider"></span></label>
+                                    <span>Colete</span>
+                                </div>
+                                <div class="toggle-container">
+                                    <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="locar_neoprene" value="1"><span class="slider"></span></label>
+                                    <span>Neoprene</span>
+                                </div>
+                                <div class="toggle-container">
+                                    <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="locar_lastro" value="1"><span class="slider"></span></label>
+                                    <span>Lastro</span>
+                                </div>
                             </div>
-                            <div class="controls" style="margin-top: 10px;">
+                            <div class="controls" style="margin-top: 15px;">
                                 <label class="control-label" style="width: 60px; text-align: left;">Cilindros:</label>
                                 <input type="number" name="locar_cilindro" value="0" class="span2" min="0">
                                 <label class="control-label" style="width: 80px; text-align: left; margin-left: 10px;">Reguladores:</label>
@@ -260,6 +302,7 @@
         <div id="tabInstrutores" class="tab-pane">
             <h4>Adicionar Instrutor</h4>
             <form action="<?= site_url('viagens/adicionar_instrutor_viagem') ?>" method="post" class="form-horizontal">
+                <input type="hidden" name="active_tab" value="#tabInstrutores">
                 <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
                 <input type="hidden" name="viagem_id" value="<?= $result->id ?>">
                 <div class="control-group">
@@ -276,15 +319,39 @@
                     </div>
                 </div>
                 <div class="control-group">
+                    <label class="control-label">Opções</label>
+                    <div class="controls">
+                        <div class="toggle-container">
+                            <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="precisa_embarque_instrutor" value="1"><span class="slider"></span></label>
+                            <span>Embarque</span>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="precisa_hospedagem_instrutor" value="1"><span class="slider"></span></label>
+                            <span>Hospedagem</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-group">
                     <label class="control-label">Locar Equipamentos</label>
                     <div class="controls">
-                        <label class="checkbox inline"><input type="checkbox" name="locar_nadadeira_instrutor" value="1"> Nadadeira</label>
-                        <label class="checkbox inline"><input type="checkbox" name="locar_colete_instrutor" value="1"> Colete</label>
-                        <label class="checkbox inline"><input type="checkbox" name="locar_neoprene_instrutor" value="1"> Neoprene</label>
-                        <label class="checkbox inline"><input type="checkbox" name="locar_lastro_instrutor" value="1"> Lastro</label>
-                        <label class="checkbox inline"><input type="checkbox" name="precisa_hospedagem_instrutor" value="1"> Hospedagem</label>
+                        <div class="toggle-container">
+                            <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="locar_nadadeira_instrutor" value="1"><span class="slider"></span></label>
+                            <span>Nadadeira</span>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="locar_colete_instrutor" value="1"><span class="slider"></span></label>
+                            <span>Colete</span>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="locar_neoprene_instrutor" value="1"><span class="slider"></span></label>
+                            <span>Neoprene</span>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="locar_lastro_instrutor" value="1"><span class="slider"></span></label>
+                            <span>Lastro</span>
+                        </div>
                     </div>
-                    <div class="controls" style="margin-top: 5px;">
+                    <div class="controls" style="margin-top: 15px;">
                         <label class="control-label" style="width: 60px; text-align: left;">Cilindros:</label>
                         <input type="number" name="locar_cilindro_instrutor" value="0" class="span1" min="0">
                         <label class="control-label" style="width: 80px; text-align: left; margin-left: 10px;">Reguladores:</label>
@@ -302,6 +369,7 @@
                     <tr>
                         <th>Nome</th>
                         <th>Bolsa Nº</th>
+                        <th>Embarque</th>
                         <th>Equipamentos</th>
                         <th>Ações</th>
                     </tr>
@@ -311,6 +379,7 @@
                         <tr>
                             <td><?= html_escape($instrutor->nome_instrutor) ?></td>
                             <td><?= html_escape($instrutor->numero_bolsa) ?></td>
+                            <td><?= $instrutor->precisa_embarque ? '<span class="badge badge-success">Sim</span>' : '<span class="badge">Não</span>' ?></td>
                             <td>
                                 <?php if ($instrutor->locar_nadadeira) echo '<i class="fas fa-water" title="Nadadeira"></i> '; ?>
                                 <?php if ($instrutor->locar_cilindro > 0) echo '<i class="fas fa-database" title="Cilindro"></i> ' . $instrutor->locar_cilindro . ' '; ?>
@@ -330,6 +399,7 @@
         <div id="tabCustos" class="tab-pane">
             <h4>Adicionar Custo</h4>
             <form action="<?= site_url('viagens/adicionar_custo') ?>" method="post" class="form-horizontal">
+                <input type="hidden" name="active_tab" value="#tabCustos">
                 <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
                 <input type="hidden" name="viagem_id" value="<?= $result->id ?>">
                 <div class="control-group">
@@ -413,16 +483,106 @@
 </div>
 
 <!-- Modal Editar Cliente -->
+<style>
+    /* Specific styles for the "Editar Cliente" modal */
+    #modalEditarCliente .form-horizontal .control-group {
+        margin-bottom: 8px; /* Reduce vertical spacing */
+    }
+    #modalEditarCliente .form-horizontal .control-label {
+        width: 90px; /* Fixed width for labels */
+        text-align: right;
+        padding-top: 5px; /* Align with input/toggle */
+    }
+    #modalEditarCliente .form-horizontal .controls {
+        margin-left: 100px; /* Adjust controls margin based on label width */
+    }
+    /* Smaller toggle switch */
+    #modalEditarCliente .controls .switch {
+        width: 40px;
+        height: 20px;
+    }
+    #modalEditarCliente .controls .slider {
+        border-radius: 20px; /* Adjust border-radius for smaller size */
+    }
+    #modalEditarCliente .controls .slider:before {
+        height: 12px;
+        width: 12px;
+        left: 4px;
+        bottom: 4px;
+        border-radius: 50%; /* Ensure it remains circular */
+    }
+    #modalEditarCliente input:checked + .slider:before {
+        transform: translateX(20px); /* Adjust based on new width */
+    }
+    /* Alignment for toggle groups */
+    #modalEditarCliente .controls.toggle-group {
+        display: flex;
+        flex-direction: column; /* Stack toggles vertically */
+        align-items: flex-start; /* Align toggles to the left */
+    }
+    #modalEditarCliente .controls.toggle-group > div {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px; /* Space between toggle items */
+    }
+    /* Alignment for number inputs */
+    #modalEditarCliente .controls input[type="number"] {
+        width: 60px; /* Fixed width for number inputs */
+    }
+
+    /* Responsive adjustments for mobile */
+    @media (max-width: 767px) { /* Standard Bootstrap breakpoint for small devices */
+        #modalEditarCliente .form-horizontal .control-group {
+            margin-bottom: 10px; /* Add some vertical spacing between stacked groups */
+            display: block; /* Ensure control group stacks vertically */
+        }
+        #modalEditarCliente .form-horizontal .control-label {
+            width: auto; /* Allow label to take full width */
+            text-align: left; /* Align text to left on mobile */
+            padding-top: 0; /* Reset padding if it causes issues */
+            float: none; /* Ensure it doesn't float */
+            margin-bottom: 5px; /* Space between label and input */
+        }
+        #modalEditarCliente .form-horizontal .controls {
+            margin-left: 0; /* Remove fixed margin-left */
+            display: block; /* Ensure controls stack */
+        }
+        #modalEditarCliente .span6 {
+            width: 100%; /* Make columns full width on mobile */
+            margin-left: 0; /* Remove left margin for stacked columns */
+        }
+        /* Adjust input widths for mobile if necessary */
+        #modalEditarCliente .controls input[type="text"],
+        #modalEditarCliente .controls select,
+        #modalEditarCliente .controls input[type="number"] {
+            width: 100%; /* Make inputs full width */
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        }
+        /* Adjust toggle group layout for mobile */
+        #modalEditarCliente .controls.toggle-group {
+            flex-direction: column; /* Stack toggles vertically on mobile */
+            align-items: flex-start; /* Align toggles to the left */
+        }
+        #modalEditarCliente .controls.toggle-group > div {
+            margin-bottom: 8px; /* Space between stacked toggle items */
+            margin-right: 0; /* Remove horizontal margin */
+        }
+        #modalEditarCliente .controls .switch {
+            margin-right: 10px; /* Keep some space between toggle and its label */
+        }
+    }
+</style>
 <div id="modalEditarCliente" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <form id="formEditarCliente" action="" method="post">
+    <form id="formEditarCliente" action="" method="post" class="form-horizontal">
         <div class="modal-header">
+            <input type="hidden" name="active_tab" value="#tabClientes">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
             <h5 id="myModalLabel">Editar Cliente: <span id="nomeClienteModal"></span></h5>
         </div>
         <div class="modal-body">
             <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
             <input type="hidden" name="viagem_id" value="<?php echo $result->id; ?>">
-            <div class="row-fluid">
+            <div class="row-fluid" style="display: flex; flex-wrap: wrap;">
                 <div class="span6">
                     <div class="control-group">
                         <label class="control-label">Bolsa Nº</label>
@@ -453,32 +613,64 @@
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label">Opções</label>
-                        <div class="controls">
-                            <label class="checkbox inline"><input type="checkbox" name="precisa_embarque" id="edit_precisa_embarque" value="1"> Embarque</label>
-                            <label class="checkbox inline"><input type="checkbox" name="precisa_hospedagem" id="edit_precisa_hospedagem" value="1"> Hospedagem</label>
+                        <label class="control-label">Opções</label> <!-- Label for the group -->
+                        <div class="controls toggle-group"> <!-- Applied toggle-group class -->
+                            <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                                <label class="switch" style="margin-right: 10px;">
+                                    <input type="checkbox" name="precisa_embarque" id="edit_precisa_embarque" value="1">
+                                    <span class="slider"></span>
+                                </label>
+                                <label for="edit_precisa_embarque" style="margin: 0;">Embarque</label>
+                            </div>
+                            <div style="display: flex; align-items: center;">
+                                <label class="switch" style="margin-right: 10px;">
+                                    <input type="checkbox" name="precisa_hospedagem" id="edit_precisa_hospedagem" value="1">
+                                    <span class="slider"></span>
+                                </label>
+                                <label for="edit_precisa_hospedagem" style="margin: 0;">Hospedagem</label>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="span6">
                     <div class="control-group">
-                        <label class="control-label">Locar Equipamentos</label>
-                        <div class="controls">
-                            <label class="checkbox inline"><input type="checkbox" name="locar_nadadeira" id="edit_locar_nadadeira" value="1"> Nadadeira</label>
-                            <label class="checkbox inline"><input type="checkbox" name="locar_colete" id="edit_locar_colete" value="1"> Colete</label>
-                            <label class="checkbox inline"><input type="checkbox" name="locar_neoprene" id="edit_locar_neoprene" value="1"> Neoprene</label>
-                            <label class="checkbox inline"><input type="checkbox" name="locar_lastro" id="edit_locar_lastro" value="1"> Lastro</label>
+                        <label class="control-label">Locar Equipamentos</label> <!-- Label for the group -->
+                        <div class="controls toggle-group"> <!-- Applied toggle-group class -->
+                            <div>
+                                <label class="switch" style="margin-right: 10px;"><input type="checkbox" name="locar_nadadeira" id="edit_locar_nadadeira" value="1"><span class="slider"></span></label>
+                                <label for="edit_locar_nadadeira" style="margin: 0;">Nadadeira</label>
+                            </div>
+                            <div>
+                                <label class="switch" style="margin-right: 10px;"><input type="checkbox" name="locar_colete" id="edit_locar_colete" value="1"><span class="slider"></span></label>
+                                <label for="edit_locar_colete" style="margin: 0;">Colete</label>
+                            </div>
+                            <div>
+                                <label class="switch" style="margin-right: 10px;"><input type="checkbox" name="locar_neoprene" id="edit_locar_neoprene" value="1"><span class="slider"></span></label>
+                                <label for="edit_locar_neoprene" style="margin: 0;">Neoprene</label>
+                            </div>
+                            <div>
+                                <label class="switch" style="margin-right: 10px;"><input type="checkbox" name="locar_lastro" id="edit_locar_lastro" value="1"><span class="slider"></span></label>
+                                <label for="edit_locar_lastro" style="margin: 0;">Lastro</label>
+                            </div>
                         </div>
-                        <div class="controls" style="margin-top: 10px;">
-                            <label class="control-label" style="width: 60px; text-align: left;">Cilindros:</label>
-                            <input type="number" name="locar_cilindro" id="edit_locar_cilindro" value="0" class="span2" min="0">
-                            <label class="control-label" style="width: 80px; text-align: left; margin-left: 10px;">Reguladores:</label>
-                            <input type="number" name="locar_regulador" id="edit_locar_regulador" value="0" class="span2" min="0">
+                    </div>
+                    <!-- Separate control groups for Cilindros and Reguladores for better alignment -->
+                    <div class="control-group">
+                        <label class="control-label">Cilindros:</label>
+                        <div class="controls">
+                            <input type="number" name="locar_cilindro" id="edit_locar_cilindro" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Reguladores:</label>
+                        <div class="controls">
+                            <input type="number" name="locar_regulador" id="edit_locar_regulador" value="0" min="0">
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="modal-footer">
             <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
             <button class="btn btn-primary">Salvar Alterações</button>
@@ -518,11 +710,21 @@ $(document).ready(function() {
         $('#edit_precisa_embarque').prop('checked', clienteData.precisa_embarque == 1);
         $('#edit_precisa_hospedagem').prop('checked', clienteData.precisa_hospedagem == 1);
         $('#edit_locar_nadadeira').prop('checked', clienteData.locar_nadadeira == 1);
-        $('#edit_locar_colete').prop('checked', clienteData.locar_colete == 1);
-        $('#edit_locar_neoprene').prop('checked', clienteData.locar_neoprene == 1);
-        $('#edit_locar_lastro').prop('checked', clienteData.locar_lastro == 1);
+        $('#edit_locar_colete').prop('checked', clienteData.locar_colete == 1); // Assuming locar_colete is boolean
+        $('#edit_locar_neoprene').prop('checked', clienteData.locar_neoprene == 1); // Assuming locar_neoprene is boolean
+        $('#edit_locar_lastro').prop('checked', clienteData.locar_lastro == 1); // Assuming locar_lastro is boolean
         $('#edit_locar_cilindro').val(clienteData.locar_cilindro);
         $('#edit_locar_regulador').val(clienteData.locar_regulador);
     });
+
+    // Lógica para manter a aba ativa após salvar
+    var activeTab = "<?= $this->input->get('tab') ?>";
+    if (activeTab) {
+        // Remove a classe 'active' de todas as abas e painéis
+        $('.nav-tabs li, .tab-content .tab-pane').removeClass('active');
+        // Adiciona a classe 'active' à aba e ao painel corretos
+        $('a[href="#' + activeTab + '"]').parent().addClass('active');
+        $('#' + activeTab).addClass('active');
+    }
 });
 </script>
