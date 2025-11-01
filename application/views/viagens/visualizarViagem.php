@@ -150,6 +150,8 @@
                 <thead>
                     <tr>
                         <th>Cliente</th>
+                        <th>CPF</th>
+                        <th>Telefone</th>
                         <th>Bolsa Nº</th>
                         <th>Embarque</th>
                         <th>Hospedagem</th>
@@ -164,6 +166,8 @@
                         <?php foreach ($clientes as $cliente) : ?>
                             <tr>
                                 <td><?= html_escape($cliente->nomeCliente) ?></td>
+                                <td><?= html_escape($cliente->cpf) ?></td>
+                                <td><?= html_escape($cliente->telefone) ?></td>
                                 <td><?= html_escape($cliente->numero_bolsa) ?></td>
                                 <td><?= $cliente->precisa_embarque ? '<span class="badge badge-success">Sim</span>' : '<span class="badge">Não</span>' ?></td>
                                 <td><?= $cliente->precisa_hospedagem ? '<span class="badge badge-success">Sim</span>' : '<span class="badge">Não</span>' ?></td>
@@ -179,7 +183,7 @@
                             </tr>
                         <?php endforeach; ?>
                     <?php else : ?>
-                        <tr><td colspan="8">Nenhum cliente inscrito nesta viagem.</td></tr>
+                        <tr><td colspan="10">Nenhum cliente inscrito nesta viagem.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -814,6 +818,7 @@ $(document).ready(function() {
         source: "<?= site_url('viagens/autoCompleteCliente'); ?>",
         minLength: 2,
         select: function(event, ui) {
+            $("#cliente").val(ui.item.nome);
             $("#cliente_id").val(ui.item.id);
         }
     });
