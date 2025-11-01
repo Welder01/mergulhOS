@@ -388,7 +388,10 @@
                                 <?php if ($instrutor->locar_regulador > 0) echo '<i class="fas fa-cogs" title="Regulador"></i> ' . $instrutor->locar_regulador . ' '; ?>
                                 <?php if ($instrutor->locar_lastro) echo '<i class="fas fa-weight-hanging" title="Lastro"></i> '; ?>
                             </td>
-                            <td><a href="<?= site_url('viagens/remover_instrutor_viagem/' . $instrutor->id) ?>" class="btn btn-danger btn-mini" onclick="return confirm('Deseja remover este instrutor da viagem?')">Remover</a></td>
+                            <td>
+                                <a href="#modalEditarInstrutor" data-toggle="modal" class="btn btn-info btn-mini" title="Editar Instrutor" data-instrutor-id="<?= $instrutor->id ?>" data-instrutor-nome="<?= html_escape($instrutor->nome_instrutor) ?>" data-instrutor-data='<?= json_encode($instrutor) ?>'>Editar</a>
+                                <a href="<?= site_url('viagens/remover_instrutor_viagem/' . $instrutor->id) ?>" class="btn btn-danger btn-mini" onclick="return confirm('Deseja remover este instrutor da viagem?')">Remover</a>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -678,6 +681,125 @@
     </form>
 </div>
 
+<!-- Estilos para o Modal Editar Instrutor -->
+<style>
+    #modalEditarInstrutor .form-horizontal .control-label {
+        width: 120px;
+    }
+    #modalEditarInstrutor .form-horizontal .controls {
+        margin-left: 130px;
+    }
+    #modalEditarInstrutor .controls .switch {
+        width: 40px;
+        height: 20px;
+        margin-right: 10px;
+    }
+    #modalEditarInstrutor .controls .slider:before {
+        height: 12px;
+        width: 12px;
+        left: 4px;
+        bottom: 4px;
+    }
+    #modalEditarInstrutor input:checked + .slider:before {
+        transform: translateX(20px);
+    }
+    #modalEditarInstrutor .toggle-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+
+    /* Ajustes responsivos */
+    @media (max-width: 767px) {
+        #modalEditarInstrutor .form-horizontal .control-label {
+            width: auto;
+            text-align: left;
+        }
+        #modalEditarInstrutor .form-horizontal .controls {
+            margin-left: 0;
+        }
+        #modalEditarInstrutor .span6 {
+            width: 100%; margin-left: 0;
+        }
+    }
+</style>
+<!-- Modal Editar Instrutor -->
+<div id="modalEditarInstrutor" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <form id="formEditarInstrutor" action="" method="post" class="form-horizontal">
+        <div class="modal-header">
+            <input type="hidden" name="active_tab" value="#tabInstrutores">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h5 id="myModalLabel">Editar Instrutor: <span id="nomeInstrutorModal"></span></h5>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
+            <input type="hidden" name="viagem_id" value="<?php echo $result->id; ?>">
+            <div class="row-fluid">
+                <div class="span6">
+                    <div class="control-group">
+                        <label class="control-label">Opções</label>
+                        <div class="controls">
+                            <div class="toggle-container">
+                                <label class="switch"><input type="checkbox" name="precisa_embarque" id="edit_instrutor_precisa_embarque" value="1"><span class="slider"></span></label>
+                                <label for="edit_instrutor_precisa_embarque" style="margin: 0;">Embarque</label>
+                            </div>
+                            <div class="toggle-container">
+                                <label class="switch"><input type="checkbox" name="precisa_hospedagem" id="edit_instrutor_precisa_hospedagem" value="1"><span class="slider"></span></label>
+                                <label for="edit_instrutor_precisa_hospedagem" style="margin: 0;">Hospedagem</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Locar Equipamentos</label>
+                        <div class="controls">
+                            <div class="toggle-container">
+                                <label class="switch"><input type="checkbox" name="locar_nadadeira" id="edit_instrutor_locar_nadadeira" value="1"><span class="slider"></span></label>
+                                <label for="edit_instrutor_locar_nadadeira" style="margin: 0;">Nadadeira</label>
+                            </div>
+                            <div class="toggle-container">
+                                <label class="switch"><input type="checkbox" name="locar_colete" id="edit_instrutor_locar_colete" value="1"><span class="slider"></span></label>
+                                <label for="edit_instrutor_locar_colete" style="margin: 0;">Colete</label>
+                            </div>
+                            <div class="toggle-container">
+                                <label class="switch"><input type="checkbox" name="locar_neoprene" id="edit_instrutor_locar_neoprene" value="1"><span class="slider"></span></label>
+                                <label for="edit_instrutor_locar_neoprene" style="margin: 0;">Neoprene</label>
+                            </div>
+                            <div class="toggle-container">
+                                <label class="switch"><input type="checkbox" name="locar_lastro" id="edit_instrutor_locar_lastro" value="1"><span class="slider"></span></label>
+                                <label for="edit_instrutor_locar_lastro" style="margin: 0;">Lastro</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="span6">
+                    <div class="control-group">
+                        <label class="control-label">Bolsa Nº</label>
+                        <div class="controls">
+                            <input type="text" name="numero_bolsa" id="edit_instrutor_numero_bolsa" class="span6">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Cilindros</label>
+                        <div class="controls">
+                            <input type="number" name="locar_cilindro" id="edit_instrutor_locar_cilindro" value="0" min="0" class="span6">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Reguladores</label>
+                        <div class="controls">
+                            <input type="number" name="locar_regulador" id="edit_instrutor_locar_regulador" value="0" min="0" class="span6">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+            <button class="btn btn-primary">Salvar Alterações</button>
+        </div>
+    </form>
+</div>
+
 <script>
 $(document).ready(function() {
     $("#cliente").autocomplete({
@@ -696,7 +818,7 @@ $(document).ready(function() {
     });
     $('.money').mask('#.##0,00', {reverse: true});
 
-    $(document).on('click', 'a[data-toggle="modal"]', function() {
+    $(document).on('click', 'a[href="#modalEditarCliente"]', function() {
         var clienteId = $(this).data('cliente-id');
         var clienteNome = $(this).data('cliente-nome');
         var clienteData = $(this).data('cliente-data');
@@ -716,6 +838,26 @@ $(document).ready(function() {
         $('#edit_locar_cilindro').val(clienteData.locar_cilindro);
         $('#edit_locar_regulador').val(clienteData.locar_regulador);
     });
+
+    $(document).on('click', 'a[href="#modalEditarInstrutor"]', function() {
+        var instrutorId = $(this).data('instrutor-id');
+        var instrutorNome = $(this).data('instrutor-nome');
+        var instrutorData = $(this).data('instrutor-data');
+
+        $('#formEditarInstrutor').attr('action', '<?= site_url('viagens/editar_instrutor_viagem/') ?>' + instrutorId);
+        $('#nomeInstrutorModal').text(instrutorNome);
+
+        $('#edit_instrutor_numero_bolsa').val(instrutorData.numero_bolsa);
+        $('#edit_instrutor_precisa_embarque').prop('checked', instrutorData.precisa_embarque == 1);
+        $('#edit_instrutor_precisa_hospedagem').prop('checked', instrutorData.precisa_hospedagem == 1);
+        $('#edit_instrutor_locar_nadadeira').prop('checked', instrutorData.locar_nadadeira == 1);
+        $('#edit_instrutor_locar_colete').prop('checked', instrutorData.locar_colete == 1);
+        $('#edit_instrutor_locar_neoprene').prop('checked', instrutorData.locar_neoprene == 1);
+        $('#edit_instrutor_locar_lastro').prop('checked', instrutorData.locar_lastro == 1);
+        $('#edit_instrutor_locar_cilindro').val(instrutorData.locar_cilindro);
+        $('#edit_instrutor_locar_regulador').val(instrutorData.locar_regulador);
+    });
+
 
     // Lógica para manter a aba ativa após salvar
     var activeTab = "<?= $this->input->get('tab') ?>";

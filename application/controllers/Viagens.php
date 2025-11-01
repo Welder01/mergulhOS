@@ -354,12 +354,21 @@ class Viagens extends MY_Controller
         $viagem_id = $this->input->post('viagem_id');
         $activeTab = ltrim($this->input->post('active_tab'), '#');
         $data = [
+            'precisa_embarque' => $this->input->post('precisa_embarque') ? 1 : 0,
+            'precisa_hospedagem' => $this->input->post('precisa_hospedagem') ? 1 : 0,
             'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
             'hospedagem_quarto_numero' => $this->input->post('hospedagem_quarto_numero'),
             'hospedagem_tipo_quarto' => $this->input->post('hospedagem_tipo_quarto'),
             'hospedagem_numero_camas' => $this->input->post('hospedagem_numero_camas'),
+            'numero_bolsa' => $this->input->post('numero_bolsa'),
+            'locar_nadadeira' => $this->input->post('locar_nadadeira') ? 1 : 0,
+            'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
+            'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
+            'locar_lastro' => $this->input->post('locar_lastro') ? 1 : 0,
+            'locar_cilindro' => (int)$this->input->post('locar_cilindro'),
+            'locar_regulador' => (int)$this->input->post('locar_regulador'),
         ];
-        if ($this->viagem_instrutores_model->edit($instrutor_viagem_id, $data)) {
+        if ($this->viagem_instrutores_model->edit('viagem_instrutores', $data, 'id', $instrutor_viagem_id)) {
             $this->session->set_flashdata('success', 'Detalhes de hospedagem do instrutor atualizados com sucesso!');
         } else {
             $this->session->set_flashdata('error', 'Ocorreu um erro ao atualizar os detalhes da hospedagem.');
