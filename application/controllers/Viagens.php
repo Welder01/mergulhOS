@@ -543,11 +543,16 @@ class Viagens extends MY_Controller
     {
         if (isset($_GET['term'])) {
             $q = strtolower($this->input->get('term'));
-            $this->db->like('nome', $q);
+            $this->db->select('idUsuarios, nome, cpf, telefone');
+            $this->db->group_start();
+            $this->db->like('LOWER(nome)', $q);
+            $this->db->or_like('cpf', $q);
+            $this->db->group_end();
             $this->db->limit(5);
             $query = $this->db->get('usuarios');
             $result = array_map(function ($usuario) {
-                return ['id' => $usuario->idUsuarios, 'label' => $usuario->nome];
+                $label = $usuario->nome . ' (CPF: ' . $usuario->cpf . ' | Tel: ' . $usuario->telefone . ')';
+                return ['id' => $usuario->idUsuarios, 'label' => $label, 'nome' => $usuario->nome];
             }, $query->result());
             echo json_encode($result);
         }

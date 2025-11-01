@@ -363,39 +363,47 @@
                 </div>
             </form>
             <hr>
-            <h4>Instrutores na Viagem</h4>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Bolsa Nº</th>
-                        <th>Embarque</th>
-                        <th>Equipamentos</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($instrutores as $instrutor) : ?>
+            <div class="table-responsive" style="overflow-x: auto;">
+                <h4>Instrutores na Viagem</h4>
+                <table class="table table-bordered" style="min-width: 800px;">
+                    <thead>
                         <tr>
-                            <td><?= html_escape($instrutor->nome_instrutor) ?></td>
-                            <td><?= html_escape($instrutor->numero_bolsa) ?></td>
-                            <td><?= $instrutor->precisa_embarque ? '<span class="badge badge-success">Sim</span>' : '<span class="badge">Não</span>' ?></td>
-                            <td>
-                                <?php if ($instrutor->locar_nadadeira) echo '<i class="fas fa-water" title="Nadadeira"></i> '; ?>
-                                <?php if ($instrutor->locar_cilindro > 0) echo '<i class="fas fa-database" title="Cilindro"></i> ' . $instrutor->locar_cilindro . ' '; ?>
-                                <?php if ($instrutor->locar_colete) echo '<i class="fas fa-life-ring" title="Colete"></i> '; ?>
-                                <?php if ($instrutor->locar_neoprene) echo '<i class="fas fa-user-ninja" title="Neoprene"></i> '; ?>
-                                <?php if ($instrutor->locar_regulador > 0) echo '<i class="fas fa-cogs" title="Regulador"></i> ' . $instrutor->locar_regulador . ' '; ?>
-                                <?php if ($instrutor->locar_lastro) echo '<i class="fas fa-weight-hanging" title="Lastro"></i> '; ?>
-                            </td>
-                            <td>
-                                <a href="#modalEditarInstrutor" data-toggle="modal" class="btn btn-info btn-mini" title="Editar Instrutor" data-instrutor-id="<?= $instrutor->id ?>" data-instrutor-nome="<?= html_escape($instrutor->nome_instrutor) ?>" data-instrutor-data='<?= json_encode($instrutor) ?>'>Editar</a>
-                                <a href="<?= site_url('viagens/remover_instrutor_viagem/' . $instrutor->id) ?>" class="btn btn-danger btn-mini" onclick="return confirm('Deseja remover este instrutor da viagem?')">Remover</a>
-                            </td>
+                            <th>Nome</th>
+                            <th>CPF</th>
+                            <th>Telefone</th>
+                            <th>Bolsa Nº</th>
+                            <th>Embarque</th>
+                            <th>Hospedagem</th>
+                            <th>Equipamentos</th>
+                            <th>Ações</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($instrutores as $instrutor) : ?>
+                            <tr>
+                                <td><?= html_escape($instrutor->nome_instrutor) ?></td>
+                                <td><?= html_escape($instrutor->cpf_instrutor) ?></td>
+                                <td><?= html_escape($instrutor->telefone_instrutor) ?></td>
+                                <td><?= html_escape($instrutor->numero_bolsa) ?></td>
+                                <td><?= $instrutor->precisa_embarque ? '<span class="badge badge-success">Sim</span>' : '<span class="badge">Não</span>' ?></td>
+                                <td><?= $instrutor->precisa_hospedagem ? '<span class="badge badge-success">Sim</span>' : '<span class="badge">Não</span>' ?></td>
+                                <td>
+                                    <?php if ($instrutor->locar_nadadeira) echo '<i class="fas fa-water" title="Nadadeira"></i> '; ?>
+                                    <?php if ($instrutor->locar_cilindro > 0) echo '<i class="fas fa-database" title="Cilindro"></i> ' . $instrutor->locar_cilindro . ' '; ?>
+                                    <?php if ($instrutor->locar_colete) echo '<i class="fas fa-life-ring" title="Colete"></i> '; ?>
+                                    <?php if ($instrutor->locar_neoprene) echo '<i class="fas fa-user-ninja" title="Neoprene"></i> '; ?>
+                                    <?php if ($instrutor->locar_regulador > 0) echo '<i class="fas fa-cogs" title="Regulador"></i> ' . $instrutor->locar_regulador . ' '; ?>
+                                    <?php if ($instrutor->locar_lastro) echo '<i class="fas fa-weight-hanging" title="Lastro"></i> '; ?>
+                                </td>
+                                <td>
+                                    <a href="#modalEditarInstrutor" data-toggle="modal" class="btn btn-info btn-mini" title="Editar Instrutor" data-instrutor-id="<?= $instrutor->id ?>" data-instrutor-nome="<?= html_escape($instrutor->nome_instrutor) ?>" data-instrutor-data='<?= json_encode($instrutor) ?>'>Editar</a>
+                                    <a href="<?= site_url('viagens/remover_instrutor_viagem/' . $instrutor->id) ?>" class="btn btn-danger btn-mini" onclick="return confirm('Deseja remover este instrutor da viagem?')">Remover</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Aba Custos -->
@@ -813,7 +821,8 @@ $(document).ready(function() {
         source: "<?= site_url('viagens/autoCompleteUsuario'); ?>",
         minLength: 2,
         select: function(event, ui) {
-            $("#usuario_id").val(ui.item.id);
+            $("#instrutor").val(ui.item.nome); // Preenche o campo com o nome
+            $("#usuario_id").val(ui.item.id); // Guarda o ID no campo oculto
         }
     });
     $('.money').mask('#.##0,00', {reverse: true});
