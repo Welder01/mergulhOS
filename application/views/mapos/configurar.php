@@ -469,6 +469,29 @@
                                 <span class="help-inline">Gerar um novo token JWT.</span>
                             </div>
                         </div>
+                        <hr>
+                        <h5 style="margin-left:10px;">Configurações da Evolution API</h5>
+                        <div class="control-group">
+                            <label for="evolution_api_url" class="control-label">URL da API</label>
+                            <div class="controls">
+                                <input type="text" name="evolution_api_url" value="<?= $configuration['evolution_api_url'] ?? '' ?>" id="evolution_api_url" placeholder="http://localhost:8080">
+                                <span class="help-inline">URL base da sua instância da Evolution API.</span>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label for="evolution_api_key" class="control-label">API Key</label>
+                            <div class="controls">
+                                <input type="text" name="evolution_api_key" value="<?= $configuration['evolution_api_key'] ?? '' ?>" id="evolution_api_key">
+                                <span class="help-inline">Chave de API para autenticação.</span>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label for="evolution_api_instance" class="control-label">Nome da Instância</label>
+                            <div class="controls">
+                                <input type="text" name="evolution_api_instance" value="<?= $configuration['evolution_api_instance'] ?? '' ?>" id="evolution_api_instance" placeholder="Ex: meu-whatsapp">
+                                <span class="help-inline">Nome da instância da Evolution API.</span>
+                            </div>
+                        </div>
                         <div class="form-actions">
                             <div class="span8">
                                 <div class="span9">

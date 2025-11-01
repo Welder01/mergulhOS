@@ -36,7 +36,7 @@ class Evolution extends MY_Controller
 
         $apiUrl = $this->mapos_model->get_ci_config('evolution_api_url');
         $apiKey = $this->mapos_model->get_ci_config('evolution_api_key');
-        $instanceName = $this->input->post('instance_name');
+        $instanceName = $this->mapos_model->get_ci_config('evolution_api_instance');
 
         if (empty($apiUrl) || empty($apiKey) || empty($instanceName)) {
             return $this->output->set_status_header(400)->set_output(json_encode(['error' => 'URL da API, Chave ou Nome da Instância não configurados.']));

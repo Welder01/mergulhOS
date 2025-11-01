@@ -159,6 +159,17 @@
                         </a>
                     </li>
                 <?php } ?>
+
+                <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) { ?>
+                    <li class="<?php if (isset($menuIntegracoes)) {
+                        echo 'active';
+                    }; ?>">
+                        <a class="tip-bottom" title="" href="<?= site_url('evolution') ?>"><i class='fas fa-rocket iconX'></i>
+                            <span class="title">Integrações</span>
+                            <span class="title-tooltip">Integrações</span>
+                        </a>
+                    </li>
+                <?php } ?>
             </ul>
         </div>
 
