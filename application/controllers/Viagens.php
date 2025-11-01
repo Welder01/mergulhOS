@@ -398,11 +398,17 @@ class Viagens extends MY_Controller
             redirect(base_url());
         }
         $viagem_id = $this->input->post('viagem_id');
-        $activeTab = ltrim($this->input->post('active_tab'), '#');
         $usuario_id = $this->input->post('usuario_id');
+        $activeTab = ltrim($this->input->post('active_tab'), '#') ?: 'tabInstrutores';
 
-        if ($this->viagem_instrutores_model->isInstrutorInViagem($viagem_id, $usuario_id)) {
-            $this->session->set_flashdata('error', 'Este instrutor já está nesta viagem.');
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('viagem_id', 'ID da Viagem', 'required');
+        $this->form_validation->set_rules('usuario_id', 'Instrutor', 'required');
+
+        if ($this->form_validation->run() == false) {
+            $this->session->set_flashdata('error', 'Erro de validação: ' . validation_errors());
+        } elseif ($this->viagem_instrutores_model->isInstrutorInViagem($viagem_id, $usuario_id)) {
+            $this->session->set_flashdata('error', 'Este instrutor já está atribuído a esta viagem.');
         } else {
             $data = [
                 'viagem_id' => $viagem_id,
@@ -417,7 +423,12 @@ class Viagens extends MY_Controller
                 'locar_lastro' => $this->input->post('locar_lastro_instrutor') ? 1 : 0,
                 'precisa_hospedagem' => $this->input->post('precisa_hospedagem_instrutor') ? 1 : 0,
             ];
-            $this->viagem_instrutores_model->add($data);
+            if ($this->viagem_instrutores_model->add($data)) {
+                $this->session->set_flashdata('success', 'Instrutor adicionado à viagem com sucesso!');
+                log_info('Adicionou instrutor ID: ' . $usuario_id . ' à viagem ID: ' . $viagem_id);
+            } else {
+                $this->session->set_flashdata('error', 'Ocorreu um erro ao adicionar o instrutor.');
+            }
         }
         redirect('viagens/visualizar/' . $viagem_id . '?tab=' . $activeTab);
     }
