@@ -486,6 +486,10 @@ class Mapos extends MY_Controller {
                 'evolution_api_url' => $this->input->post('evolution_api_url'),
                 'evolution_api_key' => $this->input->post('evolution_api_key'),
                 'evolution_api_instance' => $this->input->post('evolution_api_instance'),
+                'evolution_presence' => $this->input->post('evolution_presence'),
+                'evolution_delay_fixo' => $this->input->post('evolution_delay_fixo'),
+                'evolution_delay_min' => $this->input->post('evolution_delay_min'),
+                'evolution_delay_max' => $this->input->post('evolution_delay_max'),
             ];
             if ($this->mapos_model->saveConfiguracao($data) == true) {
                 $this->session->set_flashdata('success', 'Configurações do sistema atualizadas com sucesso!');

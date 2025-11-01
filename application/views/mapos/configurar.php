@@ -492,6 +492,38 @@
                                 <span class="help-inline">Nome da instância da Evolution API.</span>
                             </div>
                         </div>
+                        <div class="control-group">
+                            <label for="evolution_presence" class="control-label">Presença (Presence)</label>
+                            <div class="controls">
+                                <select name="evolution_presence" id="evolution_presence">
+                                    <option value="composing" <?= ($configuration['evolution_presence'] ?? 'composing') == 'composing' ? 'selected' : '' ?>>Digitando...</option>
+                                    <option value="recording" <?= ($configuration['evolution_presence'] ?? '') == 'recording' ? 'selected' : '' ?>>Gravando...</option>
+                                    <option value="paused" <?= ($configuration['evolution_presence'] ?? '') == 'paused' ? 'selected' : '' ?>>Pausado</option>
+                                </select>
+                                <span class="help-inline">Simula o status de atividade ao enviar a mensagem.</span>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label for="evolution_delay_fixo" class="control-label">Delay Fixo (ms)</label>
+                            <div class="controls">
+                                <input type="number" name="evolution_delay_fixo" value="<?= $configuration['evolution_delay_fixo'] ?? '1200' ?>" id="evolution_delay_fixo">
+                                <span class="help-inline">Atraso fixo em milissegundos entre as mensagens. Deixe 0 para usar delay randômico.</span>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label for="evolution_delay_min" class="control-label">Delay Randômico Mínimo (ms)</label>
+                            <div class="controls">
+                                <input type="number" name="evolution_delay_min" value="<?= $configuration['evolution_delay_min'] ?? '1000' ?>" id="evolution_delay_min">
+                                <span class="help-inline">Valor mínimo para o atraso randômico (se o delay fixo for 0).</span>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label for="evolution_delay_max" class="control-label">Delay Randômico Máximo (ms)</label>
+                            <div class="controls">
+                                <input type="number" name="evolution_delay_max" value="<?= $configuration['evolution_delay_max'] ?? '5000' ?>" id="evolution_delay_max">
+                                <span class="help-inline">Valor máximo para o atraso randômico (se o delay fixo for 0).</span>
+                            </div>
+                        </div>
                         <div class="form-actions">
                             <div class="span8">
                                 <div class="span9">
