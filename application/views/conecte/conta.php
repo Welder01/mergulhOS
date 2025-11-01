@@ -241,12 +241,10 @@
                                         <td><strong>Regulador</strong></td>
                                         <td class="equip-row">
                                             <span>Possui?</span>
-                                            <label class="switch small-toggle"><input type="checkbox" name="possui_regulador" value="1" class="equip-owner-toggle" data-target-group=".regulador-details" <?= ($result->possui_regulador ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <div class="regulador-details" style="display: none;">
-                                                <span>Sabe a quantidade?</span>
-                                                <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#qtd_reguladores" <?= ($result->qtd_reguladores ?? 0) > 0 ? 'checked' : '' ?>><span class="slider"></span></label>
-                                                <input id="qtd_reguladores" type="number" name="qtd_reguladores" value="<?= $result->qtd_reguladores ?? 0 ?>" placeholder="Quantos?" class="span2 monitor-input" style="display: none;" min="0"/>
-                                            </div>
+                                            <label class="switch small-toggle"><input type="checkbox" name="possui_regulador" value="1" <?= ($result->possui_regulador ?? 0) == 1 ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <span>Sabe a quantidade?</span>
+                                            <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#qtd_reguladores" <?= ($result->qtd_reguladores ?? 0) > 0 ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <input id="qtd_reguladores" type="number" name="qtd_reguladores" value="<?= $result->qtd_reguladores ?? 0 ?>" placeholder="Quantos?" class="span2 monitor-input" style="display: none;" min="0"/>
                                         </td>
                                     </tr>
                                     <tr>
@@ -485,6 +483,20 @@
         if (activeTabFromUrl) {
             $('a[href="#' + activeTabFromUrl + '"]').tab('show');
             $('#active_tab').val('#' + activeTabFromUrl);
+        }
+
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            var currentTab = $(e.target).attr('href');
+            $('#active_tab').val(currentTab);
+        });
+
+        // Lógica para manter a aba ativa após salvar
+        var activeTabFromUrl = '<?php echo $this->input->get('tab') ?? ''; ?>';
+        if (activeTabFromUrl) {
+            // Garante que o valor não tenha o # para o seletor
+            var tabId = activeTabFromUrl.replace('#', '');
+            $('a[href="#' + tabId + '"]').tab('show');
+            $('#active_tab').val('#' + tabId);
         }
 
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {

@@ -417,7 +417,7 @@ class Mine extends MY_Controller
         }
 
         $activeTab = ltrim($this->input->post('active_tab'), '#');
-        redirect(base_url() . 'index.php/mine/conta?tab=' . $activeTab);
+        redirect(site_url('mine/conta?tab=') . $activeTab);
     }
 
     public function compras()

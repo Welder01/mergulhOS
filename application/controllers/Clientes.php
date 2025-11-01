@@ -174,6 +174,7 @@ class Clientes extends MY_Controller
                     'possui_lastro' => $this->input->post('possui_lastro') ? 1 : 0,
                     'possui_neoprene' => $this->input->post('possui_neoprene') ? 1 : 0,
                     'possui_nadadeira' => $this->input->post('possui_nadadeira') ? 1 : 0,
+                    'possui_regulador' => $this->input->post('possui_regulador') ? 1 : 0,
                     'possui_lanterna' => $this->input->post('possui_lanterna') ? 1 : 0,
                     'possui_computador' => $this->input->post('possui_computador') ? 1 : 0,
                     'tamanho_nadadeira' => $this->input->post('tamanho_nadadeira') ?: null,
