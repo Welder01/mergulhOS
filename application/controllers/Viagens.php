@@ -9,6 +9,7 @@ class Viagens extends MY_Controller
         $this->load->model('viagem_instrutores_model');
         $this->load->model('viagem_custos_model');
         $this->load->model('viagem_cursos_model');
+        $this->load->model('clientes_model');
         $this->load->model('cursos_model');
         $this->load->model('mapos_model');
         $this->load->model('certificacao_mergulhador_model');
@@ -290,6 +291,10 @@ class Viagens extends MY_Controller
                     'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
                     'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
                     'locar_regulador' => $this->input->post('locar_regulador') ? 1 : 0,
+                    'locar_lanterna' => $this->input->post('locar_lanterna') ? 1 : 0,
+                    'qtd_lanterna' => $this->input->post('qtd_lanterna') ?: 0,
+                    'locar_computador' => $this->input->post('locar_computador') ? 1 : 0,
+                    'qtd_computador' => $this->input->post('qtd_computador') ?: 0,
                     'numero_bolsa' => $this->input->post('numero_bolsa'),
                     'proposito' => $this->input->post('proposito'),
                 ];
@@ -318,31 +323,19 @@ class Viagens extends MY_Controller
         }
         $viagem_id = $this->input->post('viagem_id');
         $activeTab = ltrim($this->input->post('active_tab'), '#');
-        $data = array_merge(
-            [
-                'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
-                'hospedagem_quarto_numero' => $this->input->post('hospedagem_quarto_numero'),
-                'hospedagem_tipo_quarto' => $this->input->post('hospedagem_tipo_quarto'),
-                'hospedagem_numero_camas' => $this->input->post('hospedagem_numero_camas'),
-                'numero_bolsa' => $this->input->post('numero_bolsa'),
-                'status_pagamento' => $this->input->post('status_pagamento'),
-                'proposito' => $this->input->post('proposito'),
-                'precisa_embarque' => $this->input->post('precisa_embarque') ? 1 : 0,
-                'precisa_hospedagem' => $this->input->post('precisa_hospedagem') ? 1 : 0,
-                'locar_nadadeira' => $this->input->post('locar_nadadeira') ? 1 : 0,
-                'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
-                'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
-                'locar_lastro' => $this->input->post('locar_lastro') ? 1 : 0,
-                'locar_cilindro' => (int)$this->input->post('locar_cilindro'),
-                'locar_regulador' => (int)$this->input->post('locar_regulador'),
-            ]
-        );
+
+        // Se a aba ativa for 'tabHospedagem', salva apenas os dados de hospedagem.
+        // Caso contrário, assume que a edição vem do modal e salva todos os dados.
+        $data = ($activeTab === 'tabHospedagem')
+            ? $this->get_hospedagem_data_from_post()
+            : $this->get_all_cliente_viagem_data_from_post();
+
         if ($this->viagem_clientes_model->edit('viagem_clientes', $data, 'id', $cliente_viagem_id)) {
             $this->session->set_flashdata('success', 'Detalhes de hospedagem atualizados com sucesso!');
         } else {
             $this->session->set_flashdata('error', 'Ocorreu um erro ao atualizar os detalhes da hospedagem.');
         }
-        redirect('viagens/visualizar/' . $viagem_id . '?tab=' . $activeTab);
+        redirect('viagens/visualizar/' . $viagem_id . '?tab=' . ($activeTab ?: 'tabClientes'));
     }
 
     public function editar_instrutor_viagem($instrutor_viagem_id)
@@ -353,13 +346,61 @@ class Viagens extends MY_Controller
         }
         $viagem_id = $this->input->post('viagem_id');
         $activeTab = ltrim($this->input->post('active_tab'), '#');
-        $data = [
-            'precisa_embarque' => $this->input->post('precisa_embarque') ? 1 : 0,
-            'precisa_hospedagem' => $this->input->post('precisa_hospedagem') ? 1 : 0,
+
+        // Se a aba ativa for 'tabHospedagem', salva apenas os dados de hospedagem.
+        // Caso contrário, assume que a edição vem do modal e salva todos os dados.
+        $data = ($activeTab === 'tabHospedagem')
+            ? $this->get_hospedagem_data_from_post()
+            : $this->get_all_instrutor_viagem_data_from_post();
+
+        if ($this->viagem_instrutores_model->edit('viagem_instrutores', $data, 'id', $instrutor_viagem_id)) {
+            $this->session->set_flashdata('success', 'Detalhes de hospedagem do instrutor atualizados com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Ocorreu um erro ao atualizar os detalhes da hospedagem.');
+        }
+        redirect('viagens/visualizar/' . $viagem_id . '?tab=' . ($activeTab ?: 'tabInstrutores'));
+    }
+
+    private function get_hospedagem_data_from_post()
+    {
+        return [
             'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
             'hospedagem_quarto_numero' => $this->input->post('hospedagem_quarto_numero'),
             'hospedagem_tipo_quarto' => $this->input->post('hospedagem_tipo_quarto'),
             'hospedagem_numero_camas' => $this->input->post('hospedagem_numero_camas'),
+        ];
+    }
+
+    private function get_all_cliente_viagem_data_from_post()
+    {
+        return [
+            'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
+            'hospedagem_quarto_numero' => $this->input->post('hospedagem_quarto_numero'),
+            'hospedagem_tipo_quarto' => $this->input->post('hospedagem_tipo_quarto'),
+            'hospedagem_numero_camas' => $this->input->post('hospedagem_numero_camas'),
+            'numero_bolsa' => $this->input->post('numero_bolsa'),
+            'status_pagamento' => $this->input->post('status_pagamento'),
+            'proposito' => $this->input->post('proposito'),
+            'precisa_embarque' => $this->input->post('precisa_embarque') ? 1 : 0,
+            'precisa_hospedagem' => $this->input->post('precisa_hospedagem') ? 1 : 0,
+            'locar_nadadeira' => $this->input->post('locar_nadadeira') ? 1 : 0,
+            'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
+            'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
+            'locar_lastro' => $this->input->post('locar_lastro') ? 1 : 0,
+            'locar_cilindro' => (int)$this->input->post('locar_cilindro'),
+            'locar_regulador' => (int)$this->input->post('locar_regulador'),
+            'locar_lanterna' => $this->input->post('locar_lanterna') ? 1 : 0,
+            'qtd_lanterna' => (int)$this->input->post('qtd_lanterna'),
+            'locar_computador' => $this->input->post('locar_computador') ? 1 : 0,
+            'qtd_computador' => (int)$this->input->post('qtd_computador'),
+        ];
+    }
+
+    private function get_all_instrutor_viagem_data_from_post()
+    {
+        return [
+            'precisa_embarque' => $this->input->post('precisa_embarque') ? 1 : 0,
+            'precisa_hospedagem' => $this->input->post('precisa_hospedagem') ? 1 : 0,
             'numero_bolsa' => $this->input->post('numero_bolsa'),
             'locar_nadadeira' => $this->input->post('locar_nadadeira') ? 1 : 0,
             'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
@@ -368,12 +409,6 @@ class Viagens extends MY_Controller
             'locar_cilindro' => (int)$this->input->post('locar_cilindro'),
             'locar_regulador' => (int)$this->input->post('locar_regulador'),
         ];
-        if ($this->viagem_instrutores_model->edit('viagem_instrutores', $data, 'id', $instrutor_viagem_id)) {
-            $this->session->set_flashdata('success', 'Detalhes de hospedagem do instrutor atualizados com sucesso!');
-        } else {
-            $this->session->set_flashdata('error', 'Ocorreu um erro ao atualizar os detalhes da hospedagem.');
-        }
-        redirect('viagens/visualizar/' . $viagem_id . '?tab=' . $activeTab);
     }
 
     public function remover_cliente_viagem($id)
@@ -542,6 +577,18 @@ class Viagens extends MY_Controller
             }, $query->result());
             echo json_encode($result);
         }
+    }
+
+    public function getClienteData($id)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vCliente')) {
+            return $this->output->set_status_header(403)->set_output(json_encode(['error' => 'Acesso não autorizado.']));
+        }
+
+        $cliente = $this->clientes_model->getById($id);
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($cliente));
     }
 
     public function autoCompleteUsuario()

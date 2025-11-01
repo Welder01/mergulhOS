@@ -64,8 +64,11 @@
                         <div class="control-group">
                             <label class="control-label">Cliente<span class="required">*</span></label>
                             <div class="controls">
-                                <input type="text" class="span12" id="cliente" name="cliente" placeholder="Pesquisar cliente..." required>
-                                <input type="hidden" name="cliente_id" id="cliente_id">
+                                <div class="input-append">
+                                    <input type="text" class="span10" id="cliente" name="cliente" placeholder="Pesquisar cliente..." required>
+                                    <button type="button" id="syncClienteBtn" class="btn" disabled title="Sincronizar perfil do cliente"><i class="fas fa-sync-alt"></i></button>
+                                </div>
+                                <input type="hidden" name="cliente_id" id="cliente_id" value="">
                             </div>
                         </div>
                         <div class="control-group">
@@ -130,12 +133,24 @@
                                     <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="locar_lastro" value="1"><span class="slider"></span></label>
                                     <span>Lastro</span>
                                 </div>
+                                <div class="toggle-container">
+                                    <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="locar_lanterna" value="1"><span class="slider"></span></label>
+                                    <span>Lanterna</span>
+                                </div>
+                                <div class="toggle-container">
+                                    <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="locar_computador" value="1"><span class="slider"></span></label>
+                                    <span>Computador</span>
+                                </div>
                             </div>
                             <div class="controls" style="margin-top: 15px;">
                                 <label class="control-label" style="width: 60px; text-align: left;">Cilindros:</label>
                                 <input type="number" name="locar_cilindro" value="0" class="span2" min="0">
                                 <label class="control-label" style="width: 80px; text-align: left; margin-left: 10px;">Reguladores:</label>
                                 <input type="number" name="locar_regulador" value="0" class="span2" min="0">
+                                <label class="control-label" style="width: 60px; text-align: left; margin-top: 5px;">Lanternas:</label>
+                                <input type="number" name="qtd_lanterna" value="0" class="span2" min="0">
+                                <label class="control-label" style="width: 80px; text-align: left; margin-left: 10px; margin-top: 5px;">Computadores:</label>
+                                <input type="number" name="qtd_computador" value="0" class="span2" min="0">
                             </div>
                         </div>
                     </div>
@@ -174,6 +189,7 @@
                                 <td><?= html_escape($cliente->proposito) ?></td>
                                 <td>
                                     <?php if ($cliente->locar_nadadeira) echo '<i class="fas fa-water" title="Nadadeira"></i> '; ?> <?php if ($cliente->locar_cilindro > 0) echo '<i class="fas fa-database" title="Cilindro"></i> ' . $cliente->locar_cilindro . ' '; ?> <?php if ($cliente->locar_colete) echo '<i class="fas fa-life-ring" title="Colete"></i> '; ?> <?php if ($cliente->locar_neoprene) echo '<i class="fas fa-user-ninja" title="Neoprene"></i> '; ?> <?php if ($cliente->locar_regulador > 0) echo '<i class="fas fa-cogs" title="Regulador"></i> ' . $cliente->locar_regulador . ' '; ?> <?php if ($cliente->locar_lastro) echo '<i class="fas fa-weight-hanging" title="Lastro"></i> '; ?>
+                                    <?php if ($cliente->locar_lanterna) echo '<i class="fas fa-lightbulb" title="Lanterna"></i> '; ?> <?php if ($cliente->locar_computador) echo '<i class="fas fa-desktop" title="Computador"></i> '; ?>
                                 </td>
                                 <td><?= html_escape($cliente->status_pagamento) ?></td>
                                 <td>
@@ -195,30 +211,37 @@
             <table class="table table-bordered" style="margin-bottom: 30px;">
                 <thead>
                     <tr>
-                        <th style="width: 20%;">Cliente</th>
-                        <th colspan="2">Detalhes da Hospedagem</th>
+                        <th>Cliente</th>
+                        <th>Nº do Quarto</th>
+                        <th>Tipo de Quarto</th>
+                        <th>Nº de Camas</th>
+                        <th>Observações</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
-                        $clientes_hospedagem = array_filter($clientes, function ($c) {
-                            return $c->precisa_hospedagem;
-                        });
+                    $clientes_hospedagem = array_filter($clientes, function ($c) {
+                        return $c->precisa_hospedagem;
+                    });
                     ?>
                     <?php if (!empty($clientes_hospedagem)) : ?>
                         <?php foreach ($clientes_hospedagem as $cliente) : ?>
                             <form action="<?= site_url('viagens/editar_cliente_viagem/' . $cliente->id) ?>" method="post">
                                 <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
                                 <input type="hidden" name="viagem_id" value="<?= $result->id ?>">
-                                <tr>
-                                    <td rowspan="4" style="vertical-align: top;"><?= html_escape($cliente->nomeCliente) ?></td>
-                                    <td style="width: 20%;"><strong>Nº do Quarto:</strong></td>
-                                    <td><input type="text" name="hospedagem_quarto_numero" value="<?= html_escape($cliente->hospedagem_quarto_numero ?? '') ?>" class="span6"></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Tipo de Quarto:</strong></td>
+                                <input type="hidden" name="active_tab" value="#tabHospedagem">
+                                <?php
+                                    $dadosPreenchidos = !empty($cliente->hospedagem_quarto_numero);
+                                    $rowClass = !$dadosPreenchidos ? 'warning-row' : '';
+                                    $buttonClass = $dadosPreenchidos ? 'btn-info' : 'btn-primary';
+                                    $buttonText = $dadosPreenchidos ? 'Editar' : 'Salvar';
+                                ?>
+                                <tr class="<?= $rowClass ?>">
+                                    <td><?= html_escape($cliente->nomeCliente) ?></td>
+                                    <td><input type="text" name="hospedagem_quarto_numero" value="<?= html_escape($cliente->hospedagem_quarto_numero ?? '') ?>" class="span12"></td>
                                     <td>
-                                        <select name="hospedagem_tipo_quarto" class="span6">
+                                        <select name="hospedagem_tipo_quarto" class="span12">
                                             <option value=""></option>
                                             <option value="Solteiro" <?= ($cliente->hospedagem_tipo_quarto ?? '') == 'Solteiro' ? 'selected' : '' ?>>Solteiro</option>
                                             <option value="Casal" <?= ($cliente->hospedagem_tipo_quarto ?? '') == 'Casal' ? 'selected' : '' ?>>Casal</option>
@@ -226,16 +249,15 @@
                                             <option value="Compartilhado" <?= ($cliente->hospedagem_tipo_quarto ?? '') == 'Compartilhado' ? 'selected' : '' ?>>Compartilhado</option>
                                         </select>
                                     </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Nº de Camas:</strong></td>
-                                    <td><input type="number" name="hospedagem_numero_camas" value="<?= $cliente->hospedagem_numero_camas ?? '' ?>" class="span2"></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Observações:</strong></td>
+                                    <td><input type="number" name="hospedagem_numero_camas" value="<?= $cliente->hospedagem_numero_camas ?? '' ?>" class="span12"></td>
                                     <td>
-                                        <textarea name="detalhes_hospedagem" rows="2" class="span12"><?= html_escape($cliente->detalhes_hospedagem) ?></textarea>
-                                        <button type="submit" class="btn btn-primary btn-mini">Salvar</button>
+                                        <textarea name="detalhes_hospedagem" rows="1" class="span12"><?= html_escape($cliente->detalhes_hospedagem ?? '') ?></textarea>
+                                    </td>
+                                    <td>
+                                        <?php if (!$dadosPreenchidos) : ?>
+                                            <i class="fas fa-exclamation-triangle" style="color: #c09853;" title="Dados de hospedagem pendentes."></i>
+                                        <?php endif; ?>
+                                        <button type="submit" class="btn <?= $buttonClass ?> btn-mini"><?= $buttonText ?></button>
                                     </td>
                                 </tr>
                             </form>
@@ -250,30 +272,37 @@
             <table class="table table-bordered">
                 <thead>
                     <tr>
-                        <th style="width: 20%;">Instrutor</th>
-                        <th colspan="2">Detalhes da Hospedagem</th>
+                        <th>Instrutor</th>
+                        <th>Nº do Quarto</th>
+                        <th>Tipo de Quarto</th>
+                        <th>Nº de Camas</th>
+                        <th>Observações</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
-                        $instrutores_hospedagem = array_filter($instrutores, function ($i) {
-                            return $i->precisa_hospedagem;
-                        });
+                    $instrutores_hospedagem = array_filter($instrutores, function ($i) {
+                        return $i->precisa_hospedagem;
+                    });
                     ?>
                     <?php if (!empty($instrutores_hospedagem)) : ?>
                         <?php foreach ($instrutores_hospedagem as $instrutor) : ?>
                             <form action="<?= site_url('viagens/editar_instrutor_viagem/' . $instrutor->id) ?>" method="post">
                                 <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
                                 <input type="hidden" name="viagem_id" value="<?= $result->id ?>">
-                                <tr>
-                                    <td rowspan="4" style="vertical-align: top;"><?= html_escape($instrutor->nome_instrutor) ?></td>
-                                    <td style="width: 20%;"><strong>Nº do Quarto:</strong></td>
-                                    <td><input type="text" name="hospedagem_quarto_numero" value="<?= html_escape($instrutor->hospedagem_quarto_numero ?? '') ?>" class="span6"></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Tipo de Quarto:</strong></td>
+                                <input type="hidden" name="active_tab" value="#tabHospedagem">
+                                <?php
+                                    $dadosPreenchidosInstrutor = !empty($instrutor->hospedagem_quarto_numero);
+                                    $rowClassInstrutor = !$dadosPreenchidosInstrutor ? 'warning-row' : '';
+                                    $buttonClassInstrutor = $dadosPreenchidosInstrutor ? 'btn-info' : 'btn-primary';
+                                    $buttonTextInstrutor = $dadosPreenchidosInstrutor ? 'Editar' : 'Salvar';
+                                ?>
+                                <tr class="<?= $rowClassInstrutor ?>">
+                                    <td><?= html_escape($instrutor->nome_instrutor) ?></td>
+                                    <td><input type="text" name="hospedagem_quarto_numero" value="<?= html_escape($instrutor->hospedagem_quarto_numero ?? '') ?>" class="span12"></td>
                                     <td>
-                                        <select name="hospedagem_tipo_quarto" class="span6">
+                                        <select name="hospedagem_tipo_quarto" class="span12">
                                             <option value=""></option>
                                             <option value="Solteiro" <?= ($instrutor->hospedagem_tipo_quarto ?? '') == 'Solteiro' ? 'selected' : '' ?>>Solteiro</option>
                                             <option value="Casal" <?= ($instrutor->hospedagem_tipo_quarto ?? '') == 'Casal' ? 'selected' : '' ?>>Casal</option>
@@ -281,16 +310,15 @@
                                             <option value="Compartilhado" <?= ($instrutor->hospedagem_tipo_quarto ?? '') == 'Compartilhado' ? 'selected' : '' ?>>Compartilhado</option>
                                         </select>
                                     </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Nº de Camas:</strong></td>
-                                    <td><input type="number" name="hospedagem_numero_camas" value="<?= $instrutor->hospedagem_numero_camas ?? '' ?>" class="span2"></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Observações:</strong></td>
+                                    <td><input type="number" name="hospedagem_numero_camas" value="<?= $instrutor->hospedagem_numero_camas ?? '' ?>" class="span12"></td>
                                     <td>
-                                        <textarea name="detalhes_hospedagem" rows="2" class="span12"><?= html_escape($instrutor->detalhes_hospedagem) ?></textarea>
-                                        <button type="submit" class="btn btn-primary btn-mini">Salvar</button>
+                                        <textarea name="detalhes_hospedagem" rows="1" class="span12"><?= html_escape($instrutor->detalhes_hospedagem ?? '') ?></textarea>
+                                    </td>
+                                    <td>
+                                        <?php if (!$dadosPreenchidosInstrutor) : ?>
+                                            <i class="fas fa-exclamation-triangle" style="color: #c09853;" title="Dados de hospedagem pendentes."></i>
+                                        <?php endif; ?>
+                                        <button type="submit" class="btn <?= $buttonClassInstrutor ?> btn-mini"><?= $buttonTextInstrutor ?></button>
                                     </td>
                                 </tr>
                             </form>
@@ -597,12 +625,62 @@
         <div class="modal-body">
             <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
             <input type="hidden" name="viagem_id" value="<?php echo $result->id; ?>">
-            <div class="row-fluid" style="display: flex; flex-wrap: wrap;">
+            <div class="row-fluid">
                 <div class="span6">
                     <div class="control-group">
+                        <label class="control-label">Opções</label> <!-- Label for the group -->
+                        <div class="controls toggle-group"> <!-- Applied toggle-group class -->
+                            <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                                <label class="switch" style="margin-right: 10px;">
+                                    <input type="checkbox" name="precisa_embarque" id="edit_precisa_embarque" value="1">
+                                    <span class="slider"></span>
+                                </label>
+                                <label for="edit_precisa_embarque" style="margin: 0;">Embarque</label>
+                            </div>
+                            <div style="display: flex; align-items: center;">
+                                <label class="switch" style="margin-right: 10px;">
+                                    <input type="checkbox" name="precisa_hospedagem" id="edit_precisa_hospedagem" value="1">
+                                    <span class="slider"></span>
+                                </label>
+                                <label for="edit_precisa_hospedagem" style="margin: 0;">Hospedagem</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Locar Equipamentos</label> <!-- Label for the group -->
+                        <div class="controls toggle-group"> <!-- Applied toggle-group class -->
+                            <div>
+                                <label class="switch" style="margin-right: 10px;"><input type="checkbox" name="locar_nadadeira" id="edit_locar_nadadeira" value="1"><span class="slider"></span></label>
+                                <label for="edit_locar_nadadeira" style="margin: 0;">Nadadeira</label>
+                            </div>
+                            <div>
+                                <label class="switch" style="margin-right: 10px;"><input type="checkbox" name="locar_colete" id="edit_locar_colete" value="1"><span class="slider"></span></label>
+                                <label for="edit_locar_colete" style="margin: 0;">Colete</label>
+                            </div>
+                            <div>
+                                <label class="switch" style="margin-right: 10px;"><input type="checkbox" name="locar_neoprene" id="edit_locar_neoprene" value="1"><span class="slider"></span></label>
+                                <label for="edit_locar_neoprene" style="margin: 0;">Neoprene</label>
+                            </div>
+                            <div>
+                                <label class="switch" style="margin-right: 10px;"><input type="checkbox" name="locar_lastro" id="edit_locar_lastro" value="1"><span class="slider"></span></label>
+                                <label for="edit_locar_lastro" style="margin: 0;">Lastro</label>
+                            </div>
+                            <div>
+                                <label class="switch" style="margin-right: 10px;"><input type="checkbox" name="locar_lanterna" id="edit_locar_lanterna" value="1"><span class="slider"></span></label>
+                                <label for="edit_locar_lanterna" style="margin: 0;">Lanterna</label>
+                            </div>
+                            <div>
+                                <label class="switch" style="margin-right: 10px;"><input type="checkbox" name="locar_computador" id="edit_locar_computador" value="1"><span class="slider"></span></label>
+                                <label for="edit_locar_computador" style="margin: 0;">Computador</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="span6">
+                     <div class="control-group">
                         <label class="control-label">Bolsa Nº</label>
                         <div class="controls">
-                            <input type="text" class="span6" name="numero_bolsa" id="edit_numero_bolsa">
+                            <input type="text" class="span8" name="numero_bolsa" id="edit_numero_bolsa">
                         </div>
                     </div>
                     <div class="control-group">
@@ -627,48 +705,6 @@
                             </select>
                         </div>
                     </div>
-                    <div class="control-group">
-                        <label class="control-label">Opções</label> <!-- Label for the group -->
-                        <div class="controls toggle-group"> <!-- Applied toggle-group class -->
-                            <div style="display: flex; align-items: center; margin-bottom: 5px;">
-                                <label class="switch" style="margin-right: 10px;">
-                                    <input type="checkbox" name="precisa_embarque" id="edit_precisa_embarque" value="1">
-                                    <span class="slider"></span>
-                                </label>
-                                <label for="edit_precisa_embarque" style="margin: 0;">Embarque</label>
-                            </div>
-                            <div style="display: flex; align-items: center;">
-                                <label class="switch" style="margin-right: 10px;">
-                                    <input type="checkbox" name="precisa_hospedagem" id="edit_precisa_hospedagem" value="1">
-                                    <span class="slider"></span>
-                                </label>
-                                <label for="edit_precisa_hospedagem" style="margin: 0;">Hospedagem</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="span6">
-                    <div class="control-group">
-                        <label class="control-label">Locar Equipamentos</label> <!-- Label for the group -->
-                        <div class="controls toggle-group"> <!-- Applied toggle-group class -->
-                            <div>
-                                <label class="switch" style="margin-right: 10px;"><input type="checkbox" name="locar_nadadeira" id="edit_locar_nadadeira" value="1"><span class="slider"></span></label>
-                                <label for="edit_locar_nadadeira" style="margin: 0;">Nadadeira</label>
-                            </div>
-                            <div>
-                                <label class="switch" style="margin-right: 10px;"><input type="checkbox" name="locar_colete" id="edit_locar_colete" value="1"><span class="slider"></span></label>
-                                <label for="edit_locar_colete" style="margin: 0;">Colete</label>
-                            </div>
-                            <div>
-                                <label class="switch" style="margin-right: 10px;"><input type="checkbox" name="locar_neoprene" id="edit_locar_neoprene" value="1"><span class="slider"></span></label>
-                                <label for="edit_locar_neoprene" style="margin: 0;">Neoprene</label>
-                            </div>
-                            <div>
-                                <label class="switch" style="margin-right: 10px;"><input type="checkbox" name="locar_lastro" id="edit_locar_lastro" value="1"><span class="slider"></span></label>
-                                <label for="edit_locar_lastro" style="margin: 0;">Lastro</label>
-                            </div>
-                        </div>
-                    </div>
                     <!-- Separate control groups for Cilindros and Reguladores for better alignment -->
                     <div class="control-group">
                         <label class="control-label">Cilindros:</label>
@@ -680,6 +716,18 @@
                         <label class="control-label">Reguladores:</label>
                         <div class="controls">
                             <input type="number" name="locar_regulador" id="edit_locar_regulador" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Lanternas:</label>
+                        <div class="controls">
+                            <input type="number" name="qtd_lanterna" id="edit_qtd_lanterna" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Computadores:</label>
+                        <div class="controls">
+                            <input type="number" name="qtd_computador" id="edit_qtd_computador" value="0" min="0">
                         </div>
                     </div>
                 </div>
@@ -820,6 +868,7 @@ $(document).ready(function() {
         select: function(event, ui) {
             $("#cliente").val(ui.item.nome);
             $("#cliente_id").val(ui.item.id);
+            $("#syncClienteBtn").prop('disabled', false);
         }
     });
     $("#instrutor").autocomplete({
@@ -830,6 +879,36 @@ $(document).ready(function() {
             $("#usuario_id").val(ui.item.id); // Guarda o ID no campo oculto
         }
     });
+
+    $('#syncClienteBtn').on('click', function() {
+        var clienteId = $('#cliente_id').val();
+        if (!clienteId) {
+            alert('Por favor, selecione um cliente primeiro.');
+            return;
+        }
+
+        $.ajax({
+            url: '<?= site_url('viagens/getClienteData/') ?>' + clienteId,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if (data) {
+                    $('input[name="locar_nadadeira"]').prop('checked', data.possui_nadadeira == 0);
+                    $('input[name="locar_colete"]').prop('checked', data.possui_colete == 0);
+                    $('input[name="locar_neoprene"]').prop('checked', data.possui_neoprene == 0);
+                    $('input[name="locar_lastro"]').prop('checked', data.possui_lastro == 0);
+                    $('input[name="locar_lanterna"]').prop('checked', data.possui_lanterna == 0);
+                    $('input[name="locar_computador"]').prop('checked', data.possui_computador == 0);
+
+                    // Preenche a quantidade para os equipamentos contáveis, se o cliente não os possuir
+                    $('input[name="locar_regulador"]').val(data.possui_regulador == 0 ? 1 : 0);
+                    $('input[name="qtd_lanterna"]').val(data.possui_lanterna == 0 ? 1 : 0);
+                    $('input[name="qtd_computador"]').val(data.possui_computador == 0 ? 1 : 0);
+                }
+            }
+        });
+    });
+
     $('.money').mask('#.##0,00', {reverse: true});
 
     $(document).on('click', 'a[href="#modalEditarCliente"]', function() {
@@ -851,6 +930,10 @@ $(document).ready(function() {
         $('#edit_locar_lastro').prop('checked', clienteData.locar_lastro == 1); // Assuming locar_lastro is boolean
         $('#edit_locar_cilindro').val(clienteData.locar_cilindro);
         $('#edit_locar_regulador').val(clienteData.locar_regulador);
+        $('#edit_locar_lanterna').prop('checked', clienteData.locar_lanterna == 1);
+        $('#edit_qtd_lanterna').val(clienteData.qtd_lanterna);
+        $('#edit_locar_computador').prop('checked', clienteData.locar_computador == 1);
+        $('#edit_qtd_computador').val(clienteData.qtd_computador);
     });
 
     $(document).on('click', 'a[href="#modalEditarInstrutor"]', function() {
