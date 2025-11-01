@@ -30,7 +30,11 @@ class Curso_alunos_model extends CI_Model
 
     public function add($data)
     {
-        return $this->db->insert('curso_alunos', $data);
+        $this->db->insert('curso_alunos', $data);
+        if ($this->db->affected_rows() == '1') {
+            return true;
+        }
+        return false;
     }
 
     public function getById($id)

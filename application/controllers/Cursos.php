@@ -11,6 +11,10 @@ class Cursos extends MY_Controller
         $this->load->model('cursos_model');
         $this->load->model('curso_instrutores_model');
         $this->load->model('curso_alunos_model');
+        $this->load->model('curso_modulos_model');
+        $this->load->model('curso_modulo_instrutores_model');
+        $this->load->model('curso_requisitos_model');
+        $this->load->model('certificacao_mergulhador_model');
         $this->data['menuCursos'] = 'cursos'; // Para ativar o menu "Cursos"
     }
 
@@ -177,6 +181,17 @@ class Cursos extends MY_Controller
         $this->data['result'] = $this->cursos_model->getById($curso_id);
         $this->data['instrutores'] = $this->curso_instrutores_model->getByCurso($curso_id);
         $this->data['alunos'] = $this->curso_alunos_model->getByCurso($curso_id);
+        $modulos = $this->curso_modulos_model->getModulosByCurso($curso_id);
+        foreach ($modulos as $modulo) {
+            $modulo->instrutores = $this->curso_modulo_instrutores_model->getInstrutoresByModulo($modulo->id);
+        }
+        $this->data['modulos'] = $modulos;
+        $this->data['requisitos'] = $this->curso_requisitos_model->getByCurso($curso_id);
+
+        // Carregar tipos de certificação da configuração
+        $this->load->model('mapos_model');
+        $tipos_certificacao_str = $this->mapos_model->get_ci_config('certificacao_tipos');
+        $this->data['tipos_certificacao'] = !empty($tipos_certificacao_str) ? explode(',', $tipos_certificacao_str) : [];
 
         $this->data['view'] = 'cursos/visualizarCurso';
         return $this->layout();
@@ -239,7 +254,7 @@ class Cursos extends MY_Controller
                 }
             }
         }
-        redirect('cursos/visualizar/' . $this->input->post('curso_id') . '#instrutores');
+        redirect('cursos/visualizar/' . $this->input->post('curso_id') . '?tab=tab2');
     }
 
     public function remover_instrutor($id = null)
@@ -261,7 +276,7 @@ class Cursos extends MY_Controller
         } else {
             $this->session->set_flashdata('error', 'Erro ao remover instrutor.');
         }
-        redirect('cursos/visualizar/' . $instrutor->curso_id . '#instrutores');
+        redirect('cursos/visualizar/' . $instrutor->curso_id . '?tab=tab2');
     }
 
     public function adicionar_aluno()
@@ -277,29 +292,56 @@ class Cursos extends MY_Controller
 
         if ($this->form_validation->run() == false) {
             $this->session->set_flashdata('error', 'Erro de validação: ' . validation_errors());
+            log_info('Falha na validação ao adicionar aluno: ' . validation_errors());
+            redirect('cursos/visualizar/' . $this->input->post('curso_id') . '#alunos');
+            return;
+        }
+
+        $curso_id = $this->input->post('curso_id');
+        $cliente_id = $this->input->post('cliente_id');
+
+        if ($this->curso_alunos_model->isAlunoInCurso($curso_id, $cliente_id)) {
+            $this->session->set_flashdata('error', 'Este aluno já está inscrito neste curso.');
+            log_info("Tentativa de adicionar aluno duplicado. Cliente ID: {$cliente_id}, Curso ID: {$curso_id}");
         } else {
-            $curso_id = $this->input->post('curso_id');
-            $cliente_id = $this->input->post('cliente_id');
+            $data = [
+                'curso_id' => $curso_id,
+                'cliente_id' => $cliente_id,
+                'data_inscricao' => date('Y-m-d H:i:s'),
+                'status_aluno' => 'inscrito',
+            ];
 
-            if ($this->curso_alunos_model->isAlunoInCurso($curso_id, $cliente_id)) {
-                $this->session->set_flashdata('error', 'Este aluno já está inscrito neste curso.');
+            if ($this->curso_alunos_model->add($data)) {
+                $this->session->set_flashdata('success', 'Aluno adicionado com sucesso!');
+                log_info('Adicionou aluno ID: ' . $cliente_id . ' ao curso ID: ' . $curso_id);
             } else {
-                $data = [
-                    'curso_id' => $curso_id,
-                    'cliente_id' => $cliente_id,
-                    'data_inscricao' => date('Y-m-d H:i:s'),
-                    'status_aluno' => 'inscrito',
-                ];
-
-                if ($this->curso_alunos_model->add($data)) {
-                    $this->session->set_flashdata('success', 'Aluno adicionado com sucesso!');
-                    log_info('Adicionou aluno ID: ' . $cliente_id . ' ao curso ID: ' . $curso_id);
-                } else {
-                    $this->session->set_flashdata('error', 'Erro ao adicionar aluno.');
-                }
+                $this->session->set_flashdata('error', 'Erro ao adicionar aluno. Verifique os logs.');
+                log_info("Falha ao adicionar aluno ao banco de dados. Cliente ID: {$cliente_id}, Curso ID: {$curso_id}. Erro do DB: " . $this->db->error()['message']);
             }
         }
-        redirect('cursos/visualizar/' . $this->input->post('curso_id') . '#alunos');
+        redirect('cursos/visualizar/' . $this->input->post('curso_id') . '?tab=tab3');
+    }
+
+    private function verificarRequisitosAluno($curso_id, $cliente_id)
+    {
+        $requisitos_curso = $this->curso_requisitos_model->getByCurso($curso_id);
+        if (empty($requisitos_curso)) {
+            return true; // Curso não tem requisitos
+        }
+
+        $certificacoes_aluno = $this->certificacao_mergulhador_model->getByCliente($cliente_id);
+        $certificacoes_aluno_nomes = array_map(function ($cert) {
+            return $cert->nome_certificacao;
+        }, $certificacoes_aluno);
+
+        foreach ($requisitos_curso as $requisito) {
+            if (!in_array($requisito->requisito, $certificacoes_aluno_nomes)) {
+                $this->session->set_flashdata('error', 'O aluno não possui o requisito necessário: <strong>' . html_escape($requisito->requisito) . '</strong>.');
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function remover_aluno($id = null)
@@ -321,7 +363,181 @@ class Cursos extends MY_Controller
         } else {
             $this->session->set_flashdata('error', 'Erro ao remover aluno.');
         }
-        redirect('cursos/visualizar/' . $aluno->curso_id . '#alunos');
+        redirect('cursos/visualizar/' . $aluno->curso_id . '?tab=tab3');
+    }
+
+    // Métodos para Módulos do Curso
+    public function adicionar_modulo()
+    {
+        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para editar cursos.');
+            redirect(base_url());
+        }
+
+        $curso_id = $this->input->post('curso_id');
+        $data = [
+            'curso_id' => $curso_id,
+            'nome' => $this->input->post('nome_modulo'),
+            'descricao' => $this->input->post('descricao_modulo'),
+        ];
+
+        if ($this->curso_modulos_model->add('curso_modulos', $data)) {
+            $this->session->set_flashdata('success', 'Módulo adicionado com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao adicionar módulo.');
+        }
+        redirect('cursos/visualizar/' . $curso_id . '?tab=modulos');
+    }
+
+    public function remover_modulo($id)
+    {
+        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'dCurso')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para excluir módulos.');
+            redirect(base_url());
+        }
+
+        $modulo = $this->curso_modulos_model->getById($id);
+        if ($modulo && $this->curso_modulos_model->delete('curso_modulos', 'id', $id)) {
+            $this->session->set_flashdata('success', 'Módulo removido com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao remover módulo.');
+        }
+        redirect('cursos/visualizar/' . $modulo->curso_id . '?tab=modulos');
+    }
+
+    public function toggle_conclusao_modulo()
+    {
+        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para editar cursos.');
+            return $this->output->set_status_header(403)->set_output(json_encode(['error' => 'Acesso não autorizado.']));
+        }
+
+        $modulo_id = $this->input->post('id');
+        $concluido = $this->input->post('concluido') === 'true' ? 1 : 0;
+
+        $data = [
+            'concluido' => $concluido,
+            'data_conclusao' => $concluido ? date('Y-m-d H:i:s') : null,
+        ];
+
+        if ($this->curso_modulos_model->edit('curso_modulos', $data, 'id', $modulo_id)) {
+            return $this->output->set_content_type('application/json')->set_output(json_encode(['success' => true]));
+        }
+        return $this->output->set_status_header(500)->set_output(json_encode(['success' => false]));
+    }
+
+    public function adicionar_instrutor_modulo()
+    {
+        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para editar cursos.');
+            redirect(base_url());
+        }
+
+        $curso_id = $this->input->post('curso_id');
+        $data = [
+            'curso_modulo_id' => $this->input->post('curso_modulo_id'),
+            'usuario_id' => $this->input->post('usuario_id'),
+        ];
+
+        if ($this->curso_modulo_instrutores_model->add('curso_modulo_instrutores', $data)) {
+            $this->session->set_flashdata('success', 'Instrutor adicionado ao módulo com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao adicionar instrutor ao módulo.');
+        }
+        redirect('cursos/visualizar/' . $curso_id . '?tab=modulos');
+    }
+
+    public function remover_instrutor_modulo($id)
+    {
+        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para editar cursos.');
+            redirect(base_url());
+        }
+
+        $relacao = $this->curso_modulo_instrutores_model->getById($id);
+        $modulo = $this->curso_modulos_model->getById($relacao->curso_modulo_id);
+
+        $this->curso_modulo_instrutores_model->delete('curso_modulo_instrutores', 'id', $id);
+        redirect('cursos/visualizar/' . $modulo->curso_id . '?tab=modulos');
+    }
+
+    // Métodos para Requisitos do Curso
+    public function adicionar_requisito()
+    {
+        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para editar cursos.');
+            redirect(base_url());
+        }
+
+        $curso_id = $this->input->post('curso_id');
+        $data = [
+            'curso_id' => $curso_id,
+            'requisito' => $this->input->post('requisito'),
+        ];
+
+        if ($this->curso_requisitos_model->add($data)) {
+            $this->session->set_flashdata('success', 'Requisito adicionado com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao adicionar requisito.');
+        }
+        redirect('cursos/visualizar/' . $curso_id . '?tab=requisitos');
+    }
+
+    public function remover_requisito($id)
+    {
+        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'dCurso')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para excluir requisitos.');
+            redirect(base_url());
+        }
+
+        $requisito = $this->curso_requisitos_model->getById($id);
+        if ($requisito && $this->curso_requisitos_model->delete('curso_requisitos', 'id', $id)) {
+            $this->session->set_flashdata('success', 'Requisito removido com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao remover requisito.');
+        }
+        redirect('cursos/visualizar/' . $requisito->curso_id . '?tab=requisitos');
+    }
+
+    public function ajax_check_requisitos()
+    {
+        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'vCurso')) {
+            return $this->output->set_status_header(403)->set_output(json_encode(['error' => 'Acesso não autorizado.']));
+        }
+
+        $curso_id = $this->input->post('curso_id');
+        $cliente_id = $this->input->post('cliente_id');
+
+        $this->load->model('certificacao_mergulhador_model');
+
+        $requisitos_curso = $this->curso_requisitos_model->getByCurso($curso_id);
+
+        $missing_requisitos = [];
+        if (!empty($requisitos_curso)) {
+            $certificacoes_aluno = $this->certificacao_mergulhador_model->getByCliente($cliente_id);
+            $certificacoes_aluno_nomes = array_map(function ($cert) {
+                return $cert->nome_certificacao;
+            }, $certificacoes_aluno);
+
+            foreach ($requisitos_curso as $requisito) {
+                if (!in_array($requisito->requisito, $certificacoes_aluno_nomes)) {
+                    $missing_requisitos[] = html_escape($requisito->requisito);
+                }
+            }
+        }
+
+        $status = empty($missing_requisitos) ? 'success' : 'failure';
+
+        if ($status === 'failure') {
+            $logMessage = "Falha na verificação de requisitos para o cliente ID: {$cliente_id} no curso ID: {$curso_id}. Requisitos faltantes: " . implode(', ', $missing_requisitos);
+            log_info($logMessage);
+        }
+
+        return $this->output->set_content_type('application/json')->set_output(json_encode([
+            'status' => $status,
+            'missing' => $missing_requisitos,
+            'csrf_token' => $this->security->get_csrf_hash()
+        ]));
     }
 
     public function autoCompleteUsuario()
