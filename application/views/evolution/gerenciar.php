@@ -381,6 +381,6 @@
 
 </script>
 <!-- Adicionando o editor de texto Trumbowyg -->
-<link rel="stylesheet" href="<?= base_url(); ?>assets/trumbowyg/ui/trumbowyg.min.css">
-<script type="text/javascript" src="<?= base_url(); ?>assets/trumbowyg/trumbowyg.min.js"></script>
-<script type="text/javascript" src="<?= base_url(); ?>assets/trumbowyg/langs/pt_br.min.js"></script>
+<link rel="stylesheet" href="<?= base_url(); ?>assets/js/trumbowyg/ui/trumbowyg.min.css">
+<script type="text/javascript" src="<?= base_url(); ?>assets/js/trumbowyg/trumbowyg.min.js"></script>
+<script type="text/javascript" src="<?= base_url(); ?>assets/js/trumbowyg/langs/pt_br.min.js"></script>
