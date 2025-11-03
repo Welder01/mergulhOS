@@ -335,6 +335,8 @@ class Os_model extends CI_Model
     {
         $totalServico = 0;
         $totalProdutos = 0;
+        $totalCursos = 0;
+        $totalViagens = 0;
         $valorDesconto = 0;
         if ($servicos = $this->getServicos($id)) {
             foreach ($servicos as $s) {
@@ -347,11 +349,21 @@ class Os_model extends CI_Model
                 $totalProdutos = $totalProdutos + $p->subTotal;
             }
         }
+        if ($cursos = $this->getCursos($id)) {
+            foreach ($cursos as $c) {
+                $totalCursos = $totalCursos + $c->preco;
+            }
+        }
+        if ($viagens = $this->getViagens($id)) {
+            foreach ($viagens as $v) {
+                $totalViagens = $totalViagens + $v->preco;
+            }
+        }
         if ($valorDescontoBD = $this->getById($id)) {
             $valorDesconto = $valorDescontoBD->valor_desconto;
         }
 
-        return ['totalServico' => $totalServico, 'totalProdutos' => $totalProdutos, 'valor_desconto' => $valorDesconto];
+        return ['totalServico' => $totalServico, 'totalProdutos' => $totalProdutos, 'totalCursos' => $totalCursos, 'totalViagens' => $totalViagens, 'valor_desconto' => $valorDesconto];
     }
 
     public function isEditable($id = null)

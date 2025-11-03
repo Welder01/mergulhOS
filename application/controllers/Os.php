@@ -469,6 +469,8 @@ class Os extends MY_Controller
         $this->data['result'] = $this->os_model->getById($this->uri->segment(3));
         $this->data['produtos'] = $this->os_model->getProdutos($this->uri->segment(3));
         $this->data['servicos'] = $this->os_model->getServicos($this->uri->segment(3));
+        $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
+        $this->data['viagens'] = $this->os_model->getViagens($this->uri->segment(3));
         $this->data['emitente'] = $this->mapos_model->getEmitente();
         $this->data['qrCode'] = $this->os_model->getQrCode(
             $this->uri->segment(3),
@@ -1120,13 +1122,15 @@ class Os extends MY_Controller
 
             $valorTotalServico = $valorTotalData['totalServico'];
             $valorTotalProduto = $valorTotalData['totalProdutos'];
+            $valorTotalCursos = $valorTotalData['totalCursos'];
+            $valorTotalViagens = $valorTotalData['totalViagens'];
             $valorDesconto = $valorTotalData['valor_desconto'];
 
-            $valorTotal = $valorTotalServico + $valorTotalProduto;
+            $valorTotal = $valorTotalServico + $valorTotalProduto + $valorTotalCursos + $valorTotalViagens;
             $valorTotalComDesconto = $valorTotal - $valorDesconto;
 
             $data = [
-                'descricao' => set_value('descricao'),
+                'descricao' => $this->input->post('descricao'),
                 'valor' => $valorTotal,
                 'tipo_desconto' => 'real',
                 'desconto' => ($valorDesconto > 0) ? $valorTotalComDesconto : 0,

@@ -8,7 +8,7 @@
 <html lang="pt-br">
 
 <head>
-    <title><?= $this->config->item('app_name') ?> - <?= $result->idOs ?> - <?= $result->nomeCliente ?></title>
+    <title>Mergulho-OS_<?= $result->idOs ?>_<?= $result->nomeCliente ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="<?= base_url() ?>assets/css/bootstrap5.3.2.min.css" />
     <link rel="stylesheet" href="<?= base_url() ?>assets/font-awesome/css/font-awesome.css" />
@@ -340,7 +340,7 @@
             </footer>
         </div>
 
-        <?php if ($configuration['control_2vias']) : ?>
+        <?php if ($configuration['control_2vias'] && ($produtos || $servicos || $cursos || $viagens)) : ?>
             <div class="sub-page novaPagina">
                 <header>
                     <?php if ($emitente == null) : ?>
@@ -371,7 +371,6 @@
                 <section>
                     <div class="title">
                         <!-- VIA EMPRESA  -->
-                        <?php $totalServico = 0; $totalProdutos = 0; ?>
                         <?php if ($configuration['control_2vias']) : ?><span class="via">Via Empresa</span><?php endif; ?>
                         ORDEM DE SERVIÇO #<?= str_pad($result->idOs, 4, 0, STR_PAD_LEFT) ?>
                         <span class="emissao">Emissão: <?= date('d/m/Y') ?></span>
@@ -532,6 +531,74 @@
                         </div>
                     <?php endif; ?>
 
+                    <?php if ($cursos) : ?>
+                        <div class="tabela">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr class="table-secondary">
+                                        <th>CURSO(S)</th>
+                                        <th class="text-center" width="15%">DATA INÍCIO</th>
+                                        <th class="text-center" width="15%">DATA FIM</th>
+                                        <th class="text-center" width="10%">QTD</th>
+                                        <th class="text-center" width="10%">UNT</th>
+                                        <th class="text-end" width="15%" >SUBTOTAL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                        $totalCursos = 0;
+                                        foreach ($cursos as $c) {
+                                            $totalCursos += $c->preco;
+                                            $subtotal = $c->preco * 1;
+                                            echo '<tr>';
+                                            echo '<td>' . $c->nome_curso . '</td>';
+                                            echo '<td class="text-center">' . ($c->data_inicio ? date('d/m/Y', strtotime($c->data_inicio)) : '') . '</td>';
+                                            echo '<td class="text-center">' . ($c->data_fim ? date('d/m/Y', strtotime($c->data_fim)) : '') . '</td>';
+                                            echo '<td class="text-center">1</td>';
+                                            echo '<td class="text-center">R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
+                                            echo '<td class="text-end">R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
+                                            echo '</tr>';
+                                        }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($viagens) : ?>
+                        <div class="tabela">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr class="table-secondary">
+                                        <th>VIAGEM(NS)</th>
+                                        <th class="text-center" width="15%">DATA PARTIDA</th>
+                                        <th class="text-center" width="15%">DATA RETORNO</th>
+                                        <th class="text-center" width="10%">QTD</th>
+                                        <th class="text-center" width="10%">UNT</th>
+                                        <th class="text-end" width="15%" >SUBTOTAL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                        $totalViagens = 0;
+                                        foreach ($viagens as $v) {
+                                            $totalViagens += $v->preco;
+                                            $subtotal = $v->preco * 1;
+                                            echo '<tr>';
+                                            echo '<td>' . $v->nome_viagem . '</td>';
+                                            echo '<td class="text-center">' . ($v->data_partida ? date('d/m/Y', strtotime($v->data_partida)) : '') . '</td>';
+                                            echo '<td class="text-center">' . ($v->data_retorno ? date('d/m/Y', strtotime($v->data_retorno)) : '') . '</td>';
+                                            echo '<td class="text-center">1</td>';
+                                            echo '<td class="text-center">R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
+                                            echo '<td class="text-end">R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
+                                            echo '</tr>';
+                                        }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+
                     <?php if ($totalProdutos != 0 || $totalServico != 0) : ?>
                         <div class="pagamento">
                             <div class="qrcode">
@@ -557,12 +624,12 @@
                                         <tbody>
                                             <?php if ($result->valor_desconto != 0) : ?>
                                                 <tr>
-                                                    <td width="65%">SUBTOTAL</td>
-                                                    <td>R$ <b><?= number_format($totalProdutos + $totalServico, 2, ',', '.') ?></b></td>
+                                                    <td width="65%">SUB-TOTAL</td>
+                                                    <td>R$ <b><?= number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, ',', '.') ?></b></td>
                                                 </tr>
                                                 <tr>
                                                     <td>DESCONTO</td>
-                                                    <td>R$ <b><?= number_format($result->valor_desconto != 0 ? $result->valor_desconto - ($totalProdutos + $totalServico) : 0.00, 2, ',', '.') ?></b></td>
+                                                    <td>R$ <b><?= number_format(($totalProdutos + $totalServico + $totalCursos + $totalViagens) - $result->valor_desconto, 2, ',', '.') ?></b></td>
                                                 </tr>
                                                 <tr>
                                                     <td>TOTAL</td>
@@ -571,7 +638,7 @@
                                             <?php else : ?>
                                                 <tr>
                                                     <td style="width:290px">TOTAL</td>
-                                                    <td>R$ <?= number_format($totalProdutos + $totalServico, 2, ',', '.') ?></td>
+                                                    <td>R$ <?= number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, ',', '.') ?></td>
                                                 </tr>
                                             <?php endif; ?>
                                         </tbody>

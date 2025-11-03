@@ -610,8 +610,10 @@
                     <label for="valor">Valor*</label>
                     <input type="hidden" id="tipo" name="tipo" value="receita" />
                     <input class="span12 money" id="valor" type="text" data-affixes-stay="true" data-thousands=""
-                        data-decimal="." name="valor"
-                        value="<?php echo number_format($totals + $total, 2, '.', ''); ?>" />
+                        data-decimal="." name="valor" value="<?php
+                        $totalCursos = $cursos ? array_sum(array_column($cursos, 'preco')) : 0;
+                        $totalViagens = $viagens ? array_sum(array_column($viagens, 'preco')) : 0;
+                        echo number_format($totals + $total + $totalCursos + $totalViagens, 2, '.', ''); ?>" />
                 </div>
                 <div class="span6" style="margin-left: 2;">
                     <label for="valor">Valor Com Desconto*</label>

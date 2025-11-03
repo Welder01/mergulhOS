@@ -1,10 +1,12 @@
 <?php $totalServico = 0;
-$totalProdutos = 0; ?>
+$totalProdutos = 0;
+$totalCursos = 0;
+$totalViagens = 0; ?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
 <head>
-    <title>Map_OS_<?php echo $result->idOs ?>_<?php echo $result->nomeCliente ?></title>
+    <title>Mergulho-OS_<?php echo $result->idOs ?>_<?php echo $result->nomeCliente ?></title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/css/bootstrap.min.css" />
@@ -242,16 +244,72 @@ $totalProdutos = 0; ?>
                             </tbody>
                         </table>
                     <?php } ?>
+                    <?php if ($cursos != null) { ?>
+                        <table style='font-size: 11px;' class="table table-bordered table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Qtd</th>
+                                    <th>Curso</th>
+                                    <th>Unitário</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                foreach ($cursos as $c) {
+                                    $totalCursos += $c->preco;
+                                    echo '<tr>';
+                                    echo '<td>1</td>';
+                                    echo '<td>' . $c->nome_curso . '</td>';
+                                    echo '<td>R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
+                                    echo '<td>R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
+                                    echo '</tr>';
+                                } ?>
+                                <tr>
+                                    <td colspan="3" style="text-align: right"><strong>Total:</strong></td>
+                                    <td><strong>R$ <?php echo number_format($totalCursos, 2, ',', '.'); ?></strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    <?php } ?>
+                    <?php if ($viagens != null) { ?>
+                        <table style='font-size: 11px;' class="table table-bordered table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Qtd</th>
+                                    <th>Viagem</th>
+                                    <th>Unitário</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                foreach ($viagens as $v) {
+                                    $totalViagens += $v->preco;
+                                    echo '<tr>';
+                                    echo '<td>1</td>';
+                                    echo '<td>' . $v->nome_viagem . '</td>';
+                                    echo '<td>R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
+                                    echo '<td>R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
+                                    echo '</tr>';
+                                } ?>
+                                <tr>
+                                    <td colspan="3" style="text-align: right"><strong>Total:</strong></td>
+                                    <td><strong>R$ <?php echo number_format($totalViagens, 2, ',', '.'); ?></strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    <?php } ?>
                     <table class="table table-bordered table-condensed">
                         <tbody>
                             <tr>
                                 <td colspan="5"> <?php
-                                    if ($totalProdutos != 0 || $totalServico != 0) {
+                                    if ($totalProdutos != 0 || $totalServico != 0 || $totalCursos != 0 || $totalViagens != 0) {
                                         if ($result->valor_desconto != 0) {
-                                            echo "<h4 style='text-align: right; font-size: 13px;'>Subtotal: R$ " . number_format($totalProdutos + $totalServico, 2, ',', '.') . "</h4>";
-                                            echo $result->valor_desconto != 0 ? "<h4 style='text-align: right; font-size: 13px;'> Desconto: R$ " . number_format($result->valor_desconto != 0 ? $result->valor_desconto - ($totalProdutos + $totalServico) : 0.00, 2, ',', '.') . "</h4>" : "";
+                                            echo "<h4 style='text-align: right; font-size: 13px;'>Subtotal: R$ " . number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, ',', '.') . "</h4>";
+                                            echo $result->valor_desconto != 0 ? "<h4 style='text-align: right; font-size: 13px;'> Desconto: R$ " . number_format($result->valor_desconto != 0 ? ($totalProdutos + $totalServico + $totalCursos + $totalViagens) - $result->valor_desconto : 0.00, 2, ',', '.') . "</h4>" : "";
                                             echo $result->valor_desconto != 0 ? "<h4 style='text-align: right; font-size: 13px;'> Total: R$ " . number_format($result->valor_desconto, 2, ',', '.') . "</h4>" : "";
-                                        } else { echo "<h4 style='text-align: right; font-size: 13px;'>Total: R$ " . number_format($totalProdutos + $totalServico, 2, ',', '.') . "</h4>"; }
+                                        } else { echo "<h4 style='text-align: right; font-size: 13px;'>Total: R$ " . number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, ',', '.') . "</h4>"; }
                                     } ?>
                                 </td>
                             </tr>
