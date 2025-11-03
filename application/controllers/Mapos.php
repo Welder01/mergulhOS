@@ -499,6 +499,9 @@ class Mapos extends MY_Controller {
             }
         }
 
+        $this->load->model('evolution_model');
+        $this->data['logs'] = $this->evolution_model->get('evolution_logs', '*', '', 100, 0, false, 'desc');
+
         $this->data['view'] = 'mapos/configurar';
 
         return $this->layout();

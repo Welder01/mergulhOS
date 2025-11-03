@@ -430,98 +430,152 @@
                     </div>
                     <!-- Menu API -->
                     <div id="menu6" class="tab-pane fade">
-                        <div class="control-group">
-                            <label for="apiEnabled" class="control-label">Ativar acesso à API</label>
-                            <div class="controls">
-                                <select name="apiEnabled" id="apiEnabled">
-                                    <option value="true">Ativar</option>
-                                    <option value="false" <?= !filter_var($_ENV['API_ENABLED'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 'selected' : ''; ?>>Desativar</option>
-                                </select>
-                                <span class="help-inline">Ativar ou desativar acesso à API.</span>
+                        <ul class="nav nav-tabs">
+                            <li class="active"><a data-toggle="tab" href="#api-config">Configurações da API</a></li>
+                            <li><a data-toggle="tab" href="#api-logs">Logs de Envio</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="api-config" class="tab-pane fade in active">
+                                <div class="control-group">
+                                    <label for="apiEnabled" class="control-label">Ativar acesso à API</label>
+                                    <div class="controls">
+                                        <select name="apiEnabled" id="apiEnabled">
+                                            <option value="true">Ativar</option>
+                                            <option value="false" <?= !filter_var($_ENV['API_ENABLED'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 'selected' : ''; ?>>Desativar</option>
+                                        </select>
+                                        <span class="help-inline">Ativar ou desativar acesso à API.</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label for="apiEnabled" class="control-label">URL API</label>
+                                    <div class="controls">
+                                        <span class="span10" id="urlApi" style="margin-top:7px;"><?= trim($_ENV['APP_BASEURL'], '/') . '/' ?>index.php/api/v1</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label for="apiExpireTime" class="control-label">Tempo de expiração</label>
+                                    <div class="controls">
+                                        <select name="apiExpireTime" id="apiExpireTime">
+                                            <option value="60" <?= $_ENV['API_TOKEN_EXPIRE_TIME'] == 60 ? 'selected' : '' ?>>1 minuto</option>
+                                            <option value="3600" <?= $_ENV['API_TOKEN_EXPIRE_TIME'] == 3600 ? 'selected' : '' ?>>1 hora</option>
+                                            <option value="86400" <?= $_ENV['API_TOKEN_EXPIRE_TIME'] == 86400 ? 'selected' : '' ?>>1 dia</option>
+                                            <option value="604800" <?= $_ENV['API_TOKEN_EXPIRE_TIME'] == 604800 ? 'selected' : '' ?>>1 semana</option>
+                                            <option value="2592000" <?= $_ENV['API_TOKEN_EXPIRE_TIME'] == 2592000 ? 'selected' : '' ?>>1 mês</option>
+                                        </select>
+                                        <span class="help-inline">Tempo de duração da sessão na API.</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label for="resetJwtToken" class="control-label">Resetar token JWT</label>
+                                    <div class="controls">
+                                        <select name="resetJwtToken" id="resetJwtToken">
+                                            <option value="nao" selected>Não</option>
+                                            <option value="sim">Sim</option>
+                                        </select>
+                                        <span class="help-inline">Gerar um novo token JWT.</span>
+                                    </div>
+                                </div>
+                                <hr>
+                                <h5 style="margin-left:10px;">Configurações da Evolution API</h5>
+                                <div class="control-group">
+                                    <label for="evolution_api_url" class="control-label">URL da API</label>
+                                    <div class="controls">
+                                        <input type="text" name="evolution_api_url" value="<?= $configuration['evolution_api_url'] ?? '' ?>" id="evolution_api_url" placeholder="http://localhost:8080">
+                                        <span class="help-inline">URL base da sua instância da Evolution API.</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label for="evolution_api_key" class="control-label">API Key</label>
+                                    <div class="controls">
+                                        <input type="text" name="evolution_api_key" value="<?= $configuration['evolution_api_key'] ?? '' ?>" id="evolution_api_key">
+                                        <span class="help-inline">Chave de API para autenticação.</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label for="evolution_api_instance" class="control-label">Nome da Instância</label>
+                                    <div class="controls">
+                                        <input type="text" name="evolution_api_instance" value="<?= $configuration['evolution_api_instance'] ?? '' ?>" id="evolution_api_instance" placeholder="Ex: meu-whatsapp">
+                                        <span class="help-inline">Nome da instância da Evolution API.</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label for="evolution_presence" class="control-label">Presença (Presence)</label>
+                                    <div class="controls">
+                                        <select name="evolution_presence" id="evolution_presence">
+                                            <option value="composing" <?= ($configuration['evolution_presence'] ?? 'composing') == 'composing' ? 'selected' : '' ?>>Digitando...</option>
+                                            <option value="recording" <?= ($configuration['evolution_presence'] ?? '') == 'recording' ? 'selected' : '' ?>>Gravando...</option>
+                                            <option value="paused" <?= ($configuration['evolution_presence'] ?? '') == 'paused' ? 'selected' : '' ?>>Pausado</option>
+                                        </select>
+                                        <span class="help-inline">Simula o status de atividade ao enviar a mensagem.</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label for="evolution_delay_fixo" class="control-label">Delay Fixo (ms)</label>
+                                    <div class="controls">
+                                        <input type="number" name="evolution_delay_fixo" value="<?= $configuration['evolution_delay_fixo'] ?? '1200' ?>" id="evolution_delay_fixo">
+                                        <span class="help-inline">Atraso fixo em milissegundos entre as mensagens. Deixe 0 para usar delay randômico.</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label for="evolution_delay_min" class="control-label">Delay Randômico Mínimo (ms)</label>
+                                    <div class="controls">
+                                        <input type="number" name="evolution_delay_min" value="<?= $configuration['evolution_delay_min'] ?? '1000' ?>" id="evolution_delay_min">
+                                        <span class="help-inline">Valor mínimo para o atraso randômico (se o delay fixo for 0).</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label for="evolution_delay_max" class="control-label">Delay Randômico Máximo (ms)</label>
+                                    <div class="controls">
+                                        <input type="number" name="evolution_delay_max" value="<?= $configuration['evolution_delay_max'] ?? '5000' ?>" id="evolution_delay_max">
+                                        <span class="help-inline">Valor máximo para o atraso randômico (se o delay fixo for 0).</span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="control-group">
-                            <label for="apiEnabled" class="control-label">URL API</label>
-                            <div class="controls">
-                                <span class="span10" id="urlApi" style="margin-top:7px;"><?= trim($_ENV['APP_BASEURL'], '/') . '/' ?>index.php/api/v1</span>
-                            </div>
-                        </div>
-                        <div class="control-group">
-                            <label for="apiExpireTime" class="control-label">Tempo de expiração</label>
-                            <div class="controls">
-                                <select name="apiExpireTime" id="apiExpireTime">
-                                    <option value="60" <?= $_ENV['API_TOKEN_EXPIRE_TIME'] == 60 ? 'selected' : '' ?>>1 minuto</option>
-                                    <option value="3600" <?= $_ENV['API_TOKEN_EXPIRE_TIME'] == 3600 ? 'selected' : '' ?>>1 hora</option>
-                                    <option value="86400" <?= $_ENV['API_TOKEN_EXPIRE_TIME'] == 86400 ? 'selected' : '' ?>>1 dia</option>
-                                    <option value="604800" <?= $_ENV['API_TOKEN_EXPIRE_TIME'] == 604800 ? 'selected' : '' ?>>1 semana</option>
-                                    <option value="2592000" <?= $_ENV['API_TOKEN_EXPIRE_TIME'] == 2592000 ? 'selected' : '' ?>>1 mês</option>
-                                </select>
-                                <span class="help-inline">Tempo de duração da sessão na API.</span>
-                            </div>
-                        </div>
-                        <div class="control-group">
-                            <label for="resetJwtToken" class="control-label">Resetar token JWT</label>
-                            <div class="controls">
-                                <select name="resetJwtToken" id="resetJwtToken">
-                                    <option value="nao" selected>Não</option>
-                                    <option value="sim">Sim</option>
-                                </select>
-                                <span class="help-inline">Gerar um novo token JWT.</span>
-                            </div>
-                        </div>
-                        <hr>
-                        <h5 style="margin-left:10px;">Configurações da Evolution API</h5>
-                        <div class="control-group">
-                            <label for="evolution_api_url" class="control-label">URL da API</label>
-                            <div class="controls">
-                                <input type="text" name="evolution_api_url" value="<?= $configuration['evolution_api_url'] ?? '' ?>" id="evolution_api_url" placeholder="http://localhost:8080">
-                                <span class="help-inline">URL base da sua instância da Evolution API.</span>
-                            </div>
-                        </div>
-                        <div class="control-group">
-                            <label for="evolution_api_key" class="control-label">API Key</label>
-                            <div class="controls">
-                                <input type="text" name="evolution_api_key" value="<?= $configuration['evolution_api_key'] ?? '' ?>" id="evolution_api_key">
-                                <span class="help-inline">Chave de API para autenticação.</span>
-                            </div>
-                        </div>
-                        <div class="control-group">
-                            <label for="evolution_api_instance" class="control-label">Nome da Instância</label>
-                            <div class="controls">
-                                <input type="text" name="evolution_api_instance" value="<?= $configuration['evolution_api_instance'] ?? '' ?>" id="evolution_api_instance" placeholder="Ex: meu-whatsapp">
-                                <span class="help-inline">Nome da instância da Evolution API.</span>
-                            </div>
-                        </div>
-                        <div class="control-group">
-                            <label for="evolution_presence" class="control-label">Presença (Presence)</label>
-                            <div class="controls">
-                                <select name="evolution_presence" id="evolution_presence">
-                                    <option value="composing" <?= ($configuration['evolution_presence'] ?? 'composing') == 'composing' ? 'selected' : '' ?>>Digitando...</option>
-                                    <option value="recording" <?= ($configuration['evolution_presence'] ?? '') == 'recording' ? 'selected' : '' ?>>Gravando...</option>
-                                    <option value="paused" <?= ($configuration['evolution_presence'] ?? '') == 'paused' ? 'selected' : '' ?>>Pausado</option>
-                                </select>
-                                <span class="help-inline">Simula o status de atividade ao enviar a mensagem.</span>
-                            </div>
-                        </div>
-                        <div class="control-group">
-                            <label for="evolution_delay_fixo" class="control-label">Delay Fixo (ms)</label>
-                            <div class="controls">
-                                <input type="number" name="evolution_delay_fixo" value="<?= $configuration['evolution_delay_fixo'] ?? '1200' ?>" id="evolution_delay_fixo">
-                                <span class="help-inline">Atraso fixo em milissegundos entre as mensagens. Deixe 0 para usar delay randômico.</span>
-                            </div>
-                        </div>
-                        <div class="control-group">
-                            <label for="evolution_delay_min" class="control-label">Delay Randômico Mínimo (ms)</label>
-                            <div class="controls">
-                                <input type="number" name="evolution_delay_min" value="<?= $configuration['evolution_delay_min'] ?? '1000' ?>" id="evolution_delay_min">
-                                <span class="help-inline">Valor mínimo para o atraso randômico (se o delay fixo for 0).</span>
-                            </div>
-                        </div>
-                        <div class="control-group">
-                            <label for="evolution_delay_max" class="control-label">Delay Randômico Máximo (ms)</label>
-                            <div class="controls">
-                                <input type="number" name="evolution_delay_max" value="<?= $configuration['evolution_delay_max'] ?? '5000' ?>" id="evolution_delay_max">
-                                <span class="help-inline">Valor máximo para o atraso randômico (se o delay fixo for 0).</span>
+                            <div id="api-logs" class="tab-pane fade">
+                                <div class="span12" style="padding: 1%; margin-left: 0;">
+                                    <div class="widget-box" id="divLogs">
+                                        <div class="widget-content nopadding">
+                                            <table class="table table-bordered table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 15%;">Data/Hora</th>
+                                                        <th style="width: 15%;">Número</th>
+                                                        <th style="width: 10%;">Status HTTP</th>
+                                                        <th>Requisição</th>
+                                                        <th>Resposta</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php if (isset($logs) && count($logs)) : ?>
+                                                        <?php foreach ($logs as $log) : ?>
+                                                            <tr>
+                                                                <td><?= date('d/m/Y H:i:s', strtotime($log->timestamp)); ?></td>
+                                                                <td><?= htmlspecialchars($log->phone_number); ?></td>
+                                                                <td>
+                                                                    <?php
+                                                                        $statusClass = 'label-inverse';
+                                                                        if ($log->response_code >= 200 && $log->response_code < 300) {
+                                                                            $statusClass = 'label-success';
+                                                                        } elseif ($log->response_code >= 400) {
+                                                                            $statusClass = 'label-important';
+                                                                        }
+                                                                    ?>
+                                                                    <span class="label <?= $statusClass; ?>"><?= $log->response_code; ?></span>
+                                                                </td>
+                                                                <td><a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info" data-title="Requisição" data-content="<?= htmlspecialchars($log->request_payload); ?>">Ver</a></td>
+                                                                <td><a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info" data-title="Resposta" data-content="<?= htmlspecialchars($log->response_body . ($log->curl_error ? ' | Erro cURL: ' . $log->curl_error : '')); ?>">Ver</a></td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    <?php else : ?>
+                                                        <tr>
+                                                            <td colspan="5">Nenhum log encontrado.</td>
+                                                        </tr>
+                                                    <?php endif; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="form-actions">
@@ -628,11 +682,26 @@
             </h7>
         </div>
         <div class="modal-footer" style="display:flex;justify-content: center">
-          <button class="button btn btn-mini btn-danger" data-dismiss="modal" aria-hidden="true"><span class="button__icon"><i class='bx bx-x' ></i></span> <span class="button__text2">Cancelar</span></button>
-          <button id="update-database" type="button" class="button btn btn-warning"><span class="button__icon"><i class="bx bx-sync"></i></span><span class="button__text2">Atualizar</span></button>
+            <button class="button btn btn-mini btn-danger" data-dismiss="modal" aria-hidden="true"><span class="button__icon"><i class='bx bx-x' ></i></span> <span class="button__text2">Cancelar</span></button>
+            <button id="update-database" type="button" class="button btn btn-warning"><span class="button__icon"><i class="bx bx-sync"></i></span><span class="button__text2">Atualizar</span></button>
         </div>
     </form>
 </div>
+
+<!-- Modal Detalhes do Log -->
+<div id="modal-log-details" class="modal hide fade" tabindex="-1" role="dialog">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="log-details-title">Detalhes</h3>
+    </div>
+    <div class="modal-body">
+        <pre id="log-details-content" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
+    </div>
+</div>
+
 <script>
     $('#update-database').click(function() {
         window.location = "<?= site_url('mapos/atualizarBanco') ?>"
@@ -646,5 +715,29 @@
                 document.getElementById("notifica_whats").value += $(this).val();
             $(this).prop('selectedIndex', 0);
         });
+    });
+
+    function htmlspecialchars_decode(str) {
+        if (typeof(str) == "string") {
+            str = str.replace(/&amp;/g, "&");
+            str = str.replace(/&quot;/g, "\"");
+            str = str.replace(/&#039;/g, "'");
+            str = str.replace(/&lt;/g, "<");
+            str = str.replace(/&gt;/g, ">");
+        }
+        return str;
+    }
+
+    $(document).on('click', 'a[href="#modal-log-details"]', function() {
+        var title = $(this).data('title');
+        var content = htmlspecialchars_decode($(this).data('content'));
+        try {
+            // Tenta formatar o conteúdo como JSON se for uma string JSON válida
+            content = JSON.stringify(JSON.parse(content), null, 2);
+        } catch (e) {
+            // Se não for um JSON válido, exibe como está (já é uma string)
+        }
+        $('#log-details-title').text(title);
+        $('#log-details-content').text(content);
     });
 </script>

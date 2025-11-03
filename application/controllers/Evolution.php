@@ -27,6 +27,7 @@ class Evolution extends MY_Controller
 
         $this->data['mensagens'] = $this->evolution_model->get('evolution_mensagens', '*', '', 100);
         $this->data['clientes'] = $this->db->get('clientes')->result();
+        $this->data['logs'] = $this->evolution_model->get('evolution_logs', '*', '', 100, 0, false, 'desc');
         $this->data['usuarios'] = $this->db->get('usuarios')->result();
 
         $this->data['view'] = 'evolution/gerenciar';
@@ -215,14 +216,18 @@ class Evolution extends MY_Controller
         foreach ($numerosParaEnvio as $numero) {
             $delay = $useRandomDelay ? rand($delayMin, $delayMax) : $delayFixo;
 
+            // Remove tags HTML da mensagem e decodifica entidades HTML
+            $plainTextMessage = html_entity_decode(strip_tags($mensagem->mensagem));
+
             $payload = [
                 'number' => $numero,
-                'options' => ['delay' => $delay, 'presence' => $presence],
-                'textMessage' => ['text' => $mensagem->mensagem],
+                'options' => ['delay' => $delay, 'presence' => $presence, 'linkPreview' => false],
+                'textMessage' => ['text' => $plainTextMessage],
             ];
 
             if (!empty($mensagem->imagem_url)) {
-                $payload['mediaMessage'] = ['mediatype' => 'image', 'media' => $mensagem->imagem_url];
+                $payload['mediaMessage'] = ['mediaType' => 'image', 'media' => $mensagem->imagem_url, 'caption' => $plainTextMessage];
+                unset($payload['textMessage']); // Remove textMessage se for enviar imagem com legenda
             }
 
             $curl = curl_init();
@@ -242,6 +247,18 @@ class Evolution extends MY_Controller
             // Log detalhado para depuração
             $logMessage = "Envio para: {$numero} | Status: {$httpcode} | Payload: " . json_encode($payload) . " | Resposta: {$response} | Erro cURL: {$err}";
             log_info($logMessage);
+
+            // Salva o log no banco de dados
+            $logData = [
+                'timestamp' => date('Y-m-d H:i:s'),
+                'endpoint' => $url,
+                'phone_number' => $numero,
+                'request_payload' => json_encode($payload),
+                'response_code' => $httpcode,
+                'response_body' => $response,
+                'curl_error' => $err,
+            ];
+            $this->evolution_model->add('evolution_logs', $logData);
 
             ($httpcode >= 200 && $httpcode < 300) ? $sucessos++ : $falhas++;
         }
