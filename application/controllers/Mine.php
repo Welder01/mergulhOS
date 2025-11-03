@@ -602,6 +602,8 @@ class Mine extends MY_Controller
         $this->data['result'] = $this->os_model->getById($this->uri->segment(3));
         $this->data['produtos'] = $this->os_model->getProdutos($this->uri->segment(3));
         $this->data['servicos'] = $this->os_model->getServicos($this->uri->segment(3));
+        $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
+        $this->data['viagens'] = $this->os_model->getViagens($this->uri->segment(3));
         $this->data['anexos'] = $this->os_model->getAnexos($this->uri->segment(3));
         $this->data['emitente'] = $this->mapos_model->getEmitente();
         $this->data['qrCode'] = $this->os_model->getQrCode(
@@ -708,6 +710,8 @@ class Mine extends MY_Controller
         $this->data['result'] = $this->os_model->getById($this->uri->segment(3));
         $this->data['produtos'] = $this->os_model->getProdutos($this->uri->segment(3));
         $this->data['servicos'] = $this->os_model->getServicos($this->uri->segment(3));
+        $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
+        $this->data['viagens'] = $this->os_model->getViagens($this->uri->segment(3));
         $this->data['emitente'] = $this->mapos_model->getEmitente();
         $this->data['pix_key'] = $this->db->get_where('configuracoes', ['config' => 'pix_key'])->row_object()->valor;
         $this->data['qrCode'] = $this->os_model->getQrCode(

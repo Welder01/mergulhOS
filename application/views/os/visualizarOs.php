@@ -257,10 +257,10 @@
                             <table class="table table-bordered table-condensed" id="tblProdutos">
                                 <thead>
                                     <tr>
-                                        <th>PRODUTO</th>
-                                        <th>QTD</th>
-                                        <th>UNT</th>
-                                        <th>SUBTOTAL</th>
+                                        <th style="width: 55%">PRODUTO</th>
+                                        <th style="width: 10%">QTD</th>
+                                        <th style="width: 15%">UNT</th>
+                                        <th style="width: 20%">SUBTOTAL</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -285,10 +285,10 @@
                             <table class="table table-bordered table-condensed">
                                 <thead>
                                     <tr>
-                                        <th>SERVIÇO</th>
-                                        <th>QTD</th>
-                                        <th>UNT</th>
-                                        <th>SUBTOTAL</th>
+                                        <th style="width: 55%">SERVIÇO</th>
+                                        <th style="width: 10%">QTD</th>
+                                        <th style="width: 15%">UNT</th>
+                                        <th style="width: 20%">SUBTOTAL</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -314,58 +314,73 @@
                         <?php if ($cursos != null) { ?>
                             <table class="table table-bordered table-condensed">
                                 <thead>
-                                    <tr>
-                                        <th>CURSO</th>
-                                        <th>PREÇO</th>
-                                    </tr>
+                                <tr>
+                                    <th style="width: 35%">CURSO</th>
+                                    <th style="width: 15%">DATA INÍCIO</th>
+                                    <th style="width: 15%">DATA FIM</th>
+                                    <th style="width: 5%">QTD</th>
+                                    <th style="width: 15%">UNT</th>
+                                    <th style="width: 15%">SUBTOTAL</th>
+                                </tr>
                                 </thead>
                                 <tbody>
                                     <?php
                                     $totalCursos = 0;
                                     foreach ($cursos as $c) {
                                         $totalCursos += $c->preco;
+                                        $subtotal = $c->preco * 1;
                                         echo '<tr>';
                                         echo '<td>' . $c->nome_curso . '</td>';
+                                        echo '<td>' . ($c->data_inicio ? date('d/m/Y', strtotime($c->data_inicio)) : '') . '</td>';
+                                        echo '<td>' . ($c->data_fim ? date('d/m/Y', strtotime($c->data_fim)) : '') . '</td>';
+                                        echo '<td>1</td>';
                                         echo '<td>R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
+                                        echo '<td>R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
                                         echo '</tr>';
                                     }
                                     ?>
                                     <tr>
-                                        <td style="text-align: right"><strong>TOTAL:</strong></td>
+                                        <td colspan="5" style="text-align: right"><strong>TOTAL:</strong></td>
                                         <td><strong>R$ <?php echo number_format($totalCursos, 2, ',', '.'); ?></strong></td>
                                     </tr>
                                 </tbody>
                             </table>
                         <?php } ?>
-                        <table class="table table-bordered table-condensed">
-                            <?php $totalCursos = 0;
-                            if ($cursos) {
-                                foreach ($cursos as $c) {
-                                    $totalCursos += $c->preco;
-                                }
-                            } ?>
-                            <?php if ($totalCursos != 0) { ?>
+                        <?php if ($viagens != null) { ?>
                             <table class="table table-bordered table-condensed">
                                 <thead>
-                                    <tr>
-                                        <th>CURSO</th>
-                                        <th>PREÇO</th>
-                                    </tr>
+                                <tr>
+                                    <th style="width: 35%">VIAGEM</th>
+                                    <th style="width: 15%">DATA PARTIDA</th>
+                                    <th style="width: 15%">DATA RETORNO</th>
+                                    <th style="width: 5%">QTD</th>
+                                    <th style="width: 15%">UNT</th>
+                                    <th style="width: 15%">SUBTOTAL</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($cursos as $c) {
+                                    <?php
+                                    $totalViagens = 0;
+                                    foreach ($viagens as $v) {
+                                        $totalViagens += $v->preco;
+                                        $subtotal = $v->preco * 1;
                                         echo '<tr>';
-                                        echo '<td>' . $c->nome_curso . '</td>';
-                                        echo '<td>R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
+                                        echo '<td>' . $v->nome_viagem . '</td>';
+                                        echo '<td>' . ($v->data_partida ? date('d/m/Y', strtotime($v->data_partida)) : '') . '</td>';
+                                        echo '<td>' . ($v->data_retorno ? date('d/m/Y', strtotime($v->data_retorno)) : '') . '</td>';
+                                        echo '<td>1</td>';
+                                        echo '<td>R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
+                                        echo '<td>R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
                                         echo '</tr>';
-                                    } ?>
+                                    }
+                                    ?>
                                     <tr>
-                                        <td style="text-align: right"><strong>TOTAL:</strong></td>
-                                        <td><strong>R$ <?php echo number_format($totalCursos, 2, ',', '.'); ?></strong></td>
+                                        <td colspan="5" style="text-align: right"><strong>TOTAL:</strong></td>
+                                        <td><strong>R$ <?php echo number_format($totalViagens, 2, ',', '.'); ?></strong></td>
                                     </tr>
                                 </tbody>
                             </table>
-                            <?php } ?>
+                        <?php } ?>
                         <table class="table table-bordered table-condensed">
                             <?php 
                             $totalCursos = 0;

@@ -288,7 +288,6 @@ class Os extends MY_Controller
         $this->data['produtos'] = $this->os_model->getProdutos($this->uri->segment(3));
         $this->data['servicos'] = $this->os_model->getServicos($this->uri->segment(3));
         $this->data['anexos'] = $this->os_model->getAnexos($this->uri->segment(3));
-        $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
         $this->data['viagens'] = $this->os_model->getViagens($this->uri->segment(3));
         $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
         $this->data['anotacoes'] = $this->os_model->getAnotacoes($this->uri->segment(3));
@@ -325,7 +324,6 @@ class Os extends MY_Controller
         $this->data['result'] = $this->os_model->getById($this->uri->segment(3));
         $this->data['produtos'] = $this->os_model->getProdutos($this->uri->segment(3));
         $this->data['servicos'] = $this->os_model->getServicos($this->uri->segment(3));
-        $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
         $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
         $this->data['viagens'] = $this->os_model->getViagens($this->uri->segment(3));
         $this->data['emitente'] = $this->mapos_model->getEmitente();
@@ -436,8 +434,8 @@ class Os extends MY_Controller
         $this->data['result'] = $this->os_model->getById($this->uri->segment(3));
         $this->data['produtos'] = $this->os_model->getProdutos($this->uri->segment(3));
         $this->data['servicos'] = $this->os_model->getServicos($this->uri->segment(3));
-        $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
-        $this->data['viagens'] = $this->os_model->getViagens($this->uri->segment(3));
+        $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3)); // getCursos já busca as datas
+        $this->data['viagens'] = $this->os_model->getViagens($this->uri->segment(3)); // getViagens já busca as datas
         $this->data['anexos'] = $this->os_model->getAnexos($this->uri->segment(3));
         $this->data['emitente'] = $this->mapos_model->getEmitente();
         if ($this->data['configuration']['pix_key']) {
