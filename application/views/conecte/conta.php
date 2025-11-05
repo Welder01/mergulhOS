@@ -194,7 +194,7 @@
                                         <td class="equip-row">
                                             <span>Possui?</span>
                                             <label class="switch small-toggle"><input type="checkbox" name="possui_colete" value="1" class="equip-owner-toggle" data-target-group=".colete-details" <?= ($result->possui_colete ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <div class="colete-details" style="display: none;">
+                                            <div class="colete-details" style="display: inline-flex; align-items: center; gap: 15px;">
                                                 <span>Sabe o tamanho?</span>
                                                 <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#tamanho_colete" <?= ($result->tamanho_colete ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
                                                 <input id="tamanho_colete" type="text" name="tamanho_colete" value="<?= $result->tamanho_colete ?? '' ?>" placeholder="Qual tamanho?" class="span3 monitor-input" style="display: none;"/>
@@ -206,7 +206,7 @@
                                         <td class="equip-row">
                                             <span>Possui?</span>
                                             <label class="switch small-toggle"><input type="checkbox" name="possui_lastro" value="1" class="equip-owner-toggle" data-target-group=".lastro-details" <?= ($result->possui_lastro ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <div class="lastro-details" style="display: none;">
+                                            <div class="lastro-details" style="display: inline-flex; align-items: center; gap: 15px;">
                                                 <span>Sabe o peso?</span>
                                                 <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#peso_lastro" <?= ($result->peso_lastro ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
                                                 <input id="peso_lastro" type="text" name="peso_lastro" value="<?= $result->peso_lastro ?? '' ?>" placeholder="Qual peso (kg)?" class="span3 monitor-input" style="display: none;"/>
@@ -218,7 +218,7 @@
                                         <td class="equip-row">
                                             <span>Possui?</span>
                                             <label class="switch small-toggle"><input type="checkbox" name="possui_neoprene" value="1" class="equip-owner-toggle" data-target-group=".neoprene-details" <?= ($result->possui_neoprene ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <div class="neoprene-details" style="display: none;">
+                                            <div class="neoprene-details" style="display: inline-flex; align-items: center; gap: 15px;">
                                                 <span>Sabe o tamanho?</span>
                                                 <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#tamanho_neoprene" <?= ($result->tamanho_neoprene ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
                                                 <input id="tamanho_neoprene" type="text" name="tamanho_neoprene" value="<?= $result->tamanho_neoprene ?? '' ?>" placeholder="Qual tamanho?" class="span3 monitor-input" style="display: none;"/>
@@ -230,7 +230,7 @@
                                         <td class="equip-row">
                                             <span>Possui?</span>
                                             <label class="switch small-toggle"><input type="checkbox" name="possui_nadadeira" value="1" class="equip-owner-toggle" data-target-group=".nadadeira-details" <?= ($result->possui_nadadeira ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <div class="nadadeira-details" style="display: none;">
+                                            <div class="nadadeira-details" style="display: inline-flex; align-items: center; gap: 15px;">
                                                 <span>Sabe o tamanho?</span>
                                                 <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#tamanho_nadadeira" <?= ($result->tamanho_nadadeira ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
                                                 <input id="tamanho_nadadeira" type="text" name="tamanho_nadadeira" value="<?= $result->tamanho_nadadeira ?? '' ?>" placeholder="Qual tamanho?" class="span3 monitor-input" style="display: none;"/>
@@ -242,9 +242,11 @@
                                         <td class="equip-row">
                                             <span>Possui?</span>
                                             <label class="switch small-toggle"><input type="checkbox" name="possui_regulador" value="1" <?= ($result->possui_regulador ?? 0) == 1 ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <span>Sabe a quantidade?</span>
-                                            <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#qtd_reguladores" <?= ($result->qtd_reguladores ?? 0) > 0 ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <input id="qtd_reguladores" type="number" name="qtd_reguladores" value="<?= $result->qtd_reguladores ?? 0 ?>" placeholder="Quantos?" class="span2 monitor-input" style="display: none;" min="0"/>
+                                            <div class="regulador-details" style="display: inline-flex; align-items: center; gap: 15px;">
+                                                <span>Sabe a quantidade?</span>
+                                                <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#qtd_reguladores" <?= ($result->qtd_reguladores ?? 0) > 0 ? 'checked' : '' ?>><span class="slider"></span></label>
+                                                <input id="qtd_reguladores" type="number" name="qtd_reguladores" value="<?= $result->qtd_reguladores ?? 0 ?>" placeholder="Quantos?" class="span2 monitor-input" style="display: none;" min="0"/>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
@@ -252,7 +254,7 @@
                                         <td class="equip-row">
                                             <span>Possui?</span>
                                             <label class="switch small-toggle"><input type="checkbox" name="possui_lanterna" value="1" class="equip-owner-toggle" data-target-group=".lanterna-details" <?= ($result->possui_lanterna ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <div class="lanterna-details" style="display: none;">
+                                            <div class="lanterna-details" style="display: inline-flex; align-items: center; gap: 15px;">
                                                 <span>Sabe a quantidade?</span>
                                                 <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#qtd_lanterna" <?= ($result->qtd_lanterna ?? 0) > 0 ? 'checked' : '' ?>><span class="slider"></span></label>
                                                 <input id="qtd_lanterna" type="number" name="qtd_lanterna" value="<?= $result->qtd_lanterna ?? 0 ?>" placeholder="Quantas?" class="span2 monitor-input" style="display: none;" min="0"/>
@@ -264,7 +266,7 @@
                                         <td class="equip-row">
                                             <span>Possui?</span>
                                             <label class="switch small-toggle"><input type="checkbox" name="possui_computador" value="1" class="equip-owner-toggle" data-target-group=".computador-details" <?= ($result->possui_computador ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <div class="computador-details" style="display: none;">
+                                            <div class="computador-details" style="display: inline-flex; align-items: center; gap: 15px;">
                                                 <span>Sabe a quantidade?</span>
                                                 <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#qtd_computador" <?= ($result->qtd_computador ?? 0) > 0 ? 'checked' : '' ?>><span class="slider"></span></label>
                                                 <input id="qtd_computador" type="number" name="qtd_computador" value="<?= $result->qtd_computador ?? 0 ?>" placeholder="Quantos?" class="span2 monitor-input" style="display: none;" min="0"/>
@@ -445,20 +447,15 @@
         // Lógica para mostrar/ocultar campos de equipamento
         function toggleEquipDetails(ownerCheckbox) {
             var targetGroup = $(ownerCheckbox.data('target-group'));
-            if (ownerCheckbox.is(':checked')) {
-                targetGroup.show();
-            } else {
-                targetGroup.hide();
-                targetGroup.find('input[type=checkbox]').prop('checked', false).trigger('change');
-            }
+            // Esta função não é mais necessária para controlar a visibilidade do segundo toggle
         }
 
         function toggleEquipInput(detailCheckbox) {
             var targetInput = $(detailCheckbox.data('target'));
-            if (detailCheckbox.is(':checked')) {
-                targetInput.show();
-            } else {
-                targetInput.hide().val('');
+            var isChecked = detailCheckbox.is(':checked');
+            targetInput.toggle(isChecked);
+            if (!isChecked) {
+                targetInput.val('');
             }
         }
 
@@ -466,16 +463,9 @@
         $('.equip-owner-toggle').each(function() {
             toggleEquipDetails($(this));
         });
-        $('.equip-detail-toggle').each(function() {
-            toggleEquipInput($(this));
-        });
-
         // Eventos de mudança
         $('.equip-owner-toggle').on('change', function() {
             toggleEquipDetails($(this));
-        });
-        $('.equip-detail-toggle').on('change', function() {
-            toggleEquipInput($(this));
         });
 
         // Lógica para manter a aba ativa após salvar

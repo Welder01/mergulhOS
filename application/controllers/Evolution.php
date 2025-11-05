@@ -216,13 +216,17 @@ class Evolution extends MY_Controller
         foreach ($numerosParaEnvio as $numero) {
             $delay = $useRandomDelay ? rand($delayMin, $delayMax) : $delayFixo;
 
-            // Remove tags HTML da mensagem e decodifica entidades HTML
-            $plainTextMessage = html_entity_decode(strip_tags($mensagem->mensagem));
+            // Remove tags HTML da mensagem
+            $plainTextMessage = strip_tags($mensagem->mensagem);
 
             $payload = [
                 'number' => $numero,
-                'options' => ['delay' => $delay, 'presence' => $presence, 'linkPreview' => false],
-                'textMessage' => ['text' => $plainTextMessage],
+                'options' => [
+                    'delay' => (int)$delay,
+                    'presence' => $presence,
+                    'linkPreview' => false
+                ],
+                'textMessage' => ['text' => $plainTextMessage]
             ];
 
             if (!empty($mensagem->imagem_url)) {

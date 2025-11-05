@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="<?= base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
 <script type="text/javascript" src="<?= base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
+<script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
 <script src="<?php echo base_url() ?>assets/js/jquery.mask.min.js"></script>
 <?php $this->load->view('clientes/editarCliente_style'); ?>
 <style>
@@ -64,9 +65,11 @@
                         <div class="control-group">
                             <label class="control-label">Cliente<span class="required">*</span></label>
                             <div class="controls">
-                                <div class="input-append">
-                                    <input type="text" class="span10" id="cliente" name="cliente" placeholder="Pesquisar cliente..." required>
-                                    <button type="button" id="syncClienteBtn" class="btn" disabled title="Sincronizar perfil do cliente"><i class="fas fa-sync-alt"></i></button>
+                                <div class="input-append" style="display: flex;">
+                                    <input type="text" class="span11" id="cliente" name="cliente" placeholder="Pesquisar cliente..." required style="flex-grow: 1;">
+                                    <button type="button" id="syncClienteBtn" class="btn btn-info" disabled title="Sincronizar perfil do cliente para locação de equipamentos" style="border-radius: 0 5px 5px 0;">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
                                 </div>
                                 <input type="hidden" name="cliente_id" id="cliente_id" value="">
                             </div>
@@ -142,15 +145,23 @@
                                     <span>Computador</span>
                                 </div>
                             </div>
-                            <div class="controls" style="margin-top: 15px;">
-                                <label class="control-label" style="width: 60px; text-align: left;">Cilindros:</label>
-                                <input type="number" name="locar_cilindro" value="0" class="span2" min="0">
-                                <label class="control-label" style="width: 80px; text-align: left; margin-left: 10px;">Reguladores:</label>
-                                <input type="number" name="locar_regulador" value="0" class="span2" min="0">
-                                <label class="control-label" style="width: 60px; text-align: left; margin-top: 5px;">Lanternas:</label>
-                                <input type="number" name="qtd_lanterna" value="0" class="span2" min="0">
-                                <label class="control-label" style="width: 80px; text-align: left; margin-left: 10px; margin-top: 5px;">Computadores:</label>
-                                <input type="number" name="qtd_computador" value="0" class="span2" min="0">
+                            <div class="controls" style="margin-top: 15px; display: flex; gap: 15px;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <label>Cilindros:</label>
+                                    <input type="number" name="locar_cilindro" value="0" class="span12" min="0">
+                                </div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <label>Reguladores:</label>
+                                    <input type="number" name="locar_regulador" value="0" class="span12" min="0">
+                                </div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <label>Lanternas:</label>
+                                    <input type="number" name="qtd_lanterna" value="0" class="span12" min="0">
+                                </div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <label>Computadores:</label>
+                                    <input type="number" name="qtd_computador" value="0" class="span12" min="0">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -619,8 +630,12 @@
     <form id="formEditarCliente" action="" method="post" class="form-horizontal">
         <div class="modal-header">
             <input type="hidden" name="active_tab" value="#tabClientes">
+            <input type="hidden" id="modal_cliente_id_for_sync" value="">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h5 id="myModalLabel">Editar Cliente: <span id="nomeClienteModal"></span></h5>
+            <h5 id="myModalLabel" style="display: inline-block; margin-right: 10px;">Editar Cliente: <span id="nomeClienteModal"></span></h5>
+            <button type="button" id="btnSyncModal" class="btn btn-info btn-mini" title="Sincronizar perfil do cliente para locação de equipamentos">
+                <i class="fas fa-sync-alt"></i> Sincronizar Equipamentos
+            </button>
         </div>
         <div class="modal-body">
             <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
@@ -839,13 +854,13 @@
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label">Cilindros</label>
+                        <label class="control-label" style="width: 80px;">Cilindros:</label>
                         <div class="controls">
                             <input type="number" name="locar_cilindro" id="edit_instrutor_locar_cilindro" value="0" min="0" class="span6">
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label">Reguladores</label>
+                        <label class="control-label" style="width: 80px;">Reguladores:</label>
                         <div class="controls">
                             <input type="number" name="locar_regulador" id="edit_instrutor_locar_regulador" value="0" min="0" class="span6">
                         </div>
@@ -893,17 +908,23 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(data) {
                 if (data) {
-                    $('input[name="locar_nadadeira"]').prop('checked', data.possui_nadadeira == 0);
-                    $('input[name="locar_colete"]').prop('checked', data.possui_colete == 0);
-                    $('input[name="locar_neoprene"]').prop('checked', data.possui_neoprene == 0);
-                    $('input[name="locar_lastro"]').prop('checked', data.possui_lastro == 0);
-                    $('input[name="locar_lanterna"]').prop('checked', data.possui_lanterna == 0);
-                    $('input[name="locar_computador"]').prop('checked', data.possui_computador == 0);
+                    // Equipamentos de SIM/NÃO (checkbox)
+                    // Se o cliente NÃO possui o item (valor diferente de 1), marca para locar.
+                    $('input[name="locar_nadadeira"]').prop('checked', data.possui_nadadeira != 1);
+                    $('input[name="locar_colete"]').prop('checked', data.possui_colete != 1);
+                    $('input[name="locar_neoprene"]').prop('checked', data.possui_neoprene != 1);
+                    $('input[name="locar_lastro"]').prop('checked', data.possui_lastro != 1);
+                    $('input[name="locar_lanterna"]').prop('checked', data.possui_lanterna != 1);
+                    $('input[name="locar_computador"]').prop('checked', data.possui_computador != 1);
 
-                    // Preenche a quantidade para os equipamentos contáveis, se o cliente não os possuir
-                    $('input[name="locar_regulador"]').val(data.possui_regulador == 0 ? 1 : 0);
-                    $('input[name="qtd_lanterna"]').val(data.possui_lanterna == 0 ? 1 : 0);
-                    $('input[name="qtd_computador"]').val(data.possui_computador == 0 ? 1 : 0);
+                    // Equipamentos contáveis (number)
+                    // Se o cliente JÁ POSSUI (qtd > 0), sugere 0 para locação. Senão, sugere 1.
+                    $('input[name="locar_cilindro"]').val(1); // Regra de negócio: sempre sugerir 1 cilindro para locação
+                    $('input[name="locar_regulador"]').val(parseInt(data.qtd_reguladores) > 0 ? 0 : 1);
+                    $('input[name="qtd_lanterna"]').val(parseInt(data.qtd_lanterna) > 0 ? 0 : 1);
+                    $('input[name="qtd_computador"]').val(parseInt(data.qtd_computador) > 0 ? 0 : 1);
+
+                    Swal.fire('Sucesso!', 'Equipamentos sugeridos com base no perfil do cliente.', 'success');
                 }
             }
         });
@@ -918,6 +939,7 @@ $(document).ready(function() {
 
         $('#formEditarCliente').attr('action', '<?= site_url('viagens/editar_cliente_viagem/') ?>' + clienteId);
         $('#nomeClienteModal').text(clienteNome);
+        $('#modal_cliente_id_for_sync').val(clienteData.cliente_id); // Adiciona o ID do cliente ao campo oculto
 
         $('#edit_numero_bolsa').val(clienteData.numero_bolsa);
         $('#edit_status_pagamento').val(clienteData.status_pagamento);
@@ -934,6 +956,42 @@ $(document).ready(function() {
         $('#edit_qtd_lanterna').val(clienteData.qtd_lanterna);
         $('#edit_locar_computador').prop('checked', clienteData.locar_computador == 1);
         $('#edit_qtd_computador').val(clienteData.qtd_computador);
+    });
+
+    // Sincronização dentro do Modal de Edição
+    $('#btnSyncModal').on('click', function() {
+        var clienteId = $('#modal_cliente_id_for_sync').val();
+        if (!clienteId) {
+            Swal.fire('Atenção!', 'ID do cliente não encontrado para sincronização.', 'warning');
+            return;
+        }
+
+        var btn = $(this);
+        btn.find('i').addClass('fa-spin');
+
+        $.ajax({
+            url: '<?= site_url('viagens/getClienteData/') ?>' + clienteId,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if (data) {
+                    $('#edit_locar_nadadeira').prop('checked', data.possui_nadadeira != 1);
+                    $('#edit_locar_colete').prop('checked', data.possui_colete != 1);
+                    $('#edit_locar_neoprene').prop('checked', data.possui_neoprene != 1);
+                    $('#edit_locar_lastro').prop('checked', data.possui_lastro != 1);
+                    $('#edit_locar_lanterna').prop('checked', data.possui_lanterna != 1);
+                    $('#edit_locar_computador').prop('checked', data.possui_computador != 1);
+                    $('#edit_locar_cilindro').val(1);
+                    $('#edit_locar_regulador').val(parseInt(data.qtd_reguladores) > 0 ? 0 : 1);
+                    $('#edit_qtd_lanterna').val(parseInt(data.qtd_lanterna) > 0 ? 0 : 1);
+                    $('#edit_qtd_computador').val(parseInt(data.qtd_computador) > 0 ? 0 : 1);
+                    Swal.fire('Sucesso!', 'Equipamentos sugeridos com base no perfil do cliente.', 'success');
+                }
+            },
+            complete: function() {
+                btn.find('i').removeClass('fa-spin');
+            }
+        });
     });
 
     $(document).on('click', 'a[href="#modalEditarInstrutor"]', function() {
