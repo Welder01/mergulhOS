@@ -197,7 +197,7 @@
                                             <div class="colete-details" style="display: inline-flex; align-items: center; gap: 15px;">
                                                 <span>Sabe o tamanho?</span>
                                                 <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#tamanho_colete" <?= ($result->tamanho_colete ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
-                                                <input id="tamanho_colete" type="text" name="tamanho_colete" value="<?= $result->tamanho_colete ?? '' ?>" placeholder="Qual tamanho?" class="span3 monitor-input"/>
+                                                <input id="tamanho_colete" type="text" name="tamanho_colete" value="<?= $result->tamanho_colete ?? '' ?>" placeholder="Qual tamanho?" class="span3 monitor-input" />
                                             </div>
                                         </td>
                                     </tr>
@@ -209,7 +209,7 @@
                                             <div class="lastro-details" style="display: inline-flex; align-items: center; gap: 15px;">
                                                 <span>Sabe o peso?</span>
                                                 <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#peso_lastro" <?= ($result->peso_lastro ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
-                                                <input id="peso_lastro" type="text" name="peso_lastro" value="<?= $result->peso_lastro ?? '' ?>" placeholder="Qual peso (kg)?" class="span3 monitor-input"/>
+                                                <input id="peso_lastro" type="text" name="peso_lastro" value="<?= $result->peso_lastro ?? '' ?>" placeholder="Qual peso (kg)?" class="span3 monitor-input" />
                                             </div>
                                         </td>
                                     </tr>
@@ -221,7 +221,7 @@
                                             <div class="neoprene-details" style="display: inline-flex; align-items: center; gap: 15px;">
                                                 <span>Sabe o tamanho?</span>
                                                 <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#tamanho_neoprene" <?= ($result->tamanho_neoprene ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
-                                                <input id="tamanho_neoprene" type="text" name="tamanho_neoprene" value="<?= $result->tamanho_neoprene ?? '' ?>" placeholder="Qual tamanho?" class="span3 monitor-input"/>
+                                                <input id="tamanho_neoprene" type="text" name="tamanho_neoprene" value="<?= $result->tamanho_neoprene ?? '' ?>" placeholder="Qual tamanho?" class="span3 monitor-input" />
                                             </div>
                                         </td>
                                     </tr>
@@ -233,16 +233,16 @@
                                             <div class="nadadeira-details" style="display: inline-flex; align-items: center; gap: 15px;">
                                                 <span>Sabe o tamanho?</span>
                                                 <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#tamanho_nadadeira" <?= ($result->tamanho_nadadeira ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
-                                                <input id="tamanho_nadadeira" type="text" name="tamanho_nadadeira" value="<?= $result->tamanho_nadadeira ?? '' ?>" placeholder="Qual tamanho?" class="span3 monitor-input"/>
+                                                <input id="tamanho_nadadeira" type="text" name="tamanho_nadadeira" value="<?= $result->tamanho_nadadeira ?? '' ?>" placeholder="Qual tamanho?" class="span3 monitor-input" />
                                             </div>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td><strong>Regulador</strong></td>
                                         <td class="equip-row">
-                                            <span>Possui?</span>
-                                            <label class="switch small-toggle"><input type="checkbox" name="possui_regulador" value="1" <?= ($result->possui_regulador ?? 0) == 1 ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <div class="regulador-details" style="display: inline-flex; align-items: center; gap: 15px;">
+                                            <span style="display:none">Possui?</span>
+                                            <label class="switch small-toggle" style="display:none"><input type="checkbox" name="possui_regulador" value="1" <?= ($result->possui_regulador ?? 0) == 1 ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <div class="regulador-details" style="display: inline-flex; align-items: center; gap: 15px; width: 100%;">
                                                 <span>Sabe a quantidade?</span>
                                                 <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#qtd_reguladores" <?= ($result->qtd_reguladores ?? 0) > 0 ? 'checked' : '' ?>><span class="slider"></span></label>
                                                 <input id="qtd_reguladores" type="number" name="qtd_reguladores" value="<?= $result->qtd_reguladores ?? 0 ?>" placeholder="Quantos?" class="span2 monitor-input" min="0"/>
