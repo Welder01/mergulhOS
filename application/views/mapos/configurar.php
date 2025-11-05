@@ -18,6 +18,7 @@
                 <li><a data-toggle="tab" href="#menu7">E-mail</a></li>
             </ul>
             <form action="<?php echo current_url(); ?>" id="formConfigurar" method="post" class="form-horizontal">
+                <input type="hidden" name="active_tab" id="active_tab" value="#home">
                 <div class="widget-content nopadding tab-content">
                     <?php echo $custom_error; ?>
                     <!-- Menu Gerais -->
@@ -715,6 +716,20 @@
                 document.getElementById("notifica_whats").value += $(this).val();
             $(this).prop('selectedIndex', 0);
         });
+    });
+
+    // Lógica para manter a aba ativa após salvar
+    var activeTabFromUrl = '<?php echo $this->input->get('tab') ?? ''; ?>';
+    if (activeTabFromUrl) {
+        // Garante que o valor não tenha o # para o seletor
+        var tabId = activeTabFromUrl.replace('#', '');
+        $('a[href="#' + tabId + '"]').tab('show');
+        $('#active_tab').val('#' + tabId);
+    }
+
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+        var currentTab = $(e.target).attr('href');
+        $('#active_tab').val(currentTab);
     });
 
     function htmlspecialchars_decode(str) {

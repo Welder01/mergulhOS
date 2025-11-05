@@ -102,7 +102,9 @@ class Evolution extends MY_Controller
         } else {
             $this->session->set_flashdata('error', 'Erro ao adicionar mensagem.');
         }
-        redirect('evolution/gerenciar#tabMensagens');
+
+        $activeTab = ltrim($this->input->post('active_tab'), '#');
+        redirect('evolution/gerenciar?tab=' . $activeTab);
     }
 
     public function editar_mensagem()

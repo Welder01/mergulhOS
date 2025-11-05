@@ -40,6 +40,7 @@
                 <div class="widget-title"><span class="icon"><i class="fas fa-comment-alt"></i></span><h5>Criar Nova Mensagem</h5></div>
                 <div class="widget-content">
                     <form action="<?= base_url() ?>index.php/evolution/adicionar_mensagem" method="post" class="form-horizontal">
+                        <input type="hidden" name="active_tab" id="active_tab" value="#tabStatus">
                         <div class="control-group">
                             <label for="titulo" class="control-label">Título<span class="required">*</span></label>
                             <div class="controls">
@@ -180,12 +181,12 @@
         // Script para manter a aba ativa após redirecionamento
         var hash = window.location.hash;
         if (hash) {
-            $('.nav-tabs a[href="' + hash + '"]').tab('show');
+            $('a[href="' + hash + '"]').tab('show');
         } else if (window.location.search.includes('tab=')) {
             var urlParams = new URLSearchParams(window.location.search);
             const tab = urlParams.get('tab');
             if (tab) {
-                $('.nav-tabs a[href="#' + tab + '"]').tab('show');
+                $('a[href="#' + tab + '"]').tab('show');
             }
         }
 
@@ -230,10 +231,10 @@
             });
         });
 
-        // Adiciona a aba ativa ao enviar formulários
-        $('form').on('submit', function() {
-            var activeTab = $('.nav-tabs li.active a').attr('href');
-            $(this).attr('action', $(this).attr('action') + activeTab);
+        // Atualiza o campo hidden sempre que uma nova aba é mostrada
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+            var currentTab = $(e.target).attr('href');
+            $('#active_tab').val(currentTab);
         });
 
         //--- LÓGICA DE EDIÇÃO ---//

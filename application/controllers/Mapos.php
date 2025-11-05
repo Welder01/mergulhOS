@@ -492,8 +492,9 @@ class Mapos extends MY_Controller {
                 'evolution_delay_max' => $this->input->post('evolution_delay_max'),
             ];
             if ($this->mapos_model->saveConfiguracao($data) == true) {
+                $activeTab = ltrim($this->input->post('active_tab'), '#');
                 $this->session->set_flashdata('success', 'Configurações do sistema atualizadas com sucesso!');
-                redirect(site_url('mapos/configurar'));
+                redirect(site_url('mapos/configurar?tab=') . $activeTab);
             } else {
                 $this->data['custom_error'] = '<div class="alert">Ocorreu um errro.</div>';
             }
