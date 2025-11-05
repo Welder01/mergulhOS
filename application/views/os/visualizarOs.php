@@ -399,7 +399,7 @@
                                 if ($result->valor_desconto != 0) {
                                     echo "<td>
                                             <h4 style='text-align: right'>SUBTOTAL: R$ " . number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, ',', '.') . "</h4>
-                                            <h4 style='text-align: right'>DESCONTO: R$ " . number_format(($totalProdutos + $totalServico + $totalCursos + $totalViagens) - $result->valor_desconto, 2, ',', '.') . "</h4>
+                                            <h4 style='text-align: right'>DESCONTO: R$ " . number_format($result->desconto, 2, ',', '.') . "</h4>
                                             <h4 style='text-align: right'>TOTAL: R$ " . number_format($result->valor_desconto, 2, ',', '.') . "</h4>
                                           </td>";
                                 } else {

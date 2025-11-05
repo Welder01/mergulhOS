@@ -147,15 +147,28 @@
                         </div>
 
                         <!--Desconto-->
-                        <?php $total = 0; foreach ($produtos as $p) {$total = $total + $p->subTotal;}?>
-                        <?php $totals = 0; foreach ($servicos as $s) { $preco = $s->preco ?: $s->precoVenda; $subtotals = $preco * ($s->quantidade ?: 1); $totals = $totals + $subtotals;}?>
+                        <?php
+                            $totalProdutos = 0;
+                            foreach ($produtos as $p) {
+                                $totalProdutos += $p->subTotal;
+                            }
+                            $totalServicos = 0;
+                            foreach ($servicos as $s) {
+                                $preco = $s->preco ?: $s->precoVenda;
+                                $subtotals = $preco * ($s->quantidade ?: 1);
+                                $totalServicos += $subtotals;
+                            }
+                            $totalCursos = $cursos ? array_sum(array_column($cursos, 'preco')) : 0;
+                            $totalViagens = $viagens ? array_sum(array_column($viagens, 'preco')) : 0;
+                            $valorTotalOs = $totalProdutos + $totalServicos + $totalCursos + $totalViagens;
+                        ?>
                         <div class="tab-pane" id="tab2">
                             <div class="span12 well" style="padding: 1%; margin-left: 0">
                                 <form id="formDesconto" action="<?php echo base_url(); ?>index.php/os/adicionarDesconto" method="POST">
                                     <div id="divValorTotal">
                                         <div class="span2">
                                             <label for="">Valor Total Da OS:</label>
-                                            <input class="span12 money" id="valorTotal" name="valorTotal" type="text" data-affixes-stay="true" data-thousands="" data-decimal="." name="valor" value="<?php echo number_format($totals + $total, 2, '.', ''); ?>" readonly />
+                                            <input class="span12 money" id="valorTotal" name="valorTotal" type="text" data-affixes-stay="true" data-thousands="" data-decimal="." name="valor" value="<?php echo number_format($valorTotalOs, 2, '.', ''); ?>" readonly />
                                         </div>
                                     </div>
                                     <div class="span1">
@@ -668,14 +681,13 @@
 
 <script type="text/javascript">
     function calcDesconto(valor, desconto, tipoDesconto) {
-        var resultado = 0;
         if (tipoDesconto == 'real') {
-            resultado = valor - desconto;
+            return valor - desconto;
         }
         if (tipoDesconto == 'porcento') {
-            resultado = (valor - desconto * valor / 100).toFixed(2);
+            var resultado = (valor - desconto * valor / 100);
+            return resultado;
         }
-        return resultado;
     }
 
     function validarDesconto(resultado, valor) {
