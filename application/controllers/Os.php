@@ -63,7 +63,9 @@ class Os extends MY_Controller
             'os',
             'os.*,
             COALESCE((SELECT SUM(produtos_os.preco * produtos_os.quantidade ) FROM produtos_os WHERE produtos_os.os_id = os.idOs), 0) totalProdutos,
-            COALESCE((SELECT SUM(servicos_os.preco * servicos_os.quantidade ) FROM servicos_os WHERE servicos_os.os_id = os.idOs), 0) totalServicos',
+            COALESCE((SELECT SUM(servicos_os.preco * servicos_os.quantidade ) FROM servicos_os WHERE servicos_os.os_id = os.idOs), 0) totalServicos,
+            COALESCE((SELECT SUM(cursos_os.preco) FROM cursos_os WHERE cursos_os.os_id = os.idOs), 0) totalCursos,
+            COALESCE((SELECT SUM(viagens_os.preco) FROM viagens_os WHERE viagens_os.os_id = os.idOs), 0) totalViagens',
             $where_array,
             $this->data['configuration']['per_page'],
             $this->uri->segment(3)

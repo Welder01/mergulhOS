@@ -397,15 +397,15 @@
                             }
                             if ($totalProdutos != 0 || $totalServico != 0 || $totalCursos != 0 || $totalViagens != 0) {
                                 if ($result->valor_desconto != 0) {
-                                    echo "<td>";
-                                    echo "<h4 style='text-align: right'>SUBTOTAL: R$ " . number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, ',', '.') . "</h4>";
-                                    echo $result->valor_desconto != 0 ? "<h4 style='text-align: right'>DESCONTO: R$ " . number_format(($totalProdutos + $totalServico + $totalCursos + $totalViagens) - $result->valor_desconto, 2, ',', '.') . "</h4>" : "";
-                                    echo "<h4 style='text-align: right'>TOTAL: R$ " . number_format($result->valor_desconto, 2, ',', '.') . "</h4>";
-                                    echo "</td>";
+                                    echo "<td>
+                                            <h4 style='text-align: right'>SUBTOTAL: R$ " . number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, ',', '.') . "</h4>
+                                            <h4 style='text-align: right'>DESCONTO: R$ " . number_format(($totalProdutos + $totalServico + $totalCursos + $totalViagens) - $result->valor_desconto, 2, ',', '.') . "</h4>
+                                            <h4 style='text-align: right'>TOTAL: R$ " . number_format($result->valor_desconto, 2, ',', '.') . "</h4>
+                                          </td>";
                                 } else {
-                                    echo "<td>";
-                                    echo "<h4 style='text-align: right'>TOTAL: R$ " . number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, ',', '.') . "</h4>";
-                                    echo "</td>";
+                                    echo "<td>
+                                            <h4 style='text-align: right'>TOTAL: R$ " . number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, ',', '.') . "</h4>
+                                          </td>";
                                 }
                             } ?>
                         </table>
@@ -452,18 +452,20 @@
                 <img src="<?php echo base_url(); ?>assets/img/logo_pix.png" alt="QR Code de Pagamento" /></br>
                 <img id="qrCodeImage" width="50%" src="<?= $qrCode ?>" alt="QR Code de Pagamento" /></br>
                 <?php echo '<span>Chave PIX: ' . $chaveFormatada . '</span>'; ?></br>
-                <?php if ($totalProdutos != 0 || $totalServico != 0) {
+                <?php
+                $totalGeral = $totalProdutos + $totalServico + ($totalCursos ?? 0) + ($totalViagens ?? 0);
+                if ($totalGeral != 0) {
                     if ($result->valor_desconto != 0) {
                         echo "Valor Total: R$ " . number_format($result->valor_desconto, 2, ',', '.');
                     } else {
-                        echo "Valor Total: R$ " . number_format($totalProdutos + $totalServico, 2, ',', '.');
+                        echo "Valor Total: R$ " . number_format($totalGeral, 2, ',', '.');
                     }
                 } ?>
             </td>
         </div>
     </div>
     <div class="modal-footer">
-        <?php if (!empty($zapnumber)) {
+        <?php if (isset($zapnumber) && !empty($zapnumber)) {
             echo "<button id='pixWhatsApp' class='btn btn-success' data-dismiss='modal' aria-hidden='true' style='color: #FFF'><i class='bx bxl-whatsapp'></i> WhatsApp</button>";
         } ?>
         <button class="btn btn-primary" id="copyButton" style="margin:5px; color: #FFF"><i class="fas fa-copy"></i> Copia e Cola</button>

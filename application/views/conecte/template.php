@@ -21,6 +21,13 @@
     <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
     <script type="text/javascript" src="<?= base_url(); ?>assets/js/funcoesGlobal.js"></script>
     <script type="text/javascript" src="<?= base_url(); ?>assets/js/csrf.js"></script>
+    <style>
+        .nav.nav-tabs a {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    </style>
 </head>
 
 <body>
@@ -34,6 +41,17 @@
     <div class="navebarn" style="margin-top: -60px;height: 25px;margin-bottom: 15px">
         <div id="user-nav" class="navbar navbar-inverse">
             <ul class="nav">
+                <li class="dropdown" id="menu-messages">
+                    <a href="#" data-toggle="dropdown" data-target="#menu-messages" class="dropdown-toggle">
+                        <i class="fas fa-bell"></i>
+                        <span class="text">Notificações</span>
+                        <span class="label label-important">0</span>
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="sAdd" title="" href="#">Nenhuma notificação nova</a></li>
+                    </ul>
+                </li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class='bx bx-user-circle iconN1'></i> <?= $this->session->userdata('nome') ?> </a>
                     <ul class="dropdown-menu">

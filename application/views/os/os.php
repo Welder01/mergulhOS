@@ -155,7 +155,7 @@
                                 echo '<td>' . $dataInicial . '</td>';
                                 echo '<td class="ph2">' . $dataFinal . '</td>';
                                 echo '<td class="ph3"><span class="badge" style="background-color: ' . $corGarantia . '; border-color: ' . $corGarantia . '">' . $vencGarantia . '</span> </td>';
-                                echo '<td>R$ ' . number_format($r->totalProdutos + $r->totalServicos, 2, ',', '.') . '</td>';                                
+                                echo '<td>R$ ' . number_format($r->totalProdutos + $r->totalServicos + $r->totalCursos + $r->totalViagens, 2, ',', '.') . '</td>';
                                 echo '<td>R$ ' . number_format(floatval($r->desconto), 2, ',', '.') . '</td>';
                                 echo '<td>R$ ' . number_format(floatval($r->valor_desconto), 2, ',', '.') . '</td>';
                                 echo '<td class="ph4">R$ ' . number_format($r->faturado ? floatval($r->valor_desconto) : 0.00, 2, ',', '.') . '</td>';
