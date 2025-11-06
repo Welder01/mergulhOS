@@ -627,7 +627,7 @@ class Viagens extends MY_Controller
             $result = array_map(function ($viagem) {
                 return [
                     'id' => $viagem->id,
-                    'label' => 'ID: ' . $viagem->id . ' | Viagem: ' . $viagem->nome_viagem . ' | Partida: ' . date('d/m/Y', strtotime($viagem->data_partida)),
+                    'text' => 'ID: ' . $viagem->id . ' | Viagem: ' . $viagem->nome_viagem . ' | Partida: ' . date('d/m/Y', strtotime($viagem->data_partida)),
                     'preco' => $viagem->preco_pessoa,
                 ];
             }, $query->result());

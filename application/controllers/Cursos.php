@@ -586,7 +586,7 @@ class Cursos extends MY_Controller
             $result = array_map(function ($curso) {
                 return [
                     'id' => $curso->id,
-                    'label' => 'ID: ' . $curso->id . ' | Curso: ' . $curso->nome_curso . ' | Início: ' . date('d/m/Y', strtotime($curso->data_inicio)),
+                    'text' => 'ID: ' . $curso->id . ' | Curso: ' . $curso->nome_curso . ' | Início: ' . date('d/m/Y', strtotime($curso->data_inicio)),
                     'preco' => $curso->preco,
                 ];
             }, $query->result());

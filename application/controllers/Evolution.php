@@ -329,38 +329,28 @@ class Evolution extends MY_Controller
         return $this->output->set_content_type('application/json')->set_output(json_encode(['success' => true, 'message' => "Envio concluído: {$sucessos} com sucesso, {$falhas} com falha."]));
     }
 
-    public function autoCompleteCliente()
+    public function autoComplete()
     {
         if (isset($_GET['term'])) {
             $q = strtolower($this->input->get('term'));
-            $this->db->select('idClientes, nomeCliente, celular');
-            $this->db->like('LOWER(nomeCliente)', $q);
-            $this->db->limit(5);
-            $query = $this->db->get('clientes');
-            $result = array_map(function ($cliente) {
-                return [
-                    'id' => $cliente->idClientes,
-                    'label' => $cliente->nomeCliente . ' - ' . $cliente->celular,
-                ];
-            }, $query->result());
-            echo json_encode($result);
-        }
-    }
+            $alvo = $this->input->get('alvo');
 
-    public function autoCompleteUsuario()
-    {
-        if (isset($_GET['term'])) {
-            $q = strtolower($this->input->get('term'));
-            $this->db->select('idUsuarios, nome, celular');
-            $this->db->like('LOWER(nome)', $q);
-            $this->db->limit(5);
-            $query = $this->db->get('usuarios');
-            $result = array_map(function ($usuario) {
-                return [
-                    'id' => $usuario->idUsuarios,
-                    'label' => $usuario->nome . ' - ' . $usuario->celular,
-                ];
-            }, $query->result());
+            if ($alvo === 'clientes') {
+                $this->db->select("idClientes as id, CONCAT('ID: ', idClientes, ' | ', nomeCliente, ' | Cel: ', celular) as text", false);
+                $this->db->like('LOWER(nomeCliente)', $q);
+                $this->db->limit(10);
+                $query = $this->db->get('clientes');
+            } elseif ($alvo === 'usuarios') {
+                $this->db->select("idUsuarios as id, CONCAT('ID: ', idUsuarios, ' | ', nome, ' | Cel: ', celular) as text", false);
+                $this->db->like('LOWER(nome)', $q);
+                $this->db->limit(10);
+                $query = $this->db->get('usuarios');
+            } else {
+                echo json_encode([]);
+                return;
+            }
+
+            $result = $query->result();
             echo json_encode($result);
         }
     }
