@@ -329,11 +329,187 @@ class Evolution extends MY_Controller
         return $this->output->set_content_type('application/json')->set_output(json_encode(['success' => true, 'message' => "Envio concluído: {$sucessos} com sucesso, {$falhas} com falha."]));
     }
 
-    public function autoComplete()
+    public function enviar_mensagem_novo()
     {
-        if (isset($_GET['term'])) {
+        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+            return $this->output->set_status_header(403)->set_output(json_encode(['message' => 'Acesso não autorizado.']));
+        }
+
+        $apiUrl = $this->mapos_model->get_ci_config('evolution_api_url');
+        $apiKey = $this->mapos_model->get_ci_config('evolution_api_key');
+        $instanceName = $this->mapos_model->get_ci_config('evolution_api_instance');
+
+        if (empty($apiUrl) || empty($apiKey) || empty($instanceName)) {
+            return $this->output->set_status_header(400)->set_output(json_encode(['message' => 'Configurações da API Evolution incompletas.']));
+        }
+
+        $mensagemId = $this->input->post('mensagem_id');
+        $mensagemOriginal = $this->evolution_model->getById($mensagemId);
+        if (! $mensagemOriginal) {
+            return $this->output->set_status_header(404)->set_output(json_encode(['message' => 'Modelo de mensagem não encontrado.']));
+        }
+
+        $alvos = $this->input->post('alvo') ?: [];
+        $contatosParaEnvio = [];
+
+        // Processa Clientes
+        if (in_array('clientes', $alvos)) {
+            $tipoCliente = $this->input->post('tipo_cliente');
+            if ($tipoCliente === 'selecionar') {
+                $clientesIds = $this->input->post('clientes_ids') ? explode(',', $this->input->post('clientes_ids')) : [];
+                $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getContatos($clientesIds, 'clientes', 'idClientes'));
+            } else { // "todos"
+                $cursosIds = $this->input->post('cursos_ids') ? explode(',', $this->input->post('cursos_ids')) : [];
+                $viagensIds = $this->input->post('viagens_ids') ? explode(',', $this->input->post('viagens_ids')) : [];
+                
+                $clientesCursos = !empty($cursosIds) ? $this->evolution_model->getClientesByCurso($cursosIds) : null;
+                $clientesViagens = !empty($viagensIds) ? $this->evolution_model->getClientesByViagem($viagensIds) : null;
+
+                if ($clientesCursos !== null && $clientesViagens !== null) {
+                    $idsCursos = array_map(function($c) { return $c->idClientes; }, $clientesCursos);
+                    $idsViagens = array_map(function($v) { return $v->idClientes; }, $clientesViagens);
+                    $clientesIds = array_intersect($idsCursos, $idsViagens);
+                    $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getContatos($clientesIds, 'clientes', 'idClientes'));
+                } elseif ($clientesCursos !== null) {
+                    $contatosParaEnvio = array_merge($contatosParaEnvio, $clientesCursos);
+                } elseif ($clientesViagens !== null) {
+                    $contatosParaEnvio = array_merge($contatosParaEnvio, $clientesViagens);
+                } else {
+                    $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getAllContatos('clientes'));
+                }
+            }
+        }
+
+        // Processa Usuários
+        if (in_array('usuarios', $alvos)) {
+            $tipoUsuario = $this->input->post('tipo_usuario');
+            if ($tipoUsuario === 'selecionar') {
+                $usuariosIds = $this->input->post('usuarios_ids') ? explode(',', $this->input->post('usuarios_ids')) : [];
+                $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getContatos($usuariosIds, 'usuarios', 'idUsuarios'));
+            } else { // "todos"
+                $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getAllContatos('usuarios'));
+            }
+        }
+
+        // Mapeia os contatos para um formato unificado {numero, data}
+        $destinatarios = [];
+        foreach ($contatosParaEnvio as $contato) {
+            $numero = null;
+            if (isset($contato->idClientes)) { // É um cliente
+                $numero = $contato->celular;
+            } elseif (isset($contato->idUsuarios)) { // É um usuário
+                $numero = $contato->celular;
+            }
+
+            if ($numero) {
+                $numeroLimpo = preg_replace('/[^0-9]/', '', $numero);
+                if (strlen($numeroLimpo) >= 10) {
+                     if (strlen($numeroLimpo) <= 11) {
+                        $destinatarios[$numeroLimpo] = ['numero' => '55' . $numeroLimpo, 'dados' => $contato];
+                    } else {
+                        $destinatarios[$numeroLimpo] = ['numero' => $numeroLimpo, 'dados' => $contato];
+                    }
+                }
+            }
+        }
+
+        // Processa Números Específicos
+        if (in_array('especifico', $alvos)) {
+            $numerosEspecificos = $this->input->post('numeros_especificos');
+            $numerosArray = preg_split('/[,\s\n]+/ ', $numerosEspecificos, -1, PREG_SPLIT_NO_EMPTY);
+            foreach ($numerosArray as $numero) {
+                $numeroLimpo = preg_replace('/[^0-9]/', '', $numero);
+                 if (strlen($numeroLimpo) >= 10) {
+                    $destinatarios[$numeroLimpo] = ['numero' => $numeroLimpo, 'dados' => null]; // Sem dados para substituição
+                }
+            }
+        }
+
+        if (empty($destinatarios)) {
+            return $this->output->set_status_header(400)->set_output(json_encode(['message' => 'Nenhum destinatário válido encontrado.']));
+        }
+
+        // Lógica de envio (adaptada do método antigo)
+        $url = rtrim($apiUrl, '/') . "/message/sendText/{$instanceName}";
+        $sucessos = 0;
+        $falhas = 0;
+        $presence = $this->mapos_model->get_ci_config('evolution_presence') ?: 'composing';
+        $delayFixo = (int)($this->mapos_model->get_ci_config('evolution_delay_fixo') ?: 1200);
+
+        foreach ($destinatarios as $destinatario) {
+            $mensagemFinal = $mensagemOriginal->mensagem;
+            $dados = $destinatario['dados'];
+
+            // Substituição de variáveis
+            if ($dados) {
+                if (isset($dados->idClientes)) { // Cliente
+                    $mensagemFinal = str_replace('{NOME_CLIENTE}', $dados->nomeCliente ?? '', $mensagemFinal);
+                    $mensagemFinal = str_replace('{EMAIL_CLIENTE}', $dados->email ?? '', $mensagemFinal);
+                    $mensagemFinal = str_replace('{TELEFONE_CLIENTE}', $dados->telefone ?? '', $mensagemFinal);
+                    $mensagemFinal = str_replace('{CELULAR_CLIENTE}', $dados->celular ?? '', $mensagemFinal);
+                } elseif (isset($dados->idUsuarios)) { // Usuário
+                    $mensagemFinal = str_replace('{NOME_USUARIO}', $dados->nome ?? '', $mensagemFinal);
+                }
+
+                // Carrega e substitui variáveis de curso/viagem se houver IDs
+                $cursosIds = $this->input->post('cursos_ids') ? explode(',', $this->input->post('cursos_ids')) : [];
+                if (!empty($cursosIds)) {
+                    $this->load->model('cursos_model');
+                    $curso = $this->cursos_model->getById($cursosIds[0]); // Pega o primeiro para substituição
+                    $mensagemFinal = str_replace('{NOME_CURSO}', $curso->nome_curso ?? '', $mensagemFinal);
+                    $mensagemFinal = str_replace('{DATA_INICIO_CURSO}', isset($curso->data_inicio) ? date('d/m/Y', strtotime($curso->data_inicio)) : '', $mensagemFinal);
+                    $mensagemFinal = str_replace('{DATA_FIM_CURSO}', isset($curso->data_fim) ? date('d/m/Y', strtotime($curso->data_fim)) : '', $mensagemFinal);
+                }
+                $viagensIds = $this->input->post('viagens_ids') ? explode(',', $this->input->post('viagens_ids')) : [];
+                if (!empty($viagensIds)) {
+                    $this->load->model('viagens_model');
+                    $viagem = $this->viagens_model->getById($viagensIds[0]); // Pega a primeira para substituição
+                    $mensagemFinal = str_replace('{NOME_VIAGEM}', $viagem->nome_viagem ?? '', $mensagemFinal);
+                    $mensagemFinal = str_replace('{DATA_PARTIDA_VIAGEM}', isset($viagem->data_partida) ? date('d/m/Y', strtotime($viagem->data_partida)) : '', $mensagemFinal);
+                    $mensagemFinal = str_replace('{DATA_RETORNO_VIAGEM}', isset($viagem->data_retorno) ? date('d/m/Y', strtotime($viagem->data_retorno)) : '', $mensagemFinal);
+                }
+            }
+
+            $payload = [
+                'number' => $destinatario['numero'],
+                'options' => ['delay' => $delayFixo, 'presence' => $presence],
+                'text' => $mensagemFinal,
+            ];
+
+            // Envio via cURL (simplificado para brevidade)
+            $curl = curl_init();
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => json_encode($payload),
+                CURLOPT_HTTPHEADER => ["Content-Type: application/json", "apikey: {$apiKey}"],
+            ]);
+            $response = curl_exec($curl);
+            $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $err = curl_error($curl);
+            curl_close($curl);
+
+            // Log
+            $this->evolution_model->add('evolution_logs', [
+                'timestamp' => date('Y-m-d H:i:s'),
+                'phone_number' => $destinatario['numero'],
+                'request_payload' => json_encode($payload),
+                'response_code' => $httpcode,
+                'response_body' => $response,
+                'curl_error' => $err,
+            ]);
+
+            ($httpcode >= 200 && $httpcode < 300) ? $sucessos++ : $falhas++;
+        }
+
+        return $this->output->set_content_type('application/json')->set_output(json_encode(['success' => true, 'message' => "Envio concluído: {$sucessos} com sucesso, {$falhas} com falha."]));
+    }
+
+    public function autoComplete($alvo = null)
+    {
+        if ($this->input->get('term')) {
             $q = strtolower($this->input->get('term'));
-            $alvo = $this->input->get('alvo');
 
             if ($alvo === 'clientes') {
                 $this->db->select("idClientes as id, CONCAT('ID: ', idClientes, ' | ', nomeCliente, ' | Cel: ', celular) as text", false);
@@ -346,12 +522,42 @@ class Evolution extends MY_Controller
                 $this->db->limit(10);
                 $query = $this->db->get('usuarios');
             } else {
-                echo json_encode([]);
-                return;
+                return $this->output->set_content_type('application/json')->set_output(json_encode([]));
             }
 
             $result = $query->result();
-            echo json_encode($result);
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_output(json_encode(['results' => $result])); // O Select2 espera um objeto com a chave 'results'
         }
+        return $this->output->set_content_type('application/json')->set_output(json_encode([]));
+    }
+
+    public function log_ajax_error()
+    {
+        // This method is intended for client-side AJAX error logging.
+        // While it's generally good practice to have permission checks,
+        // for debugging purposes, we might allow this without strict permissions
+        // to capture all potential client-side issues.
+        // If you need to restrict this, uncomment the permission check below.
+        /*
+        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+            return $this->output->set_status_header(403)->set_output(json_encode(['message' => 'Acesso não autorizado para logar erros.']));
+        }
+        */
+
+        $errorMessage = $this->input->post('error_message');
+        $responseText = $this->input->post('response_text');
+        $statusCode = $this->input->post('status_code');
+
+        $logData = "Client-side AJAX Error:" . PHP_EOL
+                   . "Message: " . ($errorMessage ?: 'N/A') . PHP_EOL
+                   . "Status Code: " . ($statusCode ?: 'N/A') . PHP_EOL
+                   . "Response Text: " . ($responseText ?: 'N/A') . PHP_EOL
+                   . "User Agent: " . $this->input->user_agent() . PHP_EOL
+                   . "IP Address: " . $this->input->ip_address();
+        log_message('error', $logData);
+
+        return $this->output->set_content_type('application/json')->set_output(json_encode(['status' => 'success', 'message' => 'Error logged successfully.']));
     }
 }

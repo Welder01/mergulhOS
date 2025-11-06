@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="<?= base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
 <link rel="stylesheet" href="<?= base_url(); ?>assets/css/select2.css" />
-<link rel="stylesheet" href="<?= base_url(); ?>assets/trumbowyg/ui/trumbowyg.min.css">
+<link rel="stylesheet" href="<?= base_url(); ?>assets/trumbowyg/ui/trumbowyg.min.css"/>
 <script type="text/javascript" src="<?= base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <script type="text/javascript" src="<?= base_url() ?>assets/js/select2.min.js"></script>
 <script type="text/javascript" src="<?= base_url(); ?>assets/trumbowyg/trumbowyg.min.js"></script>
@@ -46,7 +46,7 @@
                     <pre id="json-resultado"></pre>
                 </div>
                 <div id="loading" style="display:none; text-align: center;">
-                    <img src="<?= base_url('assets/img/loading.gif') ?>" alt="Carregando..." />
+                    <img src="<?= base_url('assets/images/loading.gif') ?>" alt="Carregando..." />
                     <p>Verificando...</p>
                 </div>
             </div>
@@ -134,7 +134,13 @@
                                     </p>
                                     <p>
                                         <small class="variable-tag" title="Copiar">{NOME_CURSO}</small>
+                                        <small class="variable-tag" title="Copiar">{DATA_INICIO_CURSO}</small>
+                                        <small class="variable-tag" title="Copiar">{DATA_FIM_CURSO}</small>
+                                    </p>
+                                    <p>
                                         <small class="variable-tag" title="Copiar">{NOME_VIAGEM}</small>
+                                        <small class="variable-tag" title="Copiar">{DATA_PARTIDA_VIAGEM}</small>
+                                        <small class="variable-tag" title="Copiar">{DATA_RETORNO_VIAGEM}</small>
                                     </p>
                                 </div>
                             </div>
@@ -248,43 +254,74 @@
         <h3 id="modalTitle">Enviar Mensagem: </h3>
     </div>
     <div class="modal-body">
-        <form id="formEnviarMensagem">
+        <form id="formEnviarMensagem" class="form-horizontal">
             <input type="hidden" id="mensagem_id" name="mensagem_id">
             <div class="control-group">
                 <label class="control-label">Enviar para:</label>
                 <div class="controls">
-                    <select id="selectAlvo" name="alvo" class="span12">
-                        <option value="clientes">Clientes</option>
-                        <option value="usuarios">Usuários</option>
-                        <option value="especifico">Número Específico</option>
-                    </select>
+                    <label class="checkbox inline"><input type="checkbox" name="alvo[]" value="clientes"> Clientes</label>
+                    <label class="checkbox inline"><input type="checkbox" name="alvo[]" value="usuarios"> Usuários</label>
+                    <label class="checkbox inline"><input type="checkbox" name="alvo[]" value="especifico"> Número Específico</label>
                 </div>
             </div>
-            <div id="div-selecao-multipla" class="control-group">
-                <label class="control-label" id="label-selecao">Selecione os Clientes:</label>
-                <div class="controls">
-                    <input type="text" id="cliente_autocomplete" class="span12" placeholder="Digite o nome do cliente...">
+
+            <!-- Seção Clientes -->
+            <div id="div-clientes" class="well well-small" style="display:none;">
+                <h4>Clientes</h4>
+                <div class="control-group">
+                    <div class="controls">
+                        <label class="radio inline"><input type="radio" name="tipo_cliente" value="todos" checked> Todos</label>
+                        <label class="radio inline"><input type="radio" name="tipo_cliente" value="selecionar"> Selecionar</label>
+                    </div>
+                </div>
+                <div id="div-selecao-clientes" class="control-group" style="display:none;">
+                    <label class="control-label" for="select_clientes">Selecionar Clientes</label>
+                    <div class="controls">
+                        <input type="hidden" name="clientes_ids" id="select_clientes" class="span11">
+                    </div>
+                </div>
+                <div id="div-filtros-clientes">
+                    <div class="control-group">
+                        <label class="control-label" for="select_cursos">Filtrar por Cursos</label>
+                        <div class="controls">
+                            <input type="hidden" name="cursos_ids" id="select_cursos" class="span11">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="select_viagens">Filtrar por Viagens</label>
+                        <div class="controls">
+                            <input type="hidden" name="viagens_ids" id="select_viagens" class="span11">
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div id="div-selecao-curso" class="control-group" style="display:none;">
-                <label class="control-label" for="curso_autocomplete">Vincular a um Curso (Opcional):</label>
-                <div class="controls">
-                    <input type="text" id="curso_autocomplete" name="curso_id" class="span12" placeholder="Digite o nome do curso...">
-                    <input type="hidden" id="curso_id" name="curso_id">
+
+            <!-- Seção Usuários -->
+            <div id="div-usuarios" class="well well-small" style="display:none;">
+                <h4>Usuários</h4>
+                <div class="control-group">
+                    <div class="controls">
+                        <label class="radio inline"><input type="radio" name="tipo_usuario" value="todos" checked> Todos</label>
+                        <label class="radio inline"><input type="radio" name="tipo_usuario" value="selecionar"> Selecionar</label>
+                    </div>
+                </div>
+                <div id="div-selecao-usuarios" class="control-group" style="display:none;">
+                    <label class="control-label" for="select_usuarios">Selecionar Usuários</label>
+                    <div class="controls">
+                        <input type="hidden" name="usuarios_ids" id="select_usuarios" class="span11">
+                    </div>
                 </div>
             </div>
-            <div id="div-selecao-viagem" class="control-group" style="display:none;">
-                <label class="control-label" for="viagem_autocomplete">Vincular a uma Viagem (Opcional):</label>
-                <div class="controls">
-                    <input type="text" id="viagem_autocomplete" name="viagem_id" class="span12" placeholder="Digite o nome da viagem...">
-                    <input type="hidden" id="viagem_id" name="viagem_id">
-                </div>
-            </div>
-            <div id="div-numero-especifico" class="control-group" style="display:none;">
-                <label class="control-label">Números:</label>
-                <div class="controls">
-                    <input type="text" id="inputNumeroEspecifico" name="numeros[]" class="span12" placeholder="5511999998888, 5521888889999">
-                    <span class="help-block">Separe múltiplos números por vírgula.</span>
+
+            <!-- Seção Número Específico -->
+            <div id="div-numero-especifico" class="well well-small" style="display:none;">
+                 <h4>Número Específico</h4>
+                <div class="control-group">
+                    <label class="control-label" for="inputNumeroEspecifico">Números</label>
+                    <div class="controls">
+                        <textarea id="inputNumeroEspecifico" name="numeros_especificos" class="span11" rows="3" placeholder="5511999998888, 5521888889999"></textarea>
+                        <span class="help-block">Use vírgulas ou quebras de linha para separar os números.</span>
+                    </div>
                 </div>
             </div>
         </form>
@@ -376,74 +413,113 @@
         });
 
         //--- LÓGICA DA ABA MENSAGENS ---//
-        var clientesData = <?= json_encode(array_map(function($c) { return ['id' => $c->idClientes, 'text' => $c->nomeCliente . ' (' . $c->celular . ')']; }, $clientes)) ?>;
-        var usuariosData = <?= json_encode(array_map(function($u) { return ['id' => $u->idUsuarios, 'text' => $u->nome . ' (' . $u->celular . ')']; }, $usuarios)) ?>;
 
-        function popularSelect(data) {
-            var select = $('#selectNumeros');
-            select.empty();
-            if(data) {
-                $.each(data, function(index, item) {
-                    select.append(new Option(item.text, item.id, false, false));
-                });
-            }
-        }
-
-        function inicializarSelect2() {
-            if(typeof($.fn.select2) != 'undefined') {
-                $('#selectNumeros').select2({
-                    placeholder: 'Selecione...',
+        // Função para inicializar o Select2 com busca AJAX
+        function initSelect2(selector, placeholder, ajaxUrl) {
+            if (typeof($.fn.select2) != 'undefined') {
+                $(selector).select2({
+                    placeholder: placeholder,
+                    minimumInputLength: 2,
                     allowClear: true,
-                    width: '100%'
+                    multiple: true,
+                    width: '100%',
+                    ajax: {
+                        url: ajaxUrl,
+                        dataType: 'json',
+                        delay: 250,
+                        data: function(term, page) {
+                            return {
+                                term: term,
+                                page: page
+                            };
+                        },
+                        results: function(data, page) {
+                            return { results: data.results };
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            console.error('Select2 AJAX Error:', textStatus, errorThrown);
+                            console.error('Response Text:', jqXHR.responseText);
+                            console.error('Status:', jqXHR.status);
+
+                            // Send error to server-side log
+                            $.ajax({
+                                url: '<?= base_url() ?>index.php/evolution/log_ajax_error',
+                                type: 'POST',
+                                data: {
+                                    error_message: 'Select2 AJAX Error: ' + textStatus + ' - ' + errorThrown,
+                                    response_text: jqXHR.responseText,
+                                    status_code: jqXHR.status,
+                                    '<?= $this->security->get_csrf_token_name(); ?>': '<?= $this->security->get_csrf_hash(); ?>'
+                                },
+                                success: function(response) {
+                                    console.log('Error logged on server:', response);
+                                },
+                                error: function(serverJqXHR, serverTextStatus, serverErrorThrown) {
+                                    console.error('Failed to log error on server:', serverTextStatus, serverErrorThrown);
+                                }
+                            });
+                        }
+                    }
                 });
             }
         }
 
-        $('#selectAlvo').on('change', function() {
-            var alvo = $(this).val();
-            $('#cliente_autocomplete').val('');
-            $('#inputNumeroEspecifico').val('');
+        // Gerencia a visibilidade das seções principais
+        $('input[name="alvo[]"]').on('change', function() {
+            $('#div-clientes').toggle($('input[name="alvo[]"][value="clientes"]').is(':checked'));
+            $('#div-usuarios').toggle($('input[name="alvo[]"][value="usuarios"]').is(':checked'));
+            $('#div-numero-especifico').toggle($('input[name="alvo[]"][value="especifico"]').is(':checked'));
+        });
 
-            if (alvo === 'clientes') {
-                $('#label-selecao').text('Selecione os Clientes:');
-                $('#div-selecao-multipla').show();
-                $('#div-selecao-curso').show();
-                $('#div-selecao-viagem').show();
-                $('#div-numero-especifico').hide();
-            } else if (alvo === 'usuarios') {
-                $('#label-selecao').text('Selecione os Usuários:');
-                $('#div-selecao-multipla').show();
-                $('#div-selecao-curso').hide();
-                $('#div-selecao-viagem').hide();
-                $('#div-numero-especifico').hide();
+        // Gerencia a visibilidade da seleção de clientes
+        $('input[name="tipo_cliente"]').on('change', function() {
+            if ($(this).val() === 'todos') {
+                $('#div-selecao-clientes').hide();
+                $('#div-filtros-clientes').show();
             } else {
-                $('#div-selecao-multipla').hide();
-                $('#div-selecao-curso').hide();
-                $('#div-selecao-viagem').hide();
-                $('#div-numero-especifico').show();
+                $('#div-selecao-clientes').show();
+                $('#div-filtros-clientes').hide();
             }
         });
 
+        // Gerencia a visibilidade da seleção de usuários
+        $('input[name="tipo_usuario"]').on('change', function() {
+            $('#div-selecao-usuarios').toggle($(this).val() === 'selecionar');
+        }).trigger('change');
+
+
+        // Abre e prepara o modal de envio
         $('.btn-enviar').on('click', function() {
             var id = $(this).data('id');
             var titulo = $(this).data('titulo');
+
+            // Reseta o formulário
+            $('#formEnviarMensagem')[0].reset();
+            $('input[name="alvo[]"]').prop('checked', false).trigger('change');
+            $('#select_clientes, #select_usuarios, #select_cursos, #select_viagens').val(null).trigger('change');
+            
+            // Define os valores iniciais
             $('#modalTitle').text('Enviar Mensagem: ' + titulo);
             $('#mensagem_id').val(id);
-            $('#selectAlvo').val('clientes').trigger('change');
+
+            // Garante o estado visual correto ao abrir o modal
+            $('input[name="tipo_cliente"][value="todos"]').prop('checked', true).trigger('change');
+            $('input[name="tipo_usuario"][value="todos"]').prop('checked', true).trigger('change');
+
+            // Inicializa os Select2
+            initSelect2('#select_clientes', 'Digite para buscar clientes...', '<?= base_url("index.php/evolution/autoComplete/clientes") ?>');
+            initSelect2('#select_usuarios', 'Digite para buscar usuários...', '<?= base_url("index.php/evolution/autoComplete/usuarios") ?>');
+            initSelect2('#select_cursos', 'Digite para buscar cursos...', '<?= base_url("index.php/cursos/autoCompleteCurso") ?>');
+            initSelect2('#select_viagens', 'Digite para buscar viagens...', '<?= base_url("index.php/viagens/autoCompleteViagem") ?>');
+
             $('#modalEnviar').modal('show');
         });
 
+        // Confirma e envia a mensagem
         $('#btnConfirmarEnvio').on('click', function() {
             var form = $('#formEnviarMensagem');
             var btn = $(this);
             btn.prop('disabled', true).text('Enviando...');
-
-            var alvo = $('#selectAlvo').val();
-            if (alvo === 'clientes' || alvo === 'usuarios') {
-                var selectedId = $('#cliente_autocomplete').data('id');
-                form.find('input[name="numeros[]"]').remove(); // Limpa antes de adicionar
-                form.append('<input type="hidden" name="numeros[]" value="' + selectedId + '">');
-            }
 
             var formData = form.serializeArray();
             var csrfData = {};
@@ -451,18 +527,22 @@
             formData.push({ name: csrfData.name, value: csrfData.value });
 
             $.ajax({
-                url: '<?= base_url() ?>index.php/evolution/enviar_mensagem',
+                url: '<?= base_url() ?>index.php/evolution/enviar_mensagem_novo',
                 type: 'POST',
                 data: $.param(formData),
                 dataType: 'json',
                 success: function(response) {
                     $('#modalEnviar').modal('hide');
-                    Swal.fire('Sucesso!', response.message, 'success');
+                    if(response.success) {
+                        Swal.fire('Sucesso!', response.message, 'success');
+                    } else {
+                        Swal.fire('Erro!', response.message, 'error');
+                    }
                 },
                 error: function(jqXHR) {
                     var errorMessage = 'Ocorreu um erro desconhecido.';
-                    if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
-                        errorMessage = jqXHR.responseJSON.error;
+                    if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                        errorMessage = jqXHR.responseJSON.message;
                     }
                     Swal.fire('Erro!', errorMessage, 'error');
                 },
@@ -470,70 +550,6 @@
                     btn.prop('disabled', false).text('Confirmar Envio');
                 }
             });
-        });
-
-        $("#cliente_autocomplete").autocomplete({
-            source: function (request, response) {
-                $.ajax({
-                    url: "<?= base_url(); ?>index.php/evolution/autoComplete",
-                    dataType: "json",
-                    data: {
-                        term: request.term,
-                        alvo: $('#selectAlvo').val() // Envia o alvo (clientes/usuarios)
-                    },
-                    success: function(data) {
-                        response($.map(data, function (item) {                            
-                           return {
-                                label: item.text, // jQuery UI Autocomplete espera 'label'
-                                value: item.text,
-                                id: item.id                                
-                           };
-                        }));
-                    }
-                });
-            },
-            minLength: 2,
-            select: function (event, ui) {
-                $(this).data('id', ui.item.id);
-            }
-        });
-
-        $("#curso_autocomplete").autocomplete({
-            source: function(request, response) {
-                $.ajax({
-                    url: "<?= base_url(); ?>index.php/cursos/autoCompleteCurso",
-                    dataType: "json",
-                    data: {
-                        term: request.term
-                    },
-                    success: function(data) {
-                        response(data);
-                    }
-                });
-            },
-            minLength: 2,
-            select: function(event, ui) {
-                $("#curso_id").val(ui.item.id);
-            }
-        });
-
-        $("#viagem_autocomplete").autocomplete({
-            source: function(request, response) {
-                $.ajax({
-                    url: "<?= base_url(); ?>index.php/viagens/autoCompleteViagem",
-                    dataType: "json",
-                    data: {
-                        term: request.term
-                    },
-                    success: function(data) {
-                        response(data);
-                    }
-                });
-            },
-            minLength: 2,
-            select: function(event, ui) {
-                $("#viagem_id").val(ui.item.id);
-            }
         });
 
         // Adiciona o editor de texto Trumbowyg

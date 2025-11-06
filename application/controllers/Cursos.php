@@ -590,7 +590,8 @@ class Cursos extends MY_Controller
                     'preco' => $curso->preco,
                 ];
             }, $query->result());
-            echo json_encode($result);
+            return $this->output->set_content_type('application/json')->set_output(json_encode(['results' => $result]));
         }
+        return $this->output->set_content_type('application/json')->set_output(json_encode([]));
     }
 }

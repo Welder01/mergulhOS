@@ -65,4 +65,46 @@ class Evolution_model extends CI_Model
         }
         return false;
     }
+
+    public function getContatos($ids, $table, $idField, $fields = '*')
+    {
+        if (empty($ids)) {
+            return [];
+        }
+        $this->db->select($fields);
+        $this->db->where_in($idField, $ids);
+        return $this->db->get($table)->result();
+    }
+
+    public function getAllContatos($table, $fields = '*')
+    {
+        $this->db->select($fields);
+        return $this->db->get($table)->result();
+    }
+
+    public function getClientesByCurso($cursoIds)
+    {
+        if (empty($cursoIds)) {
+            return [];
+        }
+        $this->db->select('c.*');
+        $this->db->from('clientes c');
+        $this->db->join('curso_alunos ca', 'c.idClientes = ca.id_cliente');
+        $this->db->where_in('ca.id_curso', $cursoIds);
+        $this->db->group_by('c.idClientes');
+        return $this->db->get()->result();
+    }
+
+    public function getClientesByViagem($viagemIds)
+    {
+        if (empty($viagemIds)) {
+            return [];
+        }
+        $this->db->select('c.*');
+        $this->db->from('clientes c');
+        $this->db->join('viagem_clientes vc', 'c.idClientes = vc.id_cliente');
+        $this->db->where_in('vc.id_viagem', $viagemIds);
+        $this->db->group_by('c.idClientes');
+        return $this->db->get()->result();
+    }
 }

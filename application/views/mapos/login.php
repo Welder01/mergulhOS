@@ -115,7 +115,7 @@
   <script type="text/javascript">
     $(document).ready(function() {
       $('#email').focus();
-      $("#formLogin").validate({
+      $("#formLogin").validate({ // Corrigido para #formLogin
         rules: {
           email: {
             required: true,
@@ -148,15 +148,14 @@
                 if (data.result == true) {
                     window.location.href = "<?= site_url('mapos'); ?>";
                 } else {
-                    $('#btn-acessar').removeClass('disabled');
-                    $('#progress-acessar').addClass('hide');
-                    $('#message').text(data.message || 'Os dados de acesso estão incorretos, por favor tente novamente!');
-                    $('#call-modal').trigger('click');
-
-                    // Atualiza o token a cada requisição
-                    var newCsrfToken = data.MAPOS_TOKEN; 
-                    $("input[name='<?= $this->security->get_csrf_token_name(); ?>']").val(newCsrfToken);
-                    
+                  $('#btn-acessar').removeClass('disabled');
+                  $('#progress-acessar').addClass('hide');
+                  $('#message').text(data.message || 'Os dados de acesso estão incorretos, por favor tente novamente!');
+                  $('#call-modal').trigger('click');
+                  
+                  // Atualiza o token a cada requisição
+                  var newCsrfToken = data.MAPOS_TOKEN;
+                  $("input[name='<?= $this->security->get_csrf_token_name(); ?>']").val(newCsrfToken);
                 }
             }
           });
