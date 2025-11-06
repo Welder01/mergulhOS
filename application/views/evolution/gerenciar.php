@@ -7,6 +7,7 @@
     <div class="widget-title" style="margin: 0;font-size: 1.1em">
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#tabStatus">Status da Instância</a></li>
+            <li><a data-toggle="tab" href="#tabLogs">Logs de Envio</a></li>
             <li><a data-toggle="tab" href="#tabMensagens">Mensagens</a></li>
         </ul>
     </div>
@@ -30,6 +31,54 @@
                 <div id="loading" style="display:none; text-align: center;">
                     <img src="<?= base_url('assets/img/loading.gif') ?>" alt="Carregando..." />
                     <p>Verificando...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba Logs -->
+        <div id="tabLogs" class="tab-pane">
+            <div class="span12" style="padding: 1%; margin-left: 0;">
+                <div class="widget-box" id="divLogs">
+                    <div class="widget-content nopadding">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%;">Data/Hora</th>
+                                    <th style="width: 15%;">Número</th>
+                                    <th style="width: 10%;">Status HTTP</th>
+                                    <th>Requisição</th>
+                                    <th>Resposta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (isset($logs) && count($logs)) : ?>
+                                    <?php foreach ($logs as $log) : ?>
+                                        <tr>
+                                            <td><?= date('d/m/Y H:i:s', strtotime($log->timestamp)); ?></td>
+                                            <td><?= htmlspecialchars($log->phone_number); ?></td>
+                                            <td>
+                                                <?php
+                                                    $statusClass = 'label-inverse';
+                                                    if ($log->response_code >= 200 && $log->response_code < 300) {
+                                                        $statusClass = 'label-success';
+                                                    } elseif ($log->response_code >= 400) {
+                                                        $statusClass = 'label-important';
+                                                    }
+                                                ?>
+                                                <span class="label <?= $statusClass; ?>"><?= $log->response_code; ?></span>
+                                            </td>
+                                            <td><a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info" data-title="Requisição" data-content="<?= htmlspecialchars($log->request_payload); ?>">Ver</a></td>
+                                            <td><a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info" data-title="Resposta" data-content="<?= htmlspecialchars($log->response_body . ($log->curl_error ? ' | Erro cURL: ' . $log->curl_error : '')); ?>">Ver</a></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else : ?>
+                                    <tr>
+                                        <td colspan="5">Nenhum log encontrado.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -172,6 +221,20 @@
     <div class="modal-footer">
         <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
         <button class="btn btn-primary" id="btnConfirmarEnvio">Confirmar Envio</button>
+    </div>
+</div>
+
+<!-- Modal Detalhes do Log -->
+<div id="modal-log-details" class="modal hide fade" tabindex="-1" role="dialog">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="log-details-title">Detalhes</h3>
+    </div>
+    <div class="modal-body">
+        <pre id="log-details-content" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
     </div>
 </div>
 
@@ -378,6 +441,30 @@
                 autogrow: true
             });
         }
+
+        function htmlspecialchars_decode(str) {
+            if (typeof(str) == "string") {
+                str = str.replace(/&amp;/g, "&");
+                str = str.replace(/&quot;/g, "\"");
+                str = str.replace(/&#039;/g, "'");
+                str = str.replace(/&lt;/g, "<");
+                str = str.replace(/&gt;/g, ">");
+            }
+            return str;
+        }
+
+        $(document).on('click', 'a[href="#modal-log-details"]', function() {
+            var title = $(this).data('title');
+            var content = htmlspecialchars_decode($(this).data('content'));
+            try {
+                // Tenta formatar o conteúdo como JSON se for uma string JSON válida
+                content = JSON.stringify(content, null, 2);
+            } catch (e) {
+                // Se não for um JSON válido, exibe como está (já é uma string)
+            }
+            $('#log-details-title').text(title);
+            $('#log-details-content').text(content);
+        });
     });
 
 </script>
