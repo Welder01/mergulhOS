@@ -196,6 +196,7 @@ class Evolution extends MY_Controller
                 $mensagem->mensagem = str_replace('{DOCUMENTO_CLIENTE}', $contato->documento ?? '', $mensagem->mensagem);
                 $mensagem->mensagem = str_replace('{TELEFONE_CLIENTE}', $contato->telefone ?? '', $mensagem->mensagem);
                 $mensagem->mensagem = str_replace('{CELULAR_CLIENTE}', $contato->celular ?? '', $mensagem->mensagem);
+                $mensagem->mensagem = str_replace('{LINK_CLIENTE}', base_url('index.php/mine/loginCliente/') . $contato->idClientes, $mensagem->mensagem);
                 $mensagem->mensagem = str_replace('{DATA_CADASTRO}', isset($contato->dataCadastro) ? date('d/m/Y', strtotime($contato->dataCadastro)) : '', $mensagem->mensagem);
             }
 

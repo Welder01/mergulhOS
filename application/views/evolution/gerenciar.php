@@ -6,6 +6,20 @@
 <script type="text/javascript" src="<?= base_url(); ?>assets/trumbowyg/trumbowyg.min.js"></script>
 <script type="text/javascript" src="<?= base_url(); ?>assets/trumbowyg/langs/pt_br.min.js"></script>
 
+<style>
+    .variable-tag {
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 2px 6px;
+        cursor: pointer;
+        font-family: monospace;
+    }
+    .variable-tag:hover {
+        background-color: #e0e0e0;
+    }
+</style>
+
 <div class="widget-box">
     <div class="widget-title" style="margin: 0;font-size: 1.1em">
         <ul class="nav nav-tabs">
@@ -109,43 +123,34 @@
                             <label for="mensagem" class="control-label">Mensagem<span class="required">*</span></label>
                             <div class="controls">
                                 <textarea name="mensagem" id="mensagem" rows="5" class="span11" required></textarea>
-                                <div class="help-block" style="margin-top: 10px; border: 1px solid #ddd; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">
-                                    <p style="margin-bottom: 5px;"><strong>Variáveis disponíveis para uso na mensagem:</strong></p>
-                                    <div style="display: flex; flex-wrap: wrap; gap: 15px;">
-                                        <div>
-                                            <strong>Cliente:</strong>
-                                            <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
-                                                <li><small><code>{NOME_CLIENTE}</code></small></li>
-                                                <li><small><code>{EMAIL_CLIENTE}</code></small></li>
-                                                <li><small><code>{DOCUMENTO_CLIENTE}</code></small></li>
-                                                <li><small><code>{TELEFONE_CLIENTE}</code></small></li>
-                                                <li><small><code>{CELULAR_CLIENTE}</code></small></li>
-                                                <li><small><code>{DATA_CADASTRO}</code></small></li>
-                                            </ul>
-                                        </div>
-                                        <div>
-                                            <strong>Usuário:</strong>
-                                            <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
-                                                <li><small><code>{NOME_USUARIO}</code></small></li>
-                                            </ul>
-                                        </div>
-                                        <div>
-                                            <strong>Cursos:</strong>
-                                            <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
-                                                <li><small><code>{NOME_CURSO}</code></small></li>
-                                                <li><small><code>{DATA_INICIO_CURSO}</code></small></li>
-                                                <li><small><code>{DATA_FIM_CURSO}</code></small></li>
-                                            </ul>
-                                        </div>
-                                        <div>
-                                            <strong>Viagens:</strong>
-                                            <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
-                                                <li><small><code>{NOME_VIAGEM}</code></small></li>
-                                                <li><small><code>{DATA_PARTIDA_VIAGEM}</code></small></li>
-                                                <li><small><code>{DATA_RETORNO_VIAGEM}</code></small></li>
-                                            </ul>
-                                        </div>
-                                    </div>
+                                <div class="help-block" style="margin-top: 10px;">
+                                    <p><strong>Variáveis disponíveis (clique para copiar):</strong></p>
+                                    <p>
+                                        <strong>Cliente:</strong>
+                                        <small class="variable-tag" title="Copiar">{NOME_CLIENTE}</small>
+                                        <small class="variable-tag" title="Copiar">{EMAIL_CLIENTE}</small>
+                                        <small class="variable-tag" title="Copiar">{DOCUMENTO_CLIENTE}</small>
+                                        <small class="variable-tag" title="Copiar">{TELEFONE_CLIENTE}</small>
+                                        <small class="variable-tag" title="Copiar">{CELULAR_CLIENTE}</small>
+                                        <small class="variable-tag" title="Copiar">{DATA_CADASTRO}</small>
+                                        <small class="variable-tag" title="Copiar">{LINK_CLIENTE}</small>
+                                    </p>
+                                    <p>
+                                        <strong>Usuário:</strong>
+                                        <small class="variable-tag" title="Copiar">{NOME_USUARIO}</small>
+                                    </p>
+                                    <p>
+                                        <strong>Curso:</strong>
+                                        <small class="variable-tag" title="Copiar">{NOME_CURSO}</small>
+                                        <small class="variable-tag" title="Copiar">{DATA_INICIO_CURSO}</small>
+                                        <small class="variable-tag" title="Copiar">{DATA_FIM_CURSO}</small>
+                                    </p>
+                                    <p>
+                                        <strong>Viagem:</strong>
+                                        <small class="variable-tag" title="Copiar">{NOME_VIAGEM}</small>
+                                        <small class="variable-tag" title="Copiar">{DATA_PARTIDA_VIAGEM}</small>
+                                        <small class="variable-tag" title="Copiar">{DATA_RETORNO_VIAGEM}</small>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -212,43 +217,34 @@
                 <label for="edit_mensagem" class="control-label">Mensagem<span class="required">*</span></label>
                 <div class="controls">
                     <textarea name="mensagem" id="edit_mensagem" rows="5" class="span11" required></textarea>
-                    <div class="help-block" style="margin-top: 10px; border: 1px solid #ddd; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">
-                        <p style="margin-bottom: 5px;"><strong>Variáveis disponíveis para uso na mensagem:</strong></p>
-                        <div style="display: flex; flex-wrap: wrap; gap: 15px;">
-                            <div>
-                                <strong>Cliente:</strong>
-                                <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
-                                    <li><small><code>{NOME_CLIENTE}</code></small></li>
-                                    <li><small><code>{EMAIL_CLIENTE}</code></small></li>
-                                    <li><small><code>{DOCUMENTO_CLIENTE}</code></small></li>
-                                    <li><small><code>{TELEFONE_CLIENTE}</code></small></li>
-                                    <li><small><code>{CELULAR_CLIENTE}</code></small></li>
-                                    <li><small><code>{DATA_CADASTRO}</code></small></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <strong>Usuário:</strong>
-                                <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
-                                    <li><small><code>{NOME_USUARIO}</code></small></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <strong>Cursos:</strong>
-                                <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
-                                    <li><small><code>{NOME_CURSO}</code></small></li>
-                                    <li><small><code>{DATA_INICIO_CURSO}</code></small></li>
-                                    <li><small><code>{DATA_FIM_CURSO}</code></small></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <strong>Viagens:</strong>
-                                <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
-                                    <li><small><code>{NOME_VIAGEM}</code></small></li>
-                                    <li><small><code>{DATA_PARTIDA_VIAGEM}</code></small></li>
-                                    <li><small><code>{DATA_RETORNO_VIAGEM}</code></small></li>
-                                </ul>
-                            </div>
-                        </div>
+                    <div class="help-block" style="margin-top: 10px;">
+                        <p><strong>Variáveis disponíveis (clique para copiar):</strong></p>
+                        <p>
+                            <strong>Cliente:</strong>
+                            <small class="variable-tag" title="Copiar">{NOME_CLIENTE}</small>
+                            <small class="variable-tag" title="Copiar">{EMAIL_CLIENTE}</small>
+                            <small class="variable-tag" title="Copiar">{DOCUMENTO_CLIENTE}</small>
+                            <small class="variable-tag" title="Copiar">{TELEFONE_CLIENTE}</small>
+                            <small class="variable-tag" title="Copiar">{CELULAR_CLIENTE}</small>
+                            <small class="variable-tag" title="Copiar">{DATA_CADASTRO}</small>
+                            <small class="variable-tag" title="Copiar">{LINK_CLIENTE}</small>
+                        </p>
+                        <p>
+                            <strong>Usuário:</strong>
+                            <small class="variable-tag" title="Copiar">{NOME_USUARIO}</small>
+                        </p>
+                        <p>
+                            <strong>Curso:</strong>
+                            <small class="variable-tag" title="Copiar">{NOME_CURSO}</small>
+                            <small class="variable-tag" title="Copiar">{DATA_INICIO_CURSO}</small>
+                            <small class="variable-tag" title="Copiar">{DATA_FIM_CURSO}</small>
+                        </p>
+                        <p>
+                            <strong>Viagem:</strong>
+                            <small class="variable-tag" title="Copiar">{NOME_VIAGEM}</small>
+                            <small class="variable-tag" title="Copiar">{DATA_PARTIDA_VIAGEM}</small>
+                            <small class="variable-tag" title="Copiar">{DATA_RETORNO_VIAGEM}</small>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -598,6 +594,20 @@
             $('#edit_mensagem').trumbowyg('html', mensagem);
 
             $('#modalEditar').modal('show');
+        });
+
+        //--- LÓGICA DE COPIAR VARIÁVEL ---//
+        $(document).on('click', '.variable-tag', function() {
+            var textToCopy = $(this).text();
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                var originalText = $(this).text();
+                $(this).text('Copiado!');
+                setTimeout(() => {
+                    $(this).text(originalText);
+                }, 1000);
+            }).catch(err => {
+                console.error('Erro ao copiar: ', err);
+            });
         });
 
     });
