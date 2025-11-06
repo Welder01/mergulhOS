@@ -144,6 +144,26 @@ class Evolution extends MY_Controller
         redirect('evolution/gerenciar#tabMensagens');
     }
 
+    public function excluir_logs()
+    {
+        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) { // Usando uma permissão genérica
+            $this->session->set_flashdata('error', 'Você não tem permissão para excluir logs.');
+            redirect('evolution/gerenciar#tabLogs');
+        }
+
+        $ids = $this->input->post('ids');
+        if (empty($ids)) {
+            $this->session->set_flashdata('error', 'Nenhum log selecionado para exclusão.');
+            redirect('evolution/gerenciar#tabLogs');
+        }
+
+        $this->db->where_in('id', $ids);
+        $this->db->delete('evolution_logs');
+
+        $this->session->set_flashdata('success', 'Logs excluídos com sucesso!');
+        redirect('evolution/gerenciar#tabLogs');
+    }
+
     public function enviar_mensagem()
     {
         if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {

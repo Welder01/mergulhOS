@@ -55,48 +55,61 @@
         <!-- Aba Logs -->
         <div id="tabLogs" class="tab-pane">
             <div class="span12" style="padding: 1%; margin-left: 0;">
-                <div class="widget-box" id="divLogs">
-                    <div class="widget-content nopadding">
-                        <table class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th style="width: 15%;">Data/Hora</th>
-                                    <th style="width: 15%;">Número</th>
-                                    <th style="width: 10%;">Status HTTP</th>
-                                    <th>Requisição</th>
-                                    <th>Resposta</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (isset($logs) && count($logs)) : ?>
-                                    <?php foreach ($logs as $log) : ?>
-                                        <tr>
-                                            <td><?= date('d/m/Y H:i:s', strtotime($log->timestamp)); ?></td>
-                                            <td><?= htmlspecialchars($log->phone_number); ?></td>
-                                            <td>
-                                                <?php
-                                                    $statusClass = 'label-inverse';
-                                                    if ($log->response_code >= 200 && $log->response_code < 300) {
-                                                        $statusClass = 'label-success';
-                                                    } elseif ($log->response_code >= 400) {
-                                                        $statusClass = 'label-important';
-                                                    }
-                                                ?>
-                                                <span class="label <?= $statusClass; ?>"><?= $log->response_code; ?></span>
-                                            </td>
-                                            <td><a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info" data-title="Requisição" data-content="<?= htmlspecialchars($log->request_payload); ?>">Ver</a></td>
-                                            <td><a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info" data-title="Resposta" data-content="<?= htmlspecialchars($log->response_body . ($log->curl_error ? ' | Erro cURL: ' . $log->curl_error : '')); ?>">Ver</a></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else : ?>
+                <form action="<?= base_url() ?>index.php/evolution/excluir_logs" method="post" id="form-logs">
+                    <div class="widget-box" id="divLogs">
+                        <div class="widget-title">
+                            <span class="icon">
+                                <input type="checkbox" id="select-all-logs" />
+                            </span>
+                            <h5>Logs de Envio</h5>
+                            <div class="buttons">
+                                <button id="btn-excluir-logs" class="btn btn-danger btn-mini" title="Excluir Logs Selecionados"><i class="fas fa-trash-alt"></i> Excluir Selecionados</button>
+                            </div>
+                        </div>
+                        <div class="widget-content nopadding">
+                            <table class="table table-bordered table-striped">
+                                <thead>
                                     <tr>
-                                        <td colspan="5">Nenhum log encontrado.</td>
+                                        <th style="width: 20px;"></th>
+                                        <th style="width: 15%;">Data/Hora</th>
+                                        <th style="width: 15%;">Número</th>
+                                        <th style="width: 10%;">Status HTTP</th>
+                                        <th>Requisição</th>
+                                        <th>Resposta</th>
                                     </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    <?php if (isset($logs) && count($logs)) : ?>
+                                        <?php foreach ($logs as $log) : ?>
+                                            <tr>
+                                                <td><input type="checkbox" name="ids[]" value="<?= $log->id; ?>" /></td>
+                                                <td><?= date('d/m/Y H:i:s', strtotime($log->timestamp)); ?></td>
+                                                <td><?= htmlspecialchars($log->phone_number); ?></td>
+                                                <td>
+                                                    <?php
+                                                        $statusClass = 'label-inverse';
+                                                        if ($log->response_code >= 200 && $log->response_code < 300) {
+                                                            $statusClass = 'label-success';
+                                                        } elseif ($log->response_code >= 400) {
+                                                            $statusClass = 'label-important';
+                                                        }
+                                                    ?>
+                                                    <span class="label <?= $statusClass; ?>"><?= $log->response_code; ?></span>
+                                                </td>
+                                                <td><a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info" data-title="Requisição" data-content='<?= htmlspecialchars($log->request_payload); ?>'>Ver</a></td>
+                                                <td><a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info" data-title="Resposta" data-content='<?= htmlspecialchars($log->response_body . ($log->curl_error ? ' | Erro cURL: ' . $log->curl_error : '')); ?>'>Ver</a></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else : ?>
+                                        <tr>
+                                            <td colspan="6">Nenhum log encontrado.</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
 
@@ -559,10 +572,10 @@
 
         $(document).on('click', 'a[href="#modal-log-details"]', function() {
             var title = $(this).data('title');
-            var content = htmlspecialchars_decode($(this).data('content'));
-            try {
+            var content = htmlspecialchars_decode($(this).attr('data-content'));
+            try { 
                 // Tenta formatar o conteúdo como JSON se for uma string JSON válida
-                content = JSON.stringify(content, null, 2);
+                content = JSON.stringify(JSON.parse(String(content)), null, 2);
             } catch (e) {
                 // Se não for um JSON válido, exibe como está (já é uma string)
             }
@@ -607,6 +620,35 @@
                 }, 1000);
             }).catch(err => {
                 console.error('Erro ao copiar: ', err);
+            });
+        });
+
+        //--- LÓGICA DE EXCLUSÃO DE LOGS ---//
+        $('#select-all-logs').on('click', function() {
+            var isChecked = $(this).is(':checked');
+            $('#form-logs').find('input[type="checkbox"]').prop('checked', isChecked);
+        });
+
+        $('#btn-excluir-logs').on('click', function(e) {
+            e.preventDefault();
+            var anyChecked = $('#form-logs').find('input[type="checkbox"]:checked').length > 0;
+            if (!anyChecked) {
+                Swal.fire('Atenção', 'Selecione pelo menos um log para excluir.', 'warning');
+                return;
+            }
+            Swal.fire({
+                title: 'Deseja realmente excluir os logs selecionados?',
+                text: "Esta ação não pode ser desfeita!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sim, excluir!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $('#form-logs').submit();
+                }
             });
         });
 
