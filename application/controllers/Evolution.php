@@ -161,6 +161,8 @@ class Evolution extends MY_Controller
         $mensagemId = $this->input->post('mensagem_id');
         $alvo = $this->input->post('alvo');
         $numeros = $this->input->post('numeros');
+        $cursoId = $this->input->post('curso_id');
+        $viagemId = $this->input->post('viagem_id');
 
         $mensagem = $this->evolution_model->getById($mensagemId);
         if (! $mensagem) {
@@ -196,14 +198,31 @@ class Evolution extends MY_Controller
                 $mensagem->mensagem = str_replace('{CELULAR_CLIENTE}', $contato->celular ?? '', $mensagem->mensagem);
                 $mensagem->mensagem = str_replace('{DATA_CADASTRO}', isset($contato->dataCadastro) ? date('d/m/Y', strtotime($contato->dataCadastro)) : '', $mensagem->mensagem);
             }
+
+            // Substituição de variáveis de Curso
+            if ($cursoId) {
+                $this->load->model('cursos_model');
+                $curso = $this->cursos_model->getById($cursoId);
+                $mensagem->mensagem = str_replace('{NOME_CURSO}', $curso->nome_curso ?? '', $mensagem->mensagem);
+                $mensagem->mensagem = str_replace('{DATA_INICIO_CURSO}', isset($curso->data_inicio) ? date('d/m/Y', strtotime($curso->data_inicio)) : '', $mensagem->mensagem);
+                $mensagem->mensagem = str_replace('{DATA_FIM_CURSO}', isset($curso->data_fim) ? date('d/m/Y', strtotime($curso->data_fim)) : '', $mensagem->mensagem);
+            }
+            // Substituição de variáveis de Viagem
+            if ($viagemId) {
+                $this->load->model('viagens_model');
+                $viagem = $this->viagens_model->getById($viagemId);
+                $mensagem->mensagem = str_replace('{NOME_VIAGEM}', $viagem->nome_viagem ?? '', $mensagem->mensagem);
+                $mensagem->mensagem = str_replace('{DATA_PARTIDA_VIAGEM}', isset($viagem->data_partida) ? date('d/m/Y', strtotime($viagem->data_partida)) : '', $mensagem->mensagem);
+                $mensagem->mensagem = str_replace('{DATA_RETORNO_VIAGEM}', isset($viagem->data_retorno) ? date('d/m/Y', strtotime($viagem->data_retorno)) : '', $mensagem->mensagem);
+            }
         } else {
             $numerosParaEnvio = array_map(function ($num) {
                 return preg_replace('/[^0-9]/', '', $num);
             }, explode(',', $numeros[0]));
         }
 
-        $endpoint = !empty($mensagem->imagem_url) ? 'message/sendImage' : 'message/sendText';
-        $url = rtrim($apiUrl, '/') . "/{$endpoint}/{$instanceName}";
+        // Define o endpoint fixo para envio de texto
+        $url = rtrim($apiUrl, '/') . "/message/sendText/{$instanceName}";
 
         $sucessos = 0;
         $falhas = 0;
@@ -218,23 +237,40 @@ class Evolution extends MY_Controller
         foreach ($numerosParaEnvio as $numero) {
             $delay = $useRandomDelay ? rand($delayMin, $delayMax) : $delayFixo;
 
-            // Remove tags HTML da mensagem
-            $plainTextMessage = strip_tags($mensagem->mensagem);
+            // Prepara a mensagem para o formato de texto puro do WhatsApp
+            $text = $mensagem->mensagem;
+
+            // 1. Converte tags de formatação HTML para o formato do WhatsApp, removendo espaços adjacentes
+            // Negrito: <b>, <strong>
+            $text = preg_replace(['/<b>\s*/i', '/\s*<\/b>/i', '/<strong>\s*/i', '/\s*<\/strong>/i'], '*', $text);
+
+            // Itálico: <i>, <em>
+            $text = preg_replace(['/<i>\s*/i', '/\s*<\/i>/i', '/<em>\s*/i', '/\s*<\/em>/i'], '_', $text);
+
+            // Riscado: <s>, <strike>, <del>
+            $text = preg_replace(['/<s>\s*/i', '/\s*<\/s>/i', '/<strike>\s*/i', '/\s*<\/strike>/i', '/<del>\s*/i', '/\s*<\/del>/i'], '~', $text);
+
+            // O WhatsApp não suporta sublinhado com caracteres especiais, então a tag <u> será removida por strip_tags.
+
+            // 2. Converte parágrafos e quebras de linha
+            $textWithLineBreaks = str_replace('</p>', "\n\n", $text);
+            $textWithLineBreaks = preg_replace('/<br\s?\/?>/i', "\n", $textWithLineBreaks);
+
+            // 3. Remove todas as outras tags HTML restantes e espaços extras
+            $plainTextMessage = trim(strip_tags($textWithLineBreaks));
+
 
             $payload = [
                 'number' => $numero,
                 'options' => [
                     'delay' => (int)$delay,
                     'presence' => $presence,
-                    'linkPreview' => false
-                ],
-                'textMessage' => ['text' => $plainTextMessage]
+                    'linkPreview' => false,
+                ]
             ];
 
-            if (!empty($mensagem->imagem_url)) {
-                $payload['mediaMessage'] = ['mediaType' => 'image', 'media' => $mensagem->imagem_url, 'caption' => $plainTextMessage];
-                unset($payload['textMessage']); // Remove textMessage se for enviar imagem com legenda
-            }
+            // Monta o payload para mensagem de texto, com a propriedade 'text' no root
+            $payload['text'] = $plainTextMessage;
 
             $curl = curl_init();
             curl_setopt_array($curl, [

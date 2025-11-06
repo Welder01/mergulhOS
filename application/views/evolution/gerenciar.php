@@ -1,7 +1,10 @@
 <link rel="stylesheet" href="<?= base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
 <link rel="stylesheet" href="<?= base_url(); ?>assets/css/select2.css" />
+<link rel="stylesheet" href="<?= base_url(); ?>assets/trumbowyg/ui/trumbowyg.min.css">
 <script type="text/javascript" src="<?= base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <script type="text/javascript" src="<?= base_url() ?>assets/js/select2.min.js"></script>
+<script type="text/javascript" src="<?= base_url(); ?>assets/trumbowyg/trumbowyg.min.js"></script>
+<script type="text/javascript" src="<?= base_url(); ?>assets/trumbowyg/langs/pt_br.min.js"></script>
 
 <div class="widget-box">
     <div class="widget-title" style="margin: 0;font-size: 1.1em">
@@ -106,10 +109,44 @@
                             <label for="mensagem" class="control-label">Mensagem<span class="required">*</span></label>
                             <div class="controls">
                                 <textarea name="mensagem" id="mensagem" rows="5" class="span11" required></textarea>
-                                <span class="help-block">
-                                    Variáveis disponíveis: {NOME_CLIENTE}, {NOME_USUARIO}, {EMAIL_CLIENTE}, {DOCUMENTO_CLIENTE},
-                                    {TELEFONE_CLIENTE}, {CELULAR_CLIENTE}, {DATA_CADASTRO}
-                                </span>
+                                <div class="help-block" style="margin-top: 10px; border: 1px solid #ddd; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">
+                                    <p style="margin-bottom: 5px;"><strong>Variáveis disponíveis para uso na mensagem:</strong></p>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+                                        <div>
+                                            <strong>Cliente:</strong>
+                                            <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
+                                                <li><small><code>{NOME_CLIENTE}</code></small></li>
+                                                <li><small><code>{EMAIL_CLIENTE}</code></small></li>
+                                                <li><small><code>{DOCUMENTO_CLIENTE}</code></small></li>
+                                                <li><small><code>{TELEFONE_CLIENTE}</code></small></li>
+                                                <li><small><code>{CELULAR_CLIENTE}</code></small></li>
+                                                <li><small><code>{DATA_CADASTRO}</code></small></li>
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <strong>Usuário:</strong>
+                                            <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
+                                                <li><small><code>{NOME_USUARIO}</code></small></li>
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <strong>Cursos:</strong>
+                                            <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
+                                                <li><small><code>{NOME_CURSO}</code></small></li>
+                                                <li><small><code>{DATA_INICIO_CURSO}</code></small></li>
+                                                <li><small><code>{DATA_FIM_CURSO}</code></small></li>
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <strong>Viagens:</strong>
+                                            <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
+                                                <li><small><code>{NOME_VIAGEM}</code></small></li>
+                                                <li><small><code>{DATA_PARTIDA_VIAGEM}</code></small></li>
+                                                <li><small><code>{DATA_RETORNO_VIAGEM}</code></small></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="form-actions" style="background-color:transparent;border:none;padding-left:180px;">
@@ -137,6 +174,7 @@
                                     <td><small><?= nl2br(html_escape($msg->mensagem)) ?></small></td>
                                     <td>
                                         <button class="btn btn-primary btn-mini btn-enviar" data-id="<?= $msg->id ?>" data-titulo="<?= html_escape($msg->titulo) ?>">Enviar</button>
+                                        <button class="btn btn-info btn-mini btn-editar" data-id="<?= $msg->id ?>" data-titulo="<?= html_escape($msg->titulo) ?>" data-mensagem="<?= html_escape($msg->mensagem) ?>" data-imagem="<?= html_escape($msg->imagem_url) ?>">Editar</button>
                                         <a href="<?= base_url('index.php/evolution/excluir_mensagem/' . $msg->id) ?>#tabMensagens" class="btn btn-danger btn-mini" onclick="return confirm('Deseja realmente excluir esta mensagem?')">Excluir</a>
                                     </td>
                                 </tr>
@@ -174,6 +212,44 @@
                 <label for="edit_mensagem" class="control-label">Mensagem<span class="required">*</span></label>
                 <div class="controls">
                     <textarea name="mensagem" id="edit_mensagem" rows="5" class="span11" required></textarea>
+                    <div class="help-block" style="margin-top: 10px; border: 1px solid #ddd; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">
+                        <p style="margin-bottom: 5px;"><strong>Variáveis disponíveis para uso na mensagem:</strong></p>
+                        <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+                            <div>
+                                <strong>Cliente:</strong>
+                                <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
+                                    <li><small><code>{NOME_CLIENTE}</code></small></li>
+                                    <li><small><code>{EMAIL_CLIENTE}</code></small></li>
+                                    <li><small><code>{DOCUMENTO_CLIENTE}</code></small></li>
+                                    <li><small><code>{TELEFONE_CLIENTE}</code></small></li>
+                                    <li><small><code>{CELULAR_CLIENTE}</code></small></li>
+                                    <li><small><code>{DATA_CADASTRO}</code></small></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <strong>Usuário:</strong>
+                                <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
+                                    <li><small><code>{NOME_USUARIO}</code></small></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <strong>Cursos:</strong>
+                                <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
+                                    <li><small><code>{NOME_CURSO}</code></small></li>
+                                    <li><small><code>{DATA_INICIO_CURSO}</code></small></li>
+                                    <li><small><code>{DATA_FIM_CURSO}</code></small></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <strong>Viagens:</strong>
+                                <ul style="list-style-type: none; padding-left: 10px; margin-top: 5px;">
+                                    <li><small><code>{NOME_VIAGEM}</code></small></li>
+                                    <li><small><code>{DATA_PARTIDA_VIAGEM}</code></small></li>
+                                    <li><small><code>{DATA_RETORNO_VIAGEM}</code></small></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </form>
@@ -207,6 +283,20 @@
                 <label class="control-label" id="label-selecao">Selecione os Clientes:</label>
                 <div class="controls">
                     <input type="text" id="cliente_autocomplete" class="span12" placeholder="Digite o nome do cliente...">
+                </div>
+            </div>
+            <div id="div-selecao-curso" class="control-group" style="display:none;">
+                <label class="control-label" for="curso_autocomplete">Vincular a um Curso (Opcional):</label>
+                <div class="controls">
+                    <input type="text" id="curso_autocomplete" name="curso_id" class="span12" placeholder="Digite o nome do curso...">
+                    <input type="hidden" id="curso_id" name="curso_id">
+                </div>
+            </div>
+            <div id="div-selecao-viagem" class="control-group" style="display:none;">
+                <label class="control-label" for="viagem_autocomplete">Vincular a uma Viagem (Opcional):</label>
+                <div class="controls">
+                    <input type="text" id="viagem_autocomplete" name="viagem_id" class="span12" placeholder="Digite o nome da viagem...">
+                    <input type="hidden" id="viagem_id" name="viagem_id">
                 </div>
             </div>
             <div id="div-numero-especifico" class="control-group" style="display:none;">
@@ -300,21 +390,6 @@
             $('#active_tab').val(currentTab);
         });
 
-        //--- LÓGICA DE EDIÇÃO ---//
-        $('.btn-editar').on('click', function() {
-            var id = $(this).data('id');
-            var titulo = $(this).data('titulo');
-            var mensagem = $(this).data('mensagem');
-            var imagem = $(this).data('imagem');
-
-            $('#edit_id').val(id);
-            $('#edit_titulo').val(titulo);
-            $('#edit_imagem_url').val(imagem);
-            $('#edit_mensagem').trumbowyg('html', mensagem);
-
-            $('#modalEditar').modal('show');
-        });
-
         $('#btnConfirmarEdicao').on('click', function() {
             $('#formEditarMensagem').submit();
         });
@@ -351,13 +426,19 @@
             if (alvo === 'clientes') {
                 $('#label-selecao').text('Selecione os Clientes:');
                 $('#div-selecao-multipla').show();
+                $('#div-selecao-curso').show();
+                $('#div-selecao-viagem').show();
                 $('#div-numero-especifico').hide();
             } else if (alvo === 'usuarios') {
                 $('#label-selecao').text('Selecione os Usuários:');
                 $('#div-selecao-multipla').show();
+                $('#div-selecao-curso').hide();
+                $('#div-selecao-viagem').hide();
                 $('#div-numero-especifico').hide();
             } else {
                 $('#div-selecao-multipla').hide();
+                $('#div-selecao-curso').hide();
+                $('#div-selecao-viagem').hide();
                 $('#div-numero-especifico').show();
             }
         });
@@ -430,6 +511,44 @@
             }
         });
 
+        $("#curso_autocomplete").autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: "<?= base_url(); ?>index.php/cursos/autoCompleteCurso",
+                    dataType: "json",
+                    data: {
+                        term: request.term
+                    },
+                    success: function(data) {
+                        response(data);
+                    }
+                });
+            },
+            minLength: 2,
+            select: function(event, ui) {
+                $("#curso_id").val(ui.item.id);
+            }
+        });
+
+        $("#viagem_autocomplete").autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: "<?= base_url(); ?>index.php/viagens/autoCompleteViagem",
+                    dataType: "json",
+                    data: {
+                        term: request.term
+                    },
+                    success: function(data) {
+                        response(data);
+                    }
+                });
+            },
+            minLength: 2,
+            select: function(event, ui) {
+                $("#viagem_id").val(ui.item.id);
+            }
+        });
+
         // Adiciona o editor de texto Trumbowyg
         if(typeof($.fn.trumbowyg) != 'undefined') {
             $('#mensagem').trumbowyg({
@@ -440,17 +559,6 @@
                 lang: 'pt_br',
                 autogrow: true
             });
-        }
-
-        function htmlspecialchars_decode(str) {
-            if (typeof(str) == "string") {
-                str = str.replace(/&amp;/g, "&");
-                str = str.replace(/&quot;/g, "\"");
-                str = str.replace(/&#039;/g, "'");
-                str = str.replace(/&lt;/g, "<");
-                str = str.replace(/&gt;/g, ">");
-            }
-            return str;
         }
 
         $(document).on('click', 'a[href="#modal-log-details"]', function() {
@@ -465,10 +573,33 @@
             $('#log-details-title').text(title);
             $('#log-details-content').text(content);
         });
+
+        function htmlspecialchars_decode(str) {
+            if (typeof(str) == "string") {
+                str = str.replace(/&amp;/g, "&");
+                str = str.replace(/&quot;/g, "\"");
+                str = str.replace(/&#039;/g, "'");
+                str = str.replace(/&lt;/g, "<");
+                str = str.replace(/&gt;/g, ">");
+            }
+            return str;
+        }
+
+        //--- LÓGICA DE EDIÇÃO ---//
+        $(document).on('click', '.btn-editar', function() {
+            var id = $(this).data('id');
+            var titulo = $(this).data('titulo');
+            var mensagem = $(this).data('mensagem');
+            var imagem = $(this).data('imagem');
+
+            $('#edit_id').val(id);
+            $('#edit_titulo').val(titulo);
+            $('#edit_imagem_url').val(imagem);
+            $('#edit_mensagem').trumbowyg('html', mensagem);
+
+            $('#modalEditar').modal('show');
+        });
+
     });
 
 </script>
-<!-- Adicionando o editor de texto Trumbowyg -->
-<link rel="stylesheet" href="<?= base_url(); ?>assets/js/trumbowyg/ui/trumbowyg.min.css">
-<script type="text/javascript" src="<?= base_url(); ?>assets/js/trumbowyg/trumbowyg.min.js"></script>
-<script type="text/javascript" src="<?= base_url(); ?>assets/js/trumbowyg/langs/pt_br.min.js"></script>
