@@ -89,8 +89,8 @@ class Evolution_model extends CI_Model
         }
         $this->db->select('c.*');
         $this->db->from('clientes c');
-        $this->db->join('curso_alunos ca', 'c.idClientes = ca.id_cliente');
-        $this->db->where_in('ca.id_curso', $cursoIds);
+        $this->db->join('curso_alunos ca', 'c.idClientes = ca.cliente_id');
+        $this->db->where_in('ca.curso_id', $cursoIds);
         $this->db->group_by('c.idClientes');
         return $this->db->get()->result();
     }
@@ -102,8 +102,8 @@ class Evolution_model extends CI_Model
         }
         $this->db->select('c.*');
         $this->db->from('clientes c');
-        $this->db->join('viagem_clientes vc', 'c.idClientes = vc.id_cliente');
-        $this->db->where_in('vc.id_viagem', $viagemIds);
+        $this->db->join('viagem_clientes vc', 'c.idClientes = vc.cliente_id');
+        $this->db->where_in('vc.viagem_id', $viagemIds);
         $this->db->group_by('c.idClientes');
         return $this->db->get()->result();
     }

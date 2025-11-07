@@ -522,12 +522,20 @@
         $('#btnConfirmarEnvio').on('click', function() {
             var form = $('#formEnviarMensagem');
             var btn = $(this);
-            btn.prop('disabled', true).text('Enviando...');
 
             var formData = form.serializeArray();
             var csrfData = {};
             csrfData['<?= $this->security->get_csrf_token_name(); ?>'] = '<?= $this->security->get_csrf_hash(); ?>';
             formData.push({ name: csrfData.name, value: csrfData.value });
+
+            // Fecha o modal e exibe o alerta de carregamento
+            $('#modalEnviar').modal('hide');
+            Swal.fire({
+                title: 'Enviando Mensagens',
+                text: 'Isso pode levar alguns minutos. Por favor, aguarde...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
 
             $.ajax({
                 url: '<?= base_url() ?>index.php/evolution/enviar_mensagem_novo',
@@ -535,7 +543,6 @@
                 data: $.param(formData),
                 dataType: 'json',
                 success: function(response) {
-                    $('#modalEnviar').modal('hide');
                     if(response.success) {
                         Swal.fire('Sucesso!', response.message, 'success');
                     } else {
@@ -548,9 +555,6 @@
                         errorMessage = jqXHR.responseJSON.message;
                     }
                     Swal.fire('Erro!', errorMessage, 'error');
-                },
-                complete: function() {
-                    btn.prop('disabled', false).text('Confirmar Envio');
                 }
             });
         });

@@ -363,13 +363,15 @@ class Evolution extends MY_Controller
                 $viagensIds = $this->input->post('viagens_ids') ? explode(',', $this->input->post('viagens_ids')) : [];
                 
                 $clientesCursos = !empty($cursosIds) ? $this->evolution_model->getClientesByCurso($cursosIds) : null;
-                $clientesViagens = !empty($viagensIds) ? $this->evolution_model->getClientesByViagem($viagensIds) : null;
+                $clientesViagens = !empty($viagensIds) ? $this->evolution_model->getClientesByViagem($viagensIds) : [];
 
                 if ($clientesCursos !== null && $clientesViagens !== null) {
                     $idsCursos = array_map(function($c) { return $c->idClientes; }, $clientesCursos);
                     $idsViagens = array_map(function($v) { return $v->idClientes; }, $clientesViagens);
                     $clientesIds = array_intersect($idsCursos, $idsViagens);
-                    $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getContatos($clientesIds, 'clientes', 'idClientes'));
+                    if(!empty($clientesIds)) {
+                        $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getContatos($clientesIds, 'clientes', 'idClientes'));
+                    }
                 } elseif ($clientesCursos !== null) {
                     $contatosParaEnvio = array_merge($contatosParaEnvio, $clientesCursos);
                 } elseif ($clientesViagens !== null) {
@@ -435,10 +437,17 @@ class Evolution extends MY_Controller
         $falhas = 0;
         $presence = $this->mapos_model->get_ci_config('evolution_presence') ?: 'composing';
         $delayFixo = (int)($this->mapos_model->get_ci_config('evolution_delay_fixo') ?: 1200);
+        $delayMin = (int)($this->mapos_model->get_ci_config('evolution_delay_min') ?: 1000);
+        $delayMax = (int)($this->mapos_model->get_ci_config('evolution_delay_max') ?: 5000);
+
+        $totalDestinatarios = count($destinatarios);
 
         foreach ($destinatarios as $destinatario) {
             $mensagemFinal = $mensagemOriginal->mensagem;
             $dados = $destinatario['dados'];
+
+            // Define o delay: randômico se houver mais de um destinatário, senão, fixo.
+            $delay = ($totalDestinatarios > 1) ? rand($delayMin, $delayMax) : $delayFixo;
 
             // Substituição de variáveis
             if ($dados) {
@@ -470,10 +479,26 @@ class Evolution extends MY_Controller
                 }
             }
 
+            // Prepara a mensagem para o formato de texto puro do WhatsApp
+            $text = $mensagemFinal;
+
+            // 1. Converte tags de formatação HTML para o formato do WhatsApp
+            $text = preg_replace(['/<b>\s*/i', '/\s*<\/b>/i', '/<strong>\s*/i', '/\s*<\/strong>/i'], '*', $text);
+            $text = preg_replace(['/<i>\s*/i', '/\s*<\/i>/i', '/<em>\s*/i', '/\s*<\/em>/i'], '_', $text);
+            $text = preg_replace(['/<s>\s*/i', '/\s*<\/s>/i', '/<strike>\s*/i', '/\s*<\/strike>/i', '/<del>\s*/i', '/\s*<\/del>/i'], '~', $text);
+
+            // 2. Converte parágrafos e quebras de linha
+            $textWithLineBreaks = str_replace('</p>', "\n\n", $text);
+            $textWithLineBreaks = preg_replace('/<br\s?\/?>/i', "\n", $textWithLineBreaks);
+
+            // 3. Remove todas as outras tags HTML restantes e espaços extras
+            $plainTextMessage = trim(strip_tags($textWithLineBreaks));
+
+
             $payload = [
                 'number' => $destinatario['numero'],
-                'options' => ['delay' => $delayFixo, 'presence' => $presence],
-                'text' => $mensagemFinal,
+                'options' => ['delay' => $delay, 'presence' => $presence],
+                'text' => $plainTextMessage,
             ];
 
             // Envio via cURL (simplificado para brevidade)
