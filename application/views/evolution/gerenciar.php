@@ -18,6 +18,10 @@
     .variable-tag:hover {
         background-color: #e0e0e0;
     }
+    /* Fix para o z-index do Select2 dentro do modal */
+    .select2-drop, .select2-drop-mask {
+        z-index: 99999 !important; /* Garante que fique acima de qualquer modal ou overlay */
+    }
 </style>
 
 <div class="widget-box">
@@ -423,6 +427,7 @@
                     allowClear: true,
                     multiple: true,
                     width: '100%',
+                    dropdownParent: $('#modalEnviar'),
                     ajax: {
                         url: ajaxUrl,
                         dataType: 'json',
@@ -433,9 +438,7 @@
                                 page: page
                             };
                         },
-                        results: function(data, page) {
-                            return { results: data.results };
-                        },
+                        results: function(data, page) { return data; },
                         error: function(jqXHR, textStatus, errorThrown) {
                             console.error('Select2 AJAX Error:', textStatus, errorThrown);
                             console.error('Response Text:', jqXHR.responseText);
