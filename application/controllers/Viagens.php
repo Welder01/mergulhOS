@@ -185,6 +185,8 @@ class Viagens extends MY_Controller
 
         $this->data['clientes'] = $this->viagem_clientes_model->getByViagem($id);
         $this->data['instrutores'] = $this->viagem_instrutores_model->getByViagem($id);
+        $this->data['custos'] = $this->viagem_custos_model->getByViagem($id);
+        $this->data['cursos_associados'] = $this->viagem_cursos_model->getByViagem($id);
         $this->data['emitente'] = $this->mapos_model->getEmitente();
 
         $this->load->helper('mpdf');

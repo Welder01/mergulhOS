@@ -142,9 +142,13 @@
                 <thead>
                     <tr>
                         <th>Nome</th>
+                        <th>CPF</th>
                         <th class="text-center">Embarque</th>
                         <th class="text-center">Hospedagem</th>
-                        <th>Detalhes da Hospedagem</th>
+                        <th>Quarto</th>
+                        <th>Tipo</th>
+                        <th>Camas</th>
+                        <th>Obs</th>
                         <th class="text-center">Pagamento</th>
                     </tr>
                 </thead>
@@ -153,50 +157,84 @@
                         <?php foreach ($clientes as $c) : ?>
                             <tr>
                                 <td><?= html_escape($c->nomeCliente) ?></td>
+                                <td><?= html_escape($c->cpf) ?></td>
                                 <td class="text-center"><?= $c->precisa_embarque ? '<span class="badge badge-success">Sim</span>' : '<span class="badge">Não</span>' ?></td>
                                 <td class="text-center"><?= $c->precisa_hospedagem ? '<span class="badge badge-success">Sim</span>' : '<span class="badge">Não</span>' ?></td>
-                                <td style="font-size: 9px;">
-                                    <?php if ($c->precisa_hospedagem) : ?>
-                                        <strong>Quarto:</strong> <?= html_escape($c->hospedagem_quarto_numero) ?><br>
-                                        <strong>Tipo:</strong> <?= html_escape($c->hospedagem_tipo_quarto) ?><br>
-                                        <strong>Camas:</strong> <?= html_escape($c->hospedagem_numero_camas) ?><br>
-                                        <strong>Obs:</strong> <?= html_escape($c->detalhes_hospedagem) ?>
-                                    <?php else : ?>
-                                        -
-                                    <?php endif; ?>
-                                </td>
+                                <td><?= $c->precisa_hospedagem ? html_escape($c->hospedagem_quarto_numero) : '-' ?></td>
+                                <td><?= $c->precisa_hospedagem ? html_escape($c->hospedagem_tipo_quarto) : '-' ?></td>
+                                <td><?= $c->precisa_hospedagem ? html_escape($c->hospedagem_numero_camas) : '-' ?></td>
+                                <td><?= $c->precisa_hospedagem ? html_escape($c->detalhes_hospedagem) : '-' ?></td>
                                 <td class="text-center"><?= html_escape($c->status_pagamento) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else : ?>
-                        <tr><td colspan="5" class="text-center">Nenhum participante inscrito.</td></tr>
+                        <tr><td colspan="9" class="text-center">Nenhum participante inscrito.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
 
             <div class="section-title">Instrutores</div>
             <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>Telefone</th>
+                        <th>Quarto</th>
+                        <th>Tipo</th>
+                        <th>Camas</th>
+                        <th>Obs</th>
+                    </tr>
+                </thead>
                 <tbody>
-                    <?php if (!empty($instrutores)) : ?> <?php foreach ($instrutores as $i) : ?>
-                        <tr>
-                            <td style="width: 25%;"><?= html_escape($i->nome_instrutor) ?></td>
-                            <td style="font-size: 9px;">
-                                <?php if ($i->precisa_hospedagem) : ?>
-                                    <strong>Quarto:</strong> <?= html_escape($i->hospedagem_quarto_numero) ?><br>
-                                    <strong>Tipo:</strong> <?= html_escape($i->hospedagem_tipo_quarto) ?><br>
-                                    <strong>Camas:</strong> <?= html_escape($i->hospedagem_numero_camas) ?><br>
-                                    <strong>Obs:</strong> <?= html_escape($i->detalhes_hospedagem) ?>
-                                <?php else : ?>
-                                    -
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
+                    <?php if (!empty($instrutores)) : ?>
+                        <?php foreach ($instrutores as $i) : ?>
+                            <tr>
+                                <td><?= html_escape($i->nome_instrutor) ?></td>
+                                <td><?= html_escape($i->cpf_instrutor) ?></td>
+                                <td><?= html_escape($i->telefone_instrutor) ?></td>
+                                <td><?= $i->precisa_hospedagem ? html_escape($i->hospedagem_quarto_numero) : '-' ?></td>
+                                <td><?= $i->precisa_hospedagem ? html_escape($i->hospedagem_tipo_quarto) : '-' ?></td>
+                                <td><?= $i->precisa_hospedagem ? html_escape($i->hospedagem_numero_camas) : '-' ?></td>
+                                <td><?= $i->precisa_hospedagem ? html_escape($i->detalhes_hospedagem) : '-' ?></td>
+                            </tr>
+                        <?php endforeach; ?>
                     <?php else : ?>
                         <tr><td>Nenhum instrutor designado.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
+
+            <div class="section-title">Custos Extras</div>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th style="width: 20%;">Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($custos)) : ?>
+                        <?php foreach ($custos as $custo) : ?>
+                            <tr>
+                                <td><?= html_escape($custo->descricao) ?></td>
+                                <td>R$ <?= number_format($custo->valor, 2, ',', '.') ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else : ?>
+                        <tr><td colspan="2" class="text-center">Nenhum custo extra registrado.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+
+            <div class="section-title">Cursos Associados</div>
+            <p>
+                <?php if (!empty($cursos_associados)) : ?>
+                    <?= implode(', ', array_map(function($c) { return html_escape($c->nome_curso); }, $cursos_associados)); ?>
+                <?php else : ?>
+                    Nenhum curso associado a esta viagem.
+                <?php endif; ?>
+            </p>
 
             <div class="signature-box">
                 <div class="signature-line"></div>
