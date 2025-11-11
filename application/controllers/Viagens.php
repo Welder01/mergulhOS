@@ -73,6 +73,7 @@ class Viagens extends MY_Controller
             'data_partida' => $dataPartida,
             'data_retorno' => $dataRetorno,
             'vagas' => (int)$this->input->post('vagas'),
+            'vagas_total' => (int)$this->input->post('vagas'),
             'preco_pessoa' => (float)$precoPessoa,
             'status' => $this->input->post('status'),
         ];
@@ -130,6 +131,7 @@ class Viagens extends MY_Controller
             'data_partida' => $dataPartida,
             'data_retorno' => $dataRetorno,
             'vagas' => (int)$this->input->post('vagas'),
+            'vagas_total' => (int)$this->input->post('vagas'),
             'preco_pessoa' => (float)$precoPessoa,
             'status' => $this->input->post('status'),
         ];
@@ -327,10 +329,8 @@ class Viagens extends MY_Controller
                     'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
                     'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
                     'locar_regulador' => $this->input->post('locar_regulador') ? 1 : 0,
-                    'locar_lanterna' => $this->input->post('locar_lanterna') ? 1 : 0,
-                    'qtd_lanterna' => $this->input->post('qtd_lanterna') ?: 0,
-                    'locar_computador' => $this->input->post('locar_computador') ? 1 : 0,
-                    'qtd_computador' => $this->input->post('qtd_computador') ?: 0,
+                    'locar_lanterna' => (int)$this->input->post('locar_lanterna') ?: 0,
+                    'locar_computador' => (int)$this->input->post('locar_computador') ?: 0,
                     'numero_bolsa' => $this->input->post('numero_bolsa'),
                     'proposito' => $this->input->post('proposito'),
                 ];
@@ -438,14 +438,16 @@ class Viagens extends MY_Controller
             'precisa_embarque' => $this->input->post('precisa_embarque') ? 1 : 0,
             'precisa_hospedagem' => $this->input->post('precisa_hospedagem') ? 1 : 0,
             'numero_bolsa' => $this->input->post('numero_bolsa'),
+            'proposito' => $this->input->post('proposito'),
+            'status_pagamento' => $this->input->post('status_pagamento'),
             'locar_nadadeira' => $this->input->post('locar_nadadeira') ? 1 : 0,
             'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
             'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
             'locar_lastro' => $this->input->post('locar_lastro') ? 1 : 0,
             'locar_cilindro' => (int)$this->input->post('locar_cilindro'),
             'locar_regulador' => (int)$this->input->post('locar_regulador'),
-            'locar_lanterna' => $this->input->post('locar_lanterna') ? 1 : 0,
-            'locar_computador' => $this->input->post('locar_computador') ? 1 : 0,
+            'locar_lanterna' => (int)$this->input->post('locar_lanterna'),
+            'locar_computador' => (int)$this->input->post('locar_computador'),
         ];
     }
 
@@ -497,14 +499,16 @@ class Viagens extends MY_Controller
                 'usuario_id' => $usuario_id,
                 'precisa_embarque' => $this->input->post('precisa_embarque_instrutor') ? 1 : 0,
                 'numero_bolsa' => $this->input->post('numero_bolsa_instrutor'),
+                'proposito' => $this->input->post('proposito_instrutor'),
+                'status_pagamento' => $this->input->post('status_pagamento_instrutor'),
                 'locar_nadadeira' => $this->input->post('locar_nadadeira_instrutor') ? 1 : 0,
                 'locar_cilindro' => (int)$this->input->post('locar_cilindro_instrutor') ?: 0,
                 'locar_colete' => $this->input->post('locar_colete_instrutor') ? 1 : 0,
                 'locar_neoprene' => $this->input->post('locar_neoprene_instrutor') ? 1 : 0,
                 'locar_regulador' => (int)$this->input->post('locar_regulador_instrutor') ?: 0,
                 'locar_lastro' => $this->input->post('locar_lastro_instrutor') ? 1 : 0,
-                'locar_lanterna' => $this->input->post('locar_lanterna_instrutor') ? 1 : 0,
-                'locar_computador' => $this->input->post('locar_computador_instrutor') ? 1 : 0,
+                'locar_lanterna' => (int)$this->input->post('locar_lanterna_instrutor') ?: 0,
+                'locar_computador' => (int)$this->input->post('locar_computador_instrutor') ?: 0,
                 'precisa_hospedagem' => $this->input->post('precisa_hospedagem_instrutor') ? 1 : 0,
             ];
             if ($this->viagem_instrutores_model->add($data)) {
@@ -631,6 +635,27 @@ class Viagens extends MY_Controller
             ->set_output(json_encode($cliente));
     }
 
+    public function getUsuarioData($id)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vUsuario')) {
+            return $this->output->set_status_header(403)->set_output(json_encode(['error' => 'Acesso não autorizado.']));
+        }
+
+        $this->load->model('usuarios_model');
+        $usuario = $this->usuarios_model->getById($id);
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($usuario));
+    }
+
+    public function getUsuarioDataForSync($id)
+    {
+        $this->load->model('usuarios_model');
+        $usuario = $this->usuarios_model->getById($id);
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($usuario));
+    }
     public function autoCompleteUsuario()
     {
         if (isset($_GET['term'])) {

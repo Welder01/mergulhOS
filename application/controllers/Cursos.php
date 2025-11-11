@@ -69,23 +69,35 @@ class Cursos extends MY_Controller
             $data_inicio = $this->input->post('data_inicio');
             $data_fim = $this->input->post('data_fim');
 
+            $data_inicio_formatted = null;
+            $data_fim_formatted = null;
+
             $preco = $this->input->post('preco');
             $preco = str_replace('.', '', $preco); // Remove separador de milhares
             $preco = str_replace(',', '.', $preco); // Troca vírgula por ponto decimal
 
-            try {
-                $data_inicio = DateTime::createFromFormat('d/m/Y', $data_inicio)->format('Y-m-d');
-                $data_fim = $data_fim ? DateTime::createFromFormat('d/m/Y', $data_fim)->format('Y-m-d') : null;
-            } catch (Exception $e) {
-                $data_inicio = date('Y-m-d');
-                $data_fim = null;
+            if ($data_inicio) {
+                $date_obj = DateTime::createFromFormat('d/m/Y', $data_inicio);
+                if ($date_obj !== false) {
+                    $data_inicio_formatted = $date_obj->format('Y-m-d');
+                } else {
+                    log_message('error', 'Failed to parse data_inicio in Cursos/adicionar: ' . $data_inicio);
+                }
+            }
+            if ($data_fim) {
+                $date_obj = DateTime::createFromFormat('d/m/Y', $data_fim);
+                if ($date_obj !== false) {
+                    $data_fim_formatted = $date_obj->format('Y-m-d');
+                } else {
+                    log_message('error', 'Failed to parse data_fim in Cursos/adicionar: ' . $data_fim);
+                }
             }
 
             $data = [
                 'nome_curso' => set_value('nome_curso'),
                 'descricao' => set_value('descricao'),
                 'data_inicio' => $data_inicio,
-                'data_fim' => $data_fim,
+                'data_fim' => $data_fim_formatted,
                 'status' => set_value('status'),
                 'preco' => $preco,
                 'data_cadastro' => date('Y-m-d H:i:s'),
@@ -129,23 +141,35 @@ class Cursos extends MY_Controller
             $data_inicio = $this->input->post('data_inicio');
             $data_fim = $this->input->post('data_fim');
 
+            $data_inicio_formatted = null;
+            $data_fim_formatted = null;
+
             $preco = $this->input->post('preco');
             $preco = str_replace('.', '', $preco); // Remove separador de milhares
             $preco = str_replace(',', '.', $preco); // Troca vírgula por ponto decimal
 
-            try {
-                $data_inicio = DateTime::createFromFormat('d/m/Y', $data_inicio)->format('Y-m-d');
-                $data_fim = $data_fim ? DateTime::createFromFormat('d/m/Y', $data_fim)->format('Y-m-d') : null;
-            } catch (Exception $e) {
-                $data_inicio = date('Y-m-d');
-                $data_fim = null;
+            if ($data_inicio) {
+                $date_obj = DateTime::createFromFormat('d/m/Y', $data_inicio);
+                if ($date_obj !== false) {
+                    $data_inicio_formatted = $date_obj->format('Y-m-d');
+                } else {
+                    log_message('error', 'Failed to parse data_inicio in Cursos/editar: ' . $data_inicio);
+                }
+            }
+            if ($data_fim) {
+                $date_obj = DateTime::createFromFormat('d/m/Y', $data_fim);
+                if ($date_obj !== false) {
+                    $data_fim_formatted = $date_obj->format('Y-m-d');
+                } else {
+                    log_message('error', 'Failed to parse data_fim in Cursos/editar: ' . $data_fim);
+                }
             }
 
             $data = [
                 'nome_curso' => $this->input->post('nome_curso'),
                 'descricao' => $this->input->post('descricao'),
                 'data_inicio' => $data_inicio,
-                'data_fim' => $data_fim,
+                'data_fim' => $data_fim_formatted,
                 'status' => $this->input->post('status'),
                 'preco' => $preco,
             ];
@@ -586,11 +610,11 @@ class Cursos extends MY_Controller
             $result = array_map(function ($curso) {
                 return [
                     'id' => $curso->id,
-                    'text' => 'ID: ' . $curso->id . ' | Curso: ' . $curso->nome_curso . ' | Início: ' . date('d/m/Y', strtotime($curso->data_inicio)),
+                    'label' => 'ID: ' . $curso->id . ' | Curso: ' . $curso->nome_curso . ' | Início: ' . date('d/m/Y', strtotime($curso->data_inicio)),
                     'preco' => $curso->preco,
                 ];
             }, $query->result());
-            return $this->output->set_content_type('application/json')->set_output(json_encode(['results' => $result]));
+            return $this->output->set_content_type('application/json')->set_output(json_encode($result));
         }
         return $this->output->set_content_type('application/json')->set_output(json_encode([]));
     }

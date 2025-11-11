@@ -1,5 +1,8 @@
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/trumbowyg/ui/trumbowyg.min.css">
+<script type="text/javascript" src="<?php echo base_url() ?>assets/trumbowyg/trumbowyg.min.js"></script>
+<script type="text/javascript" src="<?php echo base_url() ?>assets/trumbowyg/langs/pt_br.min.js"></script>
 <script src="<?php echo base_url() ?>assets/js/jquery.mask.min.js"></script>
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery.ui.datepicker-pt-BR.js"></script>
 <script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
@@ -23,6 +26,14 @@
     }
     .curso-tag .remove-tag:hover {
         color: #c9302c;
+    }
+    /* Garante que o contêiner pai do autocomplete seja posicionado */
+    /* Garante que o autocomplete apareça sobre outros elementos */
+    .ui-autocomplete {
+        z-index: 9999;
+        max-height: 200px; /* Limita a altura para que não ocupe a tela toda */
+        overflow-y: auto; /* Adiciona scroll vertical se o conteúdo exceder a altura máxima */
+        box-sizing: border-box; /* Inclui padding e borda na largura e altura total */
     }
 </style>
 
@@ -51,7 +62,7 @@
                         <div class="control-group">
                             <label for="descricao" class="control-label">Descrição</label>
                             <div class="controls">
-                                <textarea id="descricao" name="descricao" rows="5"><?= html_escape($result->descricao); ?></textarea>
+                                <textarea class="trumbowyg" id="descricao" name="descricao" rows="5"><?= html_escape($result->descricao); ?></textarea>
                             </div>
                         </div>
                         <div class="control-group">
@@ -128,13 +139,26 @@
 <script type="text/javascript">
     $(document).ready(function() {
         // A inicialização do datetimepicker e validação permanecem as mesmas
-        $(".datepicker").datepicker({ dateFormat: 'dd/mm/yy' });
+        $('.trumbowyg').trumbowyg({
+            lang: 'pt_br',
+            autogrow: true
+        });
+        $(".datepicker").datepicker({ dateFormat: 'dd/mm/yy', changeMonth: true, changeYear: true, yearRange: '-100:+10' });
         $('.money').maskMoney({ decimal: ',', thousands: '.', allowZero: true });
 
         $("#curso-autocomplete").autocomplete({
             source: "<?= site_url('cursos/autoCompleteCurso'); ?>",
             minLength: 2,
+            appendTo: "#cursos-container", // Anexa o menu ao contêiner para melhor posicionamento
+            open: function() {
+                $(this).autocomplete("widget").width($(this).outerWidth()); // Ajusta a largura do menu para a largura do input
+            },
             select: function(event, ui) {
+                // Verifica se o curso já foi adicionado
+                if ($('input[name="cursos[]"][value="' + ui.item.id + '"]').length > 0) {
+                    $(this).val(''); // Limpa o campo de busca
+                    return false; // Impede a adição do curso duplicado
+                }
                 $('#cursos-selecionados').append('<div class="curso-tag" data-id="' + ui.item.id + '">' + ui.item.label + ' <span class="remove-tag">x</span></div>');
                 $('#cursos-container').append('<input type="hidden" name="cursos[]" value="' + ui.item.id + '">');
                 $(this).val('');

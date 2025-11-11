@@ -24,6 +24,25 @@
         align-items: center;
         margin-bottom: 5px;
     }
+    /* Garante que o SweetAlert2 apareça sobre o modal do Bootstrap */
+    .swal2-container {
+        z-index: 99999 !important; /* Valor extremamente alto para garantir a sobreposição */
+        position: fixed; /* Garante que o posicionamento seja relativo à janela de visualização */
+
+    }
+    /* Ajustes para os campos de quantidade de equipamentos nos modais */
+    .equipment-quantity-group .control-label {
+        width: 100px; /* Largura ajustada para os rótulos */
+        text-align: right;
+    }
+    .equipment-quantity-group .controls {
+        margin-left: 120px; /* Margem ajustada para os campos de entrada */
+    }
+    .equipment-quantity-group .controls input[type="number"] {
+        width: 60px !important; /* Largura fixa para os campos de quantidade */
+        box-sizing: border-box;
+        text-align: center;
+    }
 </style>
 
 <div class="widget-box">
@@ -46,7 +65,7 @@
                     <tr> <td><strong>Descrição:</strong></td> <td><?= html_escape($result->descricao) ?></td> </tr>
                     <tr> <td><strong>Partida:</strong></td> <td><?= $result->data_partida ? date('d/m/Y', strtotime($result->data_partida)) : '' ?></td> </tr>
                     <tr> <td><strong>Retorno:</strong></td> <td><?= $result->data_retorno ? date('d/m/Y', strtotime($result->data_retorno)) : '' ?></td> </tr>
-                    <tr> <td><strong>Vagas:</strong></td> <td><?= $result->vagas ?></td> </tr>
+                    <tr> <td><strong>Vagas Disponíveis:</strong></td> <td><?= $result->vagas ?> de <?= $result->vagas_total ?> vagas totais.</td> </tr>
                     <tr> <td><strong>Preço/Pessoa:</strong></td> <td>R$ <?= number_format($result->preco_pessoa, 2, ',', '.') ?></td> </tr>
                     <tr> <td><strong>Status:</strong></td> <td><?= html_escape($result->status) ?></td> </tr>
                 </tbody>
@@ -156,18 +175,18 @@
                                 </div>
                                 <div style="display: flex; flex-direction: column;">
                                     <label>Lanternas:</label>
-                                    <input type="number" name="qtd_lanterna" value="0" class="span12" min="0">
+                                    <input type="number" name="locar_lanterna" value="0" class="span12" min="0">
                                 </div>
                                 <div style="display: flex; flex-direction: column;">
                                     <label>Computadores:</label>
-                                    <input type="number" name="qtd_computador" value="0" class="span12" min="0">
+                                    <input type="number" name="locar_computador" value="0" class="span12" min="0">
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="form-actions" style="background-color:transparent;border:none;text-align:center;margin-left:0;">
-                    <button type="submit" class="btn btn-success">Adicionar Cliente</button>
+                    <button type="submit" class="btn btn-success" id="btnAddCliente">Adicionar Cliente</button>
                 </div>
             </form>
             <hr>
@@ -351,14 +370,37 @@
                 <div class="control-group">
                     <label for="instrutor" class="control-label">Instrutor</label>
                     <div class="controls">
-                        <input type="text" class="span6" id="instrutor" placeholder="Pesquisar usuário...">
+                        <div class="input-append" style="display: flex;">
+                            <input type="text" class="span11" id="instrutor" placeholder="Pesquisar usuário..." style="flex-grow: 1;">
+                            <button type="button" id="syncInstrutorBtn" class="btn btn-info" disabled title="Sincronizar perfil do instrutor para locação de equipamentos" style="border-radius: 0 5px 5px 0;"><i class="fas fa-sync-alt"></i></button>
+                        </div>
                         <input type="hidden" name="usuario_id" id="usuario_id">
                     </div>
                 </div>
                 <div class="control-group">
                     <label class="control-label">Bolsa Nº</label>
                     <div class="controls">
-                        <input type="text" class="span2" name="numero_bolsa_instrutor">
+                        <input type="text" class="span6" name="numero_bolsa_instrutor">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Pagamento</label>
+                    <div class="controls">
+                        <select name="status_pagamento_instrutor" class="span4">
+                            <option value="Pendente">Pendente</option>
+                            <option value="Pago">Pago</option>                            
+                            <option value="N/A">N/A</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Propósito</label>
+                    <div class="controls">
+                        <select name="proposito_instrutor" class="span6">
+                            <option value="Staff">Staff</option>
+                            <option value="Instrutor">Instrutor</option>
+                            <option value="Divemaster">Divemaster</option>
+                        </select>
                     </div>
                 </div>
                 <div class="control-group">
@@ -405,8 +447,9 @@
                     <div class="controls" style="margin-top: 15px;">
                         <label class="control-label" style="width: 60px; text-align: left;">Cilindros:</label>
                         <input type="number" name="locar_cilindro_instrutor" value="0" class="span1" min="0">
-                        <label class="control-label" style="width: 80px; text-align: left; margin-left: 10px;">Reguladores:</label>
-                        <input type="number" name="locar_regulador_instrutor" value="0" class="span1" min="0">
+                        <label class="control-label" style="width: 80px; text-align: left; margin-left: 10px;">Reguladores:</label> <input type="number" name="locar_regulador_instrutor" value="0" class="span1" min="0">
+                        <label class="control-label" style="width: 80px; text-align: left; margin-left: 10px;">Lanternas:</label> <input type="number" name="locar_lanterna_instrutor" value="0" class="span1" min="0">
+                        <label class="control-label" style="width: 80px; text-align: left; margin-left: 10px;">Computadores:</label> <input type="number" name="locar_computador_instrutor" value="0" class="span1" min="0">
                     </div>
                 </div>
                 <div class="form-actions" style="background-color:transparent;border:none;padding-left:180px;">
@@ -536,7 +579,7 @@
         <a title="Imprimir Ficha de Viagem" class="button btn btn-mini btn-inverse" href="<?= base_url() ?>index.php/viagens/imprimir/<?= $result->id ?>">
             <span class="button__icon"><i class="bx bx-printer"></i></span> <span class="button__text2"> Ficha Viagem</span>
         </a>
-        <a title="Imprimir Ficha de Operação" class="button btn btn-mini btn-primary" href="<?= base_url() ?>index.php/viagens/imprimirOperacao/<?= $result->id ?>">
+        <a title="Imprimir Ficha de Operação" class="button btn btn-mini btn-primary" href="<?= base_url() ?>index.php/viagens/imprimirOperacao/<?= $result->id ?>" target="_blank">
             <span class="button__icon"><i class="fas fa-ship"></i></span> <span class="button__text2"> Ficha Operação</span>
         </a>
     <?php endif; ?>
@@ -548,7 +591,7 @@
 <style>
     /* Specific styles for the "Editar Cliente" modal */
     #modalEditarCliente .form-horizontal .control-group {
-        margin-bottom: 8px; /* Reduce vertical spacing */
+        margin-bottom: 5px; /* Reduce vertical spacing */
     }
     #modalEditarCliente .form-horizontal .control-label {
         width: 90px; /* Fixed width for labels */
@@ -703,7 +746,7 @@
                      <div class="control-group">
                         <label class="control-label">Bolsa Nº</label>
                         <div class="controls">
-                            <input type="text" class="span8" name="numero_bolsa" id="edit_numero_bolsa">
+                            <input type="text" class="span6" name="numero_bolsa" id="edit_numero_bolsa">
                         </div>
                     </div>
                     <div class="control-group">
@@ -711,7 +754,7 @@
                         <div class="controls">
                             <select name="status_pagamento" id="edit_status_pagamento" class="span8">
                                 <option value="Pendente">Pendente</option>
-                                <option value="Pago">Pago</option>
+                                <option value="Pago">Pago</option>                                
                                 <option value="Parcial">Parcial</option>
                             </select>
                         </div>
@@ -719,7 +762,7 @@
                     <div class="control-group">
                         <label class="control-label">Propósito</label>
                         <div class="controls">
-                            <select name="proposito" id="edit_proposito" class="span8">
+                            <select name="proposito" id="edit_proposito" class="span6">
                                 <option value=""></option>
                                 <option value="Checkout">Checkout</option>
                                 <option value="Acompanhante">Acompanhante</option>
@@ -728,29 +771,29 @@
                             </select>
                         </div>
                     </div>
-                    <!-- Separate control groups for Cilindros and Reguladores for better alignment -->
-                    <div class="control-group">
+                    <!-- Campos de quantidade de equipamentos -->
+                    <div class="control-group equipment-quantity-group">
                         <label class="control-label">Cilindros:</label>
                         <div class="controls">
                             <input type="number" name="locar_cilindro" id="edit_locar_cilindro" value="0" min="0">
                         </div>
                     </div>
-                    <div class="control-group">
+                    <div class="control-group equipment-quantity-group">
                         <label class="control-label">Reguladores:</label>
                         <div class="controls">
                             <input type="number" name="locar_regulador" id="edit_locar_regulador" value="0" min="0">
                         </div>
                     </div>
-                    <div class="control-group">
+                    <div class="control-group equipment-quantity-group">
                         <label class="control-label">Lanternas:</label>
                         <div class="controls">
-                            <input type="number" name="qtd_lanterna" id="edit_qtd_lanterna" value="0" min="0">
+                            <input type="number" name="locar_lanterna" id="edit_locar_lanterna" value="0" min="0">
                         </div>
                     </div>
-                    <div class="control-group">
+                    <div class="control-group equipment-quantity-group">
                         <label class="control-label">Computadores:</label>
                         <div class="controls">
-                            <input type="number" name="qtd_computador" id="edit_qtd_computador" value="0" min="0">
+                            <input type="number" name="locar_computador" id="edit_locar_computador" value="0" min="0">
                         </div>
                     </div>
                 </div>
@@ -768,6 +811,9 @@
 <style>
     #modalEditarInstrutor .form-horizontal .control-label {
         width: 120px;
+    }
+    #modalEditarInstrutor .form-horizontal .control-group {
+        margin-bottom: 5px;
     }
     #modalEditarInstrutor .form-horizontal .controls {
         margin-left: 130px;
@@ -810,9 +856,13 @@
 <div id="modalEditarInstrutor" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <form id="formEditarInstrutor" action="" method="post" class="form-horizontal">
         <div class="modal-header">
+            <input type="hidden" id="modal_instrutor_usuario_id_for_sync" value="">
             <input type="hidden" name="active_tab" value="#tabInstrutores">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h5 id="myModalLabel">Editar Instrutor: <span id="nomeInstrutorModal"></span></h5>
+            <h5 id="myModalLabel" style="display: inline-block; margin-right: 10px;">Editar Instrutor: <span id="nomeInstrutorModal"></span></h5>
+            <button type="button" id="btnSyncModalInstrutor" class="btn btn-info btn-mini" title="Sincronizar perfil do instrutor para locação de equipamentos">
+                <i class="fas fa-sync-alt"></i> Sincronizar Equipamentos
+            </button>
         </div>
         <div class="modal-body">
             <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
@@ -866,19 +916,53 @@
                     <div class="control-group">
                         <label class="control-label">Bolsa Nº</label>
                         <div class="controls">
-                            <input type="text" name="numero_bolsa" id="edit_instrutor_numero_bolsa" class="span6">
+                            <input type="text" name="numero_bolsa" id="edit_instrutor_numero_bolsa" class="span8">
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" style="width: 80px;">Cilindros:</label>
+                        <label class="control-label">Pagamento</label>
                         <div class="controls">
-                            <input type="number" name="locar_cilindro" id="edit_instrutor_locar_cilindro" value="0" min="0" class="span6">
+                            <select name="status_pagamento" id="edit_instrutor_status_pagamento" class="span8">
+                                <option value="Pendente">Pendente</option>
+                                <option value="Pago">Pago</option>
+                                <option value="N/A">N/A</option>
+                            </select>
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" style="width: 80px;">Reguladores:</label>
+                        <label class="control-label">Propósito</label>
                         <div class="controls">
-                            <input type="number" name="locar_regulador" id="edit_instrutor_locar_regulador" value="0" min="0" class="span6">
+                            <select name="proposito" id="edit_instrutor_proposito" class="span8">
+                                <option value="Staff">Staff</option>
+                                <option value="Instrutor">Instrutor</option>
+                                <option value="Divemaster">Divemaster</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class="control-group equipment-quantity-group">
+                        <label class="control-label">Cilindros:</label>
+                        <div class="controls">
+                            <input type="number" name="locar_cilindro" id="edit_instrutor_locar_cilindro" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="control-group equipment-quantity-group">
+                        <label class="control-label">Reguladores:</label>
+                        <div class="controls">
+                            <input type="number" name="locar_regulador" id="edit_instrutor_locar_regulador" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="control-group equipment-quantity-group">
+                        <label class="control-label">Lanternas:</label>
+                        <div class="controls">
+                            <input type="number" name="locar_lanterna" id="edit_instrutor_locar_lanterna" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="control-group equipment-quantity-group">
+                        <label class="control-label">Computadores:</label>
+                        <div class="controls">
+                            <input type="number" name="locar_computador" id="edit_instrutor_locar_computador" value="0" min="0">
                         </div>
                     </div>
                 </div>
@@ -908,6 +992,7 @@ $(document).ready(function() {
         select: function(event, ui) {
             $("#instrutor").val(ui.item.nome); // Preenche o campo com o nome
             $("#usuario_id").val(ui.item.id); // Guarda o ID no campo oculto
+            $("#syncInstrutorBtn").prop('disabled', false); // Habilita o botão de sincronização
         }
     });
 
@@ -946,6 +1031,41 @@ $(document).ready(function() {
         });
     });
 
+    $('#syncInstrutorBtn').on('click', function() {
+        var usuarioId = $('#usuario_id').val();
+        if (!usuarioId) {
+            Swal.fire('Atenção!', 'Por favor, selecione um instrutor primeiro.', 'warning');
+            return;
+        }
+
+        var btn = $(this);
+        btn.find('i').addClass('fa-spin');
+
+        $.ajax({
+            url: '<?= site_url('viagens/getUsuarioDataForSync/') ?>' + usuarioId,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if (data) {
+                    $('input[name="locar_nadadeira_instrutor"]').prop('checked', data.possui_nadadeira != 1);
+                    $('input[name="locar_colete_instrutor"]').prop('checked', data.possui_colete != 1);
+                    $('input[name="locar_neoprene_instrutor"]').prop('checked', data.possui_neoprene != 1);
+                    $('input[name="locar_lastro_instrutor"]').prop('checked', data.possui_lastro != 1);
+                    $('input[name="locar_cilindro_instrutor"]').val(1);
+                    $('input[name="locar_regulador_instrutor"]').val(data.possui_regulador ? 0 : 1);
+                    $('input[name="locar_lanterna_instrutor"]').val(data.possui_lanterna ? 0 : 1);
+                    $('input[name="locar_computador_instrutor"]').val(data.possui_computador ? 0 : 1);
+                    Swal.fire('Sucesso!', 'Equipamentos sugeridos com base no perfil do instrutor.', 'success');
+                }
+            },
+            error: function() {
+                Swal.fire('Erro!', 'Não foi possível buscar os dados do instrutor.', 'error');
+            },
+            complete: function() {
+                btn.find('i').removeClass('fa-spin');
+            }
+        });
+    });
     $('.money').mask('#.##0,00', {reverse: true});
 
     $(document).on('click', 'a[href="#modalEditarCliente"]', function() {
@@ -995,12 +1115,10 @@ $(document).ready(function() {
                     $('#edit_locar_colete').prop('checked', data.possui_colete != 1);
                     $('#edit_locar_neoprene').prop('checked', data.possui_neoprene != 1);
                     $('#edit_locar_lastro').prop('checked', data.possui_lastro != 1);
-                    $('#edit_locar_lanterna').prop('checked', data.possui_lanterna != 1);
-                    $('#edit_locar_computador').prop('checked', data.possui_computador != 1);
                     $('#edit_locar_cilindro').val(1);
                     $('#edit_locar_regulador').val(parseInt(data.qtd_reguladores) > 0 ? 0 : 1);
-                    $('#edit_qtd_lanterna').val(parseInt(data.qtd_lanterna) > 0 ? 0 : 1);
-                    $('#edit_qtd_computador').val(parseInt(data.qtd_computador) > 0 ? 0 : 1);
+                    $('#edit_locar_lanterna').val(data.possui_lanterna ? 0 : 1);
+                    $('#edit_locar_computador').val(data.possui_computador ? 0 : 1);
                     Swal.fire('Sucesso!', 'Equipamentos sugeridos com base no perfil do cliente.', 'success');
                 }
             },
@@ -1010,6 +1128,44 @@ $(document).ready(function() {
         });
     });
 
+    // Sincronização dentro do Modal de Edição de Instrutor
+    $('#btnSyncModalInstrutor').on('click', function() {
+        var usuarioId = $('#modal_instrutor_usuario_id_for_sync').val();
+        if (!usuarioId) {
+            Swal.fire('Atenção!', 'ID do instrutor não encontrado para sincronização.', 'warning');
+            return;
+        }
+
+        var btn = $(this);
+        btn.find('i').addClass('fa-spin');
+
+        $.ajax({
+            url: '<?= site_url('viagens/getUsuarioDataForSync/') ?>' + usuarioId,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if (data) {
+                    $('#edit_instrutor_locar_nadadeira').prop('checked', data.possui_nadadeira != 1);
+                    $('#edit_instrutor_locar_colete').prop('checked', data.possui_colete != 1);
+                    $('#edit_instrutor_locar_neoprene').prop('checked', data.possui_neoprene != 1);
+                    $('#edit_instrutor_locar_lastro').prop('checked', data.possui_lastro != 1);
+                    $('#edit_instrutor_locar_lanterna').prop('checked', data.possui_lanterna != 1);
+                    $('#edit_instrutor_locar_computador').prop('checked', data.possui_computador != 1);
+                    $('#edit_instrutor_locar_cilindro').val(1);
+                    $('#edit_instrutor_locar_regulador').val(data.possui_regulador ? 0 : 1);
+                    $('#edit_instrutor_locar_lanterna').val(data.possui_lanterna ? 0 : 1);
+                    $('#edit_instrutor_locar_computador').val(data.possui_computador ? 0 : 1);
+                    Swal.fire('Sucesso!', 'Equipamentos sugeridos com base no perfil do instrutor.', 'success');
+                }
+            },
+            error: function() {
+                Swal.fire('Erro!', 'Não foi possível buscar os dados do instrutor.', 'error');
+            },
+            complete: function() {
+                btn.find('i').removeClass('fa-spin');
+            }
+        });
+    });
     $(document).on('click', 'a[href="#modalEditarInstrutor"]', function() {
         var instrutorId = $(this).data('instrutor-id');
         var instrutorNome = $(this).data('instrutor-nome');
@@ -1017,7 +1173,10 @@ $(document).ready(function() {
 
         $('#formEditarInstrutor').attr('action', '<?= site_url('viagens/editar_instrutor_viagem/') ?>' + instrutorId);
         $('#nomeInstrutorModal').text(instrutorNome);
+        $('#modal_instrutor_usuario_id_for_sync').val(instrutorData.usuario_id);
 
+        $('#edit_instrutor_proposito').val(instrutorData.proposito);
+        $('#edit_instrutor_status_pagamento').val(instrutorData.status_pagamento);
         $('#edit_instrutor_numero_bolsa').val(instrutorData.numero_bolsa);
         $('#edit_instrutor_precisa_embarque').prop('checked', instrutorData.precisa_embarque == 1);
         $('#edit_instrutor_precisa_hospedagem').prop('checked', instrutorData.precisa_hospedagem == 1);
@@ -1027,8 +1186,8 @@ $(document).ready(function() {
         $('#edit_instrutor_locar_lastro').prop('checked', instrutorData.locar_lastro == 1);
         $('#edit_instrutor_locar_cilindro').val(instrutorData.locar_cilindro);
         $('#edit_instrutor_locar_regulador').val(instrutorData.locar_regulador);
-        $('#edit_instrutor_locar_lanterna').prop('checked', instrutorData.locar_lanterna == 1);
-        $('#edit_instrutor_locar_computador').prop('checked', instrutorData.locar_computador == 1);
+        $('#edit_instrutor_locar_lanterna').val(instrutorData.locar_lanterna);
+        $('#edit_instrutor_locar_computador').val(instrutorData.locar_computador);
     });
 
 

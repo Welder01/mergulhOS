@@ -32,7 +32,7 @@ class Viagem_clientes_model extends MY_Model
 
     public function getClientesComEquipamentos($viagem_id)
     {
-        $this->db->select('viagem_clientes.*, clientes.nomeCliente, clientes.documento as cpf, clientes.atestado_medico_validade, clientes.tamanho_colete, clientes.peso_lastro, clientes.tamanho_neoprene, clientes.tamanho_nadadeira, clientes.possui_colete, clientes.possui_lastro, clientes.possui_neoprene, clientes.possui_nadadeira, clientes.possui_regulador, clientes.possui_lanterna, clientes.possui_computador');
+        $this->db->select('viagem_clientes.*, clientes.nomeCliente, clientes.documento as cpf, clientes.atestado_medico_validade, clientes.tamanho_colete, clientes.peso_lastro, clientes.tamanho_neoprene, clientes.tamanho_nadadeira, clientes.possui_colete, clientes.possui_lastro, clientes.possui_neoprene, clientes.possui_nadadeira, clientes.possui_regulador, clientes.possui_lanterna, clientes.possui_computador, clientes.qtd_reguladores, clientes.qtd_lanterna, clientes.qtd_computador');
         $this->db->from('viagem_clientes');
         $this->db->join('clientes', 'clientes.idClientes = viagem_clientes.cliente_id');
         $this->db->where('viagem_clientes.viagem_id', $viagem_id);

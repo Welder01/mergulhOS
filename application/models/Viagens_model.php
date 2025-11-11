@@ -30,6 +30,15 @@ class Viagens_model extends MY_Model
         return $this->db->get()->result();
     }
 
+    public function getById($id)
+    {
+        $this->db->select('viagens.*');
+        $this->db->from('viagens');
+        $this->db->where('id', $id);
+        $this->db->limit(1);
+        return $this->db->get()->row();
+    }
+
     public function get($table, $fields, $where = '', $perpage = 0, $start = 0, $one = false, $array = 'array')
     {
         $this->db->select($fields);

@@ -1,5 +1,8 @@
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/trumbowyg/ui/trumbowyg.min.css">
+<script type="text/javascript" src="<?php echo base_url() ?>assets/trumbowyg/trumbowyg.min.js"></script>
+<script type="text/javascript" src="<?php echo base_url() ?>assets/trumbowyg/langs/pt_br.min.js"></script>
 <script src="<?= base_url() ?>assets/js/maskmoney.js"></script>
 <script src="<?php echo base_url() ?>assets/js/jquery.mask.min.js"></script>
 <script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
@@ -29,7 +32,7 @@
                         <div class="control-group">
                             <label for="descricao" class="control-label">Descrição</label>
                             <div class="controls">
-                                <textarea id="descricao" name="descricao" rows="5"><?= set_value('descricao'); ?></textarea>
+                                <textarea class="trumbowyg" id="descricao" name="descricao" rows="5"><?= set_value('descricao'); ?></textarea>
                             </div>
                         </div>
                         <div class="control-group">
