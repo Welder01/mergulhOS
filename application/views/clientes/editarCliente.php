@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
+<script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <script src="<?php echo base_url() ?>assets/js/jquery.mask.min.js"></script>
 <script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
 <script src="<?php echo base_url() ?>assets/js/funcoes.js"></script>
@@ -280,82 +282,70 @@
                                         <td style="width: 25%;"><strong>Colete</strong></td>
                                         <td class="equip-row">
                                             <span>Possui?</span>
-                                            <label class="switch small-toggle"><input type="checkbox" name="possui_colete" value="1" class="equip-owner-toggle" data-target-group=".colete-details" <?= ($result->possui_colete ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <div class="colete-details" style="display: none;">
-                                                <span>Sabe o tamanho?</span>
-                                                <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#tamanho_colete" <?= ($result->tamanho_colete ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
-                                                <input id="tamanho_colete" type="text" name="tamanho_colete" value="<?= $result->tamanho_colete ?? '' ?>" placeholder="Qual tamanho?" class="span3 monitor-input" style="display: none;"/>
-                                            </div>
+                                            <label class="switch small-toggle"><input type="checkbox" name="possui_colete" value="1" <?= ($result->possui_colete ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <span>Sabe o tamanho?</span>
+                                            <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#tamanho_colete" <?= !empty($result->tamanho_colete) ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <input id="tamanho_colete" type="text" name="tamanho_colete" value="<?= $result->tamanho_colete ?? '' ?>" placeholder="Qual tamanho?" class="span1 monitor-input" />
                                         </td>
                                     </tr>
                                     <tr>
                                         <td><strong>Lastro</strong></td>
                                         <td class="equip-row">
                                             <span>Possui?</span>
-                                            <label class="switch small-toggle"><input type="checkbox" name="possui_lastro" value="1" class="equip-owner-toggle" data-target-group=".lastro-details" <?= ($result->possui_lastro ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <div class="lastro-details" style="display: none;">
-                                                <span>Sabe o peso?</span>
-                                                <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#peso_lastro" <?= ($result->peso_lastro ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
-                                                <input id="peso_lastro" type="text" name="peso_lastro" value="<?= $result->peso_lastro ?? '' ?>" placeholder="Qual peso (kg)?" class="span3 monitor-input" style="display: none;"/>
-                                            </div>
+                                            <label class="switch small-toggle"><input type="checkbox" name="possui_lastro" value="1" <?= ($result->possui_lastro ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <span>Sabe o peso?</span>
+                                            <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#peso_lastro" <?= !empty($result->peso_lastro) ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <input id="peso_lastro" type="text" name="peso_lastro" value="<?= $result->peso_lastro ?? '' ?>" placeholder="Qual peso (kg)?" class="span1 monitor-input" />
                                         </td>
                                     </tr>
                                     <tr>
                                         <td><strong>Neoprene</strong></td>
                                         <td class="equip-row">
                                             <span>Possui?</span>
-                                            <label class="switch small-toggle"><input type="checkbox" name="possui_neoprene" value="1" class="equip-owner-toggle" data-target-group=".neoprene-details" <?= ($result->possui_neoprene ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <div class="neoprene-details" style="display: none;">
-                                                <span>Sabe o tamanho?</span>
-                                                <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#tamanho_neoprene" <?= ($result->tamanho_neoprene ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
-                                                <input id="tamanho_neoprene" type="text" name="tamanho_neoprene" value="<?= $result->tamanho_neoprene ?? '' ?>" placeholder="Qual tamanho?" class="span3 monitor-input" style="display: none;"/>
-                                            </div>
+                                            <label class="switch small-toggle"><input type="checkbox" name="possui_neoprene" value="1" <?= ($result->possui_neoprene ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <span>Sabe o tamanho?</span>
+                                            <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#tamanho_neoprene" <?= !empty($result->tamanho_neoprene) ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <input id="tamanho_neoprene" type="text" name="tamanho_neoprene" value="<?= $result->tamanho_neoprene ?? '' ?>" placeholder="Qual tamanho?" class="span1 monitor-input" />
                                         </td>
                                     </tr>
                                     <tr>
                                         <td><strong>Nadadeira</strong></td>
                                         <td class="equip-row">
                                             <span>Possui?</span>
-                                            <label class="switch small-toggle"><input type="checkbox" name="possui_nadadeira" value="1" class="equip-owner-toggle" data-target-group=".nadadeira-details" <?= ($result->possui_nadadeira ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <div class="nadadeira-details" style="display: none;">
-                                                <span>Sabe o tamanho?</span>
-                                                <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#tamanho_nadadeira" <?= ($result->tamanho_nadadeira ?? '') ? 'checked' : '' ?>><span class="slider"></span></label>
-                                                <input id="tamanho_nadadeira" type="text" name="tamanho_nadadeira" value="<?= $result->tamanho_nadadeira ?? '' ?>" placeholder="Qual tamanho?" class="span3 monitor-input" style="display: none;"/>
-                                            </div>
+                                            <label class="switch small-toggle"><input type="checkbox" name="possui_nadadeira" value="1" <?= ($result->possui_nadadeira ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <span>Sabe o tamanho?</span>
+                                            <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#tamanho_nadadeira" <?= !empty($result->tamanho_nadadeira) ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <input id="tamanho_nadadeira" type="text" name="tamanho_nadadeira" value="<?= $result->tamanho_nadadeira ?? '' ?>" placeholder="Qual tamanho?" class="span1 monitor-input" />
                                         </td>
                                     </tr>
                                     <tr>
                                         <td><strong>Regulador</strong></td>
                                         <td class="equip-row">
                                             <span>Possui?</span>
-                                            <label class="switch small-toggle"><input type="checkbox" name="possui_regulador" value="1" <?= ($result->possui_regulador ?? 0) == 1 ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <label class="switch small-toggle"><input type="checkbox" name="possui_regulador" value="1" <?= ($result->possui_regulador ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
                                             <span>Sabe a quantidade?</span>
                                             <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#qtd_reguladores" <?= ($result->qtd_reguladores ?? 0) > 0 ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <input id="qtd_reguladores" type="number" name="qtd_reguladores" value="<?= $result->qtd_reguladores ?? 0 ?>" placeholder="Quantos?" class="span2 monitor-input" style="display: none;" min="0"/>
+                                            <input id="qtd_reguladores" type="number" name="qtd_reguladores" value="<?= $result->qtd_reguladores ?? 0 ?>" placeholder="Quantos?" class="span1 monitor-input" min="0" />
                                         </td>
                                     </tr>
                                     <tr>
                                         <td><strong>Lanterna</strong></td>
                                         <td class="equip-row">
                                             <span>Possui?</span>
-                                            <label class="switch small-toggle"><input type="checkbox" name="possui_lanterna" value="1" class="equip-owner-toggle" data-target-group=".lanterna-details" <?= ($result->possui_lanterna ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <div class="lanterna-details" style="display: none;">
-                                                <span>Sabe a quantidade?</span>
-                                                <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#qtd_lanterna" <?= ($result->qtd_lanterna ?? 0) > 0 ? 'checked' : '' ?>><span class="slider"></span></label>
-                                                <input id="qtd_lanterna" type="number" name="qtd_lanterna" value="<?= $result->qtd_lanterna ?? 0 ?>" placeholder="Quantas?" class="span2 monitor-input" style="display: none;" min="0"/>
-                                            </div>
+                                            <label class="switch small-toggle"><input type="checkbox" name="possui_lanterna" value="1" <?= ($result->possui_lanterna ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <span>Sabe a quantidade?</span>
+                                            <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#qtd_lanterna" <?= ($result->qtd_lanterna ?? 0) > 0 ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <input id="qtd_lanterna" type="number" name="qtd_lanterna" value="<?= $result->qtd_lanterna ?? 0 ?>" placeholder="Quantas?" class="span1 monitor-input" min="0" />
                                         </td>
                                     </tr>
                                     <tr>
                                         <td><strong>Computador de Mergulho</strong></td>
                                         <td class="equip-row">
                                             <span>Possui?</span>
-                                            <label class="switch small-toggle"><input type="checkbox" name="possui_computador" value="1" class="equip-owner-toggle" data-target-group=".computador-details" <?= ($result->possui_computador ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
-                                            <div class="computador-details" style="display: none;">
-                                                <span>Sabe a quantidade?</span>
-                                                <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#qtd_computador" <?= ($result->qtd_computador ?? 0) > 0 ? 'checked' : '' ?>><span class="slider"></span></label>
-                                                <input id="qtd_computador" type="number" name="qtd_computador" value="<?= $result->qtd_computador ?? 0 ?>" placeholder="Quantos?" class="span2 monitor-input" style="display: none;" min="0"/>
-                                            </div>
+                                            <label class="switch small-toggle"><input type="checkbox" name="possui_computador" value="1" <?= ($result->possui_computador ?? 0) ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <span>Sabe a quantidade?</span>
+                                            <label class="switch small-toggle"><input type="checkbox" class="equip-detail-toggle" data-target="#qtd_computador" <?= ($result->qtd_computador ?? 0) > 0 ? 'checked' : '' ?>><span class="slider"></span></label>
+                                            <input id="qtd_computador" type="number" name="qtd_computador" value="<?= $result->qtd_computador ?? 0 ?>" placeholder="Quantos?" class="span1 monitor-input" min="0" />
                                         </td>
                                     </tr>
                                 </tbody>
@@ -400,7 +390,7 @@
                             <div class="control-group">
                                 <label for="atestado_medico_emissao" class="control-label">Data de Emissão</label>
                                 <div class="controls">
-                                    <input id="atestado_medico_emissao" type="date" name="atestado_medico_emissao" value="<?= $result->atestado_medico_emissao ?? '' ?>" class="monitor-input" />
+                                    <input id="atestado_medico_emissao" type="text" name="atestado_medico_emissao" value="<?= $result->atestado_medico_emissao ? date('d/m/Y', strtotime($result->atestado_medico_emissao)) : '' ?>" class="monitor-input datepicker" />
                                     <span class="help-inline">A validade será calculada para 1 ano a partir desta data.</span>
                                 </div>
                             </div>
@@ -697,38 +687,6 @@
             }
         });
 
-        // Lógica para mostrar/ocultar campos de equipamento
-        function toggleEquipDetails(ownerCheckbox) {
-            var targetGroup = $(ownerCheckbox.data('target-group'));
-            if (ownerCheckbox.is(':checked')) {
-                targetGroup.show();
-            } else {
-                targetGroup.hide();
-                targetGroup.find('input[type=checkbox]').prop('checked', false).trigger('change');
-            }
-        }
-
-        function toggleEquipInput(detailCheckbox) {
-            var targetInput = $(detailCheckbox.data('target'));
-            if (detailCheckbox.is(':checked')) {
-                targetInput.show();
-            } else {
-                targetInput.hide().val('');
-            }
-        }
-
-        // Inicialização
-        $('.equip-owner-toggle').each(function() {
-            toggleEquipDetails($(this));
-        });
-        $('.equip-detail-toggle').each(function() {
-            toggleEquipInput($(this));
-        });
-
-        // Eventos de mudança
-        $('.equip-owner-toggle').on('change', function() {
-            toggleEquipDetails($(this));
-        });
         $('.equip-detail-toggle').on('change', function() {
             toggleEquipInput($(this));
         });

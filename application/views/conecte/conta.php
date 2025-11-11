@@ -321,7 +321,7 @@
                             <div class="control-group">
                                 <label for="atestado_medico_emissao" class="control-label">Data de Emissão</label>
                                 <div class="controls">
-                                    <input id="atestado_medico_emissao" type="date" name="atestado_medico_emissao" value="<?= $result->atestado_medico_emissao ?? '' ?>" class="monitor-input" />
+                                    <input id="atestado_medico_emissao" type="text" name="atestado_medico_emissao" value="<?= $result->atestado_medico_emissao ? date('d/m/Y', strtotime($result->atestado_medico_emissao)) : '' ?>" class="monitor-input datepicker" />
                                     <span class="help-inline">A validade será calculada para 1 ano a partir desta data.</span>
                                 </div>
                             </div>
