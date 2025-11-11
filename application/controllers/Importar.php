@@ -18,8 +18,8 @@ class Importar extends MY_Controller
 
     public function clientes()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aCliente')) {
-            $this->session->set_flashdata('error', 'Você não tem permissão para adicionar clientes.');
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aImportar')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para importar clientes.');
             redirect(base_url());
         }
 
@@ -31,8 +31,8 @@ class Importar extends MY_Controller
 
     public function upload_clientes()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aCliente')) {
-            $this->session->set_flashdata('error', 'Você não tem permissão para adicionar clientes.');
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aImportar')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para importar clientes.');
             redirect(base_url());
         }
 

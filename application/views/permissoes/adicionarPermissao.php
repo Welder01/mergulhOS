@@ -561,6 +561,14 @@
                                                 </label>
                                             </td>
                                         </tr>
+                                        <tr>
+                                            <td>
+                                                <label>
+                                                    <input name="aImportar" class="marcar" type="checkbox" value="1" />
+                                                    <span class="lbl"> Importar Clientes</span>
+                                                </label>
+                                            </td>
+                                        </tr>
                                         </tbody>
                                     </table>
                                 </div>

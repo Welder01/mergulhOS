@@ -184,6 +184,19 @@
                                         </label>
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td>
+                                        <label>
+                                            <input <?php if (isset($permissoes['aImportar'])) {
+                                                if ($permissoes['aImportar'] == '1') {
+                                                    echo 'checked';
+                                                }
+                                            } ?> name="aImportar" class="marcar" type="checkbox" value="1" />
+                                            <span class="lbl"> Importar Clientes</span>
+                                        </label>
+                                    </td>
+                                    <td colspan="3"></td>
+                                </tr>
                         </table>
                     </div>
                 </div>

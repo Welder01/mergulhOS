@@ -86,6 +86,8 @@ class Permissoes extends MY_Controller
                 'dGarantia' => $this->input->post('dGarantia'),
                 'vGarantia' => $this->input->post('vGarantia'),
 
+                'aImportar' => $this->input->post('aImportar'),
+
                 'aArquivo' => $this->input->post('aArquivo'),
                 'eArquivo' => $this->input->post('eArquivo'),
                 'dArquivo' => $this->input->post('dArquivo'),
@@ -196,6 +198,8 @@ class Permissoes extends MY_Controller
                 'eGarantia' => $this->input->post('eGarantia'),
                 'dGarantia' => $this->input->post('dGarantia'),
                 'vGarantia' => $this->input->post('vGarantia'),
+
+                'aImportar' => $this->input->post('aImportar'),
 
                 'aArquivo' => $this->input->post('aArquivo'),
                 'eArquivo' => $this->input->post('eArquivo'),
