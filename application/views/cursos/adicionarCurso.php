@@ -32,7 +32,7 @@
                         <div class="control-group">
                             <label for="descricao" class="control-label">Descrição</label>
                             <div class="controls">
-                                <textarea class="trumbowyg" id="descricao" name="descricao" rows="5"><?= set_value('descricao'); ?></textarea>
+                                <textarea class="trumbowyg span8" id="descricao" name="descricao" rows="5"><?= set_value('descricao'); ?></textarea>
                             </div>
                         </div>
                         <div class="control-group">
@@ -88,6 +88,10 @@
 <script src="<?= base_url() ?>assets/js/jquery.validate.js"></script>
 <script type="text/javascript">
     $(document).ready(function() {
+        $('.trumbowyg').trumbowyg({
+            lang: 'pt_br',
+            autogrow: true
+        });
         $('.datepicker').datepicker({
             dateFormat: 'dd/mm/yy'
         });
