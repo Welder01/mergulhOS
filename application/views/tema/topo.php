@@ -110,6 +110,9 @@
             <li><a href="<?= site_url('auditoria') ?>">Auditoria</a></li>
             <li><a href="<?= site_url('mapos/emails') ?>">Emails</a></li>
             <li><a href="<?= site_url('mapos/backup') ?>">Backup</a></li>
+            <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'aCliente')) : ?>
+              <li><a href="<?= site_url('importar/clientes') ?>">Importar Clientes</a></li>
+            <?php endif; ?>
           </ul>
         </li>
       </ul>

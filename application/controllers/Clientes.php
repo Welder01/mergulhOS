@@ -31,6 +31,8 @@ class Clientes extends MY_Controller
             redirect(base_url());
         }
 
+        log_info('Visualizou a listagem de clientes.');
+
         $pesquisa = $this->input->get('pesquisa');
 
         $this->load->library('pagination');
