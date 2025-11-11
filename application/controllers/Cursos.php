@@ -62,6 +62,7 @@ class Cursos extends MY_Controller
         $this->form_validation->set_rules('nome_curso', 'Nome do Curso', 'trim|required');
         $this->form_validation->set_rules('data_inicio', 'Data de Início', 'trim|required');
         $this->form_validation->set_rules('status', 'Status', 'trim|required');
+        $this->form_validation->set_rules('vagas', 'Vagas', 'trim|required|is_natural');
 
         if ($this->form_validation->run() == false) {
             $this->data['custom_error'] = (validation_errors() ? '<div class="form_error">' . validation_errors() . '</div>' : false);
@@ -95,11 +96,14 @@ class Cursos extends MY_Controller
 
             $data = [
                 'nome_curso' => set_value('nome_curso'),
+                'vagas' => set_value('vagas'),
+                'vagas_total' => set_value('vagas'),
                 'descricao' => set_value('descricao'),
-                'data_inicio' => $data_inicio,
+                'data_inicio' => $data_inicio_formatted,
                 'data_fim' => $data_fim_formatted,
                 'status' => set_value('status'),
                 'preco' => $preco,
+
                 'data_cadastro' => date('Y-m-d H:i:s'),
             ];
 
@@ -134,6 +138,7 @@ class Cursos extends MY_Controller
         $this->form_validation->set_rules('nome_curso', 'Nome do Curso', 'trim|required');
         $this->form_validation->set_rules('data_inicio', 'Data de Início', 'trim|required');
         $this->form_validation->set_rules('status', 'Status', 'trim|required');
+        $this->form_validation->set_rules('vagas', 'Vagas', 'trim|required|is_natural');
 
         if ($this->form_validation->run() == false) {
             $this->data['custom_error'] = (validation_errors() ? '<div class="form_error">' . validation_errors() . '</div>' : false);
@@ -167,11 +172,13 @@ class Cursos extends MY_Controller
 
             $data = [
                 'nome_curso' => $this->input->post('nome_curso'),
+                'vagas' => $this->input->post('vagas'),
+                'vagas_total' => $this->input->post('vagas'),
                 'descricao' => $this->input->post('descricao'),
-                'data_inicio' => $data_inicio,
+                'data_inicio' => $data_inicio_formatted,
                 'data_fim' => $data_fim_formatted,
                 'status' => $this->input->post('status'),
-                'preco' => $preco,
+                'preco' => $preco
             ];
 
             if ($this->cursos_model->edit('cursos', $data, 'id', $this->input->post('id')) == true) {
@@ -303,9 +310,9 @@ class Cursos extends MY_Controller
         redirect('cursos/visualizar/' . $instrutor->curso_id . '?tab=tab2');
     }
 
-    public function adicionar_aluno()
+    public function adicionar_aluno($curso_id_param = null, $cliente_id_param = null, $is_internal_call = false)
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar cursos.');
             redirect(base_url());
         }
@@ -324,26 +331,15 @@ class Cursos extends MY_Controller
         $curso_id = $this->input->post('curso_id');
         $cliente_id = $this->input->post('cliente_id');
 
-        if ($this->curso_alunos_model->isAlunoInCurso($curso_id, $cliente_id)) {
-            $this->session->set_flashdata('error', 'Este aluno já está inscrito neste curso.');
-            log_info("Tentativa de adicionar aluno duplicado. Cliente ID: {$cliente_id}, Curso ID: {$curso_id}");
-        } else {
-            $data = [
-                'curso_id' => $curso_id,
-                'cliente_id' => $cliente_id,
-                'data_inscricao' => date('Y-m-d H:i:s'),
-                'status_aluno' => 'inscrito',
-            ];
+        $resultado = $this->cursos_model->adicionar_aluno($curso_id, $cliente_id);
 
-            if ($this->curso_alunos_model->add($data)) {
-                $this->session->set_flashdata('success', 'Aluno adicionado com sucesso!');
-                log_info('Adicionou aluno ID: ' . $cliente_id . ' ao curso ID: ' . $curso_id);
-            } else {
-                $this->session->set_flashdata('error', 'Erro ao adicionar aluno. Verifique os logs.');
-                log_info("Falha ao adicionar aluno ao banco de dados. Cliente ID: {$cliente_id}, Curso ID: {$curso_id}. Erro do DB: " . $this->db->error()['message']);
-            }
+        if ($resultado['success']) {
+            $this->session->set_flashdata('success', $resultado['message']);
+        } else {
+            $this->session->set_flashdata('error', $resultado['message']);
         }
-        redirect('cursos/visualizar/' . $this->input->post('curso_id') . '?tab=tab3');
+
+        redirect('cursos/visualizar/' . $curso_id . '?tab=tab3');
     }
 
     private function verificarRequisitosAluno($curso_id, $cliente_id)
@@ -368,9 +364,9 @@ class Cursos extends MY_Controller
         return true;
     }
 
-    public function remover_aluno($id = null)
+    public function remover_aluno($id = null, $is_internal_call = false)
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar cursos.');
             redirect(base_url());
         }
@@ -380,13 +376,14 @@ class Cursos extends MY_Controller
             redirect(base_url());
         }
 
-        $aluno = $this->curso_alunos_model->getById($id);
-        if ($aluno && $this->curso_alunos_model->delete($id)) {
-            $this->session->set_flashdata('success', 'Aluno removido com sucesso!');
-            log_info('Removeu aluno ID: ' . $id . ' do curso ID: ' . $aluno->curso_id);
-        } else {
-            $this->session->set_flashdata('error', 'Erro ao remover aluno.');
-        }
+        $aluno = $this->curso_alunos_model->getById($id); // Precisa para o redirect
+        $resultado = $this->cursos_model->remover_aluno($id);
+
+        $this->session->set_flashdata(
+            $resultado['success'] ? 'success' : 'error',
+            $resultado['message']
+        );
+
         redirect('cursos/visualizar/' . $aluno->curso_id . '?tab=tab3');
     }
 
@@ -586,13 +583,17 @@ class Cursos extends MY_Controller
     {
         if (isset($_GET['term'])) {
             $q = strtolower($_GET['term']);
-            $this->db->select('idClientes, nomeCliente');
+            $this->db->select('idClientes, nomeCliente, documento, telefone');
             $this->db->limit(5);
+            $this->db->group_start();
             $this->db->like('nomeCliente', $q);
+            $this->db->or_like('documento', $q);
+            $this->db->group_end();
             $query = $this->db->get('clientes');
             if ($query->num_rows() > 0) {
                 foreach ($query->result_array() as $row) {
-                    $row_set[] = ['label' => $row['nomeCliente'], 'id' => $row['idClientes']];
+                    $label = 'ID: ' . $row['idClientes'] . ' | ' . $row['nomeCliente'] . ' | CPF: ' . $row['documento'] . ' | Tel: ' . $row['telefone'];
+                    $row_set[] = ['label' => $label, 'id' => $row['idClientes']];
                 }
                 echo json_encode($row_set);
             }

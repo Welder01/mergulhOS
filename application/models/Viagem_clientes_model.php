@@ -84,4 +84,12 @@ class Viagem_clientes_model extends MY_Model
         $this->db->update($this->table, $data);
         return $this->db->affected_rows() >= 0;
     }
+
+    public function getInscricao($viagem_id, $cliente_id)
+    {
+        $this->db->where('viagem_id', $viagem_id);
+        $this->db->where('cliente_id', $cliente_id);
+        $this->db->limit(1);
+        return $this->db->get('viagem_clientes')->row();
+    }
 }

@@ -67,6 +67,10 @@
                                         <td>R$ <?= number_format($result->preco, 2, ',', '.') ?></td>
                                     </tr>
                                     <tr>
+                                        <td style="text-align: right"><strong>Vagas:</strong></td>
+                                        <td><?= $result->vagas ?> de <?= $result->vagas_total ?> vagas totais.</td>
+                                    </tr>
+                                    <tr>
                                         <td style="text-align: right"><strong>Status:</strong></td>
                                         <td><?= html_escape(ucfirst($result->status)) ?></td>
                                     </tr>
@@ -172,7 +176,7 @@
                                         <td><?= date('d/m/Y H:i:s', strtotime($a->data_inscricao)) ?></td>
                                         <td><?= html_escape(ucfirst($a->status_aluno)) ?></td>
                                         <td>
-                                            <a href="<?= base_url() ?>index.php/cursos/remover_aluno/<?= $a->id ?>" class="btn btn-danger btn-mini" onclick="return confirm('Deseja realmente remover este aluno?')">
+                                            <a href="<?= base_url() ?>index.php/cursos/remover_aluno/<?= $a->id ?>" class="btn btn-danger btn-mini" onclick="return confirm('Deseja realmente remover este aluno do curso?')">
                                                 <i class="icon-trash icon-white"></i> Remover
                                             </a>
                                         </td>

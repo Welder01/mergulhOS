@@ -56,4 +56,12 @@ class Curso_alunos_model extends CI_Model
         $this->db->where('cliente_id', $cliente_id);
         return $this->db->get('curso_alunos')->num_rows() > 0;
     }
+
+    public function getInscricao($curso_id, $cliente_id)
+    {
+        $this->db->where('curso_id', $curso_id);
+        $this->db->where('cliente_id', $cliente_id);
+        $this->db->limit(1);
+        return $this->db->get('curso_alunos')->row();
+    }
 }

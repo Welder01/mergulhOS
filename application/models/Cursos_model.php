@@ -62,4 +62,64 @@ class Cursos_model extends CI_Model
     {
         return $this->db->count_all($table);
     }
+
+    public function adicionar_aluno($curso_id, $cliente_id)
+    {
+        $this->load->model('curso_alunos_model');
+        $curso = $this->getById($curso_id);
+
+        if ($this->curso_alunos_model->isAlunoInCurso($curso_id, $cliente_id)) {
+            log_info("Tentativa de adicionar aluno duplicado. Cliente ID: {$cliente_id}, Curso ID: {$curso_id}");
+            return ['success' => true, 'message' => 'Este aluno já está inscrito neste curso.'];
+        }
+
+        if ($curso->vagas > 0) {
+            $data = [
+                'curso_id' => $curso_id,
+                'cliente_id' => $cliente_id,
+                'data_inscricao' => date('Y-m-d H:i:s'),
+                'status_aluno' => 'inscrito',
+            ];
+
+            if ($this->curso_alunos_model->add($data)) {
+                // Decrementa o número de vagas
+                $this->db->set('vagas', 'vagas - 1', false);
+                $this->db->where('id', $curso_id);
+                $this->db->update('cursos');
+
+                log_info('Adicionou aluno ID: ' . $cliente_id . ' ao curso ID: ' . $curso_id);
+                return ['success' => true, 'message' => 'Aluno adicionado com sucesso!'];
+            } else {
+                $db_error = $this->db->error();
+                log_info("Falha ao adicionar aluno ao banco de dados. Cliente ID: {$cliente_id}, Curso ID: {$curso_id}. Erro do DB: " . ($db_error['message'] ?? ''));
+                return ['success' => false, 'message' => 'Erro ao adicionar aluno.'];
+            }
+        } else {
+            return ['success' => false, 'message' => 'Não há mais vagas disponíveis para este curso.'];
+        }
+    }
+
+    public function remover_aluno($inscricao_id)
+    {
+        $this->load->model('curso_alunos_model');
+        $aluno = $this->curso_alunos_model->getById($inscricao_id);
+
+        if (!$aluno) {
+            return ['success' => false, 'message' => 'Inscrição do aluno não encontrada.'];
+        }
+
+        if ($this->curso_alunos_model->delete($inscricao_id)) {
+            // Incrementa o número de vagas
+            $this->db->set('vagas', 'vagas + 1', false);
+            $this->db->where('id', $aluno->curso_id);
+            $this->db->update('cursos');
+
+            log_info('Removeu aluno ID: ' . $inscricao_id . ' do curso ID: ' . $aluno->curso_id);
+            return ['success' => true, 'message' => 'Aluno removido com sucesso!'];
+        } else {
+            $db_error = $this->db->error();
+            log_info("Falha ao remover aluno do banco de dados. Inscrição ID: {$inscricao_id}. Erro do DB: " . ($db_error['message'] ?? ''));
+            return ['success' => false, 'message' => 'Erro ao remover aluno.'];
+        }
+    }
 }

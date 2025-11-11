@@ -37,6 +37,7 @@
                         <th>Data Início</th>
                         <th>Data Fim</th>
                         <th>Preço</th>
+                        <th>Vagas</th>
                         <th>Status</th>
                         <th>Ações</th>
                     </tr>
@@ -44,7 +45,7 @@
                 <tbody>
                     <?php if (!$results) : ?>
                         <tr>
-                            <td colspan="7">Nenhum Curso Cadastrado</td>
+                            <td colspan="8">Nenhum Curso Cadastrado</td>
                         </tr>
                     <?php else : ?>
                         <?php foreach ($results as $r) : ?>
@@ -54,6 +55,7 @@
                                 <td><?= date('d/m/Y', strtotime($r->data_inicio)) ?></td>
                                 <td><?= $r->data_fim ? date('d/m/Y', strtotime($r->data_fim)) : 'N/A' ?></td>
                                 <td>R$ <?= number_format($r->preco, 2, ',', '.') ?></td>
+                                <td><?= $r->vagas ?> de <?= $r->vagas_total ?></td>
                                 <td><?= html_escape(ucfirst($r->status)) ?></td>
                                 <td>
                                     <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vCurso')) : ?>

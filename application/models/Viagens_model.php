@@ -64,6 +64,81 @@ class Viagens_model extends MY_Model
         }
         return $this->db->count_all_results();
     }
+    public function autoCompleteViagem($q)
+    {
+        $this->db->select('id, nome_viagem, data_partida, preco_pessoa');
+        $this->db->like('nome_viagem', $q);
+        $this->db->limit(5);
+        $query = $this->db->get('viagens');
+        if ($query->num_rows() > 0) {
+            $result = array_map(function ($viagem) {
+                return [
+                    'id' => $viagem->id,
+                    'label' => 'ID: ' . $viagem->id . ' | Viagem: ' . $viagem->nome_viagem . ' | Partida: ' . date('d/m/Y', strtotime($viagem->data_partida)),
+                    'preco' => $viagem->preco_pessoa,
+                ];
+            }, $query->result());
+            return $result;
+        }
+        return [];
+    }
+
+    public function adicionar_cliente($viagem_id, $cliente_id, $data = [])
+    {
+        $this->load->model('viagem_clientes_model');
+        $viagem = $this->getById($viagem_id);
+
+        if ($this->viagem_clientes_model->isClienteInViagem($viagem_id, $cliente_id)) {
+            log_info("Tentativa de adicionar cliente duplicado à viagem. Cliente ID: {$cliente_id}, Viagem ID: {$viagem_id}");
+            return ['success' => true, 'message' => 'Este cliente já está inscrito nesta viagem.'];
+        }
+
+        if ($viagem->vagas > 0) {
+            $default_data = [
+                'viagem_id' => $viagem_id,
+                'cliente_id' => $cliente_id,
+            ];
+            $insert_data = array_merge($default_data, $data);
+
+            if ($this->viagem_clientes_model->add('viagem_clientes', $insert_data)) {
+                // Decrementa o número de vagas
+                $this->db->set('vagas', 'vagas - 1', false);
+                $this->db->where('id', $viagem_id);
+                $this->db->update('viagens');
+
+                log_info("Adicionou cliente ID: {$cliente_id} à viagem ID: {$viagem_id}");
+                return ['success' => true, 'message' => 'Cliente adicionado à viagem!'];
+            } else {
+                $db_error = $this->db->error();
+                log_info("Falha ao adicionar cliente à viagem. Cliente ID: {$cliente_id}, Viagem ID: {$viagem_id}. Erro do DB: " . ($db_error['message'] ?? ''));
+                return ['success' => false, 'message' => 'Ocorreu um erro ao adicionar o cliente.'];
+            }
+        } else {
+            return ['success' => false, 'message' => 'Não há mais vagas disponíveis para esta viagem.'];
+        }
+    }
+
+    public function remover_cliente($viagem_cliente_id)
+    {
+        $this->load->model('viagem_clientes_model');
+        $cliente_viagem = $this->viagem_clientes_model->getById($viagem_cliente_id);
+
+        if (!$cliente_viagem) {
+            return ['success' => false, 'message' => 'Inscrição do cliente na viagem não encontrada.'];
+        }
+
+        if ($this->viagem_clientes_model->delete('viagem_clientes', 'id', $viagem_cliente_id)) {
+            // Incrementa o número de vagas
+            $this->db->set('vagas', 'vagas + 1', false);
+            $this->db->where('id', $cliente_viagem->viagem_id);
+            $this->db->update('viagens');
+
+            log_info("Removeu cliente da viagem. Inscrição ID: {$viagem_cliente_id}");
+            return ['success' => true, 'message' => 'Cliente removido da viagem!'];
+        } else {
+            return ['success' => false, 'message' => 'Ocorreu um erro ao remover o cliente.'];
+        }
+    }
 }
 
 /* End of file viagens_model.php */

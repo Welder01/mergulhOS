@@ -64,6 +64,12 @@
                                 <input id="preco" type="text" name="preco" value="<?= set_value('preco'); ?>" class="money" />
                             </div>
                         </div>
+                        <div class="control-group">
+                            <label for="vagas" class="control-label">Vagas<span class="required">*</span></label>
+                            <div class="controls">
+                                <input id="vagas" type="number" name="vagas" value="<?= set_value('vagas'); ?>" />
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="form-actions">
@@ -91,12 +97,14 @@
             rules: {
                 nome_curso: { required: true },
                 data_inicio: { required: true },
+                vagas: { required: true },
                 status: { required: true },
                 preco: { required: true }
             },
             messages: {
                 nome_curso: { required: 'Campo Requerido.' },
                 data_inicio: { required: 'Campo Requerido.' },
+                vagas: { required: 'Campo Requerido.' },
                 status: { required: 'Campo Requerido.' },
                 preco: { required: 'Campo Requerido.' }
             },

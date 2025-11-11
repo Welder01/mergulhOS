@@ -837,19 +837,44 @@ class Os extends MY_Controller
                 ->set_output(json_encode(['message' => validation_errors()]));
         }
 
+        $osId = $this->input->post('idOsCurso');
+        $cursoId = $this->input->post('idCurso');
+
+        // Pega o cliente da OS
+        $os = $this->os_model->getById($osId);
+        if (!$os || !$os->clientes_id) {
+            return $this->output->set_content_type('application/json')->set_status_header(400)->set_output(json_encode(['result' => false, 'message' => 'Ordem de Serviço ou cliente não encontrado.']));
+        }
+        $clienteId = $os->clientes_id;
+
+        // Adiciona o aluno ao curso e debita a vaga
+        $this->load->model('cursos_model');
+        $alunoAdicionado = $this->cursos_model->adicionar_aluno($cursoId, $clienteId);
+
+        if (!$alunoAdicionado['success']) {
+            return $this->output->set_content_type('application/json')->set_status_header(400)->set_output(json_encode(['result' => false, 'message' => $alunoAdicionado['message']]));
+        }
+
         $data = [
-            'cursos_id' => $this->input->post('idCurso'),
-            'os_id' => $this->input->post('idOsCurso'),
+            'cursos_id' => $cursoId,
+            'os_id' => $osId,
             'preco' => $this->input->post('preco'),
             'data_vinculo' => date('Y-m-d'),
         ];
 
         if ($this->os_model->add('cursos_os', $data) == true) {
             log_info('Adicionou curso a uma OS. ID (OS): ' . $this->input->post('idOsCurso'));
-            return $this->output->set_content_type('application/json')->set_status_header(200)->set_output(json_encode(['result' => true]));
+            return $this->output->set_content_type('application/json')->set_status_header(200)->set_output(json_encode(['result' => true, 'message' => 'Curso adicionado e aluno inscrito com sucesso!']));
+        } else {
+            // Se falhou em adicionar na OS, reverte a inscrição do aluno
+            $this->load->model('curso_alunos_model');
+            $alunoInscrito = $this->curso_alunos_model->getInscricao($cursoId, $clienteId);
+            if ($alunoInscrito) {
+                $this->cursos_model->remover_aluno($alunoInscrito->id);
+            }
+            log_info('Falha ao adicionar curso na OS, inscrição do aluno revertida. OS ID: ' . $osId);
+            return $this->output->set_content_type('application/json')->set_status_header(500)->set_output(json_encode(['result' => false, 'message' => 'Falha ao vincular curso à OS.']));
         }
-
-        return $this->output->set_content_type('application/json')->set_status_header(500)->set_output(json_encode(['result' => false]));
     }
 
     public function excluirCurso()
@@ -857,11 +882,29 @@ class Os extends MY_Controller
         $id = $this->input->post('idCurso');
         $idOs = $this->input->post('idOs');
 
+        // Pega o cliente da OS e o ID do curso antes de excluir o vínculo
+        $cursoOs = $this->os_model->get('cursos_os', '*', "idCursos_os = {$id}", 1, 0, true);
+        if (!$cursoOs) {
+            echo json_encode(['result' => false, 'message' => 'Vínculo do curso com a OS não encontrado.']);
+            return;
+        }
+        $cursoId = $cursoOs->cursos_id;
+        $os = $this->os_model->getById($idOs);
+        $clienteId = $os->clientes_id;
+
         if ($this->os_model->delete('cursos_os', 'idCursos_os', $id) == true) {
+            // Remove o aluno do curso e devolve a vaga
+            $this->load->model('curso_alunos_model');
+            $alunoInscrito = $this->curso_alunos_model->getInscricao($cursoId, $clienteId);
+            if ($alunoInscrito) {
+                $this->load->model('cursos_model');
+                $this->cursos_model->remover_aluno($alunoInscrito->id);
+            }
+
             log_info('Removeu curso de uma OS. ID (OS): ' . $idOs);
-            echo json_encode(['result' => true]);
+            echo json_encode(['result' => true, 'message' => 'Curso removido da OS e inscrição do aluno cancelada.']);
         } else {
-            echo json_encode(['result' => false]);
+            echo json_encode(['result' => false, 'message' => 'Falha ao remover o curso da OS.']);
         }
     }
 
@@ -879,20 +922,44 @@ class Os extends MY_Controller
                 ->set_output(json_encode(['message' => validation_errors()]));
         }
 
+        $osId = $this->input->post('idOsViagem');
+        $viagemId = $this->input->post('idViagem');
+
+        // Pega o cliente da OS
+        $os = $this->os_model->getById($osId);
+        if (!$os || !$os->clientes_id) {
+            return $this->output->set_content_type('application/json')->set_status_header(400)->set_output(json_encode(['result' => false, 'message' => 'Ordem de Serviço ou cliente não encontrado.']));
+        }
+        $clienteId = $os->clientes_id;
+
+        // Adiciona o cliente à viagem e debita a vaga
+        $this->load->model('viagens_model');
+        $clienteAdicionado = $this->viagens_model->adicionar_cliente($viagemId, $clienteId);
+
+        if (!$clienteAdicionado['success']) {
+            return $this->output->set_content_type('application/json')->set_status_header(400)->set_output(json_encode(['result' => false, 'message' => $clienteAdicionado['message']]));
+        }
+
         $data = [
-            'viagens_id' => $this->input->post('idViagem'),
-            'os_id' => $this->input->post('idOsViagem'),
+            'viagens_id' => $viagemId,
+            'os_id' => $osId,
             'preco' => $this->input->post('preco'),
             'data_vinculo' => date('Y-m-d'),
         ];
 
         if ($this->os_model->add('viagens_os', $data) == true) {
             log_info('Adicionou viagem a uma OS. ID (OS): ' . $this->input->post('idOsViagem'));
-
-            return $this->output->set_content_type('application/json')->set_status_header(200)->set_output(json_encode(['result' => true]));
+            return $this->output->set_content_type('application/json')->set_status_header(200)->set_output(json_encode(['result' => true, 'message' => 'Viagem adicionada e cliente inscrito com sucesso!']));
+        } else {
+            // Se falhou em adicionar na OS, reverte a inscrição do cliente
+            $this->load->model('viagem_clientes_model');
+            $clienteInscrito = $this->viagem_clientes_model->getInscricao($viagemId, $clienteId);
+            if ($clienteInscrito) {
+                $this->viagens_model->remover_cliente($clienteInscrito->id);
+            }
+            log_info('Falha ao adicionar viagem na OS, inscrição do cliente revertida. OS ID: ' . $osId);
+            return $this->output->set_content_type('application/json')->set_status_header(500)->set_output(json_encode(['result' => false, 'message' => 'Falha ao vincular viagem à OS.']));
         }
-
-        return $this->output->set_content_type('application/json')->set_status_header(500)->set_output(json_encode(['result' => false]));
     }
 
     public function excluirViagem()
@@ -900,11 +967,29 @@ class Os extends MY_Controller
         $id = $this->input->post('idViagem');
         $idOs = $this->input->post('idOs');
 
-        if ($this->os_model->delete('viagens_os', 'idViagens_os', $id) == true) {
+        // Pega o cliente da OS e o ID da viagem antes de excluir o vínculo
+        $viagemOs = $this->os_model->get('viagens_os', '*', "idViagens_os = {$id}", 1, 0, true);
+        if (!$viagemOs) {
+            echo json_encode(['result' => false, 'message' => 'Vínculo da viagem com a OS não encontrado.']);
+            return;
+        }
+        $viagemId = $viagemOs->viagens_id;
+        $os = $this->os_model->getById($idOs);
+        $clienteId = $os->clientes_id;
+
+        if ($this->os_model->delete('viagens_os', 'idViagens_os', $id)) {
+            // Remove o cliente da viagem e devolve a vaga
+            $this->load->model('viagem_clientes_model');
+            $clienteInscrito = $this->viagem_clientes_model->getInscricao($viagemId, $clienteId);
+            if ($clienteInscrito) {
+                $this->load->model('viagens_model');
+                $this->viagens_model->remover_cliente($clienteInscrito->id);
+            }
+
             log_info('Removeu viagem de uma OS. ID (OS): ' . $idOs);
-            echo json_encode(['result' => true]);
+            echo json_encode(['result' => true, 'message' => 'Viagem removida da OS e inscrição do cliente cancelada.']);
         } else {
-            echo json_encode(['result' => false]);
+            echo json_encode(['result' => false, 'message' => 'Falha ao remover a viagem da OS.']);
         }
     }
 

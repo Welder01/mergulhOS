@@ -311,43 +311,31 @@ class Viagens extends MY_Controller
             redirect(base_url());
         }
         $viagem_id = $this->input->post('viagem_id');
-        $viagem = $this->viagens_model->getById($viagem_id);
+        $cliente_id = $this->input->post('cliente_id');
 
-        if ($this->viagem_clientes_model->isClienteInViagem($viagem_id, $this->input->post('cliente_id'))) {
-            $this->session->set_flashdata('error', 'Este cliente já está inscrito nesta viagem.');
-        } else {
-            if ($viagem->vagas > 0) {
-                $data = [
-                    'viagem_id' => $viagem_id,
-                    'cliente_id' => $this->input->post('cliente_id'),
-                    'status_pagamento' => $this->input->post('status_pagamento'),
-                    'precisa_embarque' => $this->input->post('precisa_embarque') ? 1 : 0,
-                    'precisa_hospedagem' => $this->input->post('precisa_hospedagem') ? 1 : 0,
-                    'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
-                    'locar_nadadeira' => $this->input->post('locar_nadadeira') ? 1 : 0,
-                    'locar_cilindro' => $this->input->post('locar_cilindro') ? 1 : 0,
-                    'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
-                    'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
-                    'locar_regulador' => $this->input->post('locar_regulador') ? 1 : 0,
-                    'locar_lanterna' => (int)$this->input->post('locar_lanterna') ?: 0,
-                    'locar_computador' => (int)$this->input->post('locar_computador') ?: 0,
-                    'numero_bolsa' => $this->input->post('numero_bolsa'),
-                    'proposito' => $this->input->post('proposito'),
-                ];
+        $data = [
+            'status_pagamento' => $this->input->post('status_pagamento'),
+            'precisa_embarque' => $this->input->post('precisa_embarque') ? 1 : 0,
+            'precisa_hospedagem' => $this->input->post('precisa_hospedagem') ? 1 : 0,
+            'detalhes_hospedagem' => $this->input->post('detalhes_hospedagem'),
+            'locar_nadadeira' => $this->input->post('locar_nadadeira') ? 1 : 0,
+            'locar_cilindro' => $this->input->post('locar_cilindro') ? 1 : 0,
+            'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
+            'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
+            'locar_regulador' => $this->input->post('locar_regulador') ? 1 : 0,
+            'locar_lanterna' => (int)$this->input->post('locar_lanterna') ?: 0,
+            'locar_computador' => (int)$this->input->post('locar_computador') ?: 0,
+            'numero_bolsa' => $this->input->post('numero_bolsa'),
+            'proposito' => $this->input->post('proposito'),
+        ];
 
-                if ($this->viagem_clientes_model->add('viagem_clientes', $data)) {
-                    // Decrementa o número de vagas
-                    $this->db->set('vagas', 'vagas - 1', false);
-                    $this->db->where('id', $viagem_id);
-                    $this->db->update('viagens');
-                    $this->session->set_flashdata('success', 'Cliente adicionado à viagem!');
-                } else {
-                    $this->session->set_flashdata('error', 'Ocorreu um erro ao adicionar o cliente.');
-                }
-            } else {
-                $this->session->set_flashdata('error', 'Não há mais vagas disponíveis para esta viagem.');
-            }
-        }
+        $resultado = $this->viagens_model->adicionar_cliente($viagem_id, $cliente_id, $data);
+
+        $this->session->set_flashdata(
+            $resultado['success'] ? 'success' : 'error',
+            $resultado['message']
+        );
+
         $activeTab = ltrim($this->input->post('active_tab'), '#');
         redirect('viagens/visualizar/' . $viagem_id . '?tab=' . $activeTab);
     }
@@ -457,19 +445,15 @@ class Viagens extends MY_Controller
             $this->session->set_flashdata('error', 'Você não tem permissão para remover clientes da viagem.');
             redirect(base_url());
         }
-        // Lógica para obter o viagem_id antes de deletar para o redirect
-        $this->db->where('id', $id);
-        $cliente_viagem = $this->db->get('viagem_clientes')->row();
+
+        $cliente_viagem = $this->viagem_clientes_model->getById($id);
+
         if ($cliente_viagem) {
-            if ($this->viagem_clientes_model->delete('viagem_clientes', 'id', $id)) {
-                // Incrementa o número de vagas
-                $this->db->set('vagas', 'vagas + 1', false);
-                $this->db->where('id', $cliente_viagem->viagem_id);
-                $this->db->update('viagens');
-                $this->session->set_flashdata('success', 'Cliente removido da viagem!');
-            }
+            $resultado = $this->viagens_model->remover_cliente($id);
+            $this->session->set_flashdata($resultado['success'] ? 'success' : 'error', $resultado['message']);
             redirect('viagens/visualizar/' . $cliente_viagem->viagem_id . '?tab=tabClientes');
         } else {
+            $this->session->set_flashdata('error', 'Inscrição não encontrada.');
             redirect('viagens');
         }
     }
@@ -685,18 +669,8 @@ class Viagens extends MY_Controller
     {
         if (isset($_GET['term'])) {
             $q = strtolower($this->input->get('term'));
-            $this->db->select('id, nome_viagem, data_partida, preco_pessoa');
-            $this->db->like('nome_viagem', $q);
-            $this->db->limit(5);
-            $query = $this->db->get('viagens');
-            $result = array_map(function ($viagem) {
-                return [
-                    'id' => $viagem->id,
-                    'text' => 'ID: ' . $viagem->id . ' | Viagem: ' . $viagem->nome_viagem . ' | Partida: ' . date('d/m/Y', strtotime($viagem->data_partida)),
-                    'preco' => $viagem->preco_pessoa,
-                ];
-            }, $query->result());
-            return $this->output->set_content_type('application/json')->set_output(json_encode(['results' => $result]));
+            $result = $this->viagens_model->autoCompleteViagem($q);
+            return $this->output->set_content_type('application/json')->set_output(json_encode($result));
         }
         return $this->output->set_content_type('application/json')->set_output(json_encode([]));
     }

@@ -13,7 +13,15 @@ class Os_model extends CI_Model
     {
         $this->db->select($fields . ',clientes.nomeCliente, clientes.celular as celular_cliente');
         $this->db->from($table);
-        $this->db->join('clientes', 'clientes.idClientes = os.clientes_id');
+        if ($table === 'cursos_os') {
+            $this->db->join('os', 'os.idOs = cursos_os.os_id');
+            $this->db->join('clientes', 'clientes.idClientes = os.clientes_id');
+        } elseif ($table === 'viagens_os') {
+            $this->db->join('os', 'os.idOs = viagens_os.os_id');
+            $this->db->join('clientes', 'clientes.idClientes = os.clientes_id');
+        } else {
+            $this->db->join('clientes', 'clientes.idClientes = os.clientes_id');
+        }
         $this->db->limit($perpage, $start);
         $this->db->order_by('idOs', 'desc');
         if ($where) {
