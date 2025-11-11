@@ -91,6 +91,12 @@
                                 </div>
                             </div>
                             <div class="control-group">
+                                <label for="data_nascimento_conecte" class="control-label">Data de Nascimento</label>
+                                <div class="controls">
+                                    <input id="data_nascimento_conecte" type="text" name="data_nascimento" value="<?= $result->data_nascimento ? date('d/m/Y', strtotime($result->data_nascimento)) : ''; ?>" class="monitor-input datepicker" />
+                                </div>
+                            </div>
+                            <div class="control-group">
                                 <label for="altura" class="control-label">Altura (m)</label>
                                 <div class="controls">
                                     <input id="altura" type="text" name="altura" value="<?= $result->altura ?? '' ?>" class="monitor-input" />
@@ -468,6 +474,10 @@
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             var currentTab = $(e.target).attr('href');
             $('#active_tab').val(currentTab);
+        });
+
+        $(".datepicker").datepicker({
+            dateFormat: 'dd/mm/yy'
         });
     });
 </script>

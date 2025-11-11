@@ -56,6 +56,12 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td style="text-align: right"><strong>Data de Nascimento</strong></td>
+                                    <td>
+                                        <?php echo $result->data_nascimento ? date('d/m/Y', strtotime($result->data_nascimento)) : ''; ?>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td style="text-align: right"><strong>Altura</strong></td>
                                     <td><?php echo isset($result->altura) ? $result->altura . ' m' : 'Não informado'; ?></td>
                                 </tr>

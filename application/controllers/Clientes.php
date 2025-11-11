@@ -31,8 +31,6 @@ class Clientes extends MY_Controller
             redirect(base_url());
         }
 
-        log_info('Visualizou a listagem de clientes.');
-
         $pesquisa = $this->input->get('pesquisa');
 
         $this->load->library('pagination');
@@ -84,6 +82,7 @@ class Clientes extends MY_Controller
                 'nomeCliente' => set_value('nomeCliente'),
                 'contato' => set_value('contato'),
                 'sexo' => set_value('sexo'),
+                'data_nascimento' => set_value('data_nascimento') ? date('Y-m-d', strtotime(str_replace('/', '-', set_value('data_nascimento')))) : null,
                 'pessoa_fisica' => $pessoa_fisica,
                 'altura' => str_replace(',', '.', set_value('altura')),
                 'peso' => str_replace(',', '.', set_value('peso')),
@@ -156,6 +155,7 @@ class Clientes extends MY_Controller
                     'nomeCliente' => $this->input->post('nomeCliente'),
                     'contato' => $this->input->post('contato'),
                     'sexo' => $this->input->post('sexo'),
+                    'data_nascimento' => $this->input->post('data_nascimento') ? date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('data_nascimento')))) : null,
                     'altura' => str_replace(',', '.', $this->input->post('altura')),
                     'peso' => str_replace(',', '.', $this->input->post('peso')),
                     'documento' => $this->input->post('documento'),

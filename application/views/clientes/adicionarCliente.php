@@ -121,6 +121,12 @@
                             </div>
                         </div>
                         <div class="control-group">
+                            <label for="data_nascimento" class="control-label">Data de Nascimento</label>
+                            <div class="controls">
+                                <input id="data_nascimento" class="datepicker" type="text" name="data_nascimento" value="<?php echo set_value('data_nascimento'); ?>" />
+                            </div>
+                        </div>
+                        <div class="control-group">
                             <label for="altura" class="control-label">Altura (m)</label>
                             <div class="controls">
                                 <input id="altura" type="text" name="altura" value="<?php echo set_value('altura'); ?>" />
