@@ -75,9 +75,9 @@
             background-color: #007bff;
             color: #fff;
             padding: 5px 10px;
-            font-size: 1.2em;
+            font-size: 1.1em;
             font-weight: bold;
-            margin-top: 20px;
+            margin-top: 10px;
             margin-bottom: 10px;
             border-radius: 5px;
         }
@@ -140,14 +140,14 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td colspan="3" style="text-align: center; padding-top: 15px;"><h2 class="document-title" style="margin:0; border:0;"><?= html_escape(strtoupper($result->nome_viagem)) ?></h2></td>
+                                <td colspan="3" style="text-align: center; padding-top: 0px; padding-bottom: 0px;"><h2 class="document-title" style="margin:0; border:0;"><?= html_escape(strtoupper($result->nome_viagem)) ?></h2></td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
             </div>
 
-            <div class="section-title">Mergulhadores e Equipamentos</div>
+            <div class="section-title" style="margin-top: 5px;">Mergulhadores e Equipamentos</div>
             <table class="table table-bordered">
                 <thead>
                     <tr>
@@ -161,6 +161,8 @@
                         <th class="equip-box">NEO</th>
                         <th class="equip-box">NDA</th>
                         <th class="equip-box">LSO</th>
+                        <th class="equip-box">LTN</th>
+                        <th class="equip-box">CMP</th>
                         <th style="width: 8%;">Bolsa</th>
                         <th style="width: 12%;">Obs.</th>
                     </tr>
@@ -170,8 +172,8 @@
                         <?php $count = 1; ?>
                         <?php foreach ($clientes as $c) : ?>
                             <tr>
-                                <td class="text-center"><?= $count++ ?></td>
-                                <td style="vertical-align: top;"><?= html_escape($c->nomeCliente) ?></td>
+                                <td class="text-center" style="vertical-align: top;"><?= $count++ ?></td>
+                                <td style="vertical-align: top;"><?= html_escape($c->nomeCliente) ?><br><small><?= html_escape($c->cpf) ?></small></td>
                                 <td style="vertical-align: top; text-align: center;">
                                     <?php
                                         $statusAtestado = 'Não informado';
@@ -190,7 +192,7 @@
                                         echo "<span $corAtestado>$statusAtestado</span>";
                                     ?>
                                 </td>
-                                <td style="vertical-align: top; font-size: 9px;">
+                                <td style="vertical-align: top; font-size: 5.5px;">
                                     <?php if (!empty($c->certificacoes)) : ?>
                                         <?php foreach ($c->certificacoes as $cert) : ?>
                                             - <?= html_escape($cert->nome_certificacao) ?><br>
@@ -213,6 +215,8 @@
                                 <td class="equip-box">
                                     <?= $c->locar_lastro ? (html_escape($c->peso_lastro) . 'kg') : '<i class="fas fa-lock"></i>' ?>
                                 </td>
+                                <td class="equip-box"><?= $c->locar_lanterna > 0 ? $c->locar_lanterna : '<i class="fas fa-lock"></i>' ?></td>
+                                <td class="equip-box"><?= $c->locar_computador > 0 ? $c->locar_computador : '<i class="fas fa-lock"></i>' ?></td>
                                 <td><?= html_escape($c->numero_bolsa) ?></td>
                                 <td class="text-center">
                                     <?php
@@ -232,7 +236,7 @@
                             </tr>
                         <?php endforeach; ?>
                     <?php else : ?>
-                        <tr><td colspan="12" class="text-center">Nenhum mergulhador inscrito.</td></tr>
+                        <tr><td colspan="14" class="text-center">Nenhum mergulhador inscrito.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -251,6 +255,8 @@
                         <th class="equip-box">NEO</th>
                         <th class="equip-box">NDA</th>
                         <th class="equip-box">LSO</th>
+                        <th class="equip-box">LTN</th>
+                        <th class="equip-box">CMP</th>
                         <th style="width: 10%;">Bolsa</th>
                         <th style="width: 10%;">Obs.</th>
                     </tr>
@@ -261,9 +267,28 @@
                         <?php foreach ($instrutores as $i) : ?>
                             <tr>
                                 <td class="text-center"><?= $count_instrutor++ ?></td>
-                                <td><?= html_escape($i->nome_instrutor) ?></td>
-                                <td class="text-center">N/A</td> <!-- Atestado não disponível diretamente para instrutor (usuário) -->
-                                <td>N/A</td> <!-- Certificações não disponíveis diretamente para instrutor (usuário) -->
+                                <td style="vertical-align: top;"><?= html_escape($i->nome_instrutor) ?><br><small><?= html_escape($i->cpf_instrutor) ?></small></td>
+                                <td style="vertical-align: top; text-align: center;">
+                                    <?php
+                                        $statusAtestadoInstrutor = 'Não informado';
+                                        $corAtestadoInstrutor = '';
+                                        if ($i->atestado_medico_validade) {
+                                            $validade = new DateTime($i->atestado_medico_validade);
+                                            $hoje = new DateTime();
+                                            if ($validade < $hoje) {
+                                                $statusAtestadoInstrutor = 'Vencido';
+                                                $corAtestadoInstrutor = 'style="color: red; font-weight: bold;"';
+                                            } else {
+                                                $statusAtestadoInstrutor = 'Válido';
+                                                $corAtestadoInstrutor = 'style="color: green;"';
+                                            }
+                                        }
+                                        echo "<span $corAtestadoInstrutor>$statusAtestadoInstrutor</span>";
+                                    ?>
+                                </td>
+                                <td style="vertical-align: top; font-size: 5.5px;">
+                                    <?php if (!empty($i->certificacoes)) : foreach ($i->certificacoes as $cert) : ?> - <?= html_escape($cert->nome_certificacao) ?><br> <?php endforeach; else : ?> Nenhuma <?php endif; ?>
+                                </td>
                                 <td class="equip-box"><?= $i->locar_cilindro > 0 ? $i->locar_cilindro : '<i class="fas fa-lock"></i>' ?></td>
                                 <td class="equip-box"><?= $i->locar_regulador > 0 ? $i->locar_regulador : '<i class="fas fa-lock"></i>' ?></td>
                                 <td class="equip-box">
@@ -278,12 +303,14 @@
                                 <td class="equip-box">
                                     <?= $i->locar_lastro ? (html_escape($i->peso_lastro) . 'kg') : '<i class="fas fa-lock"></i>' ?>
                                 </td>
+                                <td class="equip-box"><?= $i->locar_lanterna > 0 ? $i->locar_lanterna : '<i class="fas fa-lock"></i>' ?></td>
+                                <td class="equip-box"><?= $i->locar_computador > 0 ? $i->locar_computador : '<i class="fas fa-lock"></i>' ?></td>
                                 <td><?= html_escape($i->numero_bolsa) ?></td>
                                 <td></td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else : ?>
-                        <tr><td colspan="12" class="text-center">Nenhum instrutor designado.</td></tr>
+                        <tr><td colspan="14" class="text-center">Nenhum instrutor designado.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -291,35 +318,66 @@
             <div class="section-title">Resumo de Equipamentos para Locação</div>
             <table class="table table-bordered" style="width: 100%; font-size: 9px;">
                 <thead>
-                    <tr>
+                    <tr style="background-color: #f2f2f2;">
+                        <th class="text-center" style="width: 15%;">Grupo</th>
                         <th class="text-center">Cilindros (CI)</th>
                         <th class="text-center">Reguladores (RGR)</th>
                         <th class="text-center">Lastros (LSO)</th>
                         <th class="text-center">Coletes (CLT)</th>
                         <th class="text-center">Nadadeiras (NDA)</th>
                         <th class="text-center">Neoprene (NEO)</th>
+                        <th class="text-center">Lanternas (LTN)</th>
+                        <th class="text-center">Computadores (CMP)</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <!-- Linha para Mergulhadores -->
                     <tr>
-                        <td class="text-center" style="vertical-align: top;"><?= $resumoEquipamentos['cilindro'] ?></td>
-                        <td class="text-center" style="vertical-align: top;"><?= $resumoEquipamentos['regulador'] ?></td>
-                        <td class="text-center" style="vertical-align: top;"><?= $resumoEquipamentos['lastro'] ?></td>
+                        <td class="text-center" style="font-weight: bold; vertical-align: middle;">Mergulhadores</td>
+                        <td class="text-center" style="vertical-align: top;"><?= $resumoMergulhadores['cilindro'] ?></td>
+                        <td class="text-center" style="vertical-align: top;"><?= $resumoMergulhadores['regulador'] ?></td>
+                        <td class="text-center" style="vertical-align: top;">
+                            <?php if ($resumoMergulhadores['lastro']['qtd'] > 0) : ?>
+                                Qtd: <?= $resumoMergulhadores['lastro']['qtd'] ?> / Peso: <?= number_format($resumoMergulhadores['lastro']['peso'], 1) ?>kg
+                            <?php else : ?>
+                                0
+                            <?php endif; ?>
+                        </td>
                         <td style="vertical-align: top;">
-                            <?php foreach ($resumoEquipamentos['colete'] as $tamanho => $qtd) : ?>
+                            <?php foreach ($resumoMergulhadores['colete'] as $tamanho => $qtd) : ?>
                                 Tam: <?= $tamanho ?> - Qtd: <?= $qtd ?><br>
                             <?php endforeach; ?>
                         </td>
                         <td style="vertical-align: top;">
-                            <?php foreach ($resumoEquipamentos['nadadeira'] as $tamanho => $qtd) : ?>
+                            <?php foreach ($resumoMergulhadores['nadadeira'] as $tamanho => $qtd) : ?>
                                 Tam: <?= $tamanho ?> - Qtd: <?= $qtd ?><br>
                             <?php endforeach; ?>
                         </td>
                         <td style="vertical-align: top;">
-                            <?php foreach ($resumoEquipamentos['neoprene'] as $tamanho => $qtd) : ?>
+                            <?php foreach ($resumoMergulhadores['neoprene'] as $tamanho => $qtd) : ?>
                                 Tam: <?= $tamanho ?> - Qtd: <?= $qtd ?><br>
                             <?php endforeach; ?>
                         </td>
+                        <td class="text-center" style="vertical-align: top;"><?= $resumoMergulhadores['lanterna'] ?></td>
+                        <td class="text-center" style="vertical-align: top;"><?= $resumoMergulhadores['computador'] ?></td>
+                    </tr>
+                    <!-- Linha para Instrutores -->
+                    <tr>
+                        <td class="text-center" style="font-weight: bold; vertical-align: middle;">Instrutores</td>
+                        <td class="text-center" style="vertical-align: top;"><?= $resumoInstrutores['cilindro'] ?></td>
+                        <td class="text-center" style="vertical-align: top;"><?= $resumoInstrutores['regulador'] ?></td>
+                        <td class="text-center" style="vertical-align: top;">
+                            <?php if ($resumoInstrutores['lastro']['qtd'] > 0) : ?>
+                                Qtd: <?= $resumoInstrutores['lastro']['qtd'] ?> / Peso: <?= number_format($resumoInstrutores['lastro']['peso'], 1) ?>kg
+                            <?php else : ?>
+                                0
+                            <?php endif; ?>
+                        </td>
+                        <td style="vertical-align: top;"><?php foreach ($resumoInstrutores['colete'] as $tamanho => $qtd) : ?>Tam: <?= $tamanho ?> - Qtd: <?= $qtd ?><br><?php endforeach; ?></td>
+                        <td style="vertical-align: top;"><?php foreach ($resumoInstrutores['nadadeira'] as $tamanho => $qtd) : ?>Tam: <?= $tamanho ?> - Qtd: <?= $qtd ?><br><?php endforeach; ?></td>
+                        <td style="vertical-align: top;"><?php foreach ($resumoInstrutores['neoprene'] as $tamanho => $qtd) : ?>Tam: <?= $tamanho ?> - Qtd: <?= $qtd ?><br><?php endforeach; ?></td>
+                        <td class="text-center" style="vertical-align: top;"><?= $resumoInstrutores['lanterna'] ?></td>
+                        <td class="text-center" style="vertical-align: top;"><?= $resumoInstrutores['computador'] ?></td>
                     </tr>
                 </tbody>
             </table>

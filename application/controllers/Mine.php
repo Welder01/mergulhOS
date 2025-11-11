@@ -338,10 +338,14 @@ class Mine extends MY_Controller
 
         $atestado_emissao = $this->input->post('atestado_medico_emissao');
         $atestado_validade = null;
-        if ($atestado_emissao) {
-            $date = new DateTime($atestado_emissao);
-            $date->add(new DateInterval('P1Y')); // Adiciona 1 ano
-            $atestado_validade = $date->format('Y-m-d');
+        if ($atestado_emissao) { // Check if $atestado_emissao is not empty
+            $date = DateTime::createFromFormat('d/m/Y', $atestado_emissao);
+            if ($date !== false) { // Check if parsing was successful
+                $date->add(new DateInterval('P1Y')); // Adiciona 1 ano
+                $atestado_validade = $date->format('Y-m-d');
+            } else {
+                log_message('error', 'Failed to parse atestado_medico_emissao in Mine/editarDados: ' . $atestado_emissao);
+            }
         }
 
         $data = [

@@ -111,9 +111,13 @@ class Usuarios extends MY_Controller
                 $atestado_emissao = $this->input->post('atestado_medico_emissao');
                 $atestado_validade = null;
                 if ($atestado_emissao) {
-                    $date = new DateTime($atestado_emissao);
-                    $date->add(new DateInterval('P1Y')); // Adiciona 1 ano
-                    $atestado_validade = $date->format('Y-m-d');
+                    $date = DateTime::createFromFormat('d/m/Y', $atestado_emissao);
+                    if ($date !== false) {
+                        $date->add(new DateInterval('P1Y')); // Adiciona 1 ano
+                        $atestado_validade = $date->format('Y-m-d');
+                    } else {
+                        log_message('error', 'Failed to parse atestado_medico_emissao in Usuarios/editar: ' . $atestado_emissao);
+                    }
                 }
 
                 $senha = password_hash($senha, PASSWORD_DEFAULT);
@@ -165,9 +169,13 @@ class Usuarios extends MY_Controller
                 $atestado_emissao = $this->input->post('atestado_medico_emissao');
                 $atestado_validade = null;
                 if ($atestado_emissao) {
-                    $date = new DateTime($atestado_emissao);
-                    $date->add(new DateInterval('P1Y')); // Adiciona 1 ano
-                    $atestado_validade = $date->format('Y-m-d');
+                    $date = DateTime::createFromFormat('d/m/Y', $atestado_emissao);
+                    if ($date !== false) {
+                        $date->add(new DateInterval('P1Y')); // Adiciona 1 ano
+                        $atestado_validade = $date->format('Y-m-d');
+                    } else {
+                        log_message('error', 'Failed to parse atestado_medico_emissao in Usuarios/editar: ' . $atestado_emissao);
+                    }
                 }
 
                 $data = [

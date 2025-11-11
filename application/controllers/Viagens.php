@@ -160,6 +160,7 @@ class Viagens extends MY_Controller
         $this->data['result'] = $this->viagens_model->getById($id);
         $this->data['clientes'] = $this->viagem_clientes_model->getByViagem($id);
         $this->data['instrutores'] = $this->viagem_instrutores_model->getByViagem($id);
+        log_message('debug', 'Viagens/visualizar: Instructors data for viagem_id ' . $id . ': ' . json_encode($this->data['instrutores']));
         $this->data['custos'] = $this->viagem_custos_model->getByViagem($id);
         $this->data['cursos_associados'] = $this->viagem_cursos_model->getByViagem($id);
         $this->data['cursos_disponiveis'] = $this->cursos_model->get('cursos', 'id, nome_curso');
@@ -202,47 +203,82 @@ class Viagens extends MY_Controller
             redirect(site_url('viagens'));
         }
 
-        $clientes = $this->viagem_clientes_model->getClientesComEquipamentos($id);
-        
-        // Adiciona todas as certificações para cada cliente
-        foreach ($clientes as $cliente) {
-            $cliente->certificacoes = $this->certificacao_mergulhador_model->getByCliente($cliente->cliente_id);
-        }
-        $this->data['clientes'] = $clientes;
+        $clientes_viagem = $this->viagem_clientes_model->getClientesComEquipamentos($id);
+        $clientes_completos = [];
 
-        // Calcula o resumo de equipamentos
-        $resumoEquipamentos = [
-            'cilindro' => 0, 'regulador' => 0, 'lastro' => 0, 'colete' => [], 'nadadeira' => [], 'neoprene' => [],
+        // Itera sobre os clientes da viagem para buscar dados completos e certificações
+        foreach ($clientes_viagem as $cliente_participante) {
+            // Busca todos os dados do cliente da tabela 'clientes'
+            $dados_cliente = $this->clientes_model->getById($cliente_participante->cliente_id);
+            if ($dados_cliente) {
+                // Mescla os dados da viagem com os dados completos do cliente
+                $cliente_final = (object) array_merge((array) $dados_cliente, (array) $cliente_participante);
+                $cliente_final->certificacoes = $this->certificacao_mergulhador_model->getByCliente($cliente_participante->cliente_id);
+                $clientes_completos[] = $cliente_final;
+            }
+        }
+        $this->data['clientes'] = $clientes_completos;
+
+        // Template para resumo de equipamentos
+        $resumoTemplate = [
+            'cilindro' => 0, 'regulador' => 0, 'lastro' => ['qtd' => 0, 'peso' => 0.0], 'colete' => [], 'nadadeira' => [], 'neoprene' => [], 'lanterna' => 0, 'computador' => 0,
         ];
 
-        foreach ($clientes as $c) {
-            if ($c->locar_cilindro) $resumoEquipamentos['cilindro']++;
-            if ($c->locar_regulador) $resumoEquipamentos['regulador']++;
-            if ($c->locar_lastro) $resumoEquipamentos['lastro']++;
-            if ($c->locar_colete) $resumoEquipamentos['colete'][$c->tamanho_colete ?: 'N/I'] = ($resumoEquipamentos['colete'][$c->tamanho_colete ?: 'N/I'] ?? 0) + 1;
-            if ($c->locar_nadadeira) $resumoEquipamentos['nadadeira'][$c->tamanho_nadadeira ?: 'N/I'] = ($resumoEquipamentos['nadadeira'][$c->tamanho_nadadeira ?: 'N/I'] ?? 0) + 1;
-            if ($c->locar_neoprene) $resumoEquipamentos['neoprene'][$c->tamanho_neoprene ?: 'N/I'] = ($resumoEquipamentos['neoprene'][$c->tamanho_neoprene ?: 'N/I'] ?? 0) + 1;
+        $resumoMergulhadores = $resumoTemplate;
+        $resumoInstrutores = $resumoTemplate;
+
+        // Itera sobre os clientes para determinar necessidades de locação e calcular o resumo
+        foreach ($this->data['clientes'] as $c) {
+            // Se não possui o equipamento, marca para locar (a menos que já esteja marcado)
+            $c->locar_colete = $c->locar_colete || !$c->possui_colete;
+            $c->locar_lastro = $c->locar_lastro || !$c->possui_lastro;
+            $c->locar_neoprene = $c->locar_neoprene || !$c->possui_neoprene;
+            $c->locar_nadadeira = $c->locar_nadadeira || !$c->possui_nadadeira;
+            $c->locar_regulador = $c->locar_regulador > 0 ? $c->locar_regulador : (!$c->possui_regulador ? 1 : 0);
+            $c->locar_lanterna = $c->locar_lanterna > 0 ? $c->locar_lanterna : (!$c->possui_lanterna ? 1 : 0);
+            $c->locar_computador = $c->locar_computador > 0 ? $c->locar_computador : (!$c->possui_computador ? 1 : 0);
+
+            // Atualiza o resumo de equipamentos
+            if ($c->locar_cilindro > 0) $resumoMergulhadores['cilindro'] += (int)$c->locar_cilindro;
+            if ($c->locar_regulador > 0) $resumoMergulhadores['regulador'] += (int)$c->locar_regulador;
+            if ($c->locar_lastro) {
+                $resumoMergulhadores['lastro']['qtd']++;
+                $resumoMergulhadores['lastro']['peso'] += (float)($c->peso_lastro ?: 0);
+            }
+            if ($c->locar_colete) $resumoMergulhadores['colete'][$c->tamanho_colete ?: 'N/I'] = ($resumoMergulhadores['colete'][$c->tamanho_colete ?: 'N/I'] ?? 0) + 1;
+            if ($c->locar_nadadeira) $resumoMergulhadores['nadadeira'][$c->tamanho_nadadeira ?: 'N/I'] = ($resumoMergulhadores['nadadeira'][$c->tamanho_nadadeira ?: 'N/I'] ?? 0) + 1;
+            if ($c->locar_neoprene) $resumoMergulhadores['neoprene'][$c->tamanho_neoprene ?: 'N/I'] = ($resumoMergulhadores['neoprene'][$c->tamanho_neoprene ?: 'N/I'] ?? 0) + 1;
+            if ($c->locar_lanterna > 0) $resumoMergulhadores['lanterna'] += (int)$c->locar_lanterna;
+            if ($c->locar_computador > 0) $resumoMergulhadores['computador'] += (int)$c->locar_computador;
         }
-        $this->data['resumoEquipamentos'] = $resumoEquipamentos;
 
         $this->data['instrutores'] = $this->viagem_instrutores_model->getByViagem($id);
 
         // Adiciona equipamentos dos instrutores ao resumo
+        $this->load->model('certificacao_usuario_model');
         foreach ($this->data['instrutores'] as $instrutor) {
-            if ($instrutor->locar_cilindro > 0) $this->data['resumoEquipamentos']['cilindro'] += $instrutor->locar_cilindro;
-            if ($instrutor->locar_regulador > 0) $this->data['resumoEquipamentos']['regulador'] += $instrutor->locar_regulador;
-            if ($instrutor->locar_lastro) $this->data['resumoEquipamentos']['lastro']++;
-            if ($instrutor->locar_colete) {
-                $this->data['resumoEquipamentos']['colete'][$instrutor->tamanho_colete ?: 'N/I'] = ($this->data['resumoEquipamentos']['colete'][$instrutor->tamanho_colete ?: 'N/I'] ?? 0) + 1;
+            $instrutor->certificacoes = $this->certificacao_usuario_model->getByUsuario($instrutor->usuario_id);
+
+            // Lógica para instrutores: se não possui e não marcou para locar, marca para locar 1.
+            $instrutor->locar_regulador = $instrutor->locar_regulador > 0 ? $instrutor->locar_regulador : (!$instrutor->possui_regulador ? 1 : 0);
+            $instrutor->locar_lanterna = $instrutor->locar_lanterna > 0 ? $instrutor->locar_lanterna : (!$instrutor->possui_lanterna ? 1 : 0);
+            $instrutor->locar_computador = $instrutor->locar_computador > 0 ? $instrutor->locar_computador : (!$instrutor->possui_computador ? 1 : 0);
+
+            if ($instrutor->locar_cilindro > 0) $resumoInstrutores['cilindro'] += (int)$instrutor->locar_cilindro;
+            if ($instrutor->locar_regulador > 0) $resumoInstrutores['regulador'] += (int)$instrutor->locar_regulador;
+            if ($instrutor->locar_lastro) {
+                $resumoInstrutores['lastro']['qtd']++;
+                $resumoInstrutores['lastro']['peso'] += (float)($instrutor->peso_lastro ?: 0);
             }
-            if ($instrutor->locar_nadadeira) {
-                $this->data['resumoEquipamentos']['nadadeira'][$instrutor->tamanho_nadadeira ?: 'N/I'] = ($this->data['resumoEquipamentos']['nadadeira'][$instrutor->tamanho_nadadeira ?: 'N/I'] ?? 0) + 1;
-            }
-            if ($instrutor->locar_neoprene) {
-                $this->data['resumoEquipamentos']['neoprene'][$instrutor->tamanho_neoprene ?: 'N/I'] = ($this->data['resumoEquipamentos']['neoprene'][$instrutor->tamanho_neoprene ?: 'N/I'] ?? 0) + 1;
-            }
+            if ($instrutor->locar_colete) $resumoInstrutores['colete'][$instrutor->tamanho_colete ?: 'N/I'] = ($resumoInstrutores['colete'][$instrutor->tamanho_colete ?: 'N/I'] ?? 0) + 1;
+            if ($instrutor->locar_nadadeira) $resumoInstrutores['nadadeira'][$instrutor->tamanho_nadadeira ?: 'N/I'] = ($resumoInstrutores['nadadeira'][$instrutor->tamanho_nadadeira ?: 'N/I'] ?? 0) + 1;
+            if ($instrutor->locar_neoprene) $resumoInstrutores['neoprene'][$instrutor->tamanho_neoprene ?: 'N/I'] = ($resumoInstrutores['neoprene'][$instrutor->tamanho_neoprene ?: 'N/I'] ?? 0) + 1;
+            if ($instrutor->locar_lanterna > 0) $resumoInstrutores['lanterna'] += (int)$instrutor->locar_lanterna;
+            if ($instrutor->locar_computador > 0) $resumoInstrutores['computador'] += (int)$instrutor->locar_computador;
         }
 
+        $this->data['resumoMergulhadores'] = $resumoMergulhadores;
+        $this->data['resumoInstrutores'] = $resumoInstrutores;
         $this->data['emitente'] = $this->mapos_model->getEmitente();
 
         $this->load->helper('mpdf');
@@ -408,6 +444,8 @@ class Viagens extends MY_Controller
             'locar_lastro' => $this->input->post('locar_lastro') ? 1 : 0,
             'locar_cilindro' => (int)$this->input->post('locar_cilindro'),
             'locar_regulador' => (int)$this->input->post('locar_regulador'),
+            'locar_lanterna' => $this->input->post('locar_lanterna') ? 1 : 0,
+            'locar_computador' => $this->input->post('locar_computador') ? 1 : 0,
         ];
     }
 
@@ -465,6 +503,8 @@ class Viagens extends MY_Controller
                 'locar_neoprene' => $this->input->post('locar_neoprene_instrutor') ? 1 : 0,
                 'locar_regulador' => (int)$this->input->post('locar_regulador_instrutor') ?: 0,
                 'locar_lastro' => $this->input->post('locar_lastro_instrutor') ? 1 : 0,
+                'locar_lanterna' => $this->input->post('locar_lanterna_instrutor') ? 1 : 0,
+                'locar_computador' => $this->input->post('locar_computador_instrutor') ? 1 : 0,
                 'precisa_hospedagem' => $this->input->post('precisa_hospedagem_instrutor') ? 1 : 0,
             ];
             if ($this->viagem_instrutores_model->add($data)) {

@@ -1,22 +1,6 @@
 <?php
 class Viagem_instrutores_model extends CI_Model
 {
-    public function get($table, $fields, $where = '', $perpage = 0, $start = 0, $one = false, $array = 'array')
-    {
-        $this->db->select($fields);
-        $this->db->from($table);
-        $this->db->order_by('id', 'desc');
-        if ($where) {
-            $this->db->where($where);
-        }
-        if ($perpage) {
-            $this->db->limit($perpage, $start);
-        }
-        $query = $this->db->get();
-        $result = !$one ? $query->result() : $query->row();
-        return $result;
-    }
-
     public function getById($id)
     {
         $this->db->where('id', $id);
@@ -26,11 +10,17 @@ class Viagem_instrutores_model extends CI_Model
 
     public function getByViagem($viagem_id)
     {
-        $this->db->select('viagem_instrutores.*, usuarios.nome as nome_instrutor, usuarios.cpf as cpf_instrutor, usuarios.telefone as telefone_instrutor, usuarios.tamanho_colete, usuarios.tamanho_neoprene, usuarios.tamanho_nadadeira, usuarios.peso_lastro');
+        $this->db->select('viagem_instrutores.*, usuarios.nome as nome_instrutor, usuarios.cpf as cpf_instrutor, usuarios.telefone as telefone_instrutor, usuarios.tamanho_colete, usuarios.tamanho_neoprene, usuarios.tamanho_nadadeira, usuarios.peso_lastro, usuarios.atestado_medico_validade, usuarios.possui_regulador, usuarios.possui_lanterna, usuarios.possui_computador, usuarios.qtd_reguladores, usuarios.qtd_lanterna, usuarios.qtd_computador, viagem_instrutores.hospedagem_quarto_numero, viagem_instrutores.hospedagem_tipo_quarto, viagem_instrutores.hospedagem_numero_camas, viagem_instrutores.detalhes_hospedagem');
         $this->db->from('viagem_instrutores');
-        $this->db->join('usuarios', 'usuarios.idUsuarios = viagem_instrutores.usuario_id');
+        $this->db->join('usuarios', 'usuarios.idUsuarios = viagem_instrutores.usuario_id', 'left'); // Changed to LEFT JOIN
         $this->db->where('viagem_instrutores.viagem_id', $viagem_id);
-        return $this->db->get()->result();
+        $query = $this->db->get();
+        if ($query === false) {
+            // Loga o erro do banco de dados para depuração
+            log_message('error', 'Database error in getByViagem method of Viagem_instrutores_model: ' . $this->db->error()['message']);
+            return []; // Retorna um array vazio para evitar erros subsequentes
+        }
+        return $query->result();
     }
 
     public function add($data)

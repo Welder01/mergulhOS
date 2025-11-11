@@ -393,6 +393,14 @@
                             <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="locar_lastro_instrutor" value="1"><span class="slider"></span></label>
                             <span>Lastro</span>
                         </div>
+                        <div class="toggle-container">
+                            <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="locar_lanterna_instrutor" value="1"><span class="slider"></span></label>
+                            <span>Lanterna</span>
+                        </div>
+                        <div class="toggle-container">
+                            <label class="switch small-toggle" style="margin-right: 10px;"><input type="checkbox" name="locar_computador_instrutor" value="1"><span class="slider"></span></label>
+                            <span>Computador</span>
+                        </div>
                     </div>
                     <div class="controls" style="margin-top: 15px;">
                         <label class="control-label" style="width: 60px; text-align: left;">Cilindros:</label>
@@ -843,6 +851,14 @@
                                 <label class="switch"><input type="checkbox" name="locar_lastro" id="edit_instrutor_locar_lastro" value="1"><span class="slider"></span></label>
                                 <label for="edit_instrutor_locar_lastro" style="margin: 0;">Lastro</label>
                             </div>
+                            <div class="toggle-container">
+                                <label class="switch"><input type="checkbox" name="locar_lanterna" id="edit_instrutor_locar_lanterna" value="1"><span class="slider"></span></label>
+                                <label for="edit_instrutor_locar_lanterna" style="margin: 0;">Lanterna</label>
+                            </div>
+                            <div class="toggle-container">
+                                <label class="switch"><input type="checkbox" name="locar_computador" id="edit_instrutor_locar_computador" value="1"><span class="slider"></span></label>
+                                <label for="edit_instrutor_locar_computador" style="margin: 0;">Computador</label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1011,6 +1027,8 @@ $(document).ready(function() {
         $('#edit_instrutor_locar_lastro').prop('checked', instrutorData.locar_lastro == 1);
         $('#edit_instrutor_locar_cilindro').val(instrutorData.locar_cilindro);
         $('#edit_instrutor_locar_regulador').val(instrutorData.locar_regulador);
+        $('#edit_instrutor_locar_lanterna').prop('checked', instrutorData.locar_lanterna == 1);
+        $('#edit_instrutor_locar_computador').prop('checked', instrutorData.locar_computador == 1);
     });
 
 
