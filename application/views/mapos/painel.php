@@ -180,6 +180,22 @@
                         </div>
                     </a>
 
+                    <a href="<?php echo base_url(); ?>index.php/cursos/adicionar" class="card tip-top" title="Adicionar Curso">
+                        <div><i class='bx bxs-book-bookmark iconBx'></i></div>
+                        <div>
+                            <div class="cardName2"><?= $this->db->count_all('cursos'); ?></div>
+                            <div class="cardName">Cursos</div>
+                        </div>
+                    </a>
+
+                    <a href="<?php echo base_url(); ?>index.php/viagens/adicionar" class="card tip-top" title="Adicionar Viagem">
+                        <div><i class='bx bxs-paper-plane iconBx2'></i></div>
+                        <div>
+                            <div class="cardName2"><?= $this->db->count_all('viagens'); ?></div>
+                            <div class="cardName">Viagens</div>
+                        </div>
+                    </a>
+
                     <a href="<?php echo base_url(); ?>index.php/garantias" class="card tip-top" title="Adicionar garantia">
                         <div><i class='bx bxs-receipt iconBx6'></i></div>
                         <div>
