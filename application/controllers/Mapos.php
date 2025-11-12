@@ -573,6 +573,11 @@ class Mapos extends MY_Controller {
             $end,
             $status
         );
+        $allViagens = $this->mapos_model->calendarioViagens(
+            $start,
+            $end,
+            $status
+        );
 
         $events = array_map(function ($os) {
             switch ($os->status) {
@@ -632,29 +637,52 @@ class Mapos extends MY_Controller {
             ];
         }, $allOs);
 
-        $eventosCursos = array_map(function ($curso) {
-            return [
-                'title' => "Curso: {$curso->nome_curso}",
+        $eventosCursos = [];
+        foreach ($allCursos as $curso) {
+            // Evento de Início do Curso
+            $eventosCursos[] = [
+                'title' => "INÍCIO Curso: {$curso->nome_curso}",
                 'start' => $curso->data_inicio,
-                'end' => $curso->data_fim ?: $curso->data_inicio,
-                'color' => '#8A2BE2', // Cor roxa para cursos
-                'extendedProps' => [
-                    'id' => $curso->id,
-                    'cliente' => "<b>Curso:</b> {$curso->nome_curso}",
-                    'dataInicial' => '<b>Data Inicial:</b> ' . date('d/m/Y', strtotime($curso->data_inicio)),
-                    'dataFinal' => '<b>Data Final:</b> ' . ($curso->data_fim ? date('d/m/Y', strtotime($curso->data_fim)) : 'N/A'),
-                    'status' => '<b>Status:</b> ' . html_escape(ucfirst($curso->status)),
-                    'description' => '<b>Descrição:</b> ' . strip_tags(html_entity_decode($curso->descricao)),
-                    'defeito' => '',
-                    'observacoes' => '',
-                ],
+                'color' => '#28a745', // Verde
+                'url'   => base_url() . 'index.php/cursos/visualizar/' . $curso->id,
             ];
-        }, $allCursos);
+
+            // Evento de Fim do Curso
+            if ($curso->data_fim && $curso->data_fim != '0000-00-00') {
+                $eventosCursos[] = [
+                    'title' => "FIM Curso: {$curso->nome_curso}",
+                    'start' => $curso->data_fim,
+                    'color' => '#dc3545', // Vermelho
+                    'url'   => base_url() . 'index.php/cursos/visualizar/' . $curso->id,
+                ];
+            }
+        }
+
+        $eventosViagens = [];
+        foreach ($allViagens as $viagem) {
+            // Evento de Partida da Viagem
+            $eventosViagens[] = [
+                'title' => "PARTIDA Viagem: {$viagem->nome_viagem}",
+                'start' => $viagem->data_partida,
+                'color' => '#17a2b8', // Azul
+                'url'   => base_url() . 'index.php/viagens/visualizar/' . $viagem->id,
+            ];
+
+            // Evento de Retorno da Viagem
+            if ($viagem->data_retorno && $viagem->data_retorno != '0000-00-00') {
+                $eventosViagens[] = [
+                    'title' => "RETORNO Viagem: {$viagem->nome_viagem}",
+                    'start' => $viagem->data_retorno,
+                    'color' => '#ffc107', // Amarelo
+                    'url'   => base_url() . 'index.php/viagens/visualizar/' . $viagem->id,
+                ];
+            }
+        }
 
         return $this->output
             ->set_content_type('application/json')
             ->set_status_header(200)
-            ->set_output(json_encode(array_merge($events, $eventosCursos)));
+            ->set_output(json_encode(array_merge($events, $eventosCursos, $eventosViagens)));
     }
 
     private function editDontEnv(array $data)

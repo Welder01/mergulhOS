@@ -203,6 +203,9 @@ class Os extends MY_Controller
         if ($this->form_validation->run('os') == false) {
             $this->data['custom_error'] = (validation_errors() ? '<div class="form_error">' . validation_errors() . '</div>' : false);
         } else {
+            $idOs = $this->input->post('idOs');
+            $osAtual = $this->os_model->getById($idOs);
+
             $dataInicial = $this->input->post('dataInicial');
             $dataFinal = $this->input->post('dataFinal');
             $termoGarantiaId = $this->input->post('garantias_id') ?: null;
@@ -230,6 +233,43 @@ class Os extends MY_Controller
                 'usuarios_id' => $this->input->post('usuarios_id'),
                 'clientes_id' => $this->input->post('clientes_id'),
             ];
+
+            // Verifica se o cliente foi alterado
+            if ($osAtual->clientes_id != $data['clientes_id']) {
+                $clienteAntigoId = $osAtual->clientes_id;
+                $clienteNovoId = $data['clientes_id'];
+
+                $this->load->model('cursos_model');
+                $this->load->model('viagens_model');
+                $this->load->model('curso_alunos_model');
+                $this->load->model('viagem_clientes_model');
+
+                // Cursos: remove cliente antigo e adiciona novo
+                $cursosOs = $this->os_model->getCursos($idOs);
+                foreach ($cursosOs as $curso) {
+                    $inscricaoAntiga = $this->curso_alunos_model->getInscricao($curso->cursos_id, $clienteAntigoId);
+                    if ($inscricaoAntiga) {
+                        $this->cursos_model->remover_aluno($inscricaoAntiga->id);
+                    }
+                    $this->cursos_model->adicionar_aluno($curso->cursos_id, $clienteNovoId);
+                }
+
+                // Viagens: remove cliente antigo e adiciona novo
+                $viagensOs = $this->os_model->getViagens($idOs);
+                foreach ($viagensOs as $viagem) {
+                    $inscricaoAntiga = $this->viagem_clientes_model->getInscricao($viagem->viagens_id, $clienteAntigoId);
+                    if ($inscricaoAntiga) {
+                        $this->viagens_model->remover_cliente($inscricaoAntiga->id);
+                    }
+                    $this->viagens_model->adicionar_cliente($viagem->viagens_id, $clienteNovoId);
+                }
+
+                if (count($cursosOs) > 0 || count($viagensOs) > 0) {
+                    $this->session->set_flashdata('info', 'O cliente da OS foi alterado. As inscrições em cursos e viagens vinculados foram atualizadas para o novo cliente.');
+                }
+            }
+
+
             $os = $this->os_model->getById($this->input->post('idOs'));
 
             //Verifica para poder fazer a devolução do produto para o estoque caso OS seja cancelada.

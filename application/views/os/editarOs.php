@@ -1059,6 +1059,29 @@
             unhighlight: function (element, errorClass, validClass) {
                 $(element).parents('.control-group').removeClass('error');
                 $(element).parents('.control-group').addClass('success');
+            },
+            submitHandler: function(form) {
+                var clienteAtual = '<?= $result->clientes_id ?>';
+                var clienteNovo = $('#clientes_id').val();
+
+                if (clienteAtual !== clienteNovo) {
+                    Swal.fire({
+                        title: 'Atenção!',
+                        text: "Você está alterando o cliente desta OS. As inscrições em cursos e viagens vinculados serão transferidas para o novo cliente. Deseja continuar?",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Sim, continuar!',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    })
+                } else {
+                    form.submit();
+                }
             }
         });
 

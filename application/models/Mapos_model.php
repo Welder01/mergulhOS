@@ -161,6 +161,24 @@ class Mapos_model extends CI_Model
         return $this->db->get()->result();
     }
 
+    public function calendarioViagens($start, $end, $status)
+    {
+        $this->db->select('id, nome_viagem, data_partida, data_retorno, status');
+        $this->db->from('viagens');
+
+        if ($start) {
+            $this->db->where('data_partida >=', $start);
+        }
+        if ($end) {
+            $this->db->where('data_partida <=', $end);
+        }
+        if ($status) {
+            $this->db->where_in('status', $status);
+        }
+
+        return $this->db->get()->result();
+    }
+
     public function getOsAprovadas()
     {
         $this->db->select('os.*, clientes.nomeCliente');
