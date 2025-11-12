@@ -93,7 +93,7 @@
                             <div class="controls">
                                 <select id="status" name="status">
                                     <option value="Aberta" <?= set_select('status', 'Aberta'); ?>>Aberta</option>
-                                    <option value="Concluida" <?= set_select('status', 'Concluida'); ?>>Concluída</option>
+                                    <option value="Concluída" <?= set_select('status', 'Concluída'); ?>>Concluída</option>
                                     <option value="Prevista" <?= set_select('status', 'Prevista'); ?>>Prevista</option>
                                     <option value="Disponível" <?= set_select('status', 'Disponível'); ?>>Disponível</option>
                                     <option value="Indisponível" <?= set_select('status', 'Indisponível'); ?>>Indisponível</option>

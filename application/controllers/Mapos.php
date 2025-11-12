@@ -20,6 +20,8 @@ class Mapos extends MY_Controller {
         $this->data['ordens_aguardando'] = $this->mapos_model->getOsAguardandoPecas();
         $this->data['ordens_andamento'] = $this->mapos_model->getOsAndamento();
         $this->data['cursos_andamento'] = $this->mapos_model->getCursosAndamento();
+        $this->data['viagens_andamento'] = $this->mapos_model->getUltimasViagens();
+        $this->data['ultimos_cursos'] = $this->mapos_model->getUltimosCursos();
         $this->data['produtos'] = $this->mapos_model->getProdutosMinimo();
         $this->data['os'] = $this->mapos_model->getOsEstatisticas();
         $this->data['estatisticas_financeiro'] = $this->mapos_model->getEstatisticasFinanceiro();

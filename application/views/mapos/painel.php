@@ -749,6 +749,147 @@
 
     <div class="widget-box0 widbox-blak">
         <div>
+            <h5 class="cardHeader">Últimas Viagens Cadastradas</h5>
+        </div>
+        <div class="widget-content">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>N°</th>
+                        <th>Viagem</th>
+                        <th>Data Partida</th>
+                        <th>Vagas</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if ($viagens_andamento) : ?>
+                        <?php foreach ($viagens_andamento as $v) : ?>
+                            <?php
+                                    switch (strtolower($v->status)) {
+                                        case 'aberta':
+                                            $cor = '#00cd00';
+                                            break;
+                                        case 'disponível':
+                                            $cor = '#436eee';
+                                            break;
+                                        case 'concluída':
+                                        case 'concluida':
+                                            $cor = '#256';
+                                            break;
+                                        case 'prevista':
+                                            $cor = '#CDB380';
+                                            break;
+                                        case 'indisponível':
+                                            $cor = '#808080';
+                                            break;
+                                        case 'adiada':
+                                        case 'prorrogada':
+                                            $cor = '#FF7F00';
+                                            break;
+                                        case 'cancelada':
+                                            $cor = '#436eee';
+                                            break;
+                                        default:
+                                            $cor = '#E0E4CC';
+                                            break;
+                                    }
+                                ?>
+                            <tr>
+                                <td><?= $v->id ?></td>
+                                <td class="cli1"><?= $v->nome_viagem ?></td>
+                                <td><?php if ($v->data_partida != null) {
+                                    echo date('d/m/Y', strtotime($v->data_partida));
+                                } else {
+                                    echo "";
+                                } ?></td>
+                                <td><?= $v->vagas ?> de <?= $v->vagas_total ?></td>
+                                <td><span class="badge" style="background-color: <?= $cor ?>; border-color: <?= $cor ?>;"><?= $v->status ?></span></td>
+                                <td>
+                                    <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vViagem')) : ?>
+                                        <a href="<?= base_url() ?>index.php/viagens/visualizar/<?= $v->id ?>" class="btn-nwe tip-top" title="Visualizar"><i class="bx bx-show"></i></a>
+                                    <?php endif ?>
+                                </td>
+                            </tr>
+                        <?php endforeach ?>
+                    <?php else : ?>
+                        <tr>
+                            <td colspan="6">Nenhuma Viagem Cadastrada.</td>
+                        </tr>
+                    <?php endif ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="widget-box0 widbox-blak">
+        <div>
+            <h5 class="cardHeader">Últimos Cursos Cadastrados</h5>
+        </div>
+        <div class="widget-content">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>N°</th>
+                        <th>Curso</th>
+                        <th>Data Início</th>
+                        <th>Vagas</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if ($ultimos_cursos) : ?>
+                        <?php foreach ($ultimos_cursos as $c) : ?>
+                            <?php
+                                    switch (strtolower($c->status)) {
+                                        case 'ativo':
+                                            $cor = '#00cd00';
+                                            break;
+                                        case 'em andamento':
+                                            $cor = '#436eee';
+                                            break;
+                                        case 'finalizado':
+                                            $cor = '#256';
+                                            break;
+                                        case 'inativo':
+                                            $cor = '#CD0000';
+                                            break;
+                                        default:
+                                            $cor = '#E0E4CC';
+                                            break;
+                                    }
+                                ?>
+                            <tr>
+                                <td><?= $c->id ?></td>
+                                <td class="cli1"><?= $c->nome_curso ?></td>
+                                <td><?php if ($c->data_inicio != null) {
+                                    echo date('d/m/Y', strtotime($c->data_inicio));
+                                } else {
+                                    echo "";
+                                } ?></td>
+                                <td><?= $c->vagas ?> de <?= $c->vagas_total ?></td>
+                                <td><span class="badge" style="background-color: <?= $cor ?>; border-color: <?= $cor ?>;"><?= $c->status ?></span></td>
+                                <td>
+                                    <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vCurso')) : ?>
+                                        <a href="<?= base_url() ?>index.php/cursos/visualizar/<?= $c->id ?>" class="btn-nwe tip-top" title="Visualizar"><i class="bx bx-show"></i></a>
+                                    <?php endif ?>
+                                </td>
+                            </tr>
+                        <?php endforeach ?>
+                    <?php else : ?>
+                        <tr>
+                            <td colspan="6">Nenhum Curso Cadastrado.</td>
+                        </tr>
+                    <?php endif ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="widget-box0 widbox-blak">
+        <div>
             <h5 class="cardHeader">Ordens de Serviços Finalizadas</h5>
         </div>
         <div class="widget-content">

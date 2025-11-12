@@ -179,6 +179,26 @@ class Mapos_model extends CI_Model
         return $this->db->get()->result();
     }
 
+    public function getUltimasViagens()
+    {
+        $this->db->select('*');
+        $this->db->from('viagens');
+        $this->db->order_by('id', 'DESC');
+        $this->db->limit(10);
+
+        return $this->db->get()->result();
+    }
+
+    public function getUltimosCursos()
+    {
+        $this->db->select('*');
+        $this->db->from('cursos');
+        $this->db->order_by('id', 'DESC');
+        $this->db->limit(10);
+
+        return $this->db->get()->result();
+    }
+
     public function getOsAprovadas()
     {
         $this->db->select('os.*, clientes.nomeCliente');
