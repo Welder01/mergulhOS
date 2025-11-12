@@ -1,264 +1,199 @@
-<link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
 <style>
-    .cardBox .card {
-        min-height: 130px; /* Aumenta a altura mínima do card */
-    }
-    .cardBox .card a {
-        text-decoration: none;
-        color: inherit;
+    /* Estilos para os cards de atalho - Padrão Dashboard */
+    .card-atalho {
+        position: relative;
+        background: linear-gradient(45deg, #fff, #f9f9f9);
+        padding: 10px;
+        border-radius: 12px;
         display: flex;
         flex-direction: column;
-        justify-content: center;
         align-items: center;
-        height: 100%;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.3s ease-in-out;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        width: 110px;
+        height: 90px;
+        text-align: center;
+        border: 1px solid #eee;
+    }
+
+    .card-atalho:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-atalho .icon-atalho {
+        font-size: 2em;
+        margin-bottom: 5px;
+        transition: 0.3s;
+    }
+
+    .card-atalho span {
+        font-size: 0.85em;
+        font-weight: 500;
+        color: #555;
+        transition: 0.3s;
+    }
+
+    .card-atalho:hover .icon-atalho,
+    .card-atalho:hover span {
+        color: #fff;
+    }
+
+    .card-atalho.c1 .icon-atalho { color: #28a745; } .card-atalho.c1:hover { background: #28a745; border-color: #28a745; }
+    .card-atalho.c2 .icon-atalho { color: #17a2b8; } .card-atalho.c2:hover { background: #17a2b8; border-color: #17a2b8; }
+    .card-atalho.c3 .icon-atalho { color: #ffc107; } .card-atalho.c3:hover { background: #ffc107; border-color: #ffc107; }
+    .card-atalho.c4 .icon-atalho { color: #dc3545; } .card-atalho.c4:hover { background: #dc3545; border-color: #dc3545; }
+    .card-atalho.c5 .icon-atalho { color: #6f42c1; } .card-atalho.c5:hover { background: #6f42c1; border-color: #6f42c1; }
+    .card-atalho.c6 .icon-atalho { color: #fd7e14; } .card-atalho.c6:hover { background: #fd7e14; border-color: #fd7e14; }
+
+    /* Estilos do alerta */
+    .modern-alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        font-size: 1.1em;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .modern-alert.alert-warning {
+        color: #856404;
+        background-color: #fff3cd;
+        border-color: #ffeeba;
+    }
+    .modern-alert .alert-icon {
+        font-size: 1.5em;
+        margin-right: 15px;
     }
 </style>
-
-<div class="quick-actions_homepage">
-    <ul class="cardBox">
-        <li class="card">
-            <a href="<?php echo base_url() ?>index.php/mine/minhasViagens">
-                <div class="lord-icon04">
-                    <i class='bx bx-paper-plane iconBx04'></i>
-                </div>
-                <div class="numbers">Minhas Viagens</div>
-            </a>
-        </li>
-        <li class="card">
-            <a href="<?php echo base_url() ?>index.php/mine/os">
-                <div class="lord-icon04">
-                    <i class='bx bx-file iconBx04'></i>
-                </div>
-                <div class="numbers">Ordens de Serviço</div>
-            </a>
-        </li>
-        <li class="card">
-            <a href="<?php echo base_url() ?>index.php/mine/compras">
-                <div class="lord-icon05">
-                    <i class='bx bx-cart-alt iconBx05'></i>
-                </div>
-                <div class="numbers">Compras</div>
-            </a>
-        </li>
-        <li class="card">
-            <a href="<?php echo base_url() ?>index.php/mine/cobrancas">
-                <div class="lord-icon05">
-                    <i class='bx bx-credit-card-front iconBx05'></i>
-                </div>
-                <div class="numbers">Cobranças</div>
-            </a>
-        </li>
-        <li class="card">
-            <a href="<?php echo base_url() ?>index.php/mine/conta">
-                <div class="lord-icon07">
-                    <i class='bx bx-user-circle iconBx07'></i>
-                </div>
-                <div class="numbers">Minha Conta</div>
-            </a>
-        </li>
-    </ul>
-</div>
-
 <div class="span12" style="margin-left: 0">
-    <div class="widget-box">
-        <div class="widget-title" style="margin: -20px 0 0">
-            <span class="icon"><i class="fas fa-signal"></i></span>
-            <h5>Últimas Ordens de Serviço</h5>
+
+    <div class="span12" style="margin-left: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 20px;">
+        <div class="card-atalho c1" onclick="location.href='<?= base_url() ?>index.php/mine/conta'">
+            <i class='bx bx-user-circle icon-atalho'></i>
+            <span>Minha Conta</span>
         </div>
-        <div class="widget-content">
-            <table id="tabela" class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Nº</th>
-                        <th>Responsável</th>
-                        <th>Data Inicial</th>
-                        <th>Data Final</th>
-                        <th>Venc. da Garantia</th>
-                        <th>Status</th>
-                        <th style="text-align:right">Visualizar / Imprimir</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    if ($os != null) {
-                        foreach ($os as $o) {
-                            $vencGarantia = '';
-
-                            if ($o->garantia && is_numeric($o->garantia)) {
-                                $vencGarantia = dateInterval($o->dataFinal, $o->garantia);
-                            }
-                            $corGarantia = '';
-                            if (!empty($vencGarantia)) {
-                                $dataGarantia = explode('/', $vencGarantia);
-                                $dataGarantiaFormatada = $dataGarantia[2] . '-' . $dataGarantia[1] . '-' . $dataGarantia[0];
-                            if (strtotime($dataGarantiaFormatada) >= strtotime(date('d-m-Y'))) {
-                                    $corGarantia = '#4d9c79';
-                            } else {
-                                    $corGarantia = '#f24c6f';
-                            }
-                            } elseif ($o->garantia == "0") {
-                                $vencGarantia = 'Sem Garantia';
-                                $corGarantia = '';
-                            } else {
-                                $vencGarantia = '';
-                                $corGarantia = '';
-                            }
-
-                            switch ($o->status) {
-                                case 'Aberto':
-                                    $cor = '#00cd00';
-                                    break;
-                                case 'Em Andamento':
-                                    $cor = '#436eee';
-                                    break;
-                                case 'Orçamento':
-                                    $cor = '#CDB380';
-                                    break;
-                                case 'Negociação':
-                                    $cor = '#AEB404';
-                                    break;
-                                case 'Cancelado':
-                                    $cor = '#CD0000';
-                                    break;
-                                case 'Finalizado':
-                                    $cor = '#256';
-                                    break;
-                                case 'Faturado':
-                                    $cor = '#B266FF';
-                                    break;
-                                case 'Aguardando Peças':
-                                    $cor = '#FF7F00';
-                                    break;
-                                case 'Aprovado':
-                                    $cor = '#808080';
-                                    break;
-                                default:
-                                    $cor = '#E0E4CC';
-                                    break;
-                            }
-
-                            echo '<tr>';
-                            echo '<td>' . $o->idOs . '</td>';
-                            echo '<td>' . $o->nome . '</td>';
-                            echo '<td>' . date('d/m/Y', strtotime($o->dataInicial)) . '</td>';
-                            echo '<td>' . date('d/m/Y', strtotime($o->dataFinal)) . '</td>';
-                            echo '<td><span class="badge" style="background-color: ' . $corGarantia . '; border-color: ' . $corGarantia . '">' . $vencGarantia . '</span> </td>';
-                            echo '<td><span class="badge" style="background-color: ' . $cor . '; border-color: ' . $cor . '">' . $o->status . '</span> </td>';
-                            echo '<td style="text-align:right">';
-                            echo '<a href="' . base_url() . 'index.php/mine/visualizarOs/' . $o->idOs . '" class="btn"> <i class="fas fa-eye" ></i></a> ';
-                            echo '<a href="' . base_url('index.php/mine/imprimirOs/' . $o->idOs) . '" class="btn" target="_blank"> <i class="fas fa-print"></i></a>';
-                            echo '</td>';
-                            echo '</tr>';
-                        }
-                    } else {
-                        echo '<tr><td colspan="3">Nenhum ordem de serviço encontrada.</td></tr>';
-                    }
-
-            ?>
-                </tbody>
-            </table>
+        <div class="card-atalho c2" onclick="location.href='<?= base_url() ?>index.php/mine/os'">
+            <i class='bx bx-spreadsheet icon-atalho'></i>
+            <span>Ordens</span>
+        </div>
+        <div class="card-atalho c3" onclick="location.href='<?= base_url() ?>index.php/mine/compras'">
+            <i class='bx bx-cart-alt icon-atalho'></i>
+            <span>Compras</span>
+        </div>
+        <div class="card-atalho c4" onclick="location.href='<?= base_url() ?>index.php/mine/cobrancas'">
+            <i class='bx bx-credit-card-front icon-atalho'></i>
+            <span>Cobranças</span>
+        </div>
+        <div class="card-atalho c5" onclick="location.href='<?= base_url() ?>index.php/mine/minhasViagens'">
+            <i class='bx bxs-paper-plane icon-atalho'></i>
+            <span>Viagens</span>
+        </div>
+        <div class="card-atalho c6" onclick="location.href='<?= base_url() ?>index.php/mine/meusCursos'">
+            <i class='bx bxs-book-bookmark icon-atalho'></i>
+            <span>Cursos</span>
         </div>
     </div>
 
+    <?php if ($alerta_perfil_incompleto) : ?>
+        <div class="modern-alert alert-warning">
+            <i class="fas fa-exclamation-triangle alert-icon"></i>
+            <div>
+                <strong>Atenção!</strong> Seu perfil de saúde e equipamentos está incompleto. Para garantir que tudo esteja pronto para sua próxima viagem, por favor, 
+                <a href="<?= site_url('mine/conta?tab=saude') ?>" style="font-weight: bold; text-decoration: underline;">clique aqui para atualizar suas informações</a>.
+            </div>
+        </div>
+    <?php endif; ?>
+
     <div class="widget-box">
-        <div class="widget-title" style="margin: -20px 0 0">
+        <div class="widget-title">
             <span class="icon"><i class="fas fa-signal"></i></span>
             <h5>Últimas Compras</h5>
+            <div class="buttons">
+                <a title="Ver mais" class="btn btn-mini" href="<?= site_url('mine/compras') ?>"><i class="fas fa-eye"></i></a>
+            </div>
         </div>
         <div class="widget-content">
             <table id="tabela" class="table table-bordered">
                 <thead>
                     <tr>
                         <th>#</th>
+                        <th>Data da Compra</th>
                         <th>Responsável</th>
-                        <th>Data da Venda</th>
                         <th>Faturado</th>
-                        <th>Venc. da Garantia</th>
-                        <th>Status</th>
-                        <th style="text-align:right">Visualizar / Imprimir</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
-            if ($compras != null) {
-                foreach ($compras as $c) {
-                    $vencGarantia = '';
-
-                            if ($c->garantia && is_numeric($c->garantia)) {
-                                $vencGarantia = dateInterval($c->dataVenda, $c->garantia);
+                    if ($compras != null) {
+                        foreach ($compras as $p) {
+                            if ($p->faturado == 1) {
+                                $faturado = 'Sim';
+                            } else {
+                                $faturado = 'Não';
                             }
-                            $corGarantia = '';
-                            if (!empty($vencGarantia)) {
-                                    $dataGarantia = explode('/', $vencGarantia);
-                                    $dataGarantiaFormatada = $dataGarantia[2] . '-' . $dataGarantia[1] . '-' . $dataGarantia[0];
-                                if (strtotime($dataGarantiaFormatada) >= strtotime(date('d-m-Y'))) {
-                                    $corGarantia = '#4d9c79';
-                                } else {
-                                    $corGarantia = '#f24c6f';
-                                }
-                                } elseif ($c->garantia == "0") {
-                                    $vencGarantia = 'Sem Garantia';
-                                    $corGarantia = '';
-                                } else {
-                                    $vencGarantia = '';
-                                    $corGarantia = '';
-                                }
-                            if ($c->faturado == 1) {
-                                    $faturado = 'Sim';
-                                } else {
-                                    $faturado = 'Não';
-                                }
-                    
-                    switch ($c->status) {
-                        case 'Aberto':
-                            $cor = '#00cd00';
-                            break;
-                        case 'Em Andamento':
-                            $cor = '#436eee';
-                            break;
-                        case 'Orçamento':
-                            $cor = '#CDB380';
-                            break;
-                        case 'Negociação':
-                            $cor = '#AEB404';
-                            break;
-                        case 'Cancelado':
-                            $cor = '#CD0000';
-                            break;
-                        case 'Finalizado':
-                            $cor = '#256';
-                            break;
-                        case 'Faturado':
-                            $cor = '#B266FF';
-                            break;
-                        case 'Aguardando Peças':
-                            $cor = '#FF7F00';
-                            break;
-                        case 'Aprovado':
-                            $cor = '#808080';
-                            break;
-                        default:
-                            $cor = '#E0E4CC';
-                            break;
+                            echo '<tr>';
+                            echo '<td>' . $p->idVendas . '</td>';
+                            echo '<td>' . date('d/m/Y', strtotime($p->dataVenda)) . '</td>';
+                            echo '<td>' . $p->nome . '</td>';
+                            echo '<td>' . $faturado . '</td>';
+                            echo '<td> <a href="' . base_url() . 'index.php/mine/visualizarCompra/' . $p->idVendas . '" class="btn-nwe" title="Ver mais detalhes"><i class="bx bx-show"></i></a>
+                                  <a href="' . base_url() . 'index.php/mine/imprimirCompra/' . $p->idVendas . '" target="_blank" class="btn-nwe6" title="Imprimir"><i class="bx bx-printer"></i></a></td>';
+                            echo '</tr>';
+                        }
+                    } else {
+                        echo '<tr><td colspan="5">Nenhuma compra realizada</td></tr>';
                     }
-                    echo '<tr>';
-                    echo '<td>' . $c->idVendas . '</td>';
-                    echo '<td>' . $c->nome . '</td>';
-                    echo '<td>' . date('d/m/Y', strtotime($c->dataVenda)) . '</td>';
-                    echo '<td>' . $faturado . '</td>';
-                    echo '<td><span class="badge" style="background-color: ' . $corGarantia . '; border-color: ' . $corGarantia . '">' . $vencGarantia . '</span> </td>';
-                    echo '<td><span class="badge" style="background-color: ' . $cor . '; border-color: ' . $cor . '">' . $c->status . '</span> </td>';
-                    echo '<td style="text-align:right">';
-                    echo '<a href="' . base_url() . 'index.php/mine/visualizarCompra/' . $c->idVendas . '" class="btn"> <i class="fas fa-eye" ></i> </a> ';
-                    echo '<a href="' . base_url() . 'index.php/mine/imprimirCompra/' . $c->idVendas . '" class="btn"> <i class="fas fa-print" ></i> </a>';
-                    echo '</td>';
-                    echo '</tr>';
-                }
-            } else {
-                echo '<tr><td colspan="5">Nenhum venda encontrada.</td></tr>';
-            }
+                    ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
-            ?>
+<div class="span12" style="margin-left: 0">
+    <div class="widget-box">
+        <div class="widget-title">
+            <span class="icon"><i class="fas fa-diagnoses"></i></span>
+            <h5>Últimas Ordens</h5>
+            <div class="buttons">
+                <a title="Ver mais" class="btn btn-mini" href="<?= site_url('mine/os') ?>"><i class="fas fa-eye"></i></a>
+            </div>
+        </div>
+        <div class="widget-content">
+            <table id="tabela" class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Data Inicial</th>
+                        <th>Data Final</th>
+                        <th>Responsável</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    if ($os != null) {
+                        foreach ($os as $o) {
+                            echo '<tr>';
+                            echo '<td>' . $o->idOs . '</td>';
+                            echo '<td>' . date('d/m/Y', strtotime($o->dataInicial)) . '</td>';
+                            echo '<td>' . date('d/m/Y', strtotime($o->dataFinal)) . '</td>';
+                            echo '<td>' . $o->nome . '</td>';
+                            echo '<td>' . $o->status . '</td>';
+                            echo '<td> <a href="' . base_url() . 'index.php/mine/visualizarOs/' . $o->idOs . '" class="btn-nwe" title="Ver mais detalhes"><i class="bx bx-show"></i></a>
+                                  <a href="' . base_url() . 'index.php/mine/imprimirOs/' . $o->idOs . '" target="_blank" class="btn-nwe6" title="Imprimir"><i class="bx bx-printer"></i></a></td>';
+                            echo '</tr>';
+                        }
+                    } else {
+                        echo '<tr><td colspan="6">Nenhuma OS cadastrada</td></tr>';
+                    }
+                    ?>
                 </tbody>
             </table>
         </div>

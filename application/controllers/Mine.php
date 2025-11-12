@@ -10,6 +10,7 @@ class Mine extends MY_Controller
     {
         parent::__construct();
         $this->load->model('viagens_model');
+        $this->load->model('curso_alunos_model');
         $this->load->model('cursos_model');
         $this->load->model('mapos_model');
         $this->load->library('upload');
@@ -301,6 +302,31 @@ class Mine extends MY_Controller
         $this->data['compras'] = $this->Conecte_model->getLastCompras($this->session->userdata('cliente_id'));
         $this->data['os'] = $this->Conecte_model->getLastOs($this->session->userdata('cliente_id'));
         $this->data['output'] = 'conecte/painel';
+
+        // Verifica se o cliente está em alguma viagem futura e se o perfil está incompleto
+        $this->data['alerta_perfil_incompleto'] = false;
+        $viagensCliente = $this->viagens_model->getViagensByCliente($this->session->userdata('cliente_id'));
+        $temViagemFutura = false;
+        foreach ($viagensCliente as $viagem) {
+            if (strtotime($viagem->data_partida) >= strtotime(date('Y-m-d'))) {
+                $temViagemFutura = true;
+                break;
+            }
+        }
+
+        if ($temViagemFutura) {
+            $cliente = $this->Conecte_model->getDados();
+            $camposObrigatorios = [
+                'altura', 'peso', 'contato_emergencia_nome', 'contato_emergencia_telefone', 'atestado_medico_validade'
+            ];
+            foreach ($camposObrigatorios as $campo) {
+                if (empty($cliente->$campo)) {
+                    $this->data['alerta_perfil_incompleto'] = true;
+                    break;
+                }
+            }
+        }
+
         $this->load->view('conecte/template', $this->data);
     }
 

@@ -122,4 +122,14 @@ class Cursos_model extends CI_Model
             return ['success' => false, 'message' => 'Erro ao remover aluno.'];
         }
     }
+
+    public function getCursosByCliente($cliente_id)
+    {
+        $this->db->select('cursos.*, curso_alunos.data_inscricao, curso_alunos.status_aluno');
+        $this->db->from('cursos');
+        $this->db->join('curso_alunos', 'curso_alunos.curso_id = cursos.id');
+        $this->db->where('curso_alunos.cliente_id', $cliente_id);
+        $this->db->order_by('cursos.data_inicio', 'DESC');
+        return $this->db->get()->result();
+    }
 }

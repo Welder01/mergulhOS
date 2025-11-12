@@ -27,31 +27,84 @@
             align-items: center;
             gap: 5px;
         }
+        /* Estilos para a notificação moderna */
+        .notification-bell .dropdown-toggle {
+            position: relative;
+            font-size: 1.2em;
+        }
+        .notification-bell .label-important {
+            position: absolute;
+            top: 2px;
+            right: 105px;
+            height: 18px;
+            width: 18px;
+            line-height: 17px;
+            border-radius: 50%;
+            font-size: 10px;
+            text-align: center;
+            background-color: #dc3545;
+            border: 2px solid #2e363f;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .notification-bell.has-notification .fa-bell {
+            animation: bell-ring 1.5s ease-in-out infinite;
+            transform-origin: top center;
+        }
+        @keyframes bell-ring {
+            0%, 100% { transform: rotate(0); }
+            10%, 30%, 50%, 70%, 90% { transform: rotate(10deg); }
+            20%, 40%, 60%, 80% { transform: rotate(-10deg); }
+        }
+        .notification-bell .dropdown-menu {
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .notification-bell .dropdown-menu a {
+            padding: 10px 15px;
+            font-size: 0.95em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .notification-bell .dropdown-menu .badge {
+            font-size: 1.1em;
+        }
     </style>
 </head>
 
 <body>
-    <!--Header-part-->
+    <!--top-Header-menu-->
     <div id="header">
         <h1><a href="dashboard.html"><?php echo $this->config->item('app_name'); ?></a></h1>
     </div>
-    <!--close-Header-part-->
-
-    <!--top-Header-menu-->
-    <div class="navebarn" style="margin-top: -60px;height: 25px;margin-bottom: 15px">
+    <div class="navebarn" style="margin-top: -60px; height: 25px; margin-bottom: 15px;">
         <div id="user-nav" class="navbar navbar-inverse">
             <ul class="nav">
-                <li class="dropdown" id="menu-messages">
-                    <a href="#" data-toggle="dropdown" data-target="#menu-messages" class="dropdown-toggle">
-                        <i class="fas fa-bell"></i>
-                        <span class="text">Notificações</span>
-                        <span class="label label-important">0</span>
-                        <b class="caret"></b>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="sAdd" title="" href="#">Nenhuma notificação nova</a></li>
-                    </ul>
-                </li>
+                <?php
+                    $has_notification = isset($alerta_perfil_incompleto) && $alerta_perfil_incompleto;
+                ?>
+                <li class="dropdown notification-bell <?= $has_notification ? 'has-notification' : '' ?>" id="menu-messages">
+                    <?php if ($has_notification) : ?>
+                        <a href="#" data-toggle="dropdown" data-target="#menu-messages" class="dropdown-toggle">
+                            <i class="fas fa-bell"></i>
+                            <span class="text">Notificações</span>
+                            <span class="label label-important">1</span>
+                            <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="sAdd" title="Perfil Incompleto" href="<?= site_url('mine/conta?tab=saude') ?>"><i class="fas fa-exclamation-triangle" style="color: #f89406;"></i> Perfil Incompleto! Clique para atualizar.</a></li>
+                        </ul>
+                    </li>
+                <?php else : ?>
+                        <a href="#" data-toggle="dropdown" data-target="#menu-messages" class="dropdown-toggle">
+                            <i class="fas fa-bell"></i> <span class="text">Notificações</span>
+                            <span class="label label-important">0</span> <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="sAdd" title="" href="#">Nenhuma notificação nova</a></li>
+                        </ul>
+                <?php endif; ?>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class='bx bx-user-circle iconN1'></i> <?= $this->session->userdata('nome') ?> </a>
                     <ul class="dropdown-menu">
@@ -93,13 +146,16 @@
                                 }; ?>"><a class="tip-bottom" title="" href="<?php echo base_url() ?>index.php/mine/conta"><i class="bx bx-user-circle iconX"></i> <span class="title">Minha Contas</span></a></li>
                     <li class="<?php if (isset($menuOs)) {
                                     echo 'active';
-                                }; ?>"><a class="tip-bottom" title="" href="<?php echo base_url() ?>index.php/mine/os"><i class='bx bx-spreadsheet iconX'></i> <span class="title">Ordens de Serviço</span></a></li>
+                                }; ?>"><a class="tip-bottom" title="" href="<?php echo base_url() ?>index.php/mine/os"><i class='bx bx-spreadsheet iconX'></i> <span class="title">Ordens</span></a></li>
                     <li class="<?php if (isset($menuVendas)) {
                                     echo 'active';
                                 }; ?>"><a class="tip-bottom" title="" href="<?php echo base_url() ?>index.php/mine/compras"><i class='bx bx-cart-alt iconX'></i> <span class="title">Compras</span></a></li>
                     <li class="<?php if (isset($menuCobrancas)) {
                                     echo 'active';
                                 }; ?>"><a class="tip-bottom" title="" href="<?php echo base_url() ?>index.php/mine/cobrancas"><i class='bx bx-credit-card-front iconX'></i> <span class="title">Cobranças</span></a></li>
+                    <li class="<?php if (isset($menuCursos)) {
+                                    echo 'active';
+                                }; ?>"><a class="tip-bottom" title="" href="<?php echo base_url() ?>index.php/mine/meusCursos"><i class='bx bxs-book-bookmark iconX'></i> <span class="title">Cursos</span></a></li>
                 </ul>
             </div>
 
