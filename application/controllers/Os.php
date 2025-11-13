@@ -514,12 +514,14 @@ class Os extends MY_Controller
         $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
         $this->data['viagens'] = $this->os_model->getViagens($this->uri->segment(3));
         $this->data['emitente'] = $this->mapos_model->getEmitente();
-        $this->data['qrCode'] = $this->os_model->getQrCode(
-            $this->uri->segment(3),
-            $this->data['configuration']['pix_key'],
-            $this->data['emitente']
-        );
-        $this->data['chaveFormatada'] = $this->formatarChave($this->data['configuration']['pix_key']);
+        if ($this->data['configuration']['pix_key']) {
+            $this->data['qrCode'] = $this->os_model->getQrCode(
+                $this->uri->segment(3),
+                $this->data['configuration']['pix_key'],
+                $this->data['emitente']
+            );
+            $this->data['chaveFormatada'] = $this->formatarChave($this->data['configuration']['pix_key']);
+        }
 
         $this->load->view('os/imprimirOsTermica', $this->data);
     }
@@ -1265,21 +1267,22 @@ class Os extends MY_Controller
             $os_id = $this->input->post('os_id');
             $valorTotalData = $this->os_model->valorTotalOS($os_id);
 
-            $valorTotalServico = $valorTotalData['totalServico'];
-            $valorTotalProduto = $valorTotalData['totalProdutos'];
-            $valorTotalCursos = $valorTotalData['totalCursos'];
-            $valorTotalViagens = $valorTotalData['totalViagens'];
-            $valorDesconto = $valorTotalData['valor_desconto'];
+            if (empty($valorTotalData) || ($valorTotalData['totalServico'] == 0 && $valorTotalData['totalProdutos'] == 0 && $valorTotalData['totalCursos'] == 0 && $valorTotalData['totalViagens'] == 0)) {
+                $this->session->set_flashdata('error', 'Não foi possível calcular o valor da OS.');
+                redirect(site_url('os/editar/') . $os_id);
+                return;
+            }
 
-            $valorTotal = $valorTotalServico + $valorTotalProduto + $valorTotalCursos + $valorTotalViagens;
-            $valorTotalComDesconto = $valorTotal - $valorDesconto;
+            $totalBruto = $valorTotalData['totalServico'] + $valorTotalData['totalProdutos'] + $valorTotalData['totalCursos'] + $valorTotalData['totalViagens'];
+            $desconto = $this->os_model->getById($os_id)->desconto ?: 0;
+            $valorFinal = $totalBruto - $desconto;
 
             $data = [
                 'descricao' => $this->input->post('descricao'),
-                'valor' => $valorTotal,
+                'valor' => $totalBruto,
                 'tipo_desconto' => 'real',
-                'desconto' => ($valorDesconto > 0) ? $valorTotalComDesconto : 0,
-                'valor_desconto' => ($valorDesconto > 0) ? $valorDesconto : $valorTotal,
+                'desconto' => $desconto,
+                'valor_desconto' => $valorFinal,
                 'clientes_id' => $this->input->post('clientes_id'),
                 'data_vencimento' => $vencimento,
                 'data_pagamento' => $recebimento,
@@ -1304,16 +1307,9 @@ class Os extends MY_Controller
 
             if ($this->os_model->add('lancamentos', $data)) {
                 $this->db->set('faturado', 1);
-                $this->db->set('valorTotal', $valorTotal);
-
-                if ($valorDesconto > 0) {
-                    $this->db->set('desconto', $valorTotalComDesconto);
-                    $this->db->set('valor_desconto', $valorDesconto);
-                } else {
-                    $this->db->set('desconto', 0);
-                    $this->db->set('valor_desconto', $valorTotal);
-                }
-
+                $this->db->set('valorTotal', $totalBruto);
+                $this->db->set('desconto', $desconto);
+                $this->db->set('valor_desconto', $valorFinal);
                 $this->db->set('status', 'Faturado');
                 $this->db->where('idOs', $os_id);
                 $this->db->update('os');

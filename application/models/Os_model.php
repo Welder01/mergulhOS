@@ -395,10 +395,20 @@ class Os_model extends CI_Model
             return;
         }
 
-        $result = $this->valorTotalOS($id);
-        $amount = $result['valor_desconto'] != 0 ? round(floatval($result['valor_desconto']), 2) : round(floatval($result['totalServico'] + $result['totalProdutos']), 2);
+        $os = $this->getById($id);
+        if (!$os) {
+            return;
+        }
 
-        if ($amount <= 0) {
+        $valores = $this->valorTotalOS($id);
+        if (empty($valores)) return;
+
+        // O valor_desconto já é o valor final com desconto aplicado.
+        $amount = round(floatval($valores['valor_desconto']), 2);
+
+        if ($amount <= 0 && ($valores['totalServico'] > 0 || $valores['totalProdutos'] > 0 || $valores['totalCursos'] > 0 || $valores['totalViagens'] > 0)) {
+            $amount = round(floatval($valores['totalServico'] + $valores['totalProdutos'] + $valores['totalCursos'] + $valores['totalViagens']), 2);
+        } elseif ($amount <= 0) {
             return;
         }
 
