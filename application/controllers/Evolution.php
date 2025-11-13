@@ -361,23 +361,32 @@ class Evolution extends MY_Controller
             } else { // "todos"
                 $cursosIds = $this->input->post('cursos_ids') ? explode(',', $this->input->post('cursos_ids')) : [];
                 $viagensIds = $this->input->post('viagens_ids') ? explode(',', $this->input->post('viagens_ids')) : [];
+                $aniversariantesSemana = $this->input->post('aniversariantes_semana');
                 
-                $clientesCursos = !empty($cursosIds) ? $this->evolution_model->getClientesByCurso($cursosIds) : null;
-                $clientesViagens = !empty($viagensIds) ? $this->evolution_model->getClientesByViagem($viagensIds) : [];
-
-                if ($clientesCursos !== null && $clientesViagens !== null) {
-                    $idsCursos = array_map(function($c) { return $c->idClientes; }, $clientesCursos);
-                    $idsViagens = array_map(function($v) { return $v->idClientes; }, $clientesViagens);
-                    $clientesIds = array_intersect($idsCursos, $idsViagens);
-                    if(!empty($clientesIds)) {
-                        $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getContatos($clientesIds, 'clientes', 'idClientes'));
-                    }
-                } elseif ($clientesCursos !== null) {
-                    $contatosParaEnvio = array_merge($contatosParaEnvio, $clientesCursos);
-                } elseif ($clientesViagens !== null) {
-                    $contatosParaEnvio = array_merge($contatosParaEnvio, $clientesViagens);
+                if ($aniversariantesSemana) {
+                    $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getAniversariantesDaSemana());
                 } else {
-                    $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getAllContatos('clientes'));
+                    $clientesCursos = !empty($cursosIds) ? $this->evolution_model->getClientesByCurso($cursosIds) : null;
+                    $clientesViagens = !empty($viagensIds) ? $this->evolution_model->getClientesByViagem($viagensIds) : [];
+
+                    if ($clientesCursos !== null && !empty($clientesViagens)) {
+                        $idsCursos = array_map(function ($c) {
+                            return $c->idClientes;
+                        }, $clientesCursos);
+                        $idsViagens = array_map(function ($v) {
+                            return $v->idClientes;
+                        }, $clientesViagens);
+                        $clientesIds = array_intersect($idsCursos, $idsViagens);
+                        if (!empty($clientesIds)) {
+                            $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getContatos($clientesIds, 'clientes', 'idClientes'));
+                        }
+                    } elseif ($clientesCursos !== null) {
+                        $contatosParaEnvio = array_merge($contatosParaEnvio, $clientesCursos);
+                    } elseif (!empty($clientesViagens)) {
+                        $contatosParaEnvio = array_merge($contatosParaEnvio, $clientesViagens);
+                    } else {
+                        $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getAllContatos('clientes'));
+                    }
                 }
             }
         }
@@ -535,15 +544,20 @@ class Evolution extends MY_Controller
     {
         if ($this->input->get('term')) {
             $q = strtolower($this->input->get('term'));
+        } elseif ($this->input->get('ids')) {
+            $q = $this->input->get('ids');
+        } else {
+            return $this->output->set_content_type('application/json')->set_output(json_encode([]));
+        }
 
-            if ($alvo === 'clientes') {
+        if ($alvo === 'clientes') {
                 $this->db->select("idClientes as id, CONCAT('ID: ', idClientes, ' | ', nomeCliente, ' | Cel: ', celular) as text", false);
-                $this->db->like('LOWER(nomeCliente)', $q);
+            $this->input->get('ids') ? $this->db->where_in('idClientes', explode(',', $q)) : $this->db->like('LOWER(nomeCliente)', $q);
                 $this->db->limit(10);
                 $query = $this->db->get('clientes');
             } elseif ($alvo === 'usuarios') {
                 $this->db->select("idUsuarios as id, CONCAT('ID: ', idUsuarios, ' | ', nome, ' | Cel: ', celular) as text", false);
-                $this->db->like('LOWER(nome)', $q);
+                $this->input->get('ids') ? $this->db->where_in('idUsuarios', explode(',', $q)) : $this->db->like('LOWER(nome)', $q);
                 $this->db->limit(10);
                 $query = $this->db->get('usuarios');
             } else {
@@ -551,12 +565,10 @@ class Evolution extends MY_Controller
             }
 
             $result = $query->result();
-            return $this->output
-                ->set_content_type('application/json')
-                ->set_output(json_encode(['results' => $result])); // O Select2 espera um objeto com a chave 'results'
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($result));
         }
-        return $this->output->set_content_type('application/json')->set_output(json_encode([]));
-    }
 
     public function log_ajax_error()
     {

@@ -685,9 +685,20 @@ class Viagens extends MY_Controller
     {
         if (isset($_GET['term'])) {
             $q = strtolower($this->input->get('term'));
-            $result = $this->viagens_model->autoCompleteViagem($q);
-            return $this->output->set_content_type('application/json')->set_output(json_encode($result));
+            $this->db->select("id, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as nome", false);
+            $this->db->like('LOWER(nome_viagem)', $q);
+        } elseif (isset($_GET['ids'])) {
+            $ids = explode(',', $_GET['ids']);
+            $this->db->select("id, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as nome", false);
+            $this->db->where_in('id', $ids);
+        } else {
+            return $this->output->set_content_type('application/json')->set_output(json_encode([]));
         }
-        return $this->output->set_content_type('application/json')->set_output(json_encode([]));
+
+        $this->db->limit(10);
+        $query = $this->db->get('viagens');
+        $result = $query->result();
+
+        return $this->output->set_content_type('application/json')->set_output(json_encode($result));
     }
 }

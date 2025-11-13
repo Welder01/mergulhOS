@@ -288,13 +288,19 @@
                     <div class="control-group">
                         <label class="control-label" for="select_cursos">Filtrar por Cursos</label>
                         <div class="controls">
-                            <input type="hidden" name="cursos_ids" id="select_cursos" class="span11">
+                            <input type="hidden" name="cursos_ids" id="select_cursos_filtro" class="span11">
                         </div>
                     </div>
                     <div class="control-group">
                         <label class="control-label" for="select_viagens">Filtrar por Viagens</label>
                         <div class="controls">
-                            <input type="hidden" name="viagens_ids" id="select_viagens" class="span11">
+                            <input type="hidden" name="viagens_ids" id="select_viagens_filtro" class="span11">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Outros Filtros</label>
+                        <div class="controls">
+                            <label class="checkbox inline"><input type="checkbox" name="aniversariantes_semana" value="1"> Aniversariantes da Semana</label>
                         </div>
                     </div>
                 </div>
@@ -426,8 +432,8 @@
                     minimumInputLength: 2,
                     allowClear: true,
                     multiple: true,
-                    width: '100%',
-                    dropdownParent: $('#modalEnviar'),
+                    width: '100%', // Garante que o select ocupe todo o espaço do contêiner
+                    dropdownParent: $(document.body),
                     ajax: {
                         url: ajaxUrl,
                         dataType: 'json',
@@ -438,7 +444,9 @@
                                 page: page
                             };
                         },
-                        results: function(data, page) { return data; },
+                        results: function(data, page) {
+                            return { results: data };
+                        },
                         error: function(jqXHR, textStatus, errorThrown) {
                             console.error('Select2 AJAX Error:', textStatus, errorThrown);
                             console.error('Response Text:', jqXHR.responseText);
@@ -460,6 +468,28 @@
                                 error: function(serverJqXHR, serverTextStatus, serverErrorThrown) {
                                     console.error('Failed to log error on server:', serverTextStatus, serverErrorThrown);
                                 }
+                            });
+                        }
+                    },
+                    formatResult: function(item) {
+                        return item.text || item.nome; // Adapta para diferentes nomes de propriedade
+                    },
+                    formatSelection: function(item) {
+                        return item.text || item.nome;
+                    },
+                    initSelection: function (element, callback) {
+                        var ids = $(element).val();
+                        if (ids !== "") {
+                            $.ajax(ajaxUrl, {
+                                data: {
+                                    ids: ids // Envia os IDs para a API
+                                },
+                                dataType: "json",
+                                async: false // Garante que a busca seja concluída antes de continuar
+                            }).done(function(data) {
+                                // O Select2 para múltiplos valores espera um array
+                                var results = Array.isArray(data) ? data : [data];
+                                callback(results);
                             });
                         }
                     }
@@ -499,7 +529,7 @@
             // Reseta o formulário
             $('#formEnviarMensagem')[0].reset();
             $('input[name="alvo[]"]').prop('checked', false).trigger('change');
-            $('#select_clientes, #select_usuarios, #select_cursos, #select_viagens').val(null).trigger('change');
+            $('#select_clientes, #select_usuarios, #select_cursos_filtro, #select_viagens_filtro').val(null).trigger('change');
             
             // Define os valores iniciais
             $('#modalTitle').text('Enviar Mensagem: ' + titulo);
@@ -512,8 +542,8 @@
             // Inicializa os Select2
             initSelect2('#select_clientes', 'Digite para buscar clientes...', '<?= base_url("index.php/evolution/autoComplete/clientes") ?>');
             initSelect2('#select_usuarios', 'Digite para buscar usuários...', '<?= base_url("index.php/evolution/autoComplete/usuarios") ?>');
-            initSelect2('#select_cursos', 'Digite para buscar cursos...', '<?= base_url("index.php/cursos/autoCompleteCurso") ?>');
-            initSelect2('#select_viagens', 'Digite para buscar viagens...', '<?= base_url("index.php/viagens/autoCompleteViagem") ?>');
+            initSelect2('#select_cursos_filtro', 'Digite para buscar cursos...', '<?= base_url("index.php/cursos/autoCompleteCurso") ?>');
+            initSelect2('#select_viagens_filtro', 'Digite para buscar viagens...', '<?= base_url("index.php/viagens/autoCompleteViagem") ?>');
 
             $('#modalEnviar').modal('show');
         });
@@ -622,6 +652,15 @@
             }).catch(err => {
                 console.error('Erro ao copiar: ', err);
             });
+        });
+
+        // Solução alternativa sugerida: desativa a rolagem do body quando o modal está aberto
+        // para evitar que o dropdown do Select2 se desprenda do campo.
+        $('#modalEnviar').on('show', function () {
+            $('body').css('overflow', 'hidden');
+        }).on('hidden', function () {
+            // Garante que a rolagem seja reativada ao fechar o modal
+            $('body').css('overflow', 'auto');
         });
 
     });

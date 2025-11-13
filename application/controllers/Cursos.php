@@ -604,19 +604,22 @@ class Cursos extends MY_Controller
     {
         if (isset($_GET['term'])) {
             $q = strtolower($this->input->get('term'));
-            $this->db->select('id, nome_curso, data_inicio, preco');
-            $this->db->like('nome_curso', $q);
-            $this->db->limit(5);
-            $query = $this->db->get('cursos');
-            $result = array_map(function ($curso) {
-                return [
-                    'id' => $curso->id,
-                    'label' => 'ID: ' . $curso->id . ' | Curso: ' . $curso->nome_curso . ' | Início: ' . date('d/m/Y', strtotime($curso->data_inicio)),
-                    'preco' => $curso->preco,
-                ];
-            }, $query->result());
-            return $this->output->set_content_type('application/json')->set_output(json_encode($result));
+            $this->db->select("id, CONCAT('ID: ', id, ' | ', nome_curso, ' | Início: ', DATE_FORMAT(data_inicio, '%d/%m/%Y')) as nome", false);
+            $this->db->like('LOWER(nome_curso)', $q);
+        } elseif (isset($_GET['ids'])) {
+            $ids = explode(',', $_GET['ids']);
+            $this->db->select("id, CONCAT('ID: ', id, ' | ', nome_curso, ' | Início: ', DATE_FORMAT(data_inicio, '%d/%m/%Y')) as nome", false);
+            $this->db->where_in('id', $ids);
+        } else {
+            return $this->output->set_content_type('application/json')->set_output(json_encode([]));
         }
-        return $this->output->set_content_type('application/json')->set_output(json_encode([]));
+
+        $this->db->limit(10);
+        $query = $this->db->get('cursos');
+        $result = $query->result();
+
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($result));
     }
 }
