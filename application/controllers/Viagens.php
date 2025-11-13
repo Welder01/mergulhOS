@@ -81,6 +81,7 @@ class Viagens extends MY_Controller
         $viagem_id = $this->viagens_model->add('viagens', $data);
         if ($viagem_id) {
             $cursos = $this->input->post('cursos');
+                $this->log_auditoria('Adicionou uma nova viagem: ' . $data['nome_viagem']);
             if ($cursos) {
                 foreach ($cursos as $curso_id) {
                     $this->viagem_cursos_model->add(['viagem_id' => $viagem_id, 'curso_id' => $curso_id]);
@@ -137,6 +138,7 @@ class Viagens extends MY_Controller
         ];
 
         if ($this->viagens_model->edit('viagens', $data, 'id', $id)) {
+            $this->log_auditoria('Editou a viagem: ' . $data['nome_viagem'] . ' (ID: ' . $id . ')');
             // Limpa os cursos antigos e adiciona os novos
             $this->viagem_cursos_model->clearViagemCursos($id);
             $cursos = $this->input->post('cursos');
@@ -297,8 +299,11 @@ class Viagens extends MY_Controller
             redirect(base_url());
         }
         $id = $this->input->post('id');
+        $viagem = $this->viagens_model->getById($id);
+
         if ($this->viagens_model->delete('viagens', 'id', $id)) {
             $this->session->set_flashdata('success', 'Viagem excluída com sucesso!');
+            $this->log_auditoria('Excluiu a viagem: ' . $viagem->nome_viagem . ' (ID: ' . $id . ')');
         } else {
             $this->session->set_flashdata('error', 'Ocorreu um erro ao excluir a viagem.');
         }
@@ -333,6 +338,11 @@ class Viagens extends MY_Controller
 
         $resultado = $this->viagens_model->adicionar_cliente($viagem_id, $cliente_id, $data);
 
+        if ($resultado['success']) {
+            $viagem = $this->viagens_model->getById($viagem_id);
+            $cliente = $this->clientes_model->getById($cliente_id);
+            $this->log_auditoria('Adicionou o cliente "' . $cliente->nomeCliente . '" à viagem "' . $viagem->nome_viagem . '"');
+        }
         $this->session->set_flashdata(
             $resultado['success'] ? 'success' : 'error',
             $resultado['message']
@@ -452,6 +462,10 @@ class Viagens extends MY_Controller
 
         if ($cliente_viagem) {
             $resultado = $this->viagens_model->remover_cliente($id);
+            if ($resultado['success']) {
+                $viagem = $this->viagens_model->getById($cliente_viagem->viagem_id);
+                $this->log_auditoria('Removeu o cliente "' . $cliente_viagem->nomeCliente . '" da viagem "' . $viagem->nome_viagem . '"');
+            }
             $this->session->set_flashdata($resultado['success'] ? 'success' : 'error', $resultado['message']);
             redirect('viagens/visualizar/' . $cliente_viagem->viagem_id . '?tab=tabClientes');
         } else {

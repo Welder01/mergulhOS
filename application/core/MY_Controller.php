@@ -64,4 +64,18 @@ class MY_Controller extends CI_Controller
         $this->load->view('tema/conteudo');
         $this->load->view('tema/rodape');
     }
+
+    public function log_auditoria($tarefa, $usuario = null)
+    {
+        $this->load->model('Audit_model');
+
+        $log_data = [
+            'usuario' => $usuario ?: $this->session->userdata('nome_admin'),
+            'tarefa' => $tarefa,
+            'data' => date('Y-m-d'),
+            'hora' => date('H:i:s'),
+            'ip' => $this->input->ip_address()
+        ];
+        $this->Audit_model->add('logs', $log_data);
+    }
 }
