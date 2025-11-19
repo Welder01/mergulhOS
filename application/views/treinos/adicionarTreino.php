@@ -2,6 +2,7 @@
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <script src="<?php echo base_url() ?>assets/js/jquery.validate.js"></script>
 <script src="<?php echo base_url(); ?>assets/js/maskmoney.js"></script>
+<script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
 
 <div class="row-fluid" style="margin-top:0">
     <div class="span12">
@@ -34,6 +35,16 @@
                             <input id="duracao_minutos" type="number" name="duracao_minutos" value="60" />
                         </div>
                     </div>
+
+                    <div class="control-group">
+                        <label for="instrutores" class="control-label">Instrutores</label>
+                        <div class="controls">
+                            <input id="instrutores_input" type="text" name="instrutores_input" placeholder="Digite para buscar..." />
+                            <div id="instrutores_selecionados" style="margin-top: 5px;"></div>
+                            <input id="instrutores_ids" type="hidden" name="instrutores_ids" value="" />
+                        </div>
+                    </div>
+
 
                     <div class="control-group">
                         <label for="preco_sem_instrutor" class="control-label">Preço Sem Instrutor<span class="required">*</span></label>
@@ -104,6 +115,55 @@
 <script type="text/javascript">
     $(document).ready(function() {
         $(".money").maskMoney({decimal:",", thousands:"."});
-        // Adicione aqui as regras de validação do formulário com jQuery Validate
+
+        $('#formTreino').validate({
+            // Suas regras de validação aqui
+            // Exemplo:
+        });
+
+        $("#instrutores_input").autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: "<?php echo base_url(); ?>index.php/treinos/autoCompleteInstrutores",
+                    dataType: "json",
+                    data: {
+                        term: request.term
+                    },
+                    success: function(data) {
+                        response(data);
+                    }
+                });
+            },
+            minLength: 2,
+            select: function(event, ui) {
+                var instrutores_ids = $("#instrutores_ids").val().split(',');
+                if (instrutores_ids.indexOf(ui.item.id) == -1) {
+                    $('#instrutores_selecionados').append('<div class="instrutor_tag" style="display: inline-block; background: #eee; padding: 5px; margin: 2px; border-radius: 5px;">' + ui.item.label + ' <a href="#" data-id="' + ui.item.id + '" class="remover_instrutor" style="color: red; text-decoration: none;">&times;</a></div>');
+                    
+                    if ($("#instrutores_ids").val() != "") {
+                        $("#instrutores_ids").val($("#instrutores_ids").val() + ',' + ui.item.id);
+                    } else {
+                        $("#instrutores_ids").val(ui.item.id);
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Atenção',
+                        text: 'Este instrutor já foi adicionado.'
+                    });
+                }
+                $("#instrutores_input").val('');
+                return false;
+            }
+        });
+
+        $(document).on('click', '.remover_instrutor', function(e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var instrutores_ids = $("#instrutores_ids").val().split(',');
+            var new_ids = instrutores_ids.filter(function(item) { return item != id; });
+            $("#instrutores_ids").val(new_ids.join(','));
+            $(this).parent().remove();
+        });
     });
 </script>

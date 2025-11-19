@@ -20,6 +20,14 @@ class Treinos extends MY_Controller
     public function index()
     {
         $this->data['results'] = $this->treinos_model->get('treinos_config', '*', '', 100, 0, false);
+
+        $this->db->select('ta.*, tc.nome as nome_treino, c.nomeCliente as nome_cliente');
+        $this->db->from('treinos_agendados as ta');
+        $this->db->join('treinos_config as tc', 'tc.id = ta.config_id');
+        $this->db->join('clientes as c', 'c.idClientes = ta.cliente_id');
+        $this->db->order_by('ta.data_hora_inicio', 'DESC');
+        $this->data['agendamentos'] = $this->db->get()->result();
+
         $this->data['menuTreinos'] = 'active';
         $this->data['view'] = 'treinos/treinos';
 
@@ -57,6 +65,7 @@ class Treinos extends MY_Controller
                 'horario_inicio' => $this->input->post('horario_inicio'),
                 'horario_fim' => $this->input->post('horario_fim'),
                 'status' => $this->input->post('status'),
+                'instrutores_ids' => $this->input->post('instrutores_ids'),
             ];
 
             if ($this->treinos_model->add('treinos_config', $data) == true) {
@@ -109,6 +118,7 @@ class Treinos extends MY_Controller
                 'horario_inicio' => $this->input->post('horario_inicio'),
                 'horario_fim' => $this->input->post('horario_fim'),
                 'status' => $this->input->post('status'),
+                'instrutores_ids' => $this->input->post('instrutores_ids'),
             ];
 
             if ($this->treinos_model->edit('treinos_config', $data, 'id', $this->input->post('id')) == true) {
@@ -142,5 +152,51 @@ class Treinos extends MY_Controller
         log_info('Removeu uma configuração de treino. ID: ' . $id);
         $this->session->set_flashdata('success', 'Configuração de treino excluída com sucesso!');
         redirect(site_url('treinos'));
+    }
+
+    public function autoCompleteInstrutores()
+    {
+        if (isset($_GET['term'])) {
+            $q = strtolower($this->input->get('term'));
+            $this->db->select('idUsuarios, nome, cpf, celular, telefone');
+            $this->db->group_start();
+            $this->db->like('LOWER(nome)', $q);
+            $this->db->or_like('cpf', $q);
+            $this->db->group_end();
+            $this->db->limit(10);
+            $query = $this->db->get('usuarios');
+            
+            $result = [];
+            foreach ($query->result() as $row) {
+                $nomeCompleto = explode(' ', $row->nome);
+                $nomeCurto = $nomeCompleto[0] . (isset($nomeCompleto[1]) ? ' ' . $nomeCompleto[1] : '');
+                $telefone = !empty($row->celular) ? $row->celular : $row->telefone;
+
+                $label = $nomeCurto . ' (CPF: ' . $row->cpf . ' | Cel: ' . $telefone . ')';
+                $result[] = ['id' => $row->idUsuarios, 'label' => $label];
+            }
+            echo json_encode($result);
+        }
+    }
+
+    public function getInstrutoresInfo()
+    {
+        $ids = $this->input->post('ids');
+        if (!empty($ids)) {
+            $this->db->select('idUsuarios, nome, cpf, celular, telefone');
+            $this->db->where_in('idUsuarios', $ids);
+            $query = $this->db->get('usuarios');
+            
+            $result = [];
+            foreach ($query->result() as $row) {
+                $nomeCompleto = explode(' ', $row->nome);
+                $nomeCurto = $nomeCompleto[0] . (isset($nomeCompleto[1]) ? ' ' . $nomeCompleto[1] : '');
+                $telefone = !empty($row->celular) ? $row->celular : $row->telefone;
+                $label = $nomeCurto . ' (CPF: ' . $row->cpf . ' | Cel: ' . $telefone . ')';
+                
+                $result[] = ['id' => $row->idUsuarios, 'label' => $label];
+            }
+            echo json_encode($result);
+        }
     }
 }

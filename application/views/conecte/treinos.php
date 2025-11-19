@@ -1,7 +1,10 @@
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
 <!-- Adicionando FullCalendar e jQuery UI para o calendário e datepicker -->
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/css/fullcalendar.css" />
 <!-- Adicionando a nova biblioteca DateTimePicker -->
 <link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/jquery.datetimepicker.min.css"/ >
+<script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
+<script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
 <style>
     .switch {
         position: relative;
@@ -69,7 +72,7 @@
                     </div>
                     <div class="span4">
                         <label for="data_hora_treino">Data e Hora<span class="required">*</span></label>
-                        <input type="text" name="data_hora_treino" id="data_hora_treino" class="span12" required readonly placeholder="Selecione o tipo de treino primeiro">
+                        <input type="text" name="data_hora_treino" id="data_hora_treino" class="span12" required readonly="readonly" placeholder="Selecione o tipo de treino primeiro">
                     </div>
                     <div class="span3" style="padding-top: 25px; display: flex; align-items: center; gap: 10px;">
                         <label class="switch">
@@ -219,8 +222,8 @@
                     type: 'GET',
                     data: { config_id: config_id },
                     dataType: 'json',
-                    success: function(response) {
-                        datetimepicker.setOptions({ allowDates: response.allowedDates, step: response.duration });
+                    success: function(response) { 
+                        $('#data_hora_treino').datetimepicker({ allowDates: response.allowedDates, step: parseInt(response.duration) });
                         allowedTimes = response.allowedTimes;
                         datetimepicker.attr('placeholder', 'Selecione a data e hora').prop('disabled', false);
                     },

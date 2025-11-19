@@ -1302,7 +1302,7 @@ class Mine extends MY_Controller
             return $this->output->set_status_header(400)->set_output(json_encode(['error' => 'ID do treino não fornecido.']));
         }
 
-        $config = $this->treinos_model->getById('treinos_config', $config_id);
+        $config = $this->treinos_model->getById($config_id);
         if (!$config) {
             return $this->output->set_status_header(404)->set_output(json_encode(['error' => 'Configuração do treino não encontrada.']));
         }

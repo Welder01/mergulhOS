@@ -8,7 +8,7 @@
 
     <div class="widget-content nopadding">
         <div class="text-left" style="margin: 10px;">
-            <a href="<?php echo site_url('treinos/adicionarConfiguracao'); ?>" class="button btn btn-success">
+            <a href="<?php echo site_url('treinos/adicionarConfiguracao'); ?>" class="button btn btn-mini btn-success" style="width: 180px;">
                 <span class="button__icon"><i class='bx bx-plus-circle'></i></span>
                 <span class="button__text2">Nova Configuração</span>
             </a>
@@ -68,6 +68,52 @@
         </div>
     </form>
 </div>
+
+<!-- Tabela de Treinos Agendados -->
+<div class="widget-box" style="margin-top: 20px;">
+    <div class="widget-title">
+        <span class="icon">
+            <i class="fas fa-calendar-check"></i>
+        </span>
+        <h5>Treinos Agendados</h5>
+    </div>
+
+    <div class="widget-content nopadding">
+        <table class="table table-bordered ">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Treino</th>
+                    <th>Cliente</th>
+                    <th>Data/Hora Início</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                if (!$agendamentos) {
+                    echo '<tr><td colspan="6">Nenhum Treino Agendado</td></tr>';
+                }
+                foreach ($agendamentos as $a) {
+                    echo '<tr>';
+                    echo '<td>' . $a->id . '</td>';
+                    echo '<td>' . $a->nome_treino . '</td>';
+                    echo '<td>' . $a->nome_cliente . '</td>';
+                    echo '<td>' . date('d/m/Y H:i', strtotime($a->data_hora_inicio)) . '</td>';
+                    echo '<td>' . ucfirst($a->status) . '</td>';
+                    echo '<td>';
+                    // Adicione aqui links para visualizar ou editar o agendamento, se necessário
+                    // Exemplo: echo '<a href="' . site_url('treinos/visualizarAgendamento/' . $a->id) . '" class="btn-nwe" title="Visualizar"><i class="bx bx-show"></i></a>';
+                    echo '</td>';
+                    echo '</tr>';
+                }
+                ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
 
 <script type="text/javascript">
     $(document).ready(function() {
