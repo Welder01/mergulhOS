@@ -8,6 +8,17 @@
 
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/css/custom.css" />
 
+<style>
+    /* Z-index alto para garantir que o autocomplete fique na frente de outros elementos. */
+    .ui-autocomplete {
+        z-index: 9999 !important;
+    }
+    /* Ajuste de largura para o autocomplete de produtos e serviços */
+    .ui-autocomplete.ui-menu {
+        width: 400px; /* Você pode ajustar este valor conforme necessário */
+    }
+</style>
+
 <div class="row-fluid" style="margin-top:0">
     <div class="span12">
         <div class="widget-box">
@@ -362,6 +373,10 @@
                                         <input type="text" class="span12" name="curso" id="curso" placeholder="Digite o nome do curso" />
                                     </div>
                                     <div class="span2">
+                                        <label for="">Quantidade</label>
+                                        <input type="text" placeholder="Quantidade" id="quantidade_curso" name="quantidade" class="span12" value="1" />
+                                    </div>
+                                    <div class="span2">
                                         <label for="">Preço</label>
                                         <input type="text" placeholder="Preço" id="preco_curso" name="preco" class="span12 money" />
                                     </div>
@@ -387,7 +402,7 @@
                                             foreach ($cursos as $c) {
                                                 $totalCursos += $c->preco;
                                                 echo '<tr>';
-                                                echo '<td>' . $c->nome_curso . '</td>';
+                                                echo '<td>' . $c->nome . '</td>';
                                                 echo '<td>R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
                                                 echo '<td><div align="center"><a href="" idAcao="' . $c->idCursos_os . '" title="Excluir Curso" class="btn-nwe4 curso"><i class="bx bx-trash-alt"></i></a></div></td>';
                                                 echo '</tr>';
@@ -415,6 +430,10 @@
                                         <input type="text" class="span12" name="viagem" id="viagem" placeholder="Digite o nome da viagem" />
                                     </div>
                                     <div class="span2">
+                                        <label for="">Quantidade</label>
+                                        <input type="text" placeholder="Quantidade" id="quantidade_viagem" name="quantidade" class="span12" value="1" />
+                                    </div>
+                                    <div class="span2">
                                         <label for="">Preço</label>
                                         <input type="text" placeholder="Preço" id="preco_viagem" name="preco" class="span12 money" />
                                     </div>
@@ -440,7 +459,7 @@
                                             foreach ($viagens as $v) {
                                                 $totalViagens += $v->preco;
                                                 echo '<tr>';
-                                                echo '<td>' . $v->nome_viagem . '</td>';
+                                                echo '<td>' . $v->nome . '</td>';
                                                 echo '<td>R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
                                                 echo '<td><div align="center"><a href="" idAcao="' . $v->idViagens_os . '" title="Excluir Viagem" class="btn-nwe4 viagem"><i class="bx bx-trash-alt"></i></a></div></td>';
                                                 echo '</tr>';
@@ -966,6 +985,7 @@
 
         $("#cliente").autocomplete({
             source: "<?php echo base_url(); ?>index.php/os/autoCompleteCliente",
+            appendTo: "#tab1",
             minLength: 2,
             select: function (event, ui) {
                 $("#clientes_id").val(ui.item.id);
@@ -974,6 +994,7 @@
 
         $("#tecnico").autocomplete({
             source: "<?php echo base_url(); ?>index.php/os/autoCompleteUsuario",
+            appendTo: "#tab1",
             minLength: 2,
             select: function (event, ui) {
                 $("#usuarios_id").val(ui.item.id);
@@ -982,6 +1003,7 @@
 
         $("#termoGarantia").autocomplete({
             source: "<?php echo base_url(); ?>index.php/os/autoCompleteTermoGarantia",
+            appendTo: "#tab1",
             minLength: 1,
             select: function (event, ui) {
                 if (ui.item.id) {
@@ -1001,31 +1023,28 @@
             }
         });
 
-        // Carrega o autocomplete de cursos apenas quando a aba for clicada
-        $('#tabCursos a').one('click', function(e) {
-            e.preventDefault();
-            $("#curso").autocomplete({
-                source: "<?php echo base_url(); ?>index.php/cursos/autoCompleteCurso",
-                minLength: 2,
-                select: function(event, ui) {
-                    $("#idCurso").val(ui.item.id);
-                    $("#preco_curso").val(ui.item.preco);
-                }
-            });
-            $(this).tab('show');
+        $("#curso").autocomplete({
+            source: "<?php echo base_url(); ?>index.php/cursos/autoCompleteCurso",
+            appendTo: "#formCursos",
+            minLength: 2,
+            select: function(event, ui) {
+                $("#idCurso").val(ui.item.id);
+                $("#preco_curso").val(ui.item.preco);
+                $("#curso").val(ui.item.label);
+                $("#quantidade_curso").focus();
+            }
         });
 
-        $('#tabViagens a').one('click', function(e) {
-            e.preventDefault();
-            $("#viagem").autocomplete({
-                source: "<?php echo base_url(); ?>index.php/viagens/autoCompleteViagem",
-                minLength: 2,
-                select: function(event, ui) {
-                    $("#idViagem").val(ui.item.id);
-                    $("#preco_viagem").val(ui.item.preco);
-                }
-            });
-            $(this).tab('show');
+        $("#viagem").autocomplete({
+            source: "<?php echo base_url(); ?>index.php/viagens/autoCompleteViagem",
+            appendTo: "#formViagens",
+            minLength: 2,
+            select: function(event, ui) {
+                $("#idViagem").val(ui.item.id);
+                $("#preco_viagem").val(ui.item.preco);
+                $("#viagem").val(ui.item.label);
+                $("#quantidade_viagem").focus();
+            }
         });
 
         $("#formOs").validate({
@@ -1156,6 +1175,9 @@
                 preco: {
                     required: true
                 },
+                preco: {
+                    required: true
+                },
                 quantidade: {
                     required: true
                 },
@@ -1206,11 +1228,23 @@
             rules: {
                 curso: {
                     required: true
+                },
+                preco: {
+                    required: true
+                },
+                quantidade: {
+                    required: true
                 }
             },
             messages: {
                 curso: {
                     required: 'Insira um curso'
+                },
+                preco: {
+                    required: 'Insira o preço'
+                },
+                quantidade: {
+                    required: 'Insira a quantidade'
                 }
             },
             submitHandler: function(form) {
@@ -1225,6 +1259,7 @@
                         if (data.result == true) {
                             $("#divCursos-OS").load("<?php echo current_url(); ?> #divCursos-OS");
                             $("#curso").val('');
+                            $("#quantidade_curso").val('1');
                             $("#preco_curso").val('');
                             $("#idCurso").val('');
                             $("#curso").focus();
@@ -1245,11 +1280,17 @@
             rules: {
                 viagem: {
                     required: true
+                },
+                quantidade: {
+                    required: true
                 }
             },
             messages: {
                 viagem: {
                     required: 'Insira uma viagem'
+                },
+                quantidade: {
+                    required: 'Insira a quantidade'
                 }
             },
             submitHandler: function(form) {
@@ -1264,6 +1305,7 @@
                         if (data.result == true) {
                             $("#divViagens-OS").load("<?php echo current_url(); ?> #divViagens-OS");
                             $("#viagem").val('');
+                            $("#quantidade_viagem").val('1');
                             $("#preco_viagem").val('');
                             $("#idViagem").val('');
                             $("#viagem").focus();

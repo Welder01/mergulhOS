@@ -156,6 +156,9 @@
                     <li class="<?php if (isset($menuCursos)) {
                                     echo 'active';
                                 }; ?>"><a class="tip-bottom" title="" href="<?php echo base_url() ?>index.php/mine/meusCursos"><i class='bx bxs-book-bookmark iconX'></i> <span class="title">Cursos</span></a></li>
+                    <li class="<?php if (isset($menuViagens)) {
+                                    echo 'active';
+                                }; ?>"><a class="tip-bottom" title="" href="<?php echo base_url() ?>index.php/mine/minhasViagens"><i class='bx bx-trip iconX'></i> <span class="title">Viagens</span></a></li>
                 </ul>
             </div>
 

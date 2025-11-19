@@ -302,6 +302,7 @@ class Viagens extends MY_Controller
         $viagem = $this->viagens_model->getById($id);
 
         if ($this->viagens_model->delete('viagens', 'id', $id)) {
+            $this->viagens_model->add('logs', ['log' => 'A viagem com ID ' . $id . ' foi excluída do sistema.']);
             $this->session->set_flashdata('success', 'Viagem excluída com sucesso!');
             $this->log_auditoria('Excluiu a viagem: ' . $viagem->nome_viagem . ' (ID: ' . $id . ')');
         } else {
@@ -685,11 +686,11 @@ class Viagens extends MY_Controller
     {
         if (isset($_GET['term'])) {
             $q = strtolower($this->input->get('term'));
-            $this->db->select("id, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as nome", false);
+            $this->db->select("id, preco_pessoa as preco, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as label", false);
             $this->db->like('LOWER(nome_viagem)', $q);
         } elseif (isset($_GET['ids'])) {
             $ids = explode(',', $_GET['ids']);
-            $this->db->select("id, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as nome", false);
+            $this->db->select("id, preco_pessoa as preco, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as label", false);
             $this->db->where_in('id', $ids);
         } else {
             return $this->output->set_content_type('application/json')->set_output(json_encode([]));

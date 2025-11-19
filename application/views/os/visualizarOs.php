@@ -330,7 +330,7 @@
                                         $totalCursos += $c->preco;
                                         $subtotal = $c->preco * 1;
                                         echo '<tr>';
-                                        echo '<td>' . $c->nome_curso . '</td>';
+                                        echo '<td>' . $c->nome . '</td>';
                                         echo '<td>' . ($c->data_inicio ? date('d/m/Y', strtotime($c->data_inicio)) : '') . '</td>';
                                         echo '<td>' . ($c->data_fim ? date('d/m/Y', strtotime($c->data_fim)) : '') . '</td>';
                                         echo '<td>1</td>';
@@ -365,7 +365,7 @@
                                         $totalViagens += $v->preco;
                                         $subtotal = $v->preco * 1;
                                         echo '<tr>';
-                                        echo '<td>' . $v->nome_viagem . '</td>';
+                                        echo '<td>' . $v->nome . '</td>';
                                         echo '<td>' . ($v->data_partida ? date('d/m/Y', strtotime($v->data_partida)) : '') . '</td>';
                                         echo '<td>' . ($v->data_retorno ? date('d/m/Y', strtotime($v->data_retorno)) : '') . '</td>';
                                         echo '<td>1</td>';

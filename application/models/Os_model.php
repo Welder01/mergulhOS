@@ -143,22 +143,24 @@ class Os_model extends CI_Model
 
     public function getCursos($id = null)
     {
-        $this->db->select('cursos_os.*, cursos.nome_curso, cursos.data_inicio, cursos.data_fim');
+        $this->db->select('cursos_os.*, cursos.nome_curso as nome, cursos.data_inicio, cursos.data_fim, cursos_os.preco as precoVenda');
         $this->db->from('cursos_os');
         $this->db->join('cursos', 'cursos.id = cursos_os.cursos_id');
         $this->db->where('os_id', $id);
 
-        return $this->db->get()->result();
+        $query = $this->db->get();
+        return $query ? $query->result() : [];
     }
 
     public function getViagens($id = null)
     {
-        $this->db->select('viagens_os.*, viagens.nome_viagem, viagens.data_partida, viagens.data_retorno');
+        $this->db->select('viagens_os.*, viagens.nome_viagem as nome, viagens.data_partida, viagens.data_retorno, viagens_os.preco as precoVenda');
         $this->db->from('viagens_os');
         $this->db->join('viagens', 'viagens.id = viagens_os.viagens_id');
         $this->db->where('os_id', $id);
 
-        return $this->db->get()->result();
+        $query = $this->db->get();
+        return $query ? $query->result() : [];
     }
 
     public function add($table, $data, $returnId = false)

@@ -1,5 +1,7 @@
 <?php $totalServico = 0;
-$totalProdutos = 0; ?>
+$totalProdutos = 0;
+$totalCursos = 0;
+$totalViagens = 0; ?>
 <div class="row-fluid" style="margin-top: 0">
     <div class="span12">
         <div class="widget-box">
@@ -148,63 +150,136 @@ $totalProdutos = 0; ?>
                             </table>
                         <?php } ?>
 
-                        <?php $totalServico = 0; $totalProdutos = 0; ?>
-                        <?php if ($produtos != null) { ?>
-                            <br />
-                            <table class="table table-bordered table-condensed" id="tblProdutos">
-                                <thead>
-                                    <tr>
-                                        <th>PRODUTO</th>
-                                        <th>QTD</th>
-                                        <th>UNT</th>
-                                        <th>SUBTOTAL</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                        <!-- Seção de Produtos -->
+                        <table class="table table-bordered table-condensed" id="tblProdutos" style="margin-top: 20px;">
+                            <thead>
+                                <tr>
+                                    <th colspan="4">PRODUTOS</th>
+                                </tr>
+                                <tr>
+                                    <th>Descrição</th>
+                                    <th>Qtd</th>
+                                    <th>Preço Unit.</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if ($produtos): ?>
                                     <?php foreach ($produtos as $p) {
-                                        $totalProdutos = $totalProdutos + $p->subTotal;
+                                        $preco = $p->preco ?: $p->precoVenda;
+                                        $subtotal = $preco * ($p->quantidade ?: 1);
+                                        $totalProdutos += $subtotal;
                                         echo '<tr>';
                                         echo '<td>' . $p->descricao . '</td>';
-                                        echo '<td>' . $p->quantidade . '</td>';
-                                        echo '<td>R$ ' . $p->preco ?: $p->precoVenda . '</td>';
-                                        echo '<td>R$ ' . number_format($p->subTotal, 2, ',', '.') . '</td>';
+                                        echo '<td>' . ($p->quantidade ?: 1) . '</td>';
+                                        echo '<td>R$ ' . number_format($preco, 2, ',', '.') . '</td>';
+                                        echo '<td>R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
                                         echo '</tr>';
                                     } ?>
-                                    <tr>
-                                        <td></td>
-                                        <td colspan="2" style="text-align: right"><strong>TOTAL:</strong></td>
-                                        <td><strong>R$ <?php echo number_format($totalProdutos, 2, ',', '.'); ?></strong>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        <?php } ?>
+                                <?php else: ?>
+                                    <tr><td colspan="4">Nenhum produto adicionado.</td></tr>
+                                <?php endif; ?>
+                                <tr>
+                                    <td colspan="3" style="text-align: right"><strong>TOTAL PRODUTOS:</strong></td>
+                                    <td><strong>R$ <?php echo number_format($totalProdutos, 2, ',', '.'); ?></strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                        <?php if ($servicos != null) { ?>
-                            <table class="table table-bordered table-condensed">
-                                <thead>
-                                    <tr>
-                                        <th>SERVIÇO</th>
-                                        <th>QTD</th>
-                                        <th>UNT</th>
-                                        <th>SUBTOTAL</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php setlocale(LC_MONETARY, 'en_US'); foreach ($servicos as $s) {
-                                        $totalServico = $totalServico + $s->subTotal;
+                        <!-- Seção de Serviços -->
+                        <table class="table table-bordered table-condensed" style="margin-top: 20px;">
+                            <thead>
+                                <tr>
+                                    <th colspan="4">SERVIÇOS</th>
+                                </tr>
+                                <tr>
+                                    <th>Descrição</th>
+                                    <th>Qtd</th>
+                                    <th>Preço Unit.</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if ($servicos): ?>
+                                    <?php foreach ($servicos as $s) {
                                         $preco = $s->preco ?: $s->precoVenda;
                                         $subtotal = $preco * ($s->quantidade ?: 1);
+                                        $totalServico += $subtotal;
                                         echo '<tr>';
                                         echo '<td>' . $s->nome . '</td>';
                                         echo '<td>' . ($s->quantidade ?: 1) . '</td>';
+                                        echo '<td>R$ ' . number_format($preco, 2, ',', '.') . '</td>';
+                                        echo '<td>R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
+                                        echo '</tr>';
+                                    } ?>
+                                <?php else: ?>
+                                    <tr><td colspan="4">Nenhum serviço adicionado.</td></tr>
+                                <?php endif; ?>
+                                <tr>
+                                    <td colspan="3" style="text-align: right"><strong>TOTAL SERVIÇOS:</strong></td>
+                                    <td><strong>R$ <?php echo number_format($totalServico, 2, ',', '.'); ?></strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <?php if ($cursos != null) { ?>
+                            <table class="table table-bordered table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>CURSO</th>
+                                        <th>QTD</th>
+                                        <th>UNT</th>
+                                        <th>SUBTOTAL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($cursos as $c) {
+                                        $preco = $c->preco ?: $c->precoVenda;
+                                        $quantidade = (property_exists($c, 'quantidade') && $c->quantidade) ? $c->quantidade : 1;
+                                        $subtotal = $preco * $quantidade;
+                                        $totalCursos = $totalCursos + $subtotal;
+                                        echo '<tr>';
+                                        echo '<td>' . $c->nome . '</td>';
+                                        echo '<td>' . $quantidade . '</td>';
                                         echo '<td>R$ ' . $preco . '</td>';
                                         echo '<td>R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
                                         echo '</tr>';
                                     } ?>
                                     <tr>
                                         <td colspan="3" style="text-align: right"><strong>TOTAL:</strong></td>
-                                        <td><strong>R$ <?php echo number_format($totalServico, 2, ',', '.'); ?></strong>
+                                        <td><strong>R$ <?php echo number_format($totalCursos, 2, ',', '.'); ?></strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        <?php } ?>
+
+                        <?php if ($viagens != null) { ?>
+                            <table class="table table-bordered table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>VIAGEM</th>
+                                        <th>QTD</th>
+                                        <th>UNT</th>
+                                        <th>SUBTOTAL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($viagens as $v) {
+                                        $preco = $v->preco ?: $v->precoVenda;
+                                        $quantidade = (property_exists($v, 'quantidade') && $v->quantidade) ? $v->quantidade : 1;
+                                        $subtotal = $preco * $quantidade;
+                                        $totalViagens += $subtotal;
+                                        echo '<tr>';
+                                        echo '<td>' . $v->nome . '</td>';
+                                        echo '<td>' . $quantidade . '</td>';
+                                        echo '<td>R$ ' . $preco . '</td>';
+                                        echo '<td>R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
+                                        echo '</tr>';
+                                    } ?>
+                                    <tr>
+                                        <td colspan="3" style="text-align: right"><strong>TOTAL:</strong></td>
+                                        <td><strong>R$ <?php echo number_format($totalViagens, 2, ',', '.'); ?></strong>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -214,12 +289,13 @@ $totalProdutos = 0; ?>
                         <table class="table table-condensed">
                             <thead>
                                 <td>
-                                    <?php if ($totalProdutos != 0 || $totalServico != 0) {
+                                    <?php if ($totalProdutos != 0 || $totalServico != 0 || $totalCursos != 0 || $totalViagens != 0) {
+                                        $totalOS = $totalProdutos + $totalServico + $totalCursos + $totalViagens;
                                         if ($result->valor_desconto != 0) {
-                                            echo "<h4 style='text-align: right'>SUBTOTAL: R$ " . number_format($totalProdutos + $totalServico, 2, ',', '.') . "</h4>";
-                                            echo $result->valor_desconto != 0 ? "<h4 style='text-align: right'>DESCONTO: R$ " . number_format($result->valor_desconto != 0 ? $result->valor_desconto - ($totalProdutos + $totalServico) : 0.00, 2, ',', '.') . "</h4>" : "";
+                                            echo "<h4 style='text-align: right'>SUBTOTAL: R$ " . number_format($totalOS, 2, ',', '.') . "</h4>";
+                                            echo $result->valor_desconto != 0 ? "<h4 style='text-align: right'>DESCONTO: R$ " . number_format($result->valor_desconto != 0 ? $result->valor_desconto - $totalOS : 0.00, 2, ',', '.') . "</h4>" : "";
                                             echo "<h4 style='text-align: right'>TOTAL: R$ " . number_format($result->valor_desconto, 2, ',', '.') . "</h4>";
-                                        } else { echo "<h4 style='text-align: right'>TOTAL: R$ " . number_format($totalProdutos + $totalServico, 2, ',', '.') . "</h4>"; }
+                                        } else { echo "<h4 style='text-align: right'>TOTAL: R$ " . number_format($totalOS, 2, ',', '.') . "</h4>"; }
                                     }?>
                                 </td>
 

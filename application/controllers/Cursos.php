@@ -604,11 +604,11 @@ class Cursos extends MY_Controller
     {
         if (isset($_GET['term'])) {
             $q = strtolower($this->input->get('term'));
-            $this->db->select("id, CONCAT('ID: ', id, ' | ', nome_curso, ' | Início: ', DATE_FORMAT(data_inicio, '%d/%m/%Y')) as nome", false);
+            $this->db->select("id, preco, CONCAT('ID: ', id, ' | ', nome_curso, ' | Início: ', DATE_FORMAT(data_inicio, '%d/%m/%Y')) as label", false);
             $this->db->like('LOWER(nome_curso)', $q);
         } elseif (isset($_GET['ids'])) {
             $ids = explode(',', $_GET['ids']);
-            $this->db->select("id, CONCAT('ID: ', id, ' | ', nome_curso, ' | Início: ', DATE_FORMAT(data_inicio, '%d/%m/%Y')) as nome", false);
+            $this->db->select("id, preco, CONCAT('ID: ', id, ' | ', nome_curso, ' | Início: ', DATE_FORMAT(data_inicio, '%d/%m/%Y')) as label", false);
             $this->db->where_in('id', $ids);
         } else {
             return $this->output->set_content_type('application/json')->set_output(json_encode([]));

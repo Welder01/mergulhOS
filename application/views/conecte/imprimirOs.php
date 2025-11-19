@@ -1,6 +1,8 @@
 <?php
     $totalServico  = 0;
     $totalProdutos = 0;
+    $totalCursos = 0;
+    $totalViagens = 0;
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -196,6 +198,102 @@
                     </div>
                 <?php endif; ?>
 
+                <?php if ($cursos) : ?>
+                    <div class="tabela">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr class="table-secondary">
+                                    <th>CURSO(S)</th>
+                                    <th class="text-center" width="10%">QTD</th>
+                                    <th class="text-center" width="10%">UNT</th>
+                                    <th class="text-end" width="15%" >SUBTOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($cursos as $c) :
+                                    $preco = $c->preco ?: $c->precoVenda;
+                                    $quantidade = (property_exists($c, 'quantidade') && $c->quantidade) ? $c->quantidade : 1;
+                                    $subtotal = $preco * $quantidade;
+                                    $totalCursos += $subtotal;
+                                    echo '<tr>';
+                                    echo '  <td>' . $c->nome . '</td>';
+                                    echo '  <td class="text-center">' . $quantidade . '</td>';
+                                    echo '  <td class="text-center">' . number_format($preco, 2, ',', '.') . '</td>';
+                                    echo '  <td class="text-end">R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
+                                    echo '</tr>';
+                                endforeach; ?>
+                                <tr>
+                                    <td colspan="3" class="text-end"><b>TOTAL CURSOS:</b></td>
+                                    <td class="text-end"><b>R$ <?= number_format($totalCursos, 2, ',', '.') ?></b></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($viagens) : ?>
+                    <div class="tabela">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr class="table-secondary">
+                                    <th>VIAGEM(NS)</th>
+                                    <th class="text-center" width="10%">QTD</th>
+                                    <th class="text-center" width="10%">UNT</th>
+                                    <th class="text-end" width="15%" >SUBTOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($viagens as $v) :
+                                    $preco = $v->preco ?: $v->precoVenda;
+                                    $quantidade = (property_exists($v, 'quantidade') && $v->quantidade) ? $v->quantidade : 1;
+                                    $subtotal = $preco * $quantidade;
+                                    $totalViagens += $subtotal;
+                                    echo '<tr>';
+                                    echo '  <td>' . $v->nome . '</td>';
+                                    echo '  <td class="text-center">' . $quantidade . '</td>';
+                                    echo '  <td class="text-center">' . number_format($preco, 2, ',', '.') . '</td>';
+                                    echo '  <td class="text-end">R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
+                                    echo '</tr>';
+                                endforeach; ?>
+                                <tr>
+                                    <td colspan="3" class="text-end"><b>TOTAL VIAGENS:</b></td>
+                                    <td class="text-end"><b>R$ <?= number_format($totalViagens, 2, ',', '.') ?></b></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($servicos) : ?>
+                    <div class="tabela">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr class="table-secondary">
+                                    <th>SERVIÇO(S)</th>
+                                    <th class="text-center" width="10%">QTD</th>
+                                    <th class="text-center" width="10%">UNT</th>
+                                    <th class="text-end" width="15%" >SUBTOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                    foreach ($servicos as $s) :
+                                        $preco = $s->preco ?: $s->precoVenda;
+                                        $quantidade = (property_exists($s, 'quantidade') && $s->quantidade) ? $s->quantidade : 1;
+                                        $subtotal = $preco * $quantidade;
+                                        $totalServico += $subtotal;
+                                        echo '<tr>';
+                                        echo '  <td>' . $s->nome . '</td>';
+                                        echo '  <td class="text-center">' . $quantidade . '</td>';
+                                        echo '  <td class="text-center">' . number_format($preco, 2, ',', '.') . '</td>';
+                                        echo '  <td class="text-end">R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
+                                        echo '</tr>';
+                                    endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+
                 <?php if ($totalProdutos != 0 || $totalServico != 0) : ?>
                     <div class="pagamento">
                         <div class="qrcode">
@@ -221,16 +319,16 @@
                                     <tbody>
                                         <?php if ($result->valor_desconto != 0) : ?>
                                             <tr>
-                                                <td width="65%">SUBTOTAL</td>
-                                                <td>R$ <b><?= number_format($totalProdutos + $totalServico, 2, ',', '.') ?></b></td>
+                                                <td width="65%">SUB-TOTAL</td>
+                                                <td>R$ <b><?= number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, ',', '.') ?></b></td>
                                             </tr>
                                             <tr>
                                                 <td>DESCONTO</td>
-                                                <td>R$ <b><?= number_format($result->valor_desconto != 0 ? $result->valor_desconto - ($totalProdutos + $totalServico) : 0.00, 2, ',', '.') ?></b></td>
+                                                <td>R$ <b><?= number_format(($totalProdutos + $totalServico + $totalCursos + $totalViagens) - $result->valor_desconto, 2, ',', '.') ?></b></td>
                                             </tr>
                                             <tr>
                                                 <td>TOTAL</td>
-                                                <td>R$ <?= number_format($result->valor_desconto, 2, ',', '.') ?></td>
+                                                <td>R$ <b><?= number_format($result->valor_desconto, 2, ',', '.') ?></b></td>
                                             </tr>
                                         <?php else : ?>
                                             <tr>
