@@ -1271,7 +1271,14 @@ class Mine extends MY_Controller
         $this->load->model('treinos_model');
         $this->data['menuTreinos'] = 'treinos';
         $this->data['treinos_config'] = $this->treinos_model->get('treinos_config', '*', ['status' => 1]);
-        $this->data['meus_treinos'] = $this->treinos_model->get('treinos_agendados', '*', ['cliente_id' => $this->session->userdata('cliente_id')]);
+
+        $this->db->select('ta.*, tc.nome as nome_treino, u.nome as nome_instrutor');
+        $this->db->from('treinos_agendados as ta');
+        $this->db->join('treinos_config as tc', 'tc.id = ta.config_id');
+        $this->db->join('usuarios as u', 'u.idUsuarios = ta.instrutor_id', 'left');
+        $this->db->where('ta.cliente_id', $this->session->userdata('cliente_id'));
+        $this->data['meus_treinos'] = $this->db->get()->result();
+
         $this->data['output'] = 'conecte/treinos';
         $this->load->view('conecte/template', $this->data);
     }

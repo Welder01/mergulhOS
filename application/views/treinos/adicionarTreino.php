@@ -37,6 +37,30 @@
                     </div>
 
                     <div class="control-group">
+                        <label for="limite_vagas" class="control-label">Vagas por Horário</label>
+                        <div class="controls">
+                            <input id="limite_vagas" type="number" name="limite_vagas" value="<?php echo set_value('limite_vagas', 10); ?>" />
+                            <span class="help-inline">Máximo de alunos por horário de treino. Deixe em branco para ilimitado.</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="limite_alunos_instrutor" class="control-label">Alunos por Instrutor</label>
+                        <div class="controls">
+                            <input id="limite_alunos_instrutor" type="number" name="limite_alunos_instrutor" value="<?php echo set_value('limite_alunos_instrutor', 2); ?>" />
+                            <span class="help-inline">Máximo de alunos que um instrutor pode supervisionar.</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="cancelamento_limite_dias" class="control-label">Prazo para Cancelamento</label>
+                        <div class="controls">
+                            <input id="cancelamento_limite_dias" type="number" name="cancelamento_limite_dias" value="<?php echo set_value('cancelamento_limite_dias', 1); ?>" style="width: 50px;" /> Dias e 
+                            <input id="cancelamento_limite_horas" type="number" name="cancelamento_limite_horas" value="<?php echo set_value('cancelamento_limite_horas', 0); ?>" style="width: 50px;" /> Horas antes do início.
+                        </div>
+                    </div>
+
+                    <div class="control-group">
                         <label for="instrutores" class="control-label">Instrutores</label>
                         <div class="controls">
                             <input id="instrutores_input" type="text" name="instrutores_input" placeholder="Digite para buscar..." />

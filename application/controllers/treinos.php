@@ -65,6 +65,10 @@ class Treinos extends MY_Controller
                 'horario_inicio' => $this->input->post('horario_inicio'),
                 'horario_fim' => $this->input->post('horario_fim'),
                 'status' => $this->input->post('status'),
+                'limite_vagas' => $this->input->post('limite_vagas') ?: null,
+                'limite_alunos_instrutor' => $this->input->post('limite_alunos_instrutor') ?: null,
+                'cancelamento_limite_dias' => $this->input->post('cancelamento_limite_dias') ?: 0,
+                'cancelamento_limite_horas' => $this->input->post('cancelamento_limite_horas') ?: 0,
                 'instrutores_ids' => $this->input->post('instrutores_ids'),
             ];
 
@@ -118,6 +122,10 @@ class Treinos extends MY_Controller
                 'horario_inicio' => $this->input->post('horario_inicio'),
                 'horario_fim' => $this->input->post('horario_fim'),
                 'status' => $this->input->post('status'),
+                'limite_vagas' => $this->input->post('limite_vagas') ?: null,
+                'limite_alunos_instrutor' => $this->input->post('limite_alunos_instrutor') ?: null,
+                'cancelamento_limite_dias' => $this->input->post('cancelamento_limite_dias') ?: 0,
+                'cancelamento_limite_horas' => $this->input->post('cancelamento_limite_horas') ?: 0,
                 'instrutores_ids' => $this->input->post('instrutores_ids'),
             ];
 
