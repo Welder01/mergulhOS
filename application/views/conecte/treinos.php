@@ -163,6 +163,7 @@
 <script type="text/javascript">
     $(document).ready(function() {
         var allowedTimes = [];
+        var disabledDates = [];
 
         $('#data_hora_treino').datetimepicker({
             format:'d/m/Y H:i',
@@ -173,9 +174,10 @@
                 // Esta função é chamada sempre que o calendário é gerado (ex: mudança de mês)
                 // Aqui você pode buscar os horários disponíveis para o mês inteiro
             },
-            onShow: function(ct) {
+            onShow: function(ct, $i) {
                 this.setOptions({
-                    allowTimes: allowedTimes
+                    allowTimes: allowedTimes,
+                    disabledDates: disabledDates.map(d => d.split(' ')[0]) // Desabilita o dia inteiro se todos os horários estiverem ocupados
                 })
             },
         });
@@ -222,8 +224,27 @@
                     type: 'GET',
                     data: { config_id: config_id },
                     dataType: 'json',
-                    success: function(response) { 
-                        $('#data_hora_treino').datetimepicker({ allowDates: response.allowedDates, step: parseInt(response.duration) });
+                    success: function(response) {
+                        // Reinicializa o datetimepicker com as novas opções
+                        datetimepicker.datetimepicker({
+                            disabledWeekDays: response.disabledWeekDays,
+                            step: parseInt(response.duration),
+                            format: 'd/m/Y H:i',
+                            minDate: 0,
+                            onShow: function(ct, $i) {
+                                // Filtra os horários permitidos, removendo os que já estão agendados
+                                var horariosDisponiveis = response.allowedTimes.filter(time => {
+                                    // Formata a data (ct) para o formato dd/mm/yyyy
+                                    var day = ('0' + ct.getDate()).slice(-2);
+                                    var month = ('0' + (ct.getMonth() + 1)).slice(-2);
+                                    var year = ct.getFullYear();
+                                    var dataFormatada = day + '/' + month + '/' + year;
+                                    var dataCompleta = dataFormatada + ' ' + time;
+                                    return response.agendamentos.indexOf(dataCompleta) === -1;
+                                });
+                                this.setOptions({ allowTimes: horariosDisponiveis });
+                            }
+                        });
                         allowedTimes = response.allowedTimes;
                         datetimepicker.attr('placeholder', 'Selecione a data e hora').prop('disabled', false);
                     },
