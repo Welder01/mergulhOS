@@ -268,6 +268,53 @@
                 <div class="accordion-group widget-box">
                     <div class="accordion-heading">
                         <div class="widget-title">
+                            <a data-parent="#collapse-group" href="#collapseGTreino" data-toggle="collapse">
+                                <span><i class='fas fa-dumbbell icon-cli'></i></span>
+                                <h5 style="padding-left: 28px">Treinos</h5>
+                                <span><i class='bx bx-chevron-right icon-clic'></i></span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="collapse accordion-body" id="collapseGTreino">
+                        <div class="widget-content">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <td colspan="4"></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <label>
+                                            <input <?php if (isset($permissoes['vTreino']) && $permissoes['vTreino'] == '1') { echo 'checked'; } ?> name="vTreino" class="marcar" type="checkbox" value="1" />
+                                            <span class="lbl"> Visualizar Treino</span>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            <input <?php if (isset($permissoes['aTreino']) && $permissoes['aTreino'] == '1') { echo 'checked'; } ?> name="aTreino" class="marcar" type="checkbox" value="1" />
+                                            <span class="lbl"> Adicionar Treino</span>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            <input <?php if (isset($permissoes['eTreino']) && $permissoes['eTreino'] == '1') { echo 'checked'; } ?> name="eTreino" class="marcar" type="checkbox" value="1" />
+                                            <span class="lbl"> Editar Treino</span>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            <input <?php if (isset($permissoes['dTreino']) && $permissoes['dTreino'] == '1') { echo 'checked'; } ?> name="dTreino" class="marcar" type="checkbox" value="1" />
+                                            <span class="lbl"> Excluir Treino</span>
+                                        </label>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-group widget-box">
+                    <div class="accordion-heading">
+                        <div class="widget-title">
                             <a data-parent="#collapse-group" href="#collapseGThree" data-toggle="collapse">
                                 <span><i class='bx bx-stopwatch icon-cli' ></i></span>
                                 <h5 style="padding-left: 28px">Serviços</h5>

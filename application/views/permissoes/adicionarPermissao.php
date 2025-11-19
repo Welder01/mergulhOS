@@ -505,6 +505,50 @@
                         <div class="accordion-group widget-box">
                             <div class="accordion-heading">
                                 <div class="widget-title">
+                                    <a data-parent="#collapse-group" href="#collapseGTreino" data-toggle="collapse">
+                                      <span><i class='bx bx-dumbbell icon-cli'></i></span>
+                                      <h5 style="padding-left: 28px">Treinos</h5>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="collapse accordion-body" id="collapseGTreino">
+                                <div class="widget-content">
+                                    <table class="table table-bordered">
+                                        <tbody>
+                                        <tr>
+                                            <td>
+                                                <label>
+                                                    <input name="vTreino" class="marcar" type="checkbox" value="1" />
+                                                    <span class="lbl"> Visualizar Treinos</span>
+                                                </label>
+                                            </td>
+                                            <td>
+                                                <label>
+                                                    <input name="aTreino" class="marcar" type="checkbox" value="1" />
+                                                    <span class="lbl"> Adicionar Treinos</span>
+                                                </label>
+                                            </td>
+                                            <td>
+                                                <label>
+                                                    <input name="eTreino" class="marcar" type="checkbox" value="1" />
+                                                    <span class="lbl"> Editar Treinos</span>
+                                                </label>
+                                            </td>
+                                            <td>
+                                                <label>
+                                                    <input name="dTreino" class="marcar" type="checkbox" value="1" />
+                                                    <span class="lbl"> Excluir Treinos</span>
+                                                </label>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-group widget-box">
+                            <div class="accordion-heading">
+                                <div class="widget-title">
                                     <a data-parent="#collapse-group" href="#collapseGThree333338" data-toggle="collapse">
                                       <span><i class="bx bx-cog icon-cli"></i></span>
                                       <h5 style="padding-left: 28px">Configurações e Sistema</h5>

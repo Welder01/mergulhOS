@@ -156,9 +156,9 @@
                     <li class="<?php if (isset($menuCursos)) {
                                     echo 'active';
                                 }; ?>"><a class="tip-bottom" title="" href="<?php echo base_url() ?>index.php/mine/meusCursos"><i class='bx bxs-book-bookmark iconX'></i> <span class="title">Cursos</span></a></li>
-                    <li class="<?php if (isset($menuViagens)) {
+                    <li class="<?php if (isset($menuTreinos)) {
                                     echo 'active';
-                                }; ?>"><a class="tip-bottom" title="" href="<?php echo base_url() ?>index.php/mine/minhasViagens"><i class='bx bx-trip iconX'></i> <span class="title">Viagens</span></a></li>
+                                }; ?>"><a class="tip-bottom" title="Agendar Treinos" href="<?php echo base_url() ?>index.php/mine/treinos"><i class='bx bx-dumbbell iconX'></i> <span class="title">Treinos</span></a></li>
                 </ul>
             </div>
 

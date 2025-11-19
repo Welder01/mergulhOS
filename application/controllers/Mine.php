@@ -379,7 +379,6 @@ class Mine extends MY_Controller
         $data = [
             'nomeCliente' => $this->input->post('nomeCliente'),
             'sexo' => $this->input->post('sexo'),
-            'data_nascimento' => $this->input->post('data_nascimento') ? date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('data_nascimento')))) : null,
             'documento' => $this->input->post('documento'),
             'telefone' => $this->input->post('telefone'),
             'celular' => $this->input->post('celular'),
@@ -1261,6 +1260,129 @@ class Mine extends MY_Controller
         $this->data['menuCursos'] = 'cursos';
         $this->data['output'] = 'conecte/meusCursos';
         $this->load->view('conecte/template', $this->data);
+    }
+
+    public function treinos()
+    {
+        if (!$this->session->userdata('cliente_id') || !$this->session->userdata('conectado')) {
+            redirect(base_url() . 'index.php/mine/login');
+        }
+
+        $this->load->model('treinos_model');
+        $this->data['menuTreinos'] = 'treinos';
+        $this->data['treinos_config'] = $this->treinos_model->get('treinos_config', '*', ['status' => 1]);
+        $this->data['meus_treinos'] = $this->treinos_model->get('treinos_agendados', '*', ['cliente_id' => $this->session->userdata('cliente_id')]);
+        $this->data['output'] = 'conecte/treinos';
+        $this->load->view('conecte/template', $this->data);
+    }
+
+    public function agendarTreino()
+    {
+        if (!$this->session->userdata('cliente_id') || !$this->session->userdata('conectado')) {
+            redirect(base_url() . 'index.php/mine/login');
+        }
+
+        $this->load->model('treinos_model');
+        // Lógica para validar e salvar o agendamento
+        // 1. Receber os dados do POST (tipo de treino, data, hora, com/sem instrutor)
+        // 2. Validar se o horário está disponível
+        // 3. Calcular o preço
+        // 4. Salvar na tabela `treinos_agendados`
+        // 5. Criar uma OS e vincular o agendamento a ela (opcional, mas recomendado)
+        // 6. Retornar sucesso ou erro
+    }
+
+    public function getHorariosDisponiveis()
+    {
+        // Lógica para retornar um JSON com os horários disponíveis para um determinado dia e tipo de treino
+        $this->load->model('treinos_model');
+        $config_id = $this->input->get('config_id');
+
+        if (!$config_id) {
+            return $this->output->set_status_header(400)->set_output(json_encode(['error' => 'ID do treino não fornecido.']));
+        }
+
+        $config = $this->treinos_model->getById('treinos_config', $config_id);
+        if (!$config) {
+            return $this->output->set_status_header(404)->set_output(json_encode(['error' => 'Configuração do treino não encontrada.']));
+        }
+
+        // Busca agendamentos futuros para este tipo de treino para evitar sobreposição
+        $agendamentosFuturos = $this->db
+            ->where('config_id', $config_id)
+            ->where('data_hora_inicio >=', date('Y-m-d H:i:s'))
+            ->get('treinos_agendados')
+            ->result();
+
+        $horariosOcupados = [];
+        foreach ($agendamentosFuturos as $ag) {
+            $horariosOcupados[] = date('Y/m/d H:i', strtotime($ag->data_hora_inicio));
+        }
+
+        $diasPermitidos = explode(',', $config->dias_semana_disponiveis); // Ex: [1,2,3,4,5]
+        $allowedDates = [];
+        $allowedTimes = [];
+
+        $inicio = new DateTime($config->horario_inicio);
+        $fim = new DateTime($config->horario_fim);
+        $intervalo = new DateInterval('PT' . $config->duracao_minutos . 'M');
+        $periodo = new DatePeriod($inicio, $intervalo, $fim);
+
+        foreach ($periodo as $dt) {
+            $allowedTimes[] = $dt->format('H:i');
+        }
+
+        $response = [
+            'allowedDates' => $diasPermitidos, // A biblioteca usa os dias da semana (0=Dom, 1=Seg, ...)
+            'allowedTimes' => $allowedTimes,
+            'disabledDates' => [], // Você pode adicionar datas específicas para desabilitar aqui
+            'disabledWeekDays' => array_diff([0, 1, 2, 3, 4, 5, 6], $diasPermitidos),
+            'duration' => (int)$config->duracao_minutos,
+        ];
+
+        return $this->output->set_content_type('application/json')->set_output(json_encode($response));
+    }
+
+    public function getInstrutoresDisponiveis()
+    {
+        if (!$this->session->userdata('cliente_id') || !$this->session->userdata('conectado')) {
+            return $this->output->set_status_header(403)->set_output(json_encode(['error' => 'Acesso não autorizado.']));
+        }
+
+        $this->load->model('treinos_model');
+        $config_id = $this->input->get('config_id');
+        $data_hora_str = $this->input->get('data_hora');
+
+        if (!$config_id || !$data_hora_str) {
+            return $this->output->set_status_header(400)->set_output(json_encode(['error' => 'Parâmetros insuficientes.']));
+        }
+
+        $config = $this->treinos_model->getById('treinos_config', $config_id);
+        if (!$config) {
+            return $this->output->set_status_header(404)->set_output(json_encode(['error' => 'Configuração de treino não encontrada.']));
+        }
+
+        try {
+            $inicio_treino = DateTime::createFromFormat('d/m/Y H:i', $data_hora_str);
+            $fim_treino = clone $inicio_treino;
+            $fim_treino->add(new DateInterval('PT' . $config->duracao_minutos . 'M'));
+        } catch (Exception $e) {
+            return $this->output->set_status_header(400)->set_output(json_encode(['error' => 'Formato de data e hora inválido.']));
+        }
+
+        // Busca todos os instrutores (exemplo: permissão de OS)
+        $this->db->select('u.idUsuarios as id, u.nome');
+        $this->db->from('usuarios u');
+        $this->db->join('permissoes p', 'u.permissoes_id = p.idPermissao');
+        $this->db->where('p.permissoes LIKE', '%"vOs":"1"%'); // Exemplo de filtro para instrutores
+        $this->db->where('u.situacao', 1);
+        $instrutores = $this->db->get()->result();
+
+        // Aqui você adicionaria a lógica para verificar a agenda dos instrutores
+        // e remover os que estiverem ocupados no horário de $inicio_treino a $fim_treino.
+        // Por enquanto, retornaremos todos.
+
+        return $this->output->set_content_type('application/json')->set_output(json_encode($instrutores));
     }
 
     public function senhaSalvarComAjax()

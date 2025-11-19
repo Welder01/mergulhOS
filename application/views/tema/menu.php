@@ -95,6 +95,17 @@
                     </li>
                 <?php } ?>
 
+                <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vTreino')) { ?>
+                    <li class="<?php if (isset($menuTreinos)) {
+                        echo 'active';
+                    }; ?>">
+                        <a class="tip-bottom" title="Treinos" href="<?= site_url('treinos') ?>"><i class='fas fa-dumbbell iconX'></i>
+                            <span class="title">Treinos</span>
+                            <span class="title-tooltip">Treinos</span>
+                        </a>
+                    </li>
+                <?php } ?>
+
                 <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vVenda')) { ?>
                     <li class="<?php if (isset($menuVendas)) {
                         echo 'active';

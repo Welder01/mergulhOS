@@ -581,6 +581,12 @@ class Mapos extends MY_Controller {
             $status
         );
 
+        $this->load->model('treinos_model');
+        $allTreinos = $this->treinos_model->getAgendamentos([
+            'start' => $start,
+            'end' => $end,
+        ]);
+
         $events = array_map(function ($os) {
             switch ($os->status) {
                 case 'Aberto':
@@ -681,10 +687,21 @@ class Mapos extends MY_Controller {
             }
         }
 
+        $eventosTreinos = [];
+        foreach ($allTreinos as $treino) {
+            $eventosTreinos[] = [
+                'title' => "Treino: {$treino->nomeCliente}",
+                'start' => $treino->data_hora_inicio,
+                'end' => $treino->data_hora_fim,
+                'color' => '#ff69b4', // Rosa para treinos
+                'url'   => base_url() . 'index.php/treinos/visualizar/' . $treino->id, // Link para detalhes do agendamento
+            ];
+        }
+
         return $this->output
             ->set_content_type('application/json')
             ->set_status_header(200)
-            ->set_output(json_encode(array_merge($events, $eventosCursos, $eventosViagens)));
+            ->set_output(json_encode(array_merge($events, $eventosCursos, $eventosViagens, $eventosTreinos)));
     }
 
     private function editDontEnv(array $data)
