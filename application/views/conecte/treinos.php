@@ -163,6 +163,16 @@
 <script type="text/javascript">
     $(document).ready(function() {
         var allowedTimes = [];
+
+        // Adiciona uma regra de validação customizada para o select de instrutor
+        $.validator.addMethod("requiredIfChecked", function(value, element) {
+            if ($("#com_instrutor").is(":checked")) {
+                // Se a opção "Com Instrutor" está marcada, o campo não pode ser vazio
+                return value !== "";
+            }
+            return true;
+        }, "Por favor, selecione um instrutor.");
+
         var disabledDates = [];
 
         $('#data_hora_treino').datetimepicker({
@@ -180,6 +190,10 @@
                     disabledDates: disabledDates.map(d => d.split(' ')[0]) // Desabilita o dia inteiro se todos os horários estiverem ocupados
                 })
             },
+            onSelectDate: function() {
+                // Quando uma data é selecionada, busca os instrutores se necessário
+                buscarInstrutores();
+            }
         });
 
         function buscarInstrutores() {
@@ -194,12 +208,12 @@
                     data: { data_hora: dataHora, config_id: configId },
                     dataType: 'json',
                     success: function(response) {
-                        var options = '<option value="">Qualquer um</option>';
+                        var options = '<option value="">Qualquer um disponível</option>';
                         if (response.length > 0) {
                             response.forEach(function(instrutor) {
                                 options += '<option value="' + instrutor.id + '">' + instrutor.nome + '</option>';
                             });
-                        } else {
+                        } else if ($('#com_instrutor').is(':checked')) {
                             options = '<option value="">Nenhum instrutor disponível</option>';
                         }
                         $('#instrutor_id').html(options).prop('disabled', false);
@@ -211,7 +225,10 @@
             }
         }
 
-        $('#data_hora_treino').on('change', buscarInstrutores);
+        // A função buscarInstrutores será chamada no 'onSelectDate' e no 'change' do checkbox
+        $('#data_hora_treino').on('change', function() {
+            if ($('#com_instrutor').is(':checked')) buscarInstrutores();
+        });
 
         $('#treino_config_id').change(function() {
             var config_id = $('#treino_config_id').val();
@@ -227,7 +244,7 @@
                     success: function(response) {
                         // Reinicializa o datetimepicker com as novas opções
                         datetimepicker.datetimepicker({
-                            disabledWeekDays: response.disabledWeekDays,
+                            disabledWeekDays: response.disabledWeekDays || [],
                             step: parseInt(response.duration),
                             format: 'd/m/Y H:i',
                             minDate: 0,
@@ -243,6 +260,9 @@
                                     return response.agendamentos.indexOf(dataCompleta) === -1;
                                 });
                                 this.setOptions({ allowTimes: horariosDisponiveis });
+                            },
+                            onSelectDate: function() {
+                                if ($('#com_instrutor').is(':checked')) buscarInstrutores();
                             }
                         });
                         allowedTimes = response.allowedTimes;
@@ -263,7 +283,10 @@
             
             if (comInstrutor) {
                 $('#instrutor_div').slideDown();
-                if (e.target.id === 'com_instrutor') buscarInstrutores(); // Busca instrutores ao marcar o toggle
+                // Se o evento foi disparado pelo toggle e uma data já está selecionada, busca instrutores
+                if (e.target.id === 'com_instrutor' && $('#data_hora_treino').val()) {
+                    buscarInstrutores();
+                }
             } else {
                 $('#instrutor_div').slideUp();
             }
@@ -274,6 +297,16 @@
                 $('#info-preco').html('');
             }
         }).trigger('change');
+
+        // Validação do formulário
+        $('#formAgendarTreino').validate({
+            rules: {
+                instrutor_id: {
+                    requiredIfChecked: true
+                }
+            },
+            errorClass: "help-inline",
+        });
 
         $(document).on('click', 'a', function(event) {
             var id = $(this).data('id');

@@ -103,8 +103,7 @@
                     echo '<td>' . date('d/m/Y H:i', strtotime($a->data_hora_inicio)) . '</td>';
                     echo '<td>' . ucfirst($a->status) . '</td>';
                     echo '<td>';
-                    // Adicione aqui links para visualizar ou editar o agendamento, se necessário
-                    // Exemplo: echo '<a href="' . site_url('treinos/visualizarAgendamento/' . $a->id) . '" class="btn-nwe" title="Visualizar"><i class="bx bx-show"></i></a>';
+                    echo '<a href="' . site_url('treinos/visualizar/' . $a->id) . '" class="btn-nwe" title="Visualizar"><i class="bx bx-show"></i></a>';
                     echo '</td>';
                     echo '</tr>';
                 }

@@ -1340,6 +1340,51 @@ class Mine extends MY_Controller
         redirect('mine/treinos');
     }
 
+    public function cancelarTreino()
+    {
+        if (!$this->session->userdata('cliente_id') || !$this->session->userdata('conectado')) {
+            redirect(base_url() . 'index.php/mine/login');
+        }
+
+        $this->load->model('treinos_model');
+        $idAgendamento = $this->input->post('id');
+        $clienteId = $this->session->userdata('cliente_id');
+
+        if (!$idAgendamento) {
+            $this->session->set_flashdata('error', 'Agendamento não especificado.');
+            redirect('mine/treinos');
+        }
+
+        $agendamento = $this->treinos_model->get('treinos_agendados', '*', "id = {$idAgendamento} AND cliente_id = {$clienteId}", 1, 0, true);
+
+        if (!$agendamento) {
+            $this->session->set_flashdata('error', 'Agendamento não encontrado ou não pertence a você.');
+            redirect('mine/treinos');
+        }
+
+        $config = $this->treinos_model->getById($agendamento->config_id);
+        $agora = new DateTime();
+        $inicioTreino = new DateTime($agendamento->data_hora_inicio);
+
+        $limiteCancelamento = clone $inicioTreino;
+        $limiteCancelamento->modify("-{$config->cancelamento_limite_dias} days");
+        $limiteCancelamento->modify("-{$config->cancelamento_limite_horas} hours");
+
+        if ($agora > $limiteCancelamento) {
+            $this->session->set_flashdata('error', 'O prazo para cancelamento deste treino já expirou.');
+            redirect('mine/treinos');
+        }
+
+        $data = ['status' => 'Cancelado'];
+        if ($this->treinos_model->edit('treinos_agendados', $data, 'id', $idAgendamento)) {
+            $this->session->set_flashdata('success', 'Agendamento cancelado com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Ocorreu um erro ao cancelar o agendamento.');
+        }
+
+        redirect('mine/treinos');
+    }
+
     public function getHorariosDisponiveis()
     {
         // Lógica para retornar um JSON com os horários disponíveis para um determinado dia e tipo de treino

@@ -582,10 +582,14 @@ class Mapos extends MY_Controller {
         );
 
         $this->load->model('treinos_model');
-        $allTreinos = $this->treinos_model->getAgendamentos([
-            'start' => $start,
-            'end' => $end,
-        ]);
+        $this->db->select('treinos_agendados.*, clientes.nomeCliente, treinos_config.nome as nome_treino');
+        $this->db->from('treinos_agendados');
+        $this->db->join('treinos_config', 'treinos_config.id = treinos_agendados.config_id');
+        $this->db->join('clientes', 'clientes.idClientes = treinos_agendados.cliente_id');
+        $this->db->where('data_hora_inicio >=', $start);
+        $this->db->where('treinos_agendados.status !=', 'Cancelado');
+        $this->db->where('data_hora_fim <=', $end);
+        $allTreinos = $this->db->get()->result();
 
         $events = array_map(function ($os) {
             switch ($os->status) {
@@ -637,8 +641,8 @@ class Mapos extends MY_Controller {
                     'defeito' => '<b>Defeito:</b> ' . strip_tags(html_entity_decode($os->defeito)),
                     'observacoes' => '<b>Observações:</b> ' . strip_tags(html_entity_decode($os->observacoes)),
                     'subtotal' => '<br><b>Subtotal:</b> R$ ' . number_format($os->totalProdutos + $os->totalServicos, 2, ',', '.'),
-                    'desconto' => '<b>Desconto:</b> -R$ ' . ($os->desconto > 0 ? number_format(($os->totalProdutos + $os->totalServicos) - $os->valor_desconto, 2, ',', '.') : number_format($os->desconto, 2, ',', '.')),
-                    'total' => '<b>Total:</b> R$ ' . ($os->valor_desconto == 0 ? number_format($os->totalProdutos + $os->totalServicos, 2, ',', '.') : number_format($os->valor_desconto, 2, ',', '.')),
+                    'desconto' => '<b>Desconto:</b> -R$ ' . (isset($os->valor_desconto) && $os->desconto > 0 ? number_format(($os->totalProdutos + $os->totalServicos) - $os->valor_desconto, 2, ',', '.') : number_format($os->desconto, 2, ',', '.')),
+                    'total' => '<b>Total:</b> R$ ' . (isset($os->valor_desconto) && $os->valor_desconto != 0 ? number_format($os->valor_desconto, 2, ',', '.') : number_format($os->totalProdutos + $os->totalServicos, 2, ',', '.')),
                     'faturado' => '<br><b>Faturado:</b> ' . ($os->faturado ? 'SIM' : 'PENDENTE'),
                     'editar' => $this->os_model->isEditable($os->idOs),
                 ],
@@ -690,11 +694,11 @@ class Mapos extends MY_Controller {
         $eventosTreinos = [];
         foreach ($allTreinos as $treino) {
             $eventosTreinos[] = [
-                'title' => "Treino: {$treino->nomeCliente}",
+                'title' => "Treino ({$treino->nome_treino}): {$treino->nomeCliente}",
                 'start' => $treino->data_hora_inicio,
                 'end' => $treino->data_hora_fim,
                 'color' => '#ff69b4', // Rosa para treinos
-                'url'   => base_url() . 'index.php/treinos/visualizar/' . $treino->id, // Link para detalhes do agendamento
+                'url'   => site_url('treinos/visualizar/' . $treino->id), // Link para detalhes do agendamento
             ];
         }
 
