@@ -62,6 +62,7 @@
                         <li><a data-toggle="tab" href="#contato"><i class="bx bx-phone"></i> Contato</a></li>
                         <li><a data-toggle="tab" href="#endereco"><i class="bx bx-map"></i> Endereço</a></li>
                         <li><a data-toggle="tab" href="#equipamentos"><i class="bx bx-swim"></i> Meus Equipamentos</a></li>
+                        <li><a data-toggle="tab" href="#restricoes"><i class="bx bx-food-menu"></i> Restrições Alimentares</a></li>
                         <li><a data-toggle="tab" href="#saude"><i class="bx bx-first-aid"></i> Saúde e Segurança</a></li>
                     </ul>
 
@@ -281,6 +282,53 @@
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- Aba Restrições Alimentares -->
+                        <div id="restricoes" class="tab-pane">
+                            <h4>Minhas Restrições</h4>
+                            <?php if (isset($restricoes) && !empty($restricoes)) : ?>
+                                <table class="table table-bordered" style="margin-bottom: 20px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 30%;">Restrição</th>
+                                            <th>Observações</th>
+                                            <th style="width: 15%;">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($restricoes as $r) : ?>
+                                            <tr>
+                                                <td><?= html_escape($r->restricao) ?></td>
+                                                <td><?= html_escape($r->observacoes) ?></td>
+                                                <td>
+                                                    <a href="<?= site_url('mine/remover_restricao_cliente/' . $r->id) ?>" class="btn btn-danger btn-mini" onclick="return confirm('Deseja remover esta restrição?')">Remover</a>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            <?php else : ?>
+                                <p>Nenhuma restrição alimentar cadastrada.</p>
+                            <?php endif; ?>
+
+                            <hr>
+
+                            <h4>Adicionar Nova Restrição</h4>
+                            <div class="control-group">
+                                <label for="restricao" class="control-label">Restrição/Preferência</label>
+                                <div class="controls">
+                                    <input id="restricao" type="text" name="restricao" value="" class="span5" placeholder="Ex: Vegetariano, Alergia a glúten">
+                                    <span class="help-inline">Preencha para adicionar uma nova restrição e clique em "Salvar Alterações".</span>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label for="observacoes_restricao" class="control-label">Observações</label>
+                                <div class="controls">
+                                    <textarea id="observacoes_restricao" name="observacoes_restricao" class="span5" rows="3"></textarea>
+                                    <span class="help-inline">Detalhes sobre a restrição (opcional).</span>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Aba Saúde e Segurança -->

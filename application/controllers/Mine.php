@@ -9,6 +9,7 @@ class Mine extends MY_Controller
     public function __construct()
     {
         parent::__construct();
+        $this->load->model('restricao_alimentar_model');
         $this->load->model('viagens_model');
         $this->load->model('curso_alunos_model');
         $this->load->model('cursos_model');
@@ -338,6 +339,7 @@ class Mine extends MY_Controller
 
         $this->data['menuConta'] = 'conta';
         $this->data['result'] = $this->Conecte_model->getDados();
+        $this->data['restricoes'] = $this->restricao_alimentar_model->getByCliente($this->session->userdata('cliente_id'));
         $this->data['output'] = 'conecte/conta';
         $this->load->view('conecte/template', $this->data);
     }
@@ -377,6 +379,7 @@ class Mine extends MY_Controller
         $data = [
             'nomeCliente' => $this->input->post('nomeCliente'),
             'sexo' => $this->input->post('sexo'),
+            'data_nascimento' => $this->input->post('data_nascimento') ? date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('data_nascimento')))) : null,
             'documento' => $this->input->post('documento'),
             'telefone' => $this->input->post('telefone'),
             'celular' => $this->input->post('celular'),
@@ -449,6 +452,19 @@ class Mine extends MY_Controller
         }
 
         $activeTab = ltrim($this->input->post('active_tab'), '#');
+
+        // Adicionar nova restrição, se houver
+        if ($this->input->post('restricao')) {
+            $dataRestricao = [
+                'cliente_id' => $this->session->userdata('cliente_id'),
+                'restricao' => $this->input->post('restricao'),
+                'observacoes' => $this->input->post('observacoes_restricao')
+            ];
+            $this->restricao_alimentar_model->add($dataRestricao);
+            $this->session->set_flashdata('success', 'Restrição alimentar adicionada com sucesso!');
+            $activeTab = 'restricoes'; // Força a aba de restrições a ficar ativa
+        }
+
         redirect(site_url('mine/conta?tab=') . $activeTab);
     }
 
@@ -1033,6 +1049,32 @@ class Mine extends MY_Controller
         }
 
         redirect('mine/conta?tab=saude');
+    }
+
+    public function remover_restricao_cliente($id = null)
+    {
+        if (!$this->session->userdata('cliente_id') || !$this->session->userdata('conectado')) {
+            redirect(base_url() . 'index.php/mine/login');
+        }
+
+        if ($id == null || !is_numeric($id)) {
+            $this->session->set_flashdata('error', 'Erro ao tentar remover restrição.');
+            redirect('mine/conta?tab=restricoes');
+        }
+
+        $restricao = $this->restricao_alimentar_model->getById($id);
+
+        // Garante que o cliente só pode apagar a própria restrição
+        if ($restricao && $restricao->cliente_id == $this->session->userdata('cliente_id')) {
+            if ($this->restricao_alimentar_model->delete($id)) {
+                $this->session->set_flashdata('success', 'Restrição alimentar removida com sucesso!');
+            } else {
+                $this->session->set_flashdata('error', 'Erro ao remover restrição alimentar.');
+            }
+        } else {
+            $this->session->set_flashdata('error', 'Você não tem permissão para remover esta restrição.');
+        }
+        redirect('mine/conta?tab=restricoes');
     }
 
     public function minhasViagens()
