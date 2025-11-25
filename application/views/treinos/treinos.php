@@ -1,3 +1,6 @@
+<script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
+<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/jquery.datetimepicker.min.css"/ >
+
 <div class="widget-box">
     <div class="widget-title">
         <span class="icon">
@@ -250,7 +253,6 @@
     </form>
 </div>
 
-<script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/jquery.datetimepicker.min.css"/ >
 <script src="<?php echo base_url(); ?>assets/js/jquery.datetimepicker.full.min.js"></script>
 <script>
