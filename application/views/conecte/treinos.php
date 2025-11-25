@@ -5,6 +5,7 @@
 <link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/jquery.datetimepicker.min.css"/ >
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
+<script src="<?php echo base_url() ?>assets/js/jquery.validate.js"></script>
 <style>
     .switch {
         position: relative;
@@ -123,7 +124,7 @@
                                     <td>R$ <?= number_format($agendamento->valor_cobrado, 2, ',', '.') ?></td>
                                     <td><?= htmlspecialchars($agendamento->status) ?></td>
                                     <td>
-                                        <a href="<?= site_url('treinos/visualizarTreino/' . $agendamento->id) ?>" class="btn btn-info btn-mini tip-top" title="Visualizar Detalhes"><i class="fas fa-eye"></i></a>
+                                        <button class="btn btn-info btn-mini tip-top btn-visualizar-treino" data-id="<?= $agendamento->id ?>" title="Visualizar Detalhes"><i class="fas fa-eye"></i></button>
                                         <?php if ($agendamento->status == 'Agendado') : ?>
                                             <a href="#modal-cancelar" data-toggle="modal" role="button" data-id="<?= $agendamento->id ?>" class="btn btn-danger btn-mini tip-top" title="Cancelar Agendamento"><i class="fas fa-times"></i></a>
                                         <?php endif; ?>
@@ -141,6 +142,40 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Detalhes do Treino -->
+<div class="modal fade" id="treinoModal" tabindex="-1" role="dialog" aria-labelledby="treinoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h5 class="modal-title" id="treinoModalLabel">Detalhes do Treino Agendado</h5>
+            </div>
+            <div class="modal-body">
+                <div id="loading-treino" style="display: none; text-align: center;">
+                    <img src="<?= base_url('assets/img/ajax-loader.gif') ?>" alt="Carregando..." style="width: 50px;"/>
+                </div>
+                <div id="detalhes-treino-content">
+                    <p><strong>Treino:</strong> <span id="modal-nome-treino"></span></p>
+                    <p><strong>Data e Hora:</strong> <span id="modal-data-hora"></span></p>
+                    <p><strong>Duração:</strong> <span id="modal-duracao"></span></p>
+                    <p><strong>Status:</strong> <span id="modal-status"></span></p>
+                    <p><strong>Valor:</strong> R$ <span id="modal-valor"></span></p>
+                    <p><strong>Instrutor:</strong> <span id="modal-instrutor"></span></p>
+                    <p><strong>Observações:</strong></p>
+                    <p><span id="modal-observacoes"></span></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #detalhes-treino-content p { margin-bottom: 10px; }
+</style>
 
 <!-- Modal Cancelar -->
 <div id="modal-cancelar" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -235,38 +270,24 @@
             var config_id = $('#treino_config_id').val();
             var datetimepicker = $('#data_hora_treino');
 
-            if (config_id) {
+            if (config_id)
+            {
                 datetimepicker.val('').attr('placeholder', 'Carregando horários...').prop('disabled', true);
                 $.ajax({
                     url: '<?= site_url('mine/getHorariosDisponiveis') ?>',
                     type: 'GET',
                     data: { config_id: config_id },
                     dataType: 'json',
-                    success: function(response) {
-                        // Reinicializa o datetimepicker com as novas opções
-                        datetimepicker.datetimepicker({
+                    success: function(response)
+                    {
+                        datetimepicker.datetimepicker('destroy'); // Destrói a instância anterior
+                        datetimepicker.datetimepicker({ // Cria uma nova com as opções corretas
+                            allowTimes: response.allowedTimes || [],
                             disabledWeekDays: response.disabledWeekDays || [],
-                            step: parseInt(response.duration),
                             format: 'd/m/Y H:i',
-                            minDate: 0,
-                            onShow: function(ct, $i) {
-                                // Filtra os horários permitidos, removendo os que já estão agendados
-                                var horariosDisponiveis = response.allowedTimes.filter(time => {
-                                    // Formata a data (ct) para o formato dd/mm/yyyy
-                                    var day = ('0' + ct.getDate()).slice(-2);
-                                    var month = ('0' + (ct.getMonth() + 1)).slice(-2);
-                                    var year = ct.getFullYear();
-                                    var dataFormatada = day + '/' + month + '/' + year;
-                                    var dataCompleta = dataFormatada + ' ' + time;
-                                    return response.agendamentos.indexOf(dataCompleta) === -1;
-                                });
-                                this.setOptions({ allowTimes: horariosDisponiveis });
-                            },
-                            onSelectDate: function() {
-                                if ($('#com_instrutor').is(':checked')) buscarInstrutores();
-                            }
+                            minDate: 0, // A partir de hoje
+                            step: parseInt(response.duration) || 30,
                         });
-                        allowedTimes = response.allowedTimes;
                         datetimepicker.attr('placeholder', 'Selecione a data e hora').prop('disabled', false);
                     },
                     error: function() {
@@ -309,9 +330,54 @@
             errorClass: "help-inline",
         });
 
-        $(document).on('click', 'a', function(event) {
+        $(document).on('click', 'a[data-toggle="modal"]', function(event) {
             var id = $(this).data('id');
             $('#idAgendamento').val(id);
+        });
+
+        $(document).on('click', '.btn-visualizar-treino', function() {
+            var treinoId = $(this).data('id');
+            $('#detalhes-treino-content').hide();
+            $('#loading-treino').show();
+            $('#treinoModal').modal('show');
+
+            $.ajax({
+                url: '<?= site_url('treinos/getTreinoJson') ?>',
+                type: 'POST',
+                data: {
+                    id: treinoId,
+                    '<?= $this->security->get_csrf_token_name(); ?>': '<?= $this->security->get_csrf_hash(); ?>'
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.error) {
+                        $('#detalhes-treino-content').html('<p class="text-error">' + response.error + '</p>');
+                    } else {
+                        var dataHora = new Date(response.data_hora_inicio).toLocaleString('pt-BR', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                        });
+                        var valor = parseFloat(response.valor_cobrado).toLocaleString('pt-BR', {
+                            minimumFractionDigits: 2, maximumFractionDigits: 2
+                        });
+
+                        $('#modal-nome-treino').text(response.nome_treino || 'N/A');
+                        $('#modal-data-hora').text(dataHora);
+                        $('#modal-duracao').text(response.duracao_minutos ? response.duracao_minutos + ' minutos' : 'N/A');
+                        $('#modal-status').text(response.status || 'N/A');
+                        $('#modal-valor').text(valor);
+                        $('#modal-instrutor').text(response.nome_instrutor || 'Sem instrutor');
+                        $('#modal-observacoes').text(response.observacoes || 'Nenhuma');
+                    }
+                    $('#loading-treino').hide();
+                    $('#detalhes-treino-content').show();
+                },
+                error: function() {
+                    $('#detalhes-treino-content').html('<p class="text-error">Ocorreu um erro ao buscar os detalhes do treino.</p>');
+                    $('#loading-treino').hide();
+                    $('#detalhes-treino-content').show();
+                }
+            });
         });
     });
 </script>

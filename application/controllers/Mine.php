@@ -1314,6 +1314,18 @@ class Mine extends MY_Controller
             return;
         }
 
+    // Verifica se o cliente já está inscrito neste treino (e não está cancelado)
+    $jaInscrito = $this->db->where('cliente_id', $clienteId)
+                            ->where('config_id', $configId)
+                            ->where('status !=', 'Cancelado')
+                            ->count_all_results('treinos_agendados');
+
+    if ($jaInscrito > 0) {
+        $this->session->set_flashdata('error', 'Você já está inscrito neste tipo de treino.');
+        redirect('mine/treinos');
+        return;
+    }
+
         try {
             $inicioTreino = DateTime::createFromFormat('d/m/Y H:i', $dataHoraStr);
             $fimTreino = clone $inicioTreino;
@@ -1362,16 +1374,15 @@ class Mine extends MY_Controller
             redirect('mine/treinos');
         }
 
-        $config = $this->treinos_model->getById($agendamento->config_id);
+        // Adiciona a regra de 20 horas de antecedência para cancelamento
         $agora = new DateTime();
         $inicioTreino = new DateTime($agendamento->data_hora_inicio);
 
-        $limiteCancelamento = clone $inicioTreino;
-        $limiteCancelamento->modify("-{$config->cancelamento_limite_dias} days");
-        $limiteCancelamento->modify("-{$config->cancelamento_limite_horas} hours");
+        $intervalo = $agora->diff($inicioTreino);
+        $horasRestantes = ($intervalo->days * 24) + $intervalo->h;
 
-        if ($agora > $limiteCancelamento) {
-            $this->session->set_flashdata('error', 'O prazo para cancelamento deste treino já expirou.');
+        if ($intervalo->invert == 1 || $horasRestantes < 20) {
+            $this->session->set_flashdata('error', 'O cancelamento só é permitido com no mínimo 20 horas de antecedência.');
             redirect('mine/treinos');
         }
 
@@ -1435,7 +1446,6 @@ class Mine extends MY_Controller
         $response = [
             'allowedDates' => $diasPermitidos, // A biblioteca usa os dias da semana (0=Dom, 1=Seg, ...)
             'allowedTimes' => $allowedTimes,
-            'agendamentos' => $agendamentosFormatados, // Envia os horários já ocupados
             'disabledDates' => [],
             'disabledWeekDays' => array_values(array_diff([0, 1, 2, 3, 4, 5, 6], $diasPermitidos)),
             'duration' => (int)$config->duracao_minutos,
