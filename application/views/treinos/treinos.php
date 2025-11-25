@@ -103,7 +103,7 @@
                     echo '<td>' . date('d/m/Y H:i', strtotime($a->data_hora_inicio)) . '</td>';
                     echo '<td>' . ucfirst($a->status) . '</td>';
                     echo '<td>';
-                    echo '<a href="' . site_url('treinos/visualizar/' . $a->id) . '" class="btn-nwe" title="Visualizar"><i class="bx bx-show"></i></a>';
+                    echo '<a href="' . site_url('treinos/visualizarTreino/' . $a->id) . '" class="btn-nwe" title="Visualizar"><i class="bx bx-show"></i></a>';
                     echo '</td>';
                     echo '</tr>';
                 }

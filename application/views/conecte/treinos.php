@@ -123,6 +123,7 @@
                                     <td>R$ <?= number_format($agendamento->valor_cobrado, 2, ',', '.') ?></td>
                                     <td><?= htmlspecialchars($agendamento->status) ?></td>
                                     <td>
+                                        <a href="<?= site_url('treinos/visualizarTreino/' . $agendamento->id) ?>" class="btn btn-info btn-mini tip-top" title="Visualizar Detalhes"><i class="fas fa-eye"></i></a>
                                         <?php if ($agendamento->status == 'Agendado') : ?>
                                             <a href="#modal-cancelar" data-toggle="modal" role="button" data-id="<?= $agendamento->id ?>" class="btn btn-danger btn-mini tip-top" title="Cancelar Agendamento"><i class="fas fa-times"></i></a>
                                         <?php endif; ?>

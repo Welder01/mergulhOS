@@ -34,7 +34,13 @@
                 </table>
             </div>
             <div class="form-actions" style="background-color:transparent;border:none;padding: 10px;margin-bottom: 0">
-                <a href="<?php echo base_url() ?>index.php/treinos" class="button btn btn-mini btn-warning"><span class="button__icon"><i class="bx bx-undo"></i></span> <span class="button__text2">Voltar</span></a>
+                <?php
+                $isCliente = $this->session->userdata('tipo_usuario') == 'cliente';
+                $backUrl = $isCliente ? site_url('mine/treinos') : site_url('treinos');
+                ?>
+                <a href="<?php echo $backUrl; ?>" class="button btn btn-mini btn-warning">
+                    <span class="button__icon"><i class="bx bx-undo"></i></span> <span class="button__text2">Voltar</span>
+                </a>
             </div>
         </div>
     </div>

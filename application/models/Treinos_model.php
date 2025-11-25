@@ -62,4 +62,15 @@ class Treinos_model extends CI_Model
         $this->db->delete($table);
         return $this->db->affected_rows() == '1';
     }
+
+    public function getAgendamentoById($id)
+    {
+        $this->db->select('ta.*, tc.nome as nome_treino, c.nomeCliente as nome_cliente, u.nome as nome_instrutor');
+        $this->db->from('treinos_agendados as ta');
+        $this->db->join('treinos_config as tc', 'tc.id = ta.config_id');
+        $this->db->join('clientes as c', 'c.idClientes = ta.cliente_id');
+        $this->db->join('usuarios as u', 'u.idUsuarios = ta.instrutor_id', 'left');
+        $this->db->where('ta.id', $id);
+        return $this->db->get()->row();
+    }
 }

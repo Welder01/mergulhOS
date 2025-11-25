@@ -207,4 +207,29 @@ class Treinos extends MY_Controller
             echo json_encode($result);
         }
     }
+
+    public function visualizarTreino()
+    {
+        if (!$this->uri->segment(3) || !is_numeric($this->uri->segment(3))) {
+            $this->session->set_flashdata('error', 'Item não pode ser encontrado, parâmetro não foi passado corretamente.');
+            redirect('treinos');
+        }
+
+        $this->data['result'] = $this->treinos_model->getAgendamentoById($this->uri->segment(3));
+
+        // Verifica se o usuário é um cliente
+        if ($this->session->userdata('tipo_usuario') == 'cliente') {
+            // Se for cliente, carrega a view dentro do template 'conecte'
+            $this->data['output'] = 'treinos/visualizarTreino';
+            $this->load->view('conecte/template', $this->data);
+        } else {
+            // Se for admin, carrega a view dentro do template padrão
+            if ($this->data['result'] == null) {
+                $this->session->set_flashdata('error', 'Treino não encontrado.');
+                redirect(base_url() . 'index.php/treinos');
+            }
+            $this->data['view'] = 'treinos/visualizarTreino';
+            return $this->layout();
+        }
+    }
 }
