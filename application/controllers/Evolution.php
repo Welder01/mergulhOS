@@ -1,5 +1,5 @@
 <?php
-if (! defined('BASEPATH')) {
+if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
@@ -20,7 +20,7 @@ class Evolution extends MY_Controller
 
     public function gerenciar()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) { // Usando uma permissão genérica de configuração
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) { // Usando uma permissão genérica de configuração
             $this->session->set_flashdata('error', 'Você não tem permissão para configurar integrações.');
             redirect(base_url());
         }
@@ -36,7 +36,7 @@ class Evolution extends MY_Controller
 
     public function fetch_instance()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
             return $this->output->set_status_header(403)->set_output(json_encode(['error' => 'Acesso não autorizado.']));
         }
 
@@ -76,9 +76,9 @@ class Evolution extends MY_Controller
         }
 
         if ($httpcode >= 400) {
-             $responseData = json_decode($response, true);
-             $errorMessage = $responseData['message'] ?? 'Erro desconhecido na API.';
-             return $this->output->set_status_header($httpcode)->set_output(json_encode(['error' => "API Error: " . $errorMessage]));
+            $responseData = json_decode($response, true);
+            $errorMessage = $responseData['message'] ?? 'Erro desconhecido na API.';
+            return $this->output->set_status_header($httpcode)->set_output(json_encode(['error' => "API Error: " . $errorMessage]));
         }
 
         return $this->output->set_content_type('application/json')->set_output($response);
@@ -86,7 +86,7 @@ class Evolution extends MY_Controller
 
     public function adicionar_mensagem()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para adicionar mensagens.');
             redirect('evolution/gerenciar?tab=mensagens');
         }
@@ -109,7 +109,7 @@ class Evolution extends MY_Controller
 
     public function editar_mensagem()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar mensagens.');
             redirect('evolution/gerenciar#tabMensagens');
         }
@@ -131,7 +131,7 @@ class Evolution extends MY_Controller
 
     public function excluir_mensagem($id)
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para excluir mensagens.');
             redirect('evolution/gerenciar#tabMensagens');
         }
@@ -146,7 +146,7 @@ class Evolution extends MY_Controller
 
     public function excluir_logs()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) { // Usando uma permissão genérica
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) { // Usando uma permissão genérica
             $this->session->set_flashdata('error', 'Você não tem permissão para excluir logs.');
             redirect('evolution/gerenciar#tabLogs');
         }
@@ -166,7 +166,7 @@ class Evolution extends MY_Controller
 
     public function enviar_mensagem()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
             return $this->output->set_status_header(403)->set_output(json_encode(['error' => 'Acesso não autorizado.']));
         }
 
@@ -185,7 +185,7 @@ class Evolution extends MY_Controller
         $viagemId = $this->input->post('viagem_id');
 
         $mensagem = $this->evolution_model->getById($mensagemId);
-        if (! $mensagem) {
+        if (!$mensagem) {
             return $this->output->set_status_header(404)->set_output(json_encode(['error' => 'Modelo de mensagem não encontrado.']));
         }
 
@@ -249,9 +249,9 @@ class Evolution extends MY_Controller
         $falhas = 0;
 
         $presence = $this->mapos_model->get_ci_config('evolution_presence') ?: 'composing';
-        $delayFixo = (int)($this->mapos_model->get_ci_config('evolution_delay_fixo') ?: 1200);
-        $delayMin = (int)($this->mapos_model->get_ci_config('evolution_delay_min') ?: 1000);
-        $delayMax = (int)($this->mapos_model->get_ci_config('evolution_delay_max') ?: 5000);
+        $delayFixo = (int) ($this->mapos_model->get_ci_config('evolution_delay_fixo') ?: 1200);
+        $delayMin = (int) ($this->mapos_model->get_ci_config('evolution_delay_min') ?: 1000);
+        $delayMax = (int) ($this->mapos_model->get_ci_config('evolution_delay_max') ?: 5000);
 
         $useRandomDelay = $delayFixo <= 0;
 
@@ -284,7 +284,7 @@ class Evolution extends MY_Controller
             $payload = [
                 'number' => $numero,
                 'options' => [
-                    'delay' => (int)$delay,
+                    'delay' => (int) $delay,
                     'presence' => $presence,
                     'linkPreview' => false,
                 ]
@@ -331,7 +331,7 @@ class Evolution extends MY_Controller
 
     public function enviar_mensagem_novo()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
             return $this->output->set_status_header(403)->set_output(json_encode(['message' => 'Acesso não autorizado.']));
         }
 
@@ -345,7 +345,7 @@ class Evolution extends MY_Controller
 
         $mensagemId = $this->input->post('mensagem_id');
         $mensagemOriginal = $this->evolution_model->getById($mensagemId);
-        if (! $mensagemOriginal) {
+        if (!$mensagemOriginal) {
             return $this->output->set_status_header(404)->set_output(json_encode(['message' => 'Modelo de mensagem não encontrado.']));
         }
 
@@ -362,7 +362,7 @@ class Evolution extends MY_Controller
                 $cursosIds = $this->input->post('cursos_ids') ? explode(',', $this->input->post('cursos_ids')) : [];
                 $viagensIds = $this->input->post('viagens_ids') ? explode(',', $this->input->post('viagens_ids')) : [];
                 $aniversariantesSemana = $this->input->post('aniversariantes_semana');
-                
+
                 if ($aniversariantesSemana) {
                     $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getAniversariantesDaSemana());
                 } else {
@@ -398,7 +398,54 @@ class Evolution extends MY_Controller
                 $usuariosIds = $this->input->post('usuarios_ids') ? explode(',', $this->input->post('usuarios_ids')) : [];
                 $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getContatos($usuariosIds, 'usuarios', 'idUsuarios'));
             } else { // "todos"
-                $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getAllContatos('usuarios'));
+                $permissoesIds = $this->input->post('permissoes_ids') ? explode(',', $this->input->post('permissoes_ids')) : [];
+                $cursosIdsUsuarios = $this->input->post('cursos_ids_usuarios') ? explode(',', $this->input->post('cursos_ids_usuarios')) : [];
+                $viagensIdsUsuarios = $this->input->post('viagens_ids_usuarios') ? explode(',', $this->input->post('viagens_ids_usuarios')) : [];
+
+                $usersByPermissao = !empty($permissoesIds) ? $this->evolution_model->getUsuariosByPermissao($permissoesIds) : null;
+                $usersByCurso = !empty($cursosIdsUsuarios) ? $this->evolution_model->getUsuariosByCurso($cursosIdsUsuarios) : null;
+                $usersByViagem = !empty($viagensIdsUsuarios) ? $this->evolution_model->getUsuariosByViagem($viagensIdsUsuarios) : null;
+
+                // Se nenhum filtro foi selecionado, busca todos
+                if ($usersByPermissao === null && $usersByCurso === null && $usersByViagem === null) {
+                    $contatosParaEnvio = array_merge($contatosParaEnvio, $this->evolution_model->getAllContatos('usuarios'));
+                } else {
+                    $filteredUsers = [];
+                    // Inicializa com o primeiro resultado não nulo encontrado, ou array vazio
+                    if ($usersByPermissao !== null)
+                        $filteredUsers = $usersByPermissao;
+                    elseif ($usersByCurso !== null)
+                        $filteredUsers = $usersByCurso;
+                    elseif ($usersByViagem !== null)
+                        $filteredUsers = $usersByViagem;
+
+                    // Intersecta com os outros resultados não nulos para fazer um AND (E)
+                    // Ou devemos fazer OR (OU)? Geralmente filtros acumulativos são AND.
+                    // O cliente pediu "usuarios em viagem E em curso" (filtro), então AND faz sentido se ambos selecionados.
+                    // Mas se eu selecionar permissao X e curso Y, eu quero usuarios que tenham permissao X E estejam no curso Y.
+
+                    if ($usersByPermissao !== null) {
+                        $ids = array_map(function ($u) {
+                            return $u->idUsuarios; }, $usersByPermissao);
+                        $filteredUsers = array_filter($filteredUsers, function ($u) use ($ids) {
+                            return in_array($u->idUsuarios, $ids); });
+                    }
+                    if ($usersByCurso !== null) {
+                        $ids = array_map(function ($u) {
+                            return $u->idUsuarios; }, $usersByCurso);
+                        $filteredUsers = array_filter($filteredUsers, function ($u) use ($ids) {
+                            return in_array($u->idUsuarios, $ids); });
+                    }
+                    if ($usersByViagem !== null) {
+                        $ids = array_map(function ($u) {
+                            return $u->idUsuarios; }, $usersByViagem);
+                        $filteredUsers = array_filter($filteredUsers, function ($u) use ($ids) {
+                            return in_array($u->idUsuarios, $ids); });
+                    }
+
+                    // Reindex array keys after filtering
+                    $contatosParaEnvio = array_merge($contatosParaEnvio, array_values($filteredUsers));
+                }
             }
         }
 
@@ -415,7 +462,7 @@ class Evolution extends MY_Controller
             if ($numero) {
                 $numeroLimpo = preg_replace('/[^0-9]/', '', $numero);
                 if (strlen($numeroLimpo) >= 10) {
-                     if (strlen($numeroLimpo) <= 11) {
+                    if (strlen($numeroLimpo) <= 11) {
                         $destinatarios[$numeroLimpo] = ['numero' => '55' . $numeroLimpo, 'dados' => $contato];
                     } else {
                         $destinatarios[$numeroLimpo] = ['numero' => $numeroLimpo, 'dados' => $contato];
@@ -430,7 +477,7 @@ class Evolution extends MY_Controller
             $numerosArray = preg_split('/[,\s\n]+/ ', $numerosEspecificos, -1, PREG_SPLIT_NO_EMPTY);
             foreach ($numerosArray as $numero) {
                 $numeroLimpo = preg_replace('/[^0-9]/', '', $numero);
-                 if (strlen($numeroLimpo) >= 10) {
+                if (strlen($numeroLimpo) >= 10) {
                     $destinatarios[$numeroLimpo] = ['numero' => $numeroLimpo, 'dados' => null]; // Sem dados para substituição
                 }
             }
@@ -445,9 +492,9 @@ class Evolution extends MY_Controller
         $sucessos = 0;
         $falhas = 0;
         $presence = $this->mapos_model->get_ci_config('evolution_presence') ?: 'composing';
-        $delayFixo = (int)($this->mapos_model->get_ci_config('evolution_delay_fixo') ?: 1200);
-        $delayMin = (int)($this->mapos_model->get_ci_config('evolution_delay_min') ?: 1000);
-        $delayMax = (int)($this->mapos_model->get_ci_config('evolution_delay_max') ?: 5000);
+        $delayFixo = (int) ($this->mapos_model->get_ci_config('evolution_delay_fixo') ?: 1200);
+        $delayMin = (int) ($this->mapos_model->get_ci_config('evolution_delay_min') ?: 1000);
+        $delayMax = (int) ($this->mapos_model->get_ci_config('evolution_delay_max') ?: 5000);
 
         $totalDestinatarios = count($destinatarios);
 
@@ -551,24 +598,45 @@ class Evolution extends MY_Controller
         }
 
         if ($alvo === 'clientes') {
-                $this->db->select("idClientes as id, CONCAT('ID: ', idClientes, ' | ', nomeCliente, ' | Cel: ', celular) as text", false);
+            $this->db->select("idClientes as id, CONCAT('ID: ', idClientes, ' | ', nomeCliente, ' | Cel: ', celular) as text", false);
             $this->input->get('ids') ? $this->db->where_in('idClientes', explode(',', $q)) : $this->db->like('LOWER(nomeCliente)', $q);
-                $this->db->limit(10);
-                $query = $this->db->get('clientes');
-            } elseif ($alvo === 'usuarios') {
-                $this->db->select("idUsuarios as id, CONCAT('ID: ', idUsuarios, ' | ', nome, ' | Cel: ', celular) as text", false);
-                $this->input->get('ids') ? $this->db->where_in('idUsuarios', explode(',', $q)) : $this->db->like('LOWER(nome)', $q);
-                $this->db->limit(10);
-                $query = $this->db->get('usuarios');
-            } else {
-                return $this->output->set_content_type('application/json')->set_output(json_encode([]));
-            }
+            $this->db->limit(10);
+            $query = $this->db->get('clientes');
+        } elseif ($alvo === 'usuarios') {
+            $this->db->select("idUsuarios as id, CONCAT('ID: ', idUsuarios, ' | ', nome, ' | Cel: ', celular) as text", false);
+            $this->input->get('ids') ? $this->db->where_in('idUsuarios', explode(',', $q)) : $this->db->like('LOWER(nome)', $q);
+            $this->db->limit(10);
+            $query = $this->db->get('usuarios');
+        } else {
+            return $this->output->set_content_type('application/json')->set_output(json_encode([]));
+        }
 
-            $result = $query->result();
+        $result = $query->result();
         return $this->output
             ->set_content_type('application/json')
             ->set_output(json_encode($result));
+    }
+
+    public function autoCompletePermissao()
+    {
+        if (isset($_GET['term'])) {
+            $q = strtolower($this->input->get('term'));
+            $this->db->select("idPermissao as id, nome as text", false);
+            $this->db->like('LOWER(nome)', $q);
+            $this->db->where('situacao', 1);
+        } elseif (isset($_GET['ids'])) {
+            $ids = explode(',', $_GET['ids']);
+            $this->db->select("idPermissao as id, nome as text", false);
+            $this->db->where_in('idPermissao', $ids);
+        } else {
+            return $this->output->set_content_type('application/json')->set_output(json_encode([]));
         }
+        $this->db->limit(10);
+        $query = $this->db->get('permissoes');
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($query->result()));
+    }
 
     public function log_ajax_error()
     {
@@ -588,11 +656,11 @@ class Evolution extends MY_Controller
         $statusCode = $this->input->post('status_code');
 
         $logData = "Client-side AJAX Error:" . PHP_EOL
-                   . "Message: " . ($errorMessage ?: 'N/A') . PHP_EOL
-                   . "Status Code: " . ($statusCode ?: 'N/A') . PHP_EOL
-                   . "Response Text: " . ($responseText ?: 'N/A') . PHP_EOL
-                   . "User Agent: " . $this->input->user_agent() . PHP_EOL
-                   . "IP Address: " . $this->input->ip_address();
+            . "Message: " . ($errorMessage ?: 'N/A') . PHP_EOL
+            . "Status Code: " . ($statusCode ?: 'N/A') . PHP_EOL
+            . "Response Text: " . ($responseText ?: 'N/A') . PHP_EOL
+            . "User Agent: " . $this->input->user_agent() . PHP_EOL
+            . "IP Address: " . $this->input->ip_address();
         log_message('error', $logData);
 
         return $this->output->set_content_type('application/json')->set_output(json_encode(['status' => 'success', 'message' => 'Error logged successfully.']));

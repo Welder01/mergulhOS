@@ -1,5 +1,5 @@
 <?php
-if (! defined('BASEPATH')) {
+if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
@@ -26,7 +26,7 @@ class Evolution_model extends CI_Model
 
         $query = $this->db->get();
 
-        $result = ! $one ? $query->result() : $query->row();
+        $result = !$one ? $query->result() : $query->row();
 
         return $result;
     }
@@ -105,6 +105,43 @@ class Evolution_model extends CI_Model
         $this->db->join('viagem_clientes vc', 'c.idClientes = vc.cliente_id');
         $this->db->where_in('vc.viagem_id', $viagemIds);
         $this->db->group_by('c.idClientes');
+        return $this->db->get()->result();
+    }
+
+    public function getUsuariosByPermissao($permissoesIds)
+    {
+        if (empty($permissoesIds)) {
+            return [];
+        }
+        $this->db->select('*');
+        $this->db->from('usuarios');
+        $this->db->where_in('permissoes_id', $permissoesIds);
+        return $this->db->get()->result();
+    }
+
+    public function getUsuariosByCurso($cursoIds)
+    {
+        if (empty($cursoIds)) {
+            return [];
+        }
+        $this->db->select('u.*');
+        $this->db->from('usuarios u');
+        $this->db->join('curso_instrutores ci', 'u.idUsuarios = ci.usuario_id');
+        $this->db->where_in('ci.curso_id', $cursoIds);
+        $this->db->group_by('u.idUsuarios');
+        return $this->db->get()->result();
+    }
+
+    public function getUsuariosByViagem($viagemIds)
+    {
+        if (empty($viagemIds)) {
+            return [];
+        }
+        $this->db->select('u.*');
+        $this->db->from('usuarios u');
+        $this->db->join('viagem_instrutores vi', 'u.idUsuarios = vi.usuario_id');
+        $this->db->where_in('vi.viagem_id', $viagemIds);
+        $this->db->group_by('u.idUsuarios');
         return $this->db->get()->result();
     }
 }

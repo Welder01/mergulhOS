@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="<?= base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
 <link rel="stylesheet" href="<?= base_url(); ?>assets/css/select2.css" />
-<link rel="stylesheet" href="<?= base_url(); ?>assets/trumbowyg/ui/trumbowyg.min.css"/>
+<link rel="stylesheet" href="<?= base_url(); ?>assets/trumbowyg/ui/trumbowyg.min.css" />
 <script type="text/javascript" src="<?= base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <script type="text/javascript" src="<?= base_url() ?>assets/js/select2.min.js"></script>
 <script type="text/javascript" src="<?= base_url(); ?>assets/trumbowyg/trumbowyg.min.js"></script>
@@ -15,12 +15,16 @@
         cursor: pointer;
         font-family: monospace;
     }
+
     .variable-tag:hover {
         background-color: #e0e0e0;
     }
+
     /* Fix para o z-index do Select2 dentro do modal */
-    .select2-drop, .select2-drop-mask {
-        z-index: 99999 !important; /* Garante que fique acima de qualquer modal ou overlay */
+    .select2-drop,
+    .select2-drop-mask {
+        z-index: 99999 !important;
+        /* Garante que fique acima de qualquer modal ou overlay */
     }
 </style>
 
@@ -36,8 +40,12 @@
         <!-- Aba Status -->
         <div id="tabStatus" class="tab-pane active">
             <div class="span12 well">
-                <p>Nesta seção, você pode verificar o status de conexão da instância da Evolution API configurada no sistema.</p>
-                <p>Certifique-se de que a <strong>URL da API</strong>, a <strong>Chave (apikey)</strong> e o <strong>Nome da Instância</strong> estejam salvos corretamente em <strong>Configurações -> Sistema</strong>.</p>
+                <p>Nesta seção, você pode verificar o status de conexão da instância da Evolution API configurada no
+                    sistema.</p>
+                <p>Certifique-se de que a <strong>URL da API</strong>, a <strong>Chave (apikey)</strong> e o
+                    <strong>Nome da Instância</strong> estejam salvos corretamente em <strong>Configurações ->
+                        Sistema</strong>.
+                </p>
             </div>
 
             <div class="span12" style="margin-left: 0">
@@ -72,27 +80,32 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (isset($logs) && count($logs)) : ?>
-                                    <?php foreach ($logs as $log) : ?>
+                                <?php if (isset($logs) && count($logs)): ?>
+                                    <?php foreach ($logs as $log): ?>
                                         <tr>
                                             <td><?= date('d/m/Y H:i:s', strtotime($log->timestamp)); ?></td>
                                             <td><?= htmlspecialchars($log->phone_number); ?></td>
                                             <td>
                                                 <?php
-                                                    $statusClass = 'label-inverse';
-                                                    if ($log->response_code >= 200 && $log->response_code < 300) {
-                                                        $statusClass = 'label-success';
-                                                    } elseif ($log->response_code >= 400) {
-                                                        $statusClass = 'label-important';
-                                                    }
+                                                $statusClass = 'label-inverse';
+                                                if ($log->response_code >= 200 && $log->response_code < 300) {
+                                                    $statusClass = 'label-success';
+                                                } elseif ($log->response_code >= 400) {
+                                                    $statusClass = 'label-important';
+                                                }
                                                 ?>
                                                 <span class="label <?= $statusClass; ?>"><?= $log->response_code; ?></span>
                                             </td>
-                                            <td><a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info" data-title="Requisição" data-content="<?= htmlspecialchars($log->request_payload); ?>">Ver</a></td>
-                                            <td><a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info" data-title="Resposta" data-content="<?= htmlspecialchars($log->response_body . ($log->curl_error ? ' | Erro cURL: ' . $log->curl_error : '')); ?>">Ver</a></td>
+                                            <td><a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info"
+                                                    data-title="Requisição"
+                                                    data-content="<?= htmlspecialchars($log->request_payload); ?>">Ver</a></td>
+                                            <td><a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info"
+                                                    data-title="Resposta"
+                                                    data-content="<?= htmlspecialchars($log->response_body . ($log->curl_error ? ' | Erro cURL: ' . $log->curl_error : '')); ?>">Ver</a>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
-                                <?php else : ?>
+                                <?php else: ?>
                                     <tr>
                                         <td colspan="5">Nenhum log encontrado.</td>
                                     </tr>
@@ -107,20 +120,25 @@
         <!-- Aba Mensagens -->
         <div id="tabMensagens" class="tab-pane">
             <div class="widget-box">
-                <div class="widget-title"><span class="icon"><i class="fas fa-comment-alt"></i></span><h5>Criar Nova Mensagem</h5></div>
+                <div class="widget-title"><span class="icon"><i class="fas fa-comment-alt"></i></span>
+                    <h5>Criar Nova Mensagem</h5>
+                </div>
                 <div class="widget-content">
-                    <form action="<?= base_url() ?>index.php/evolution/adicionar_mensagem" method="post" class="form-horizontal">
+                    <form action="<?= base_url() ?>index.php/evolution/adicionar_mensagem" method="post"
+                        class="form-horizontal">
                         <input type="hidden" name="active_tab" id="active_tab" value="#tabStatus">
                         <div class="control-group">
                             <label for="titulo" class="control-label">Título<span class="required">*</span></label>
                             <div class="controls">
-                                <input type="text" name="titulo" id="titulo" class="span11" required placeholder="Ex: Lembrete de Vencimento">
+                                <input type="text" name="titulo" id="titulo" class="span11" required
+                                    placeholder="Ex: Lembrete de Vencimento">
                             </div>
                         </div>
                         <div class="control-group">
                             <label for="imagem_url" class="control-label">URL da Imagem (Opcional)</label>
                             <div class="controls">
-                                <input type="url" name="imagem_url" id="imagem_url" class="span11" placeholder="https://exemplo.com/imagem.jpg">
+                                <input type="url" name="imagem_url" id="imagem_url" class="span11"
+                                    placeholder="https://exemplo.com/imagem.jpg">
                             </div>
                         </div>
                         <div class="control-group">
@@ -157,7 +175,9 @@
             </div>
 
             <div class="widget-box">
-                <div class="widget-title"><span class="icon"><i class="fas fa-list"></i></span><h5>Mensagens Salvas</h5></div>
+                <div class="widget-title"><span class="icon"><i class="fas fa-list"></i></span>
+                    <h5>Mensagens Salvas</h5>
+                </div>
                 <div class="widget-content nopadding">
                     <table class="table table-bordered">
                         <thead>
@@ -168,14 +188,20 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($mensagens as $msg) : ?>
+                            <?php foreach ($mensagens as $msg): ?>
                                 <tr>
                                     <td><?= html_escape($msg->titulo) ?></td>
                                     <td><small><?= nl2br(html_escape($msg->mensagem)) ?></small></td>
                                     <td>
-                                        <button class="btn btn-primary btn-mini btn-enviar" data-id="<?= $msg->id ?>" data-titulo="<?= html_escape($msg->titulo) ?>">Enviar</button>
-                                        <button class="btn btn-info btn-mini btn-editar" data-id="<?= $msg->id ?>" data-titulo="<?= html_escape($msg->titulo) ?>" data-mensagem="<?= html_escape($msg->mensagem) ?>" data-imagem="<?= html_escape($msg->imagem_url) ?>">Editar</button>
-                                        <a href="<?= base_url('index.php/evolution/excluir_mensagem/' . $msg->id) ?>#tabMensagens" class="btn btn-danger btn-mini" onclick="return confirm('Deseja realmente excluir esta mensagem?')">Excluir</a>
+                                        <button class="btn btn-primary btn-mini btn-enviar" data-id="<?= $msg->id ?>"
+                                            data-titulo="<?= html_escape($msg->titulo) ?>">Enviar</button>
+                                        <button class="btn btn-info btn-mini btn-editar" data-id="<?= $msg->id ?>"
+                                            data-titulo="<?= html_escape($msg->titulo) ?>"
+                                            data-mensagem="<?= html_escape($msg->mensagem) ?>"
+                                            data-imagem="<?= html_escape($msg->imagem_url) ?>">Editar</button>
+                                        <a href="<?= base_url('index.php/evolution/excluir_mensagem/' . $msg->id) ?>#tabMensagens"
+                                            class="btn btn-danger btn-mini"
+                                            onclick="return confirm('Deseja realmente excluir esta mensagem?')">Excluir</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -194,7 +220,8 @@
         <h3>Editar Mensagem</h3>
     </div>
     <div class="modal-body">
-        <form id="formEditarMensagem" action="<?= base_url() ?>index.php/evolution/editar_mensagem" method="post" class="form-horizontal">
+        <form id="formEditarMensagem" action="<?= base_url() ?>index.php/evolution/editar_mensagem" method="post"
+            class="form-horizontal">
             <input type="hidden" id="edit_id" name="id">
             <div class="control-group">
                 <label for="edit_titulo" class="control-label">Título<span class="required">*</span></label>
@@ -263,9 +290,12 @@
             <div class="control-group">
                 <label class="control-label">Enviar para:</label>
                 <div class="controls">
-                    <label class="checkbox inline"><input type="checkbox" name="alvo[]" value="clientes"> Clientes</label>
-                    <label class="checkbox inline"><input type="checkbox" name="alvo[]" value="usuarios"> Usuários</label>
-                    <label class="checkbox inline"><input type="checkbox" name="alvo[]" value="especifico"> Número Específico</label>
+                    <label class="checkbox inline"><input type="checkbox" name="alvo[]" value="clientes">
+                        Clientes</label>
+                    <label class="checkbox inline"><input type="checkbox" name="alvo[]" value="usuarios">
+                        Usuários</label>
+                    <label class="checkbox inline"><input type="checkbox" name="alvo[]" value="especifico"> Número
+                        Específico</label>
                 </div>
             </div>
 
@@ -274,8 +304,10 @@
                 <h4>Clientes</h4>
                 <div class="control-group">
                     <div class="controls">
-                        <label class="radio inline"><input type="radio" name="tipo_cliente" value="todos" checked> Todos</label>
-                        <label class="radio inline"><input type="radio" name="tipo_cliente" value="selecionar"> Selecionar</label>
+                        <label class="radio inline"><input type="radio" name="tipo_cliente" value="todos" checked>
+                            Todos</label>
+                        <label class="radio inline"><input type="radio" name="tipo_cliente" value="selecionar">
+                            Selecionar</label>
                     </div>
                 </div>
                 <div id="div-selecao-clientes" class="control-group" style="display:none;">
@@ -300,7 +332,8 @@
                     <div class="control-group">
                         <label class="control-label">Outros Filtros</label>
                         <div class="controls">
-                            <label class="checkbox inline"><input type="checkbox" name="aniversariantes_semana" value="1"> Aniversariantes da Semana</label>
+                            <label class="checkbox inline"><input type="checkbox" name="aniversariantes_semana"
+                                    value="1"> Aniversariantes da Semana</label>
                         </div>
                     </div>
                 </div>
@@ -311,8 +344,44 @@
                 <h4>Usuários</h4>
                 <div class="control-group">
                     <div class="controls">
-                        <label class="radio inline"><input type="radio" name="tipo_usuario" value="todos" checked> Todos</label>
-                        <label class="radio inline"><input type="radio" name="tipo_usuario" value="selecionar"> Selecionar</label>
+                        <label class="radio inline"><input type="radio" name="tipo_usuario" value="todos" checked>
+                            Todos</label>
+                        <label class="radio inline"><input type="radio" name="tipo_usuario" value="selecionar">
+                            Selecionar</label>
+                    </div>
+                </div>
+                <div id="div-filtros-usuarios">
+                    <div class="control-group">
+                        <label class="control-label" for="select_permissoes_filtro">Filtrar por Permissão</label>
+                        <div class="controls">
+                            <input type="hidden" name="permissoes_ids" id="select_permissoes_filtro" class="span11">
+                        </div>
+                    </div>
+                </div>
+                <div id="div-filtros-usuarios">
+                    <div class="control-group">
+                        <label class="control-label" for="select_permissoes_filtro">Filtrar por Permissão</label>
+                        <div class="controls">
+                            <input type="hidden" name="permissoes_ids" id="select_permissoes_filtro" class="span11">
+                        </div>
+                    </div>
+                </div>
+                <div id="div-filtros-usuarios-cursos" style="display:none;">
+                    <div class="control-group">
+                        <label class="control-label" for="select_cursos_filtro_usuarios">Filtrar por Cursos</label>
+                        <div class="controls">
+                            <input type="hidden" name="cursos_ids_usuarios" id="select_cursos_filtro_usuarios"
+                                class="span11">
+                        </div>
+                    </div>
+                </div>
+                <div id="div-filtros-usuarios-viagens" style="display:none;">
+                    <div class="control-group">
+                        <label class="control-label" for="select_viagens_filtro_usuarios">Filtrar por Viagens</label>
+                        <div class="controls">
+                            <input type="hidden" name="viagens_ids_usuarios" id="select_viagens_filtro_usuarios"
+                                class="span11">
+                        </div>
                     </div>
                 </div>
                 <div id="div-selecao-usuarios" class="control-group" style="display:none;">
@@ -325,11 +394,12 @@
 
             <!-- Seção Número Específico -->
             <div id="div-numero-especifico" class="well well-small" style="display:none;">
-                 <h4>Número Específico</h4>
+                <h4>Número Específico</h4>
                 <div class="control-group">
                     <label class="control-label" for="inputNumeroEspecifico">Números</label>
                     <div class="controls">
-                        <textarea id="inputNumeroEspecifico" name="numeros_especificos" class="span11" rows="3" placeholder="5511999998888, 5521888889999"></textarea>
+                        <textarea id="inputNumeroEspecifico" name="numeros_especificos" class="span11" rows="3"
+                            placeholder="5511999998888, 5521888889999"></textarea>
                         <span class="help-block">Use vírgulas ou quebras de linha para separar os números.</span>
                     </div>
                 </div>
@@ -358,7 +428,7 @@
 
 <script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
 <script type="text/javascript">
-    $(document).ready(function() {
+    $(document).ready(function () {
         // Script para manter a aba ativa após redirecionamento
         var hash = window.location.hash;
         if (hash) {
@@ -372,7 +442,7 @@
         }
 
         //--- LÓGICA DA ABA STATUS ---//
-        $('#btnVerificar').on('click', function(e) {
+        $('#btnVerificar').on('click', function (e) {
             e.preventDefault();
 
             $('#btnVerificar').prop('disabled', true);
@@ -386,12 +456,12 @@
                     '<?= $this->security->get_csrf_token_name(); ?>': '<?= $this->security->get_csrf_hash(); ?>'
                 },
                 dataType: 'json',
-                success: function(response) {
+                success: function (response) {
                     var jsonString = JSON.stringify(response, null, 2);
                     $('#json-resultado').text(jsonString);
                     $('#resultado').show();
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
+                error: function (jqXHR, textStatus, errorThrown) {
                     var errorMessage = 'Ocorreu um erro desconhecido.';
                     if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
                         errorMessage = jqXHR.responseJSON.error;
@@ -405,7 +475,7 @@
                     }
                     Swal.fire('Erro!', errorMessage, 'error');
                 },
-                complete: function() {
+                complete: function () {
                     $('#loading').hide();
                     $('#btnVerificar').prop('disabled', false);
                 }
@@ -413,12 +483,12 @@
         });
 
         // Atualiza o campo hidden sempre que uma nova aba é mostrada
-        $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             var currentTab = $(e.target).attr('href');
             $('#active_tab').val(currentTab);
         });
 
-        $('#btnConfirmarEdicao').on('click', function() {
+        $('#btnConfirmarEdicao').on('click', function () {
             $('#formEditarMensagem').submit();
         });
 
@@ -426,7 +496,7 @@
 
         // Função para inicializar o Select2 com busca AJAX
         function initSelect2(selector, placeholder, ajaxUrl) {
-            if (typeof($.fn.select2) != 'undefined') {
+            if (typeof ($.fn.select2) != 'undefined') {
                 $(selector).select2({
                     placeholder: placeholder,
                     minimumInputLength: 2,
@@ -438,16 +508,16 @@
                         url: ajaxUrl,
                         dataType: 'json',
                         delay: 250,
-                        data: function(term, page) {
+                        data: function (term, page) {
                             return {
                                 term: term,
                                 page: page
                             };
                         },
-                        results: function(data, page) {
+                        results: function (data, page) {
                             return { results: data };
                         },
-                        error: function(jqXHR, textStatus, errorThrown) {
+                        error: function (jqXHR, textStatus, errorThrown) {
                             console.error('Select2 AJAX Error:', textStatus, errorThrown);
                             console.error('Response Text:', jqXHR.responseText);
                             console.error('Status:', jqXHR.status);
@@ -462,19 +532,19 @@
                                     status_code: jqXHR.status,
                                     '<?= $this->security->get_csrf_token_name(); ?>': '<?= $this->security->get_csrf_hash(); ?>'
                                 },
-                                success: function(response) {
+                                success: function (response) {
                                     console.log('Error logged on server:', response);
                                 },
-                                error: function(serverJqXHR, serverTextStatus, serverErrorThrown) {
+                                error: function (serverJqXHR, serverTextStatus, serverErrorThrown) {
                                     console.error('Failed to log error on server:', serverTextStatus, serverErrorThrown);
                                 }
                             });
                         }
                     },
-                    formatResult: function(item) {
+                    formatResult: function (item) {
                         return item.text || item.nome; // Adapta para diferentes nomes de propriedade
                     },
-                    formatSelection: function(item) {
+                    formatSelection: function (item) {
                         return item.text || item.nome;
                     },
                     initSelection: function (element, callback) {
@@ -486,7 +556,7 @@
                                 },
                                 dataType: "json",
                                 async: false // Garante que a busca seja concluída antes de continuar
-                            }).done(function(data) {
+                            }).done(function (data) {
                                 // O Select2 para múltiplos valores espera um array
                                 var results = Array.isArray(data) ? data : [data];
                                 callback(results);
@@ -498,14 +568,14 @@
         }
 
         // Gerencia a visibilidade das seções principais
-        $('input[name="alvo[]"]').on('change', function() {
+        $('input[name="alvo[]"]').on('change', function () {
             $('#div-clientes').toggle($('input[name="alvo[]"][value="clientes"]').is(':checked'));
             $('#div-usuarios').toggle($('input[name="alvo[]"][value="usuarios"]').is(':checked'));
             $('#div-numero-especifico').toggle($('input[name="alvo[]"][value="especifico"]').is(':checked'));
         });
 
         // Gerencia a visibilidade da seleção de clientes
-        $('input[name="tipo_cliente"]').on('change', function() {
+        $('input[name="tipo_cliente"]').on('change', function () {
             if ($(this).val() === 'todos') {
                 $('#div-selecao-clientes').hide();
                 $('#div-filtros-clientes').show();
@@ -516,21 +586,31 @@
         });
 
         // Gerencia a visibilidade da seleção de usuários
-        $('input[name="tipo_usuario"]').on('change', function() {
-            $('#div-selecao-usuarios').toggle($(this).val() === 'selecionar');
+        $('input[name="tipo_usuario"]').on('change', function () {
+            if ($(this).val() === 'todos') {
+                $('#div-selecao-usuarios').hide();
+                $('#div-filtros-usuarios').show();
+                $('#div-filtros-usuarios-cursos').show();
+                $('#div-filtros-usuarios-viagens').show();
+            } else {
+                $('#div-selecao-usuarios').show();
+                $('#div-filtros-usuarios').hide();
+                $('#div-filtros-usuarios-cursos').hide();
+                $('#div-filtros-usuarios-viagens').hide();
+            }
         }).trigger('change');
 
 
         // Abre e prepara o modal de envio
-        $('.btn-enviar').on('click', function() {
+        $('.btn-enviar').on('click', function () {
             var id = $(this).data('id');
             var titulo = $(this).data('titulo');
 
             // Reseta o formulário
             $('#formEnviarMensagem')[0].reset();
             $('input[name="alvo[]"]').prop('checked', false).trigger('change');
-            $('#select_clientes, #select_usuarios, #select_cursos_filtro, #select_viagens_filtro').val(null).trigger('change');
-            
+            $('#select_clientes, #select_usuarios, #select_cursos_filtro, #select_viagens_filtro, #select_permissoes_filtro, #select_cursos_filtro_usuarios, #select_viagens_filtro_usuarios').val(null).trigger('change');
+
             // Define os valores iniciais
             $('#modalTitle').text('Enviar Mensagem: ' + titulo);
             $('#mensagem_id').val(id);
@@ -544,12 +624,15 @@
             initSelect2('#select_usuarios', 'Digite para buscar usuários...', '<?= base_url("index.php/evolution/autoComplete/usuarios") ?>');
             initSelect2('#select_cursos_filtro', 'Digite para buscar cursos...', '<?= base_url("index.php/cursos/autoCompleteCurso") ?>');
             initSelect2('#select_viagens_filtro', 'Digite para buscar viagens...', '<?= base_url("index.php/viagens/autoCompleteViagem") ?>');
+            initSelect2('#select_permissoes_filtro', 'Digite para buscar permissões...', '<?= base_url("index.php/evolution/autoCompletePermissao") ?>');
+            initSelect2('#select_cursos_filtro_usuarios', 'Digite para buscar cursos...', '<?= base_url("index.php/cursos/autoCompleteCurso") ?>');
+            initSelect2('#select_viagens_filtro_usuarios', 'Digite para buscar viagens...', '<?= base_url("index.php/viagens/autoCompleteViagem") ?>');
 
             $('#modalEnviar').modal('show');
         });
 
         // Confirma e envia a mensagem
-        $('#btnConfirmarEnvio').on('click', function() {
+        $('#btnConfirmarEnvio').on('click', function () {
             var form = $('#formEnviarMensagem');
             var btn = $(this);
 
@@ -572,14 +655,14 @@
                 type: 'POST',
                 data: $.param(formData),
                 dataType: 'json',
-                success: function(response) {
-                    if(response.success) {
+                success: function (response) {
+                    if (response.success) {
                         Swal.fire('Sucesso!', response.message, 'success');
                     } else {
                         Swal.fire('Erro!', response.message, 'error');
                     }
                 },
-                error: function(jqXHR) {
+                error: function (jqXHR) {
                     var errorMessage = 'Ocorreu um erro desconhecido.';
                     if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
                         errorMessage = jqXHR.responseJSON.message;
@@ -590,7 +673,7 @@
         });
 
         // Adiciona o editor de texto Trumbowyg
-        if(typeof($.fn.trumbowyg) != 'undefined') {
+        if (typeof ($.fn.trumbowyg) != 'undefined') {
             $('#mensagem').trumbowyg({
                 lang: 'pt_br',
                 autogrow: true
@@ -601,7 +684,7 @@
             });
         }
 
-        $(document).on('click', 'a[href="#modal-log-details"]', function() {
+        $(document).on('click', 'a[href="#modal-log-details"]', function () {
             var title = $(this).data('title');
             var content = htmlspecialchars_decode($(this).data('content'));
             try {
@@ -615,7 +698,7 @@
         });
 
         function htmlspecialchars_decode(str) {
-            if (typeof(str) == "string") {
+            if (typeof (str) == "string") {
                 str = str.replace(/&amp;/g, "&");
                 str = str.replace(/&quot;/g, "\"");
                 str = str.replace(/&#039;/g, "'");
@@ -626,7 +709,7 @@
         }
 
         //--- LÓGICA DE EDIÇÃO ---//
-        $(document).on('click', '.btn-editar', function() {
+        $(document).on('click', '.btn-editar', function () {
             var id = $(this).data('id');
             var titulo = $(this).data('titulo');
             var mensagem = $(this).data('mensagem');
@@ -641,7 +724,7 @@
         });
 
         //--- LÓGICA DE COPIAR VARIÁVEL ---//
-        $(document).on('click', '.variable-tag', function() {
+        $(document).on('click', '.variable-tag', function () {
             var textToCopy = $(this).text();
             navigator.clipboard.writeText(textToCopy).then(() => {
                 var originalText = $(this).text();
