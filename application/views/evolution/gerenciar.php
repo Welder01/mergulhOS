@@ -8,16 +8,23 @@
 
 <style>
     .variable-tag {
-        background-color: #f0f0f0;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        padding: 2px 6px;
+        background-color: #e8f0fe;
+        color: #1a73e8;
+        border: 1px solid #d2e3fc;
+        border-radius: 16px;
+        padding: 4px 12px;
+        margin: 2px;
         cursor: pointer;
-        font-family: monospace;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 0.9em;
+        display: inline-block;
+        transition: all 0.2s;
     }
 
     .variable-tag:hover {
-        background-color: #e0e0e0;
+        background-color: #d2e3fc;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     /* Fix para o z-index do Select2 dentro do modal */
@@ -673,15 +680,19 @@
         });
 
         // Adiciona o editor de texto Trumbowyg
+        // Adiciona o editor de texto Trumbowyg
         if (typeof ($.fn.trumbowyg) != 'undefined') {
-            $('#mensagem').trumbowyg({
+            var trumbowygConfig = {
                 lang: 'pt_br',
-                autogrow: true
-            });
-            $('#edit_mensagem').trumbowyg({
-                lang: 'pt_br',
-                autogrow: true
-            });
+                autogrow: true,
+                btns: [
+                    ['viewHTML'],
+                    ['strong', 'em', 'del'],
+                    ['removeformat']
+                ]
+            };
+            $('#mensagem').trumbowyg(trumbowygConfig);
+            $('#edit_mensagem').trumbowyg(trumbowygConfig);
         }
 
         $(document).on('click', 'a[href="#modal-log-details"]', function () {

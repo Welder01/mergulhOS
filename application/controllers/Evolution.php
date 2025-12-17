@@ -426,21 +426,27 @@ class Evolution extends MY_Controller
 
                     if ($usersByPermissao !== null) {
                         $ids = array_map(function ($u) {
-                            return $u->idUsuarios; }, $usersByPermissao);
+                            return $u->idUsuarios;
+                        }, $usersByPermissao);
                         $filteredUsers = array_filter($filteredUsers, function ($u) use ($ids) {
-                            return in_array($u->idUsuarios, $ids); });
+                            return in_array($u->idUsuarios, $ids);
+                        });
                     }
                     if ($usersByCurso !== null) {
                         $ids = array_map(function ($u) {
-                            return $u->idUsuarios; }, $usersByCurso);
+                            return $u->idUsuarios;
+                        }, $usersByCurso);
                         $filteredUsers = array_filter($filteredUsers, function ($u) use ($ids) {
-                            return in_array($u->idUsuarios, $ids); });
+                            return in_array($u->idUsuarios, $ids);
+                        });
                     }
                     if ($usersByViagem !== null) {
                         $ids = array_map(function ($u) {
-                            return $u->idUsuarios; }, $usersByViagem);
+                            return $u->idUsuarios;
+                        }, $usersByViagem);
                         $filteredUsers = array_filter($filteredUsers, function ($u) use ($ids) {
-                            return in_array($u->idUsuarios, $ids); });
+                            return in_array($u->idUsuarios, $ids);
+                        });
                     }
 
                     // Reindex array keys after filtering
@@ -502,8 +508,14 @@ class Evolution extends MY_Controller
             $mensagemFinal = $mensagemOriginal->mensagem;
             $dados = $destinatario['dados'];
 
-            // Define o delay: randômico se houver mais de um destinatário, senão, fixo.
-            $delay = ($totalDestinatarios > 1) ? rand($delayMin, $delayMax) : $delayFixo;
+            // Define o delay
+            // Se delay fixo estiver configurado (> 0), usa ele.
+            // Se não, usa randômico entre Min e Max.
+            if ($delayFixo > 0) {
+                $delay = $delayFixo;
+            } else {
+                $delay = rand($delayMin, $delayMax);
+            }
 
             // Substituição de variáveis
             if ($dados) {
@@ -539,16 +551,38 @@ class Evolution extends MY_Controller
             $text = $mensagemFinal;
 
             // 1. Converte tags de formatação HTML para o formato do WhatsApp
-            $text = preg_replace(['/<b>\s*/i', '/\s*<\/b>/i', '/<strong>\s*/i', '/\s*<\/strong>/i'], '*', $text);
-            $text = preg_replace(['/<i>\s*/i', '/\s*<\/i>/i', '/<em>\s*/i', '/\s*<\/em>/i'], '_', $text);
-            $text = preg_replace(['/<s>\s*/i', '/\s*<\/s>/i', '/<strike>\s*/i', '/\s*<\/strike>/i', '/<del>\s*/i', '/\s*<\/del>/i'], '~', $text);
 
-            // 2. Converte parágrafos e quebras de linha
-            $textWithLineBreaks = str_replace('</p>', "\n\n", $text);
-            $textWithLineBreaks = preg_replace('/<br\s?\/?>/i', "\n", $textWithLineBreaks);
+            // Decodifica entidades HTML e normaliza espaços
+            $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $text = str_replace(["\xc2\xa0", "&nbsp;"], ' ', $text);
 
-            // 3. Remove todas as outras tags HTML restantes e espaços extras
-            $plainTextMessage = trim(strip_tags($textWithLineBreaks));
+            // 2. Converte parágrafos e quebras de linha ANTES da formatação
+            // Para evitar conflitos como <b><br></b> virando * \n *
+            $text = str_replace('</p>', "\n\n", $text);
+            $text = preg_replace('/<br\s?\/?>/i', "\n", $text);
+            // Remove tags <p> restantes
+            $text = str_replace('<p>', '', $text);
+
+            // 3. Limpeza de tags vazias ou com apenas whitespace (agora incluindo \n gerados)
+            $text = preg_replace('/<(b|strong|i|em|s|strike|del)[^>]*>\s*<\/\1>/iu', '', $text);
+
+            // 4. Converte tags de formatação restantes
+            // Negrito: <b>, <strong> -> *texto*
+            $text = preg_replace(['/<b>\s*/iu', '/\s*<\/b>/iu', '/<strong>\s*/iu', '/\s*<\/strong>/iu'], '*', $text);
+
+            // Itálico: <i>, <em> -> _texto_
+            $text = preg_replace(['/<i>\s*/iu', '/\s*<\/i>/iu', '/<em>\s*/iu', '/\s*<\/em>/iu'], '_', $text);
+
+            // Riscado: <s>, <strike>, <del> -> ~texto~
+            $text = preg_replace(['/<s>\s*/iu', '/\s*<\/s>/iu', '/<strike>\s*/iu', '/\s*<\/strike>/iu', '/<del>\s*/iu', '/\s*<\/del>/iu'], '~', $text);
+
+            // 5. Remove todas as outras tags HTML restantes
+            $plainTextMessage = trim(strip_tags($text));
+
+            // Remove múltiplos espaços/quebras de linha excessivos
+            $plainTextMessage = preg_replace("/\n{3,}/", "\n\n", $plainTextMessage);
+            // Remove espaços duplos
+            $plainTextMessage = preg_replace('/[ \t]+/', ' ', $plainTextMessage);
 
 
             $payload = [
