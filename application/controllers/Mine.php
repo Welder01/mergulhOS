@@ -1374,15 +1374,42 @@ class Mine extends MY_Controller
             redirect('mine/treinos');
         }
 
-        // Adiciona a regra de 20 horas de antecedência para cancelamento
+        // Buscar configuração do treino para verificar regras de cancelamento
+        $config = $this->treinos_model->getById($agendamento->config_id);
+
+        if (!$config) {
+            $this->session->set_flashdata('error', 'Configuração de treino não encontrada.');
+            redirect('mine/treinos');
+        }
+
+        // Calcula o limite total em horas
+        // Assume-se que as colunas cancelamento_limite_dias e cancelamento_limite_horas já existem no banco
+        $limiteHorasTotal = ($config->cancelamento_limite_dias * 24) + $config->cancelamento_limite_horas;
+
+        // Se o limite total for 0, mantemos a lógica de 20h por segurança ou permitimos cancelar a qualquer momento?
+        // Como o usuário pediu para "retirar a trava de no minimo 20 horas para funcionar o horario cadastrado",
+        // vamos respeitar estritamente o cadastro. Se for 0, é 0 (pode cancelar até o último minuto).
+        // Porém, código legado tinha 20h. Vamos assumir que 0 = sem restrição, mas se o admin quiser travar, ele coloca valor.
+        
         $agora = new DateTime();
         $inicioTreino = new DateTime($agendamento->data_hora_inicio);
 
         $intervalo = $agora->diff($inicioTreino);
         $horasRestantes = ($intervalo->days * 24) + $intervalo->h;
 
-        if ($intervalo->invert == 1 || $horasRestantes < 20) {
-            $this->session->set_flashdata('error', 'O cancelamento só é permitido com no mínimo 20 horas de antecedência.');
+        // Se o intervalo for negativo (invert==1, já passou) ou horas restantes menor que o limite configurado
+        if ($intervalo->invert == 1 || $horasRestantes < $limiteHorasTotal) {
+            $msgDias = $config->cancelamento_limite_dias > 0 ? $config->cancelamento_limite_dias . ' dias' : '';
+            $msgHoras = $config->cancelamento_limite_horas > 0 ? $config->cancelamento_limite_horas . ' horas' : '';
+            $msgConector = ($msgDias && $msgHoras) ? ' e ' : '';
+            
+            $msgPrazo = $msgDias . $msgConector . $msgHoras;
+            
+            if (empty($msgPrazo)) {
+                $msgPrazo = 'imediato'; // Caso raro onde configuração é 0, mas lógica cai aqui (ex: já passou da hora)
+            }
+
+            $this->session->set_flashdata('error', 'O cancelamento só é permitido com no mínimo ' . $msgPrazo . ' de antecedência.');
             redirect('mine/treinos');
         }
 
