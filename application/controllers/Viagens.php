@@ -72,16 +72,16 @@ class Viagens extends MY_Controller
             'descricao' => $this->input->post('descricao'),
             'data_partida' => $dataPartida,
             'data_retorno' => $dataRetorno,
-            'vagas' => (int)$this->input->post('vagas'),
-            'vagas_total' => (int)$this->input->post('vagas'),
-            'preco_pessoa' => (float)$precoPessoa,
+            'vagas' => (int) $this->input->post('vagas'),
+            'vagas_total' => (int) $this->input->post('vagas'),
+            'preco_pessoa' => (float) $precoPessoa,
             'status' => $this->input->post('status'),
         ];
 
         $viagem_id = $this->viagens_model->add('viagens', $data);
         if ($viagem_id) {
             $cursos = $this->input->post('cursos');
-                $this->log_auditoria('Adicionou uma nova viagem: ' . $data['nome_viagem']);
+            $this->log_auditoria('Adicionou uma nova viagem: ' . $data['nome_viagem']);
             if ($cursos) {
                 foreach ($cursos as $curso_id) {
                     $this->viagem_cursos_model->add(['viagem_id' => $viagem_id, 'curso_id' => $curso_id]);
@@ -131,9 +131,9 @@ class Viagens extends MY_Controller
             'descricao' => $this->input->post('descricao'),
             'data_partida' => $dataPartida,
             'data_retorno' => $dataRetorno,
-            'vagas' => (int)$this->input->post('vagas'),
-            'vagas_total' => (int)$this->input->post('vagas'),
-            'preco_pessoa' => (float)$precoPessoa,
+            'vagas' => (int) $this->input->post('vagas'),
+            'vagas_total' => (int) $this->input->post('vagas'),
+            'preco_pessoa' => (float) $precoPessoa,
             'status' => $this->input->post('status'),
         ];
 
@@ -227,7 +227,14 @@ class Viagens extends MY_Controller
 
         // Template para resumo de equipamentos
         $resumoTemplate = [
-            'cilindro' => 0, 'regulador' => 0, 'lastro' => ['qtd' => 0, 'peso' => 0.0], 'colete' => [], 'nadadeira' => [], 'neoprene' => [], 'lanterna' => 0, 'computador' => 0,
+            'cilindro' => 0,
+            'regulador' => 0,
+            'lastro' => ['qtd' => 0, 'peso' => 0.0],
+            'colete' => [],
+            'nadadeira' => [],
+            'neoprene' => [],
+            'lanterna' => 0,
+            'computador' => 0,
         ];
 
         $resumoMergulhadores = $resumoTemplate;
@@ -245,17 +252,24 @@ class Viagens extends MY_Controller
             $c->locar_computador = $c->locar_computador > 0 ? $c->locar_computador : (!$c->possui_computador ? 1 : 0);
 
             // Atualiza o resumo de equipamentos
-            if ($c->locar_cilindro > 0) $resumoMergulhadores['cilindro'] += (int)$c->locar_cilindro;
-            if ($c->locar_regulador > 0) $resumoMergulhadores['regulador'] += (int)$c->locar_regulador;
+            if ($c->locar_cilindro > 0)
+                $resumoMergulhadores['cilindro'] += (int) $c->locar_cilindro;
+            if ($c->locar_regulador > 0)
+                $resumoMergulhadores['regulador'] += (int) $c->locar_regulador;
             if ($c->locar_lastro) {
                 $resumoMergulhadores['lastro']['qtd']++;
-                $resumoMergulhadores['lastro']['peso'] += (float)($c->peso_lastro ?: 0);
+                $resumoMergulhadores['lastro']['peso'] += (float) ($c->peso_lastro ?: 0);
             }
-            if ($c->locar_colete) $resumoMergulhadores['colete'][$c->tamanho_colete ?: 'N/I'] = ($resumoMergulhadores['colete'][$c->tamanho_colete ?: 'N/I'] ?? 0) + 1;
-            if ($c->locar_nadadeira) $resumoMergulhadores['nadadeira'][$c->tamanho_nadadeira ?: 'N/I'] = ($resumoMergulhadores['nadadeira'][$c->tamanho_nadadeira ?: 'N/I'] ?? 0) + 1;
-            if ($c->locar_neoprene) $resumoMergulhadores['neoprene'][$c->tamanho_neoprene ?: 'N/I'] = ($resumoMergulhadores['neoprene'][$c->tamanho_neoprene ?: 'N/I'] ?? 0) + 1;
-            if ($c->locar_lanterna > 0) $resumoMergulhadores['lanterna'] += (int)$c->locar_lanterna;
-            if ($c->locar_computador > 0) $resumoMergulhadores['computador'] += (int)$c->locar_computador;
+            if ($c->locar_colete)
+                $resumoMergulhadores['colete'][$c->tamanho_colete ?: 'N/I'] = ($resumoMergulhadores['colete'][$c->tamanho_colete ?: 'N/I'] ?? 0) + 1;
+            if ($c->locar_nadadeira)
+                $resumoMergulhadores['nadadeira'][$c->tamanho_nadadeira ?: 'N/I'] = ($resumoMergulhadores['nadadeira'][$c->tamanho_nadadeira ?: 'N/I'] ?? 0) + 1;
+            if ($c->locar_neoprene)
+                $resumoMergulhadores['neoprene'][$c->tamanho_neoprene ?: 'N/I'] = ($resumoMergulhadores['neoprene'][$c->tamanho_neoprene ?: 'N/I'] ?? 0) + 1;
+            if ($c->locar_lanterna > 0)
+                $resumoMergulhadores['lanterna'] += (int) $c->locar_lanterna;
+            if ($c->locar_computador > 0)
+                $resumoMergulhadores['computador'] += (int) $c->locar_computador;
         }
 
         $this->data['instrutores'] = $this->viagem_instrutores_model->getByViagem($id);
@@ -270,17 +284,24 @@ class Viagens extends MY_Controller
             $instrutor->locar_lanterna = $instrutor->locar_lanterna > 0 ? $instrutor->locar_lanterna : (!$instrutor->possui_lanterna ? 1 : 0);
             $instrutor->locar_computador = $instrutor->locar_computador > 0 ? $instrutor->locar_computador : (!$instrutor->possui_computador ? 1 : 0);
 
-            if ($instrutor->locar_cilindro > 0) $resumoInstrutores['cilindro'] += (int)$instrutor->locar_cilindro;
-            if ($instrutor->locar_regulador > 0) $resumoInstrutores['regulador'] += (int)$instrutor->locar_regulador;
+            if ($instrutor->locar_cilindro > 0)
+                $resumoInstrutores['cilindro'] += (int) $instrutor->locar_cilindro;
+            if ($instrutor->locar_regulador > 0)
+                $resumoInstrutores['regulador'] += (int) $instrutor->locar_regulador;
             if ($instrutor->locar_lastro) {
                 $resumoInstrutores['lastro']['qtd']++;
-                $resumoInstrutores['lastro']['peso'] += (float)($instrutor->peso_lastro ?: 0);
+                $resumoInstrutores['lastro']['peso'] += (float) ($instrutor->peso_lastro ?: 0);
             }
-            if ($instrutor->locar_colete) $resumoInstrutores['colete'][$instrutor->tamanho_colete ?: 'N/I'] = ($resumoInstrutores['colete'][$instrutor->tamanho_colete ?: 'N/I'] ?? 0) + 1;
-            if ($instrutor->locar_nadadeira) $resumoInstrutores['nadadeira'][$instrutor->tamanho_nadadeira ?: 'N/I'] = ($resumoInstrutores['nadadeira'][$instrutor->tamanho_nadadeira ?: 'N/I'] ?? 0) + 1;
-            if ($instrutor->locar_neoprene) $resumoInstrutores['neoprene'][$instrutor->tamanho_neoprene ?: 'N/I'] = ($resumoInstrutores['neoprene'][$instrutor->tamanho_neoprene ?: 'N/I'] ?? 0) + 1;
-            if ($instrutor->locar_lanterna > 0) $resumoInstrutores['lanterna'] += (int)$instrutor->locar_lanterna;
-            if ($instrutor->locar_computador > 0) $resumoInstrutores['computador'] += (int)$instrutor->locar_computador;
+            if ($instrutor->locar_colete)
+                $resumoInstrutores['colete'][$instrutor->tamanho_colete ?: 'N/I'] = ($resumoInstrutores['colete'][$instrutor->tamanho_colete ?: 'N/I'] ?? 0) + 1;
+            if ($instrutor->locar_nadadeira)
+                $resumoInstrutores['nadadeira'][$instrutor->tamanho_nadadeira ?: 'N/I'] = ($resumoInstrutores['nadadeira'][$instrutor->tamanho_nadadeira ?: 'N/I'] ?? 0) + 1;
+            if ($instrutor->locar_neoprene)
+                $resumoInstrutores['neoprene'][$instrutor->tamanho_neoprene ?: 'N/I'] = ($resumoInstrutores['neoprene'][$instrutor->tamanho_neoprene ?: 'N/I'] ?? 0) + 1;
+            if ($instrutor->locar_lanterna > 0)
+                $resumoInstrutores['lanterna'] += (int) $instrutor->locar_lanterna;
+            if ($instrutor->locar_computador > 0)
+                $resumoInstrutores['computador'] += (int) $instrutor->locar_computador;
         }
 
         $this->data['resumoMergulhadores'] = $resumoMergulhadores;
@@ -331,8 +352,8 @@ class Viagens extends MY_Controller
             'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
             'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
             'locar_regulador' => $this->input->post('locar_regulador') ? 1 : 0,
-            'locar_lanterna' => (int)$this->input->post('locar_lanterna') ?: 0,
-            'locar_computador' => (int)$this->input->post('locar_computador') ?: 0,
+            'locar_lanterna' => (int) $this->input->post('locar_lanterna') ?: 0,
+            'locar_computador' => (int) $this->input->post('locar_computador') ?: 0,
             'numero_bolsa' => $this->input->post('numero_bolsa'),
             'proposito' => $this->input->post('proposito'),
         ];
@@ -424,12 +445,12 @@ class Viagens extends MY_Controller
             'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
             'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
             'locar_lastro' => $this->input->post('locar_lastro') ? 1 : 0,
-            'locar_cilindro' => (int)$this->input->post('locar_cilindro'),
-            'locar_regulador' => (int)$this->input->post('locar_regulador'),
+            'locar_cilindro' => (int) $this->input->post('locar_cilindro'),
+            'locar_regulador' => (int) $this->input->post('locar_regulador'),
             'locar_lanterna' => $this->input->post('locar_lanterna') ? 1 : 0,
-            'qtd_lanterna' => (int)$this->input->post('qtd_lanterna'),
+            'qtd_lanterna' => (int) $this->input->post('qtd_lanterna'),
             'locar_computador' => $this->input->post('locar_computador') ? 1 : 0,
-            'qtd_computador' => (int)$this->input->post('qtd_computador'),
+            'qtd_computador' => (int) $this->input->post('qtd_computador'),
         ];
     }
 
@@ -445,10 +466,10 @@ class Viagens extends MY_Controller
             'locar_colete' => $this->input->post('locar_colete') ? 1 : 0,
             'locar_neoprene' => $this->input->post('locar_neoprene') ? 1 : 0,
             'locar_lastro' => $this->input->post('locar_lastro') ? 1 : 0,
-            'locar_cilindro' => (int)$this->input->post('locar_cilindro'),
-            'locar_regulador' => (int)$this->input->post('locar_regulador'),
-            'locar_lanterna' => (int)$this->input->post('locar_lanterna'),
-            'locar_computador' => (int)$this->input->post('locar_computador'),
+            'locar_cilindro' => (int) $this->input->post('locar_cilindro'),
+            'locar_regulador' => (int) $this->input->post('locar_regulador'),
+            'locar_lanterna' => (int) $this->input->post('locar_lanterna'),
+            'locar_computador' => (int) $this->input->post('locar_computador'),
         ];
     }
 
@@ -503,13 +524,13 @@ class Viagens extends MY_Controller
                 'proposito' => $this->input->post('proposito_instrutor'),
                 'status_pagamento' => $this->input->post('status_pagamento_instrutor'),
                 'locar_nadadeira' => $this->input->post('locar_nadadeira_instrutor') ? 1 : 0,
-                'locar_cilindro' => (int)$this->input->post('locar_cilindro_instrutor') ?: 0,
+                'locar_cilindro' => (int) $this->input->post('locar_cilindro_instrutor') ?: 0,
                 'locar_colete' => $this->input->post('locar_colete_instrutor') ? 1 : 0,
                 'locar_neoprene' => $this->input->post('locar_neoprene_instrutor') ? 1 : 0,
-                'locar_regulador' => (int)$this->input->post('locar_regulador_instrutor') ?: 0,
+                'locar_regulador' => (int) $this->input->post('locar_regulador_instrutor') ?: 0,
                 'locar_lastro' => $this->input->post('locar_lastro_instrutor') ? 1 : 0,
-                'locar_lanterna' => (int)$this->input->post('locar_lanterna_instrutor') ?: 0,
-                'locar_computador' => (int)$this->input->post('locar_computador_instrutor') ?: 0,
+                'locar_lanterna' => (int) $this->input->post('locar_lanterna_instrutor') ?: 0,
+                'locar_computador' => (int) $this->input->post('locar_computador_instrutor') ?: 0,
                 'precisa_hospedagem' => $this->input->post('precisa_hospedagem_instrutor') ? 1 : 0,
             ];
             if ($this->viagem_instrutores_model->add($data)) {
@@ -686,11 +707,11 @@ class Viagens extends MY_Controller
     {
         if (isset($_GET['term'])) {
             $q = strtolower($this->input->get('term'));
-            $this->db->select("id, preco_pessoa as preco, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as label", false);
+            $this->db->select("id, preco_pessoa as preco, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as label, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as text", false);
             $this->db->like('LOWER(nome_viagem)', $q);
         } elseif (isset($_GET['ids'])) {
             $ids = explode(',', $_GET['ids']);
-            $this->db->select("id, preco_pessoa as preco, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as label", false);
+            $this->db->select("id, preco_pessoa as preco, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as label, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as text", false);
             $this->db->where_in('id', $ids);
         } else {
             return $this->output->set_content_type('application/json')->set_output(json_encode([]));

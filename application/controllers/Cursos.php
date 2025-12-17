@@ -1,5 +1,5 @@
 <?php
-if (! defined('BASEPATH')) {
+if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
@@ -25,7 +25,7 @@ class Cursos extends MY_Controller
 
     public function gerenciar()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'vCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para visualizar cursos.');
             redirect(base_url());
         }
@@ -51,7 +51,7 @@ class Cursos extends MY_Controller
 
     public function adicionar()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'aCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para adicionar cursos.');
             redirect(base_url());
         }
@@ -122,12 +122,12 @@ class Cursos extends MY_Controller
 
     public function editar()
     {
-        if (! $this->uri->segment(3) || ! is_numeric($this->uri->segment(3)) || ! $this->cursos_model->getById($this->uri->segment(3))) {
+        if (!$this->uri->segment(3) || !is_numeric($this->uri->segment(3)) || !$this->cursos_model->getById($this->uri->segment(3))) {
             $this->session->set_flashdata('error', 'Curso não encontrado ou parâmetro inválido.');
             redirect('cursos/gerenciar');
         }
 
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar cursos.');
             redirect(base_url());
         }
@@ -197,12 +197,12 @@ class Cursos extends MY_Controller
 
     public function visualizar()
     {
-        if (! $this->uri->segment(3) || ! is_numeric($this->uri->segment(3))) {
+        if (!$this->uri->segment(3) || !is_numeric($this->uri->segment(3))) {
             $this->session->set_flashdata('error', 'Item não pode ser encontrado, parâmetro não foi passado corretamente.');
             redirect('cursos/gerenciar');
         }
 
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'vCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para visualizar cursos.');
             redirect(base_url());
         }
@@ -230,7 +230,7 @@ class Cursos extends MY_Controller
 
     public function excluir()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'dCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para excluir cursos.');
             redirect(base_url());
         }
@@ -253,7 +253,7 @@ class Cursos extends MY_Controller
 
     public function adicionar_instrutor()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar cursos.');
             redirect(base_url());
         }
@@ -290,12 +290,12 @@ class Cursos extends MY_Controller
 
     public function remover_instrutor($id = null)
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar cursos.');
             redirect(base_url());
         }
 
-        if ($id == null || ! is_numeric($id)) {
+        if ($id == null || !is_numeric($id)) {
             $this->session->set_flashdata('error', 'Erro! O instrutor não existe.');
             redirect(base_url());
         }
@@ -371,7 +371,7 @@ class Cursos extends MY_Controller
             redirect(base_url());
         }
 
-        if ($id == null || ! is_numeric($id)) {
+        if ($id == null || !is_numeric($id)) {
             $this->session->set_flashdata('error', 'Erro! O aluno não existe.');
             redirect(base_url());
         }
@@ -390,7 +390,7 @@ class Cursos extends MY_Controller
     // Métodos para Módulos do Curso
     public function adicionar_modulo()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar cursos.');
             redirect(base_url());
         }
@@ -412,7 +412,7 @@ class Cursos extends MY_Controller
 
     public function remover_modulo($id)
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'dCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para excluir módulos.');
             redirect(base_url());
         }
@@ -428,7 +428,7 @@ class Cursos extends MY_Controller
 
     public function toggle_conclusao_modulo()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar cursos.');
             return $this->output->set_status_header(403)->set_output(json_encode(['error' => 'Acesso não autorizado.']));
         }
@@ -449,7 +449,7 @@ class Cursos extends MY_Controller
 
     public function adicionar_instrutor_modulo()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar cursos.');
             redirect(base_url());
         }
@@ -470,7 +470,7 @@ class Cursos extends MY_Controller
 
     public function remover_instrutor_modulo($id)
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar cursos.');
             redirect(base_url());
         }
@@ -485,7 +485,7 @@ class Cursos extends MY_Controller
     // Métodos para Requisitos do Curso
     public function adicionar_requisito()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar cursos.');
             redirect(base_url());
         }
@@ -506,7 +506,7 @@ class Cursos extends MY_Controller
 
     public function remover_requisito($id)
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'dCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dCurso')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para excluir requisitos.');
             redirect(base_url());
         }
@@ -522,7 +522,7 @@ class Cursos extends MY_Controller
 
     public function ajax_check_requisitos()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'vCurso')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vCurso')) {
             return $this->output->set_status_header(403)->set_output(json_encode(['error' => 'Acesso não autorizado.']));
         }
 
@@ -604,11 +604,11 @@ class Cursos extends MY_Controller
     {
         if (isset($_GET['term'])) {
             $q = strtolower($this->input->get('term'));
-            $this->db->select("id, preco, CONCAT('ID: ', id, ' | ', nome_curso, ' | Início: ', DATE_FORMAT(data_inicio, '%d/%m/%Y')) as label", false);
+            $this->db->select("id, preco, CONCAT('ID: ', id, ' | ', nome_curso, ' | Início: ', DATE_FORMAT(data_inicio, '%d/%m/%Y')) as label, CONCAT('ID: ', id, ' | ', nome_curso, ' | Início: ', DATE_FORMAT(data_inicio, '%d/%m/%Y')) as text", false);
             $this->db->like('LOWER(nome_curso)', $q);
         } elseif (isset($_GET['ids'])) {
             $ids = explode(',', $_GET['ids']);
-            $this->db->select("id, preco, CONCAT('ID: ', id, ' | ', nome_curso, ' | Início: ', DATE_FORMAT(data_inicio, '%d/%m/%Y')) as label", false);
+            $this->db->select("id, preco, CONCAT('ID: ', id, ' | ', nome_curso, ' | Início: ', DATE_FORMAT(data_inicio, '%d/%m/%Y')) as label, CONCAT('ID: ', id, ' | ', nome_curso, ' | Início: ', DATE_FORMAT(data_inicio, '%d/%m/%Y')) as text", false);
             $this->db->where_in('id', $ids);
         } else {
             return $this->output->set_content_type('application/json')->set_output(json_encode([]));
