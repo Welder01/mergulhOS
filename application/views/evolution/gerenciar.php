@@ -41,6 +41,7 @@
             <li class="active"><a data-toggle="tab" href="#tabStatus">Status da Instância</a></li>
             <li><a data-toggle="tab" href="#tabLogs">Logs de Envio</a></li>
             <li><a data-toggle="tab" href="#tabMensagens">Mensagens</a></li>
+            <li><a data-toggle="tab" href="#tabEventos">Eventos Automáticos</a></li>
         </ul>
     </div>
     <div class="widget-content tab-content">
@@ -71,6 +72,60 @@
             </div>
         </div>
 
+
+
+        <!-- Aba Eventos -->
+        <div id="tabEventos" class="tab-pane">
+            <div class="span12 well">
+                <p>Configure aqui quais mensagens devem ser enviadas automaticamente quando certos eventos ocorrem no
+                    sistema.
+                </p>
+                <form action="<?= base_url() ?>index.php/evolution/salvar_eventos" method="post">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Evento</th>
+                                <th>Mensagem de Modelo</th>
+                                <th style="text-align: center;">Ativo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (isset($eventos) && !empty($eventos)): ?>
+                                <?php foreach ($eventos as $evento): ?>
+                                    <tr>
+                                        <td><strong><?= ucfirst(str_replace('_', ' ', $evento->evento)) ?></strong></td>
+                                        <td>
+                                            <select name="eventos[<?= $evento->id ?>][mensagem_id]" class="span12"
+                                                style="width: 100%;">
+                                                <option value="">-- Selecione uma Mensagem --</option>
+                                                <?php foreach ($mensagens as $msg): ?>
+                                                    <option value="<?= $msg->id ?>" <?= $evento->mensagem_id == $msg->id ? 'selected' : '' ?>>
+                                                        <?= htmlspecialchars($msg->titulo) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </td>
+                                        <td style="text-align: center; vertical-align: middle;">
+                                            <input type="checkbox" name="eventos[<?= $evento->id ?>][status]" value="1"
+                                                <?= $evento->status == 1 ? 'checked' : '' ?>>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="3">Nenhum evento configurável encontrado.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Salvar
+                            Configurações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Aba Logs -->
         <div id="tabLogs" class="tab-pane">
             <div class="span12" style="padding: 1%; margin-left: 0;">
@@ -78,7 +133,9 @@
                     <div class="widget-header">
                         <h5 class="cardHeader"><i class="fas fa-history"></i> Logs de Envio</h5>
                         <div class="widget-buttons" style="float: right; margin: 5px 10px 0 0;">
-                            <a href="<?= base_url('index.php/evolution/limpar_logs') ?>" class="btn btn-danger btn-mini" onclick="return confirm('Tem certeza que deseja apagar TODOS os logs? Esta ação não pode ser desfeita.');"><i class="fas fa-trash"></i> Limpar Todos</a>
+                            <a href="<?= base_url('index.php/evolution/limpar_logs') ?>" class="btn btn-danger btn-mini"
+                                onclick="return confirm('Tem certeza que deseja apagar TODOS os logs? Esta ação não pode ser desfeita.');"><i
+                                    class="fas fa-trash"></i> Limpar Todos</a>
                         </div>
                     </div>
                     <div class="widget-content nopadding">
@@ -113,13 +170,18 @@
                                             <td>
                                                 <a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info"
                                                     data-title="Requisição"
-                                                    data-content="<?= htmlspecialchars($log->request_payload); ?>"><i class="fas fa-arrow-up"></i> Req</a>
-                                                <a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-warning"
-                                                    data-title="Resposta"
-                                                    data-content="<?= htmlspecialchars($log->response_body . ($log->curl_error ? ' | Erro cURL: ' . $log->curl_error : '')); ?>"><i class="fas fa-arrow-down"></i> Resp</a>
+                                                    data-content="<?= htmlspecialchars($log->request_payload); ?>"><i
+                                                        class="fas fa-arrow-up"></i> Req</a>
+                                                <a href="#modal-log-details" data-toggle="modal"
+                                                    class="btn btn-mini btn-warning" data-title="Resposta"
+                                                    data-content="<?= htmlspecialchars($log->response_body . ($log->curl_error ? ' | Erro cURL: ' . $log->curl_error : '')); ?>"><i
+                                                        class="fas fa-arrow-down"></i> Resp</a>
                                             </td>
                                             <td style="text-align: center;">
-                                                <a href="<?= base_url('index.php/evolution/excluir_log/' . $log->id) ?>#tabLogs" class="btn btn-danger btn-mini" title="Excluir Log" onclick="return confirm('Deseja excluir este log?');"><i class="fas fa-trash-alt"></i></a>
+                                                <a href="<?= base_url('index.php/evolution/excluir_log/' . $log->id) ?>#tabLogs"
+                                                    class="btn btn-danger btn-mini" title="Excluir Log"
+                                                    onclick="return confirm('Deseja excluir este log?');"><i
+                                                        class="fas fa-trash-alt"></i></a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -229,6 +291,8 @@
             </div>
         </div>
     </div>
+</div>
+</div>
 </div>
 
 <!-- Modal Editar Mensagem -->
@@ -453,9 +517,13 @@
             $('a[href="' + hash + '"]').tab('show');
         } else if (window.location.search.includes('tab=')) {
             var urlParams = new URLSearchParams(window.location.search);
-            const tab = urlParams.get('tab');
-            if (tab) {
-                $('a[href="#' + tab + '"]').tab('show');
+            const urlTab = '#' + urlParams.get('tab');
+            if (urlTab === '#tabMensagens') {
+                $('.nav-tabs a[href="#tabMensagens"]').tab('show');
+            } else if (urlTab === '#tabLogs') {
+                $('.nav-tabs a[href="#tabLogs"]').tab('show');
+            } else if (urlTab === '#tabEventos') {
+                $('.nav-tabs a[href="#tabEventos"]').tab('show');
             }
         }
 

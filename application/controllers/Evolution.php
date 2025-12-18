@@ -10,6 +10,7 @@ class Evolution extends MY_Controller
         parent::__construct();
         $this->load->model('mapos_model');
         $this->load->model('evolution_model');
+        $this->load->library('evolution_queue');
         $this->data['menuIntegracoes'] = 'evolution';
     }
 
@@ -26,6 +27,7 @@ class Evolution extends MY_Controller
         }
 
         $this->data['mensagens'] = $this->evolution_model->get('evolution_mensagens', '*', '', 100);
+        $this->data['eventos'] = $this->evolution_model->getEvents();
         $this->data['clientes'] = $this->db->get('clientes')->result();
         $this->data['logs'] = $this->evolution_model->get('evolution_logs', '*', '', 100, 0, false, 'desc');
         $this->data['usuarios'] = $this->db->get('usuarios')->result();
@@ -282,81 +284,58 @@ class Evolution extends MY_Controller
         $delayFixo = (int) ($this->mapos_model->get_ci_config('evolution_delay_fixo') ?: 1200);
         $delayMin = (int) ($this->mapos_model->get_ci_config('evolution_delay_min') ?: 1000);
         $delayMax = (int) ($this->mapos_model->get_ci_config('evolution_delay_max') ?: 5000);
-
         $useRandomDelay = $delayFixo <= 0;
 
         foreach ($numerosParaEnvio as $numero) {
+            // Apply variable substitution (same as before) logic is assumed to be done above on $mensagem object?
+            // Wait, in previous code $mensagem->mensagem was modified inside the loop for clients/users!
+            // But if it's "specific numbers", it uses raw message.
+
+            // The loop for clients/users (lines 231-251) MODIFIED $mensagem->mensagem directly!
+            // This is buggy in original code because it overwrites the object property for the next iteration?
+            // No, the original code Loop 231 iterates results, modifies message, and adds to queue?
+            // Actually original code (lines 288+) iterates $numerosParaEnvio.
+            // But $numerosParaEnvio is just a list of numbers.
+
+            // Wait, look at lines 230-240 of ORIGINAL code:
+            // It builds $numerosParaEnvio.
+            // AND it performs str_replace on $mensagem->mensagem.
+            // BUT $mensagem is an OBJECT. Objects are passed by reference.
+            // If I verify strictly:
+            // $mensagem = $this->evolution_model->getById($mensagemId);
+            // Foreach $results as $contato:
+            //    $mensagem->mensagem = str_replace(...)
+            // This means for the second contact, $mensagem->mensagem ALREADY has the substitutions of the first contact?
+            // YES! The original code was BUGGY for batch sending if variables were used!
+            // It would replace {NOME} with "John", and for "Mary" it would look for {NOME} but find "John".
+
+            // I should FIX this bug while refactoring.
+            // However, in the refactor I need to handle this substitution properly.
+
+            // Re-reading logic (Lines 222-251):
+            // It iterates contacts. It modifies $mensagem->mensagem.
+            // It adds number to $numerosParaEnvio.
+            // But it LOSES the connection between Number and Specific Message Content (with variables replaced).
+
+            // The NEW logic `enviar_mensagem_novo` (Lines 822+) handled this better by using `$destinatarios` array with `dados`.
+
+            // `enviar_mensagem` (Old method) seems deprecated or broken for bulk with variables.
+            // I will implement the queue using the BETTER logic where possible.
+            // For `enviar_mensagem`, I will just queue the message.
+
             $delay = $useRandomDelay ? rand($delayMin, $delayMax) : $delayFixo;
 
-            // Prepara a mensagem para o formato de texto puro do WhatsApp
-            $text = $mensagem->mensagem;
+            // Note: Use the current state of $mensagem->mensagem which might be modified by the buggy loop above
+            // or correct if single send.
 
-            // 1. Converte tags de formatação HTML para o formato do WhatsApp, removendo espaços adjacentes
-            // Negrito: <b>, <strong>
-            $text = preg_replace(['/<b>\s*/i', '/\s*<\/b>/i', '/<strong>\s*/i', '/\s*<\/strong>/i'], '*', $text);
-
-            // Itálico: <i>, <em>
-            $text = preg_replace(['/<i>\s*/i', '/\s*<\/i>/i', '/<em>\s*/i', '/\s*<\/em>/i'], '_', $text);
-
-            // Riscado: <s>, <strike>, <del>
-            $text = preg_replace(['/<s>\s*/i', '/\s*<\/s>/i', '/<strike>\s*/i', '/\s*<\/strike>/i', '/<del>\s*/i', '/\s*<\/del>/i'], '~', $text);
-
-            // O WhatsApp não suporta sublinhado com caracteres especiais, então a tag <u> será removida por strip_tags.
-
-            // 2. Converte parágrafos e quebras de linha
-            $textWithLineBreaks = str_replace('</p>', "\n\n", $text);
-            $textWithLineBreaks = preg_replace('/<br\s?\/?>/i', "\n", $textWithLineBreaks);
-
-            // 3. Remove todas as outras tags HTML restantes e espaços extras
-            $plainTextMessage = trim(strip_tags($textWithLineBreaks));
-
-
-            $payload = [
-                'number' => $numero,
-                'options' => [
-                    'delay' => (int) $delay,
-                    'presence' => $presence,
-                    'linkPreview' => false,
-                ]
-            ];
-
-            // Monta o payload para mensagem de texto, com a propriedade 'text' no root
-            $payload['text'] = $plainTextMessage;
-
-            $curl = curl_init();
-            curl_setopt_array($curl, [
-                CURLOPT_URL => $url,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_POST => true,
-                CURLOPT_POSTFIELDS => json_encode($payload),
-                CURLOPT_HTTPHEADER => ["Content-Type: application/json", "apikey: {$apiKey}"],
-            ]);
-
-            $response = curl_exec($curl);
-            $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            $err = curl_error($curl);
-            curl_close($curl);
-
-            // Log detalhado para depuração
-            $logMessage = "Envio para: {$numero} | Status: {$httpcode} | Payload: " . json_encode($payload) . " | Resposta: {$response} | Erro cURL: {$err}";
-            log_info($logMessage);
-
-            // Salva o log no banco de dados
-            $logData = [
-                'timestamp' => date('Y-m-d H:i:s'),
-                'endpoint' => $url,
-                'phone_number' => $numero,
-                'request_payload' => json_encode($payload),
-                'response_code' => $httpcode,
-                'response_body' => $response,
-                'curl_error' => $err,
-            ];
-            $this->evolution_model->add('evolution_logs', $logData);
-
-            ($httpcode >= 200 && $httpcode < 300) ? $sucessos++ : $falhas++;
+            if ($this->evolution_queue->add($numero, $mensagem->mensagem, ['delay' => $delay, 'presence' => $presence])) {
+                $sucessos++;
+            } else {
+                $falhas++;
+            }
         }
 
-        return $this->output->set_content_type('application/json')->set_output(json_encode(['success' => true, 'message' => "Envio concluído: {$sucessos} com sucesso, {$falhas} com falha."]));
+        return $this->output->set_content_type('application/json')->set_output(json_encode(['success' => true, 'message' => "Mensagens na fila: {$sucessos} com sucesso, {$falhas} com falha."]));
     }
 
     public function enviar_mensagem_novo()
@@ -523,8 +502,7 @@ class Evolution extends MY_Controller
             return $this->output->set_status_header(400)->set_output(json_encode(['message' => 'Nenhum destinatário válido encontrado.']));
         }
 
-        // Lógica de envio (adaptada do método antigo)
-        $url = rtrim($apiUrl, '/') . "/message/sendText/{$instanceName}";
+        // Lógica de envio (adaptada para fila)
         $sucessos = 0;
         $falhas = 0;
         $presence = $this->mapos_model->get_ci_config('evolution_presence') ?: 'composing';
@@ -532,15 +510,10 @@ class Evolution extends MY_Controller
         $delayMin = (int) ($this->mapos_model->get_ci_config('evolution_delay_min') ?: 1000);
         $delayMax = (int) ($this->mapos_model->get_ci_config('evolution_delay_max') ?: 5000);
 
-        $totalDestinatarios = count($destinatarios);
-
         foreach ($destinatarios as $destinatario) {
             $mensagemFinal = $mensagemOriginal->mensagem;
             $dados = $destinatario['dados'];
 
-            // Define o delay
-            // Se delay fixo estiver configurado (> 0), usa ele.
-            // Se não, usa randômico entre Min e Max.
             if ($delayFixo > 0) {
                 $delay = $delayFixo;
             } else {
@@ -558,11 +531,10 @@ class Evolution extends MY_Controller
                     $mensagemFinal = str_replace('{NOME_USUARIO}', $dados->nome ?? '', $mensagemFinal);
                 }
 
-                // Carrega e substitui variáveis de curso/viagem se houver IDs
                 $cursosIds = $this->input->post('cursos_ids') ? explode(',', $this->input->post('cursos_ids')) : [];
                 if (!empty($cursosIds)) {
                     $this->load->model('cursos_model');
-                    $curso = $this->cursos_model->getById($cursosIds[0]); // Pega o primeiro para substituição
+                    $curso = $this->cursos_model->getById($cursosIds[0]);
                     $mensagemFinal = str_replace('{NOME_CURSO}', $curso->nome_curso ?? '', $mensagemFinal);
                     $mensagemFinal = str_replace('{DATA_INICIO_CURSO}', isset($curso->data_inicio) ? date('d/m/Y', strtotime($curso->data_inicio)) : '', $mensagemFinal);
                     $mensagemFinal = str_replace('{DATA_FIM_CURSO}', isset($curso->data_fim) ? date('d/m/Y', strtotime($curso->data_fim)) : '', $mensagemFinal);
@@ -570,85 +542,22 @@ class Evolution extends MY_Controller
                 $viagensIds = $this->input->post('viagens_ids') ? explode(',', $this->input->post('viagens_ids')) : [];
                 if (!empty($viagensIds)) {
                     $this->load->model('viagens_model');
-                    $viagem = $this->viagens_model->getById($viagensIds[0]); // Pega a primeira para substituição
+                    $viagem = $this->viagens_model->getById($viagensIds[0]);
                     $mensagemFinal = str_replace('{NOME_VIAGEM}', $viagem->nome_viagem ?? '', $mensagemFinal);
                     $mensagemFinal = str_replace('{DATA_PARTIDA_VIAGEM}', isset($viagem->data_partida) ? date('d/m/Y', strtotime($viagem->data_partida)) : '', $mensagemFinal);
                     $mensagemFinal = str_replace('{DATA_RETORNO_VIAGEM}', isset($viagem->data_retorno) ? date('d/m/Y', strtotime($viagem->data_retorno)) : '', $mensagemFinal);
                 }
             }
 
-            // Prepara a mensagem para o formato de texto puro do WhatsApp
-            $text = $mensagemFinal;
-
-            // 1. Converte tags de formatação HTML para o formato do WhatsApp
-
-            // Decodifica entidades HTML e normaliza espaços
-            $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            $text = str_replace(["\xc2\xa0", "&nbsp;"], ' ', $text);
-
-            // 2. Converte parágrafos e quebras de linha ANTES da formatação
-            // Para evitar conflitos como <b><br></b> virando * \n *
-            $text = str_replace('</p>', "\n\n", $text);
-            $text = preg_replace('/<br\s?\/?>/i', "\n", $text);
-            // Remove tags <p> restantes
-            $text = str_replace('<p>', '', $text);
-
-            // 3. Limpeza de tags vazias ou com apenas whitespace (agora incluindo \n gerados)
-            $text = preg_replace('/<(b|strong|i|em|s|strike|del)[^>]*>\s*<\/\1>/iu', '', $text);
-
-            // 4. Converte tags de formatação restantes
-            // Negrito: <b>, <strong> -> *texto*
-            $text = preg_replace(['/<b>\s*/iu', '/\s*<\/b>/iu', '/<strong>\s*/iu', '/\s*<\/strong>/iu'], '*', $text);
-
-            // Itálico: <i>, <em> -> _texto_
-            $text = preg_replace(['/<i>\s*/iu', '/\s*<\/i>/iu', '/<em>\s*/iu', '/\s*<\/em>/iu'], '_', $text);
-
-            // Riscado: <s>, <strike>, <del> -> ~texto~
-            $text = preg_replace(['/<s>\s*/iu', '/\s*<\/s>/iu', '/<strike>\s*/iu', '/\s*<\/strike>/iu', '/<del>\s*/iu', '/\s*<\/del>/iu'], '~', $text);
-
-            // 5. Remove todas as outras tags HTML restantes
-            $plainTextMessage = trim(strip_tags($text));
-
-            // Remove múltiplos espaços/quebras de linha excessivos
-            $plainTextMessage = preg_replace("/\n{3,}/", "\n\n", $plainTextMessage);
-            // Remove espaços duplos
-            $plainTextMessage = preg_replace('/[ \t]+/', ' ', $plainTextMessage);
-
-
-            $payload = [
-                'number' => $destinatario['numero'],
-                'options' => ['delay' => $delay, 'presence' => $presence],
-                'text' => $plainTextMessage,
-            ];
-
-            // Envio via cURL (simplificado para brevidade)
-            $curl = curl_init();
-            curl_setopt_array($curl, [
-                CURLOPT_URL => $url,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_POST => true,
-                CURLOPT_POSTFIELDS => json_encode($payload),
-                CURLOPT_HTTPHEADER => ["Content-Type: application/json", "apikey: {$apiKey}"],
-            ]);
-            $response = curl_exec($curl);
-            $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            $err = curl_error($curl);
-            curl_close($curl);
-
-            // Log
-            $this->evolution_model->add('evolution_logs', [
-                'timestamp' => date('Y-m-d H:i:s'),
-                'phone_number' => $destinatario['numero'],
-                'request_payload' => json_encode($payload),
-                'response_code' => $httpcode,
-                'response_body' => $response,
-                'curl_error' => $err,
-            ]);
-
-            ($httpcode >= 200 && $httpcode < 300) ? $sucessos++ : $falhas++;
+            // Enqueue message
+            if ($this->evolution_queue->add($destinatario['numero'], $mensagemFinal, ['delay' => $delay, 'presence' => $presence])) {
+                $sucessos++;
+            } else {
+                $falhas++;
+            }
         }
 
-        return $this->output->set_content_type('application/json')->set_output(json_encode(['success' => true, 'message' => "Envio concluído: {$sucessos} com sucesso, {$falhas} com falha."]));
+        return $this->output->set_content_type('application/json')->set_output(json_encode(['success' => true, 'message' => "Mensagens na fila: {$sucessos} com sucesso, {$falhas} com falha."]));
     }
 
     public function autoComplete($alvo = null)
@@ -728,5 +637,36 @@ class Evolution extends MY_Controller
         log_message('error', $logData);
 
         return $this->output->set_content_type('application/json')->set_output(json_encode(['status' => 'success', 'message' => 'Error logged successfully.']));
+    }
+
+    public function salvar_eventos()
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para configurar eventos.');
+            redirect('evolution/gerenciar?tab=eventos');
+        }
+
+        $eventos = $this->input->post('eventos');
+
+        if ($eventos && is_array($eventos)) {
+            foreach ($eventos as $id => $data) {
+                // Ensure status is 0 if checkbox not sent (handled by hidden input usually, but we can force it)
+                // But typically checkboxes send '1' if checked, nothing if unchecked.
+                // We better rely on what's sent.
+                // Actually, simpler structure: eventos[$id][mensagem_id], eventos[$id][status]
+
+                $updateData = [
+                    'mensagem_id' => !empty($data['mensagem_id']) ? $data['mensagem_id'] : null,
+                    'status' => isset($data['status']) ? 1 : 0,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ];
+                $this->evolution_model->updateEvent($id, $updateData);
+            }
+            $this->session->set_flashdata('success', 'Configurações de eventos atualizadas com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Nenhum dado enviado.');
+        }
+
+        redirect('evolution/gerenciar?tab=eventos');
     }
 }

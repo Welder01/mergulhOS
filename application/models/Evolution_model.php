@@ -144,4 +144,31 @@ class Evolution_model extends CI_Model
         $this->db->group_by('u.idUsuarios');
         return $this->db->get()->result();
     }
+
+    // --- Eventos / Triggers ---
+
+    public function getEvents()
+    {
+        $this->db->select('e.*, m.titulo as mensagem_titulo');
+        $this->db->from('evolution_eventos e');
+        $this->db->join('evolution_mensagens m', 'e.mensagem_id = m.id', 'left');
+        $this->db->order_by('e.evento', 'asc');
+        return $this->db->get()->result();
+    }
+
+    public function updateEvent($id, $data)
+    {
+        $this->db->where('id', $id);
+        return $this->db->update('evolution_eventos', $data);
+    }
+
+    public function getEventTrigger($eventName)
+    {
+        $this->db->select('e.*, m.mensagem');
+        $this->db->from('evolution_eventos e');
+        $this->db->join('evolution_mensagens m', 'e.mensagem_id = m.id');
+        $this->db->where('e.evento', $eventName);
+        $this->db->where('e.status', 1); // Only active
+        return $this->db->get()->row();
+    }
 }
