@@ -171,4 +171,44 @@ class Evolution_model extends CI_Model
         $this->db->where('e.status', 1); // Only active
         return $this->db->get()->row();
     }
+
+    public function parseMessage($message, $data = [])
+    {
+        // Client Replacements
+        if (isset($data['cliente']) && is_object($data['cliente'])) {
+            $c = $data['cliente'];
+            $message = str_replace('{NOME_CLIENTE}', $c->nomeCliente, $message);
+            $message = str_replace('{EMAIL_CLIENTE}', $c->email, $message);
+            $message = str_replace('{TELEFONE_CLIENTE}', $c->celular ?: $c->telefone, $message);
+            $message = str_replace('{DOCUMENTO_CLIENTE}', $c->documento, $message);
+            $message = str_replace('{LINK_CLIENTE}', base_url('index.php/clientes/visualizar/' . $c->idClientes), $message);
+        }
+
+        // User Replacements
+        if (isset($data['usuario']) && is_object($data['usuario'])) {
+            $u = $data['usuario'];
+            $message = str_replace('{NOME_USUARIO}', $u->nome, $message);
+            // $message = str_replace('{EMAIL_USUARIO}', $u->email, $message); // Field might conflict or need adding
+            $message = str_replace('{TELEFONE_USUARIO}', $u->celular ?: $u->telefone, $message);
+        }
+
+        // Trip Replacements
+        if (isset($data['viagem']) && is_object($data['viagem'])) {
+            $v = $data['viagem'];
+            $message = str_replace('{NOME_VIAGEM}', $v->nome_viagem, $message);
+            $message = str_replace('{DATA_PARTIDA_VIAGEM}', date('d/m/Y', strtotime($v->data_partida)), $message);
+            $message = str_replace('{DATA_RETORNO_VIAGEM}', date('d/m/Y', strtotime($v->data_retorno)), $message);
+        }
+
+        // Course Replacements
+        if (isset($data['curso']) && is_object($data['curso'])) {
+            $cur = $data['curso'];
+            $message = str_replace('{NOME_CURSO}', $cur->nome_curso, $message);
+            $message = str_replace('{DATA_INICIO_CURSO}', date('d/m/Y', strtotime($cur->data_inicio)), $message);
+            $message = str_replace('{DATA_FIM_CURSO}', date('d/m/Y', strtotime($cur->data_fim)), $message);
+        }
+
+        return $message;
+    }
+
 }

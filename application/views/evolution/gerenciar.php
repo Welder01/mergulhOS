@@ -226,23 +226,32 @@
                             <div class="controls">
                                 <textarea name="mensagem" id="mensagem" rows="5" class="span11" required></textarea>
                                 <div class="help-block" style="margin-top: 10px;">
-                                    <p><strong>Variáveis disponíveis (clique para copiar):</strong></p>
+                                    <p><strong>Variáveis disponíveis (clique para inserir):</strong></p>
                                     <p>
-                                        <small class="variable-tag" title="Copiar">{NOME_CLIENTE}</small>
-                                        <small class="variable-tag" title="Copiar">{EMAIL_CLIENTE}</small>
-                                        <small class="variable-tag" title="Copiar">{TELEFONE_CLIENTE}</small>
-                                        <small class="variable-tag" title="Copiar">{NOME_USUARIO}</small>
-                                        <small class="variable-tag" title="Copiar">{LINK_CLIENTE}</small>
+                                        <strong>Cliente:</strong>
+                                        <small class="variable-tag">{NOME_CLIENTE}</small>
+                                        <small class="variable-tag">{TELEFONE_CLIENTE}</small>
+                                        <small class="variable-tag">{LINK_CLIENTE}</small>
                                     </p>
                                     <p>
-                                        <small class="variable-tag" title="Copiar">{NOME_CURSO}</small>
-                                        <small class="variable-tag" title="Copiar">{DATA_INICIO_CURSO}</small>
-                                        <small class="variable-tag" title="Copiar">{DATA_FIM_CURSO}</small>
+                                        <strong>Usuário:</strong>
+                                        <small class="variable-tag">{NOME_USUARIO}</small>
+                                        <small class="variable-tag">{TELEFONE_USUARIO}</small>
                                     </p>
                                     <p>
-                                        <small class="variable-tag" title="Copiar">{NOME_VIAGEM}</small>
-                                        <small class="variable-tag" title="Copiar">{DATA_PARTIDA_VIAGEM}</small>
-                                        <small class="variable-tag" title="Copiar">{DATA_RETORNO_VIAGEM}</small>
+                                        <strong>Viagem:</strong>
+                                        <small class="variable-tag">{NOME_VIAGEM}</small>
+                                        <small class="variable-tag">{DATA_PARTIDA_VIAGEM}</small>
+                                    </p>
+                                    <p>
+                                        <strong>Curso:</strong>
+                                        <small class="variable-tag">{NOME_CURSO}</small>
+                                        <small class="variable-tag">{DATA_INICIO_CURSO}</small>
+                                    </p>
+                                    <p>
+                                        <strong>Treino:</strong>
+                                        <small class="variable-tag">{NOME_TREINO}</small>
+                                        <small class="variable-tag">{DATA_TREINO}</small>
                                     </p>
                                 </div>
                             </div>
@@ -322,32 +331,32 @@
                 <div class="controls">
                     <textarea name="mensagem" id="edit_mensagem" rows="5" class="span11" required></textarea>
                     <div class="help-block" style="margin-top: 10px;">
-                        <p><strong>Variáveis disponíveis (clique para copiar):</strong></p>
+                        <p><strong>Variáveis disponíveis (clique para inserir):</strong></p>
                         <p>
                             <strong>Cliente:</strong>
-                            <small class="variable-tag" title="Copiar">{NOME_CLIENTE}</small>
-                            <small class="variable-tag" title="Copiar">{EMAIL_CLIENTE}</small>
-                            <small class="variable-tag" title="Copiar">{DOCUMENTO_CLIENTE}</small>
-                            <small class="variable-tag" title="Copiar">{TELEFONE_CLIENTE}</small>
-                            <small class="variable-tag" title="Copiar">{CELULAR_CLIENTE}</small>
-                            <small class="variable-tag" title="Copiar">{DATA_CADASTRO}</small>
-                            <small class="variable-tag" title="Copiar">{LINK_CLIENTE}</small>
+                            <small class="variable-tag">{NOME_CLIENTE}</small>
+                            <small class="variable-tag">{TELEFONE_CLIENTE}</small>
+                            <small class="variable-tag">{LINK_CLIENTE}</small>
                         </p>
                         <p>
                             <strong>Usuário:</strong>
-                            <small class="variable-tag" title="Copiar">{NOME_USUARIO}</small>
-                        </p>
-                        <p>
-                            <strong>Curso:</strong>
-                            <small class="variable-tag" title="Copiar">{NOME_CURSO}</small>
-                            <small class="variable-tag" title="Copiar">{DATA_INICIO_CURSO}</small>
-                            <small class="variable-tag" title="Copiar">{DATA_FIM_CURSO}</small>
+                            <small class="variable-tag">{NOME_USUARIO}</small>
+                            <small class="variable-tag">{TELEFONE_USUARIO}</small>
                         </p>
                         <p>
                             <strong>Viagem:</strong>
-                            <small class="variable-tag" title="Copiar">{NOME_VIAGEM}</small>
-                            <small class="variable-tag" title="Copiar">{DATA_PARTIDA_VIAGEM}</small>
-                            <small class="variable-tag" title="Copiar">{DATA_RETORNO_VIAGEM}</small>
+                            <small class="variable-tag">{NOME_VIAGEM}</small>
+                            <small class="variable-tag">{DATA_PARTIDA_VIAGEM}</small>
+                        </p>
+                        <p>
+                            <strong>Curso:</strong>
+                            <small class="variable-tag">{NOME_CURSO}</small>
+                            <small class="variable-tag">{DATA_INICIO_CURSO}</small>
+                        </p>
+                        <p>
+                            <strong>Treino:</strong>
+                            <small class="variable-tag">{NOME_TREINO}</small>
+                            <small class="variable-tag">{DATA_TREINO}</small>
                         </p>
                     </div>
                 </div>
@@ -813,18 +822,46 @@
             $('#modalEditar').modal('show');
         });
 
-        //--- LÓGICA DE COPIAR VARIÁVEL ---//
-        $(document).on('click', '.variable-tag', function () {
-            var textToCopy = $(this).text();
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                var originalText = $(this).text();
-                $(this).text('Copiado!');
-                setTimeout(() => {
-                    $(this).text(originalText);
-                }, 1000);
-            }).catch(err => {
-                console.error('Erro ao copiar: ', err);
+        //--- LÓGICA DE INSERÇÃO DE VARIÁVEL ---//
+        var lastFocusedEditor = null;
+
+        // Rastreia qual editor teve o foco por último
+        $('#mensagem, #edit_mensagem')
+            .on('tbwfocus', function () {
+                lastFocusedEditor = $(this);
+            })
+            .on('tbwblur', function () {
+                // Mantém a referência, pois o clique no botão tira o foco
+                lastFocusedEditor = $(this);
             });
+
+        $(document).on('click', '.variable-tag', function () {
+            var textToInsert = $(this).text();
+
+            if (lastFocusedEditor) {
+                lastFocusedEditor.trumbowyg('restoreRange');
+                lastFocusedEditor.trumbowyg('execCmd', {
+                    cmd: 'insertText',
+                    param: textToInsert,
+                    forceCss: false
+                });
+            } else {
+                // Fallback se nenhum editor foi focado ainda (ex: usuário acabou de abrir a página)
+                // Tenta inserir no primeiro editor visível ou alerta
+                 if ($('#mensagem').is(':visible')) {
+                    $('#mensagem').trumbowyg('execCmd', {
+                        cmd: 'insertText',
+                        param: textToInsert,
+                        forceCss: false
+                    });
+                } else if ($('#edit_mensagem').is(':visible')) {
+                     $('#edit_mensagem').trumbowyg('execCmd', {
+                        cmd: 'insertText',
+                        param: textToInsert,
+                        forceCss: false
+                    });
+                }
+            }
         });
 
         // Solução alternativa sugerida: desativa a rolagem do body quando o modal está aberto

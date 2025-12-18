@@ -364,6 +364,22 @@ class Viagens extends MY_Controller
             $viagem = $this->viagens_model->getById($viagem_id);
             $cliente = $this->clientes_model->getById($cliente_id);
             $this->log_auditoria('Adicionou o cliente "' . $cliente->nomeCliente . '" à viagem "' . $viagem->nome_viagem . '"');
+
+            // --- Evolution API Trigger (viagem_cliente_adicionado) ---
+            $this->load->model('evolution_model');
+            $trigger = $this->evolution_model->getEventTrigger('viagem_cliente_adicionado');
+            if ($trigger && $trigger->status == 1) {
+                $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
+                    'cliente' => $cliente,
+                    'viagem' => $viagem
+                ]);
+                $this->load->library('evolution_queue');
+                $phone = $cliente->celular ?: $cliente->telefone;
+                if ($phone) {
+                    $this->evolution_queue->add($phone, $msg_parsed);
+                }
+            }
+            // ---------------------------------------------------------
         }
         $this->session->set_flashdata(
             $resultado['success'] ? 'success' : 'error',
@@ -536,6 +552,26 @@ class Viagens extends MY_Controller
             if ($this->viagem_instrutores_model->add($data)) {
                 $this->session->set_flashdata('success', 'Instrutor adicionado à viagem com sucesso!');
                 log_info('Adicionou instrutor ID: ' . $usuario_id . ' à viagem ID: ' . $viagem_id);
+
+                // --- Evolution API Trigger (viagem_usuario_adicionado) ---
+                $this->load->model('evolution_model');
+                $trigger = $this->evolution_model->getEventTrigger('viagem_usuario_adicionado');
+                if ($trigger && $trigger->status == 1) {
+                    $viagem = $this->viagens_model->getById($viagem_id);
+                    $usuario = $this->viagens_model->getUsuarioData($usuario_id);
+                    if ($usuario) {
+                        $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
+                            'usuario' => $usuario,
+                            'viagem' => $viagem
+                        ]);
+                        $this->load->library('evolution_queue');
+                        $phone = $usuario->celular ?: $usuario->telefone;
+                        if ($phone) {
+                            $this->evolution_queue->add($phone, $msg_parsed);
+                        }
+                    }
+                }
+                // ---------------------------------------------------------
             } else {
                 $this->session->set_flashdata('error', 'Ocorreu um erro ao adicionar o instrutor.');
             }

@@ -1,6 +1,6 @@
 <?php
 
-if (! defined('BASEPATH')) {
+if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
@@ -110,45 +110,45 @@ class Mine extends MY_Controller
 
             return $this->load->view('conecte/token_digita', $this->data);
         }
-            $token = $this->check_token($this->input->post('token'));
+        $token = $this->check_token($this->input->post('token'));
 
-            if ($this->validateDate($token->data_expiracao)) {
-                $this->session->set_flashdata(['error' => 'Token expirado']);
-                $session_mine_data = $token->email ? ['nome' => $token->email] : ['nome' => 'Inexistente'];
-                $this->session->set_userdata($session_mine_data);
-                log_info('Digitou Token. Porém, Token expirado');
+        if ($this->validateDate($token->data_expiracao)) {
+            $this->session->set_flashdata(['error' => 'Token expirado']);
+            $session_mine_data = $token->email ? ['nome' => $token->email] : ['nome' => 'Inexistente'];
+            $this->session->set_userdata($session_mine_data);
+            log_info('Digitou Token. Porém, Token expirado');
 
-                return redirect(base_url() . 'index.php/mine/login', $this->data);
-            } else {
-                if ($token) {
-                    if (($cliente = $this->check_credentials($token->email)) == null) {
-                        $this->session->set_flashdata(['error' => 'Os dados de acesso estão incorretos.']);
-                        $session_mine_data = $cliente->nomeCliente ? ['nome' => $cliente->nomeCliente] : ['nome' => 'Inexistente'];
-                        $this->session->set_userdata($session_mine_data);
-                        log_info('Digitou Token. Porém, os dados de acesso estão incorretos.');
-
-                        return $this->load->view('conecte/token_digita', $this->data);
-                    } else {
-                        if ($token->email == $cliente->email && $token->token_utilizado == false) {
-                            return $this->load->view('conecte/nova_senha', $token);
-                        } else {
-                            $this->session->set_flashdata('error', 'Dados divergentes ou Token invalido.');
-                            $session_mine_data = $cliente->nomeCliente ? ['nome' => $cliente->nomeCliente] : ['nome' => 'Inexistente'];
-                            $this->session->set_userdata($session_mine_data);
-                            log_info('Digitou Token. Porém, dados divergentes ou Token invalido.');
-
-                            return redirect(base_url() . 'index.php/mine/login', $this->data);
-                        }
-                    }
-                } else {
-                    $this->session->set_flashdata(['error' => 'Token Invalido']);
-                    $session_mine_data = $token->email ? ['nome' => $token->email] : ['nome' => 'Inexistente'];
+            return redirect(base_url() . 'index.php/mine/login', $this->data);
+        } else {
+            if ($token) {
+                if (($cliente = $this->check_credentials($token->email)) == null) {
+                    $this->session->set_flashdata(['error' => 'Os dados de acesso estão incorretos.']);
+                    $session_mine_data = $cliente->nomeCliente ? ['nome' => $cliente->nomeCliente] : ['nome' => 'Inexistente'];
                     $this->session->set_userdata($session_mine_data);
-                    log_info('Digitou Token. Porém, Token invalido.');
+                    log_info('Digitou Token. Porém, os dados de acesso estão incorretos.');
 
                     return $this->load->view('conecte/token_digita', $this->data);
+                } else {
+                    if ($token->email == $cliente->email && $token->token_utilizado == false) {
+                        return $this->load->view('conecte/nova_senha', $token);
+                    } else {
+                        $this->session->set_flashdata('error', 'Dados divergentes ou Token invalido.');
+                        $session_mine_data = $cliente->nomeCliente ? ['nome' => $cliente->nomeCliente] : ['nome' => 'Inexistente'];
+                        $this->session->set_userdata($session_mine_data);
+                        log_info('Digitou Token. Porém, dados divergentes ou Token invalido.');
+
+                        return redirect(base_url() . 'index.php/mine/login', $this->data);
+                    }
                 }
+            } else {
+                $this->session->set_flashdata(['error' => 'Token Invalido']);
+                $session_mine_data = $token->email ? ['nome' => $token->email] : ['nome' => 'Inexistente'];
+                $this->session->set_userdata($session_mine_data);
+                log_info('Digitou Token. Porém, Token invalido.');
+
+                return $this->load->view('conecte/token_digita', $this->data);
             }
+        }
         $this->load->view('conecte/token_digita', $this->data);
     }
 
@@ -209,7 +209,7 @@ class Mine extends MY_Controller
 
     public function gerarTokenResetarSenha()
     {
-        if (! $cliente = $this->check_credentials($this->input->post('email'))) {
+        if (!$cliente = $this->check_credentials($this->input->post('email'))) {
             $this->session->set_flashdata(['error' => 'Os dados de acesso estão incorretos.']);
             $session_mine_data = $cliente ? ['nome' => $cliente->nomeCliente] : ['nome' => 'Inexistente'];
             $this->session->set_userdata($session_mine_data);
@@ -262,10 +262,10 @@ class Mine extends MY_Controller
                 // Verificar credenciais do usuário
                 if (password_verify($password, $cliente->senha)) {
                     $session_mine_data = [
-                        'nome' => $cliente->nomeCliente, 
-                        'cliente_id' => $cliente->idClientes, 
-                        'email' => $cliente->email, 
-                        'conectado' => true, 
+                        'nome' => $cliente->nomeCliente,
+                        'cliente_id' => $cliente->idClientes,
+                        'email' => $cliente->email,
+                        'conectado' => true,
                         'isCliente' => true
                     ];
                     $this->session->set_userdata($session_mine_data);
@@ -318,7 +318,11 @@ class Mine extends MY_Controller
         if ($temViagemFutura) {
             $cliente = $this->Conecte_model->getDados();
             $camposObrigatorios = [
-                'altura', 'peso', 'contato_emergencia_nome', 'contato_emergencia_telefone', 'atestado_medico_validade'
+                'altura',
+                'peso',
+                'contato_emergencia_nome',
+                'contato_emergencia_telefone',
+                'atestado_medico_validade'
             ];
             foreach ($camposObrigatorios as $campo) {
                 if (empty($cliente->$campo)) {
@@ -553,12 +557,12 @@ class Mine extends MY_Controller
             redirect(base_url() . 'index.php/mine/login');
         }
 
-        if (! $this->uri->segment(3) || ! is_numeric($this->uri->segment(3))) {
+        if (!$this->uri->segment(3) || !is_numeric($this->uri->segment(3))) {
             $this->session->set_flashdata('error', 'Item não pode ser encontrado, parâmetro não foi passado corretamente.');
             redirect('mapos');
         }
 
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCobranca')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCobranca')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para atualizar cobrança.');
             redirect(base_url());
         }
@@ -575,12 +579,12 @@ class Mine extends MY_Controller
             redirect(base_url() . 'index.php/mine/login');
         }
 
-        if (! $this->uri->segment(3) || ! is_numeric($this->uri->segment(3))) {
+        if (!$this->uri->segment(3) || !is_numeric($this->uri->segment(3))) {
             $this->session->set_flashdata('error', 'Item não pode ser encontrado, parâmetro não foi passado corretamente.');
             redirect('mapos');
         }
 
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCobranca')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCobranca')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para atualizar cobrança.');
             redirect(base_url());
         }
@@ -787,7 +791,7 @@ class Mine extends MY_Controller
         $this->CI->load->database();
         $this->load->model('mapos_model');
         $this->load->model('os_model');
-        $this->load->model('vendas_model');        
+        $this->load->model('vendas_model');
 
         $this->data['result'] = $this->vendas_model->getById($this->uri->segment(3));
         $this->data['produtos'] = $this->vendas_model->getProdutos($this->uri->segment(3));
@@ -799,7 +803,7 @@ class Mine extends MY_Controller
             $data['emitente']
         );
         $data['chaveFormatada'] = $this->formatarChave($data['pix_key']);
-        
+
         if ($data['result']->clientes_id != $this->session->userdata('cliente_id')) {
             $this->session->set_flashdata('error', 'Esta OS não pertence ao cliente logado.');
             redirect('mine/painel');
@@ -1153,30 +1157,30 @@ class Mine extends MY_Controller
 
     public function gerarCobrancaViagem()
     {
-        if (! $this->session->userdata('cliente_id') || ! $this->session->userdata('conectado')) {
+        if (!$this->session->userdata('cliente_id') || !$this->session->userdata('conectado')) {
             return $this->output->set_status_header(401)->set_output(json_encode(['error' => 'Acesso não autorizado.']));
         }
-    
+
         $this->load->model('viagem_clientes_model');
         $this->load->model('cobrancas_model');
-    
+
         $viagemClienteId = $this->input->post('viagem_cliente_id');
         $paymentMethod = $this->input->post('payment_method');
         $gateway = $this->input->post('gateway');
-    
+
         $viagemInscricao = $this->viagem_clientes_model->getByIdWithViagem($viagemClienteId);
-    
-        if (! $viagemInscricao || $viagemInscricao->cliente_id != $this->session->userdata('cliente_id')) {
+
+        if (!$viagemInscricao || $viagemInscricao->cliente_id != $this->session->userdata('cliente_id')) {
             return $this->output->set_status_header(404)->set_output(json_encode(['error' => 'Inscrição em viagem não encontrada.']));
         }
-    
+
         if ($viagemInscricao->status_pagamento == 'Pago') {
             return $this->output->set_status_header(400)->set_output(json_encode(['error' => 'Esta viagem já está paga.']));
         }
-    
+
         // Verifica se já existe uma cobrança pendente
         $cobrancaExistente = $this->cobrancas_model->get('cobrancas', '*', "viagem_clientes_id = {$viagemClienteId} AND status = 'pending' AND gateway = '{$gateway}'", 1, 0, true);
-    
+
         if ($cobrancaExistente) {
             $chargeId = $cobrancaExistente->charge_id;
             $cobrancaId = $cobrancaExistente->id;
@@ -1194,59 +1198,59 @@ class Mine extends MY_Controller
             ];
             $cobrancaId = $this->cobrancas_model->add('cobrancas', $dataCobranca, true);
         }
-    
+
         $paymentResponse = null;
         $chargeId = null;
-    
+
         switch ($gateway) {
             case 'efi':
                 $this->load->library('gateways/gerencianetsdk');
-                if (! $cobrancaExistente) {
+                if (!$cobrancaExistente) {
                     $chargeId = $this->gerencianetsdk->createCharge(
                         [$cobrancaId],
                         [['name' => "Pagamento da Viagem: {$viagemInscricao->nome_viagem}", 'value' => $viagemInscricao->preco_pessoa * 100, 'amount' => 1]]
                     );
-                    if (! $chargeId) {
+                    if (!$chargeId) {
                         return $this->output->set_status_header(500)->set_output(json_encode(['error' => 'Falha ao criar a cobrança no gateway EFI.']));
                     }
                 }
                 $paymentResponse = $this->gerencianetsdk->generatePayment($chargeId, $paymentMethod);
                 break;
-    
+
             case 'mercadopago':
                 $this->load->library('gateways/mercadopagosdk');
-                if (! $cobrancaExistente) {
+                if (!$cobrancaExistente) {
                     $chargeId = $this->mercadopagosdk->createCharge(
                         $cobrancaId,
                         "Pagamento da Viagem: {$viagemInscricao->nome_viagem}",
                         $viagemInscricao->preco_pessoa
                     );
-                    if (! $chargeId) {
+                    if (!$chargeId) {
                         return $this->output->set_status_header(500)->set_output(json_encode(['error' => 'Falha ao criar a cobrança no gateway Mercado Pago.']));
                     }
                 }
                 $paymentResponse = $this->mercadopagosdk->generatePayment($chargeId, $paymentMethod);
                 break;
-    
+
             case 'asaas':
                 $this->load->library('gateways/asaassdk');
-                if (! $cobrancaExistente) {
+                if (!$cobrancaExistente) {
                     $chargeId = $this->asaassdk->createCharge(
                         $cobrancaId,
                         "Pagamento da Viagem: {$viagemInscricao->nome_viagem}",
                         $viagemInscricao->preco_pessoa
                     );
-                    if (! $chargeId) {
+                    if (!$chargeId) {
                         return $this->output->set_status_header(500)->set_output(json_encode(['error' => 'Falha ao criar a cobrança no gateway Asaas.']));
                     }
                 }
                 $paymentResponse = $this->asaassdk->generatePayment($chargeId, $paymentMethod);
                 break;
-    
+
             default:
                 return $this->output->set_status_header(400)->set_output(json_encode(['error' => 'Gateway de pagamento inválido.']));
         }
-    
+
         return $this->output->set_content_type('application/json')->set_output(json_encode($paymentResponse));
     }
 
@@ -1314,17 +1318,17 @@ class Mine extends MY_Controller
             return;
         }
 
-    // Verifica se o cliente já está inscrito neste treino (e não está cancelado)
-    $jaInscrito = $this->db->where('cliente_id', $clienteId)
-                            ->where('config_id', $configId)
-                            ->where('status !=', 'Cancelado')
-                            ->count_all_results('treinos_agendados');
+        // Verifica se o cliente já está inscrito neste treino (e não está cancelado)
+        $jaInscrito = $this->db->where('cliente_id', $clienteId)
+            ->where('config_id', $configId)
+            ->where('status !=', 'Cancelado')
+            ->count_all_results('treinos_agendados');
 
-    if ($jaInscrito > 0) {
-        $this->session->set_flashdata('error', 'Você já está inscrito neste tipo de treino.');
-        redirect('mine/treinos');
-        return;
-    }
+        if ($jaInscrito > 0) {
+            $this->session->set_flashdata('error', 'Você já está inscrito neste tipo de treino.');
+            redirect('mine/treinos');
+            return;
+        }
 
         try {
             $inicioTreino = DateTime::createFromFormat('d/m/Y H:i', $dataHoraStr);
@@ -1348,6 +1352,52 @@ class Mine extends MY_Controller
         ];
 
         $this->treinos_model->add('treinos_agendados', $data);
+
+        // --- Evolution API Trigger (treino_cliente_adicionado) ---
+        $this->load->model('evolution_model');
+        $trigger = $this->evolution_model->getEventTrigger('treino_cliente_adicionado');
+        if ($trigger && $trigger->status == 1) {
+            $config->data_hora_inicio = $data['data_hora_inicio']; // Inject specific date
+            $config->nome_treino = $config->nome; // Ensure NOME_TREINO works
+
+            // Load client data
+            $this->load->model('clientes_model');
+            $cliente = $this->clientes_model->getById($clienteId);
+
+            if ($cliente) {
+                $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
+                    'cliente' => $cliente,
+                    'treino' => $config
+                ]);
+                $this->load->library('evolution_queue');
+                $phone = $cliente->celular ?: $cliente->telefone;
+                if ($phone)
+                    $this->evolution_queue->add($phone, $msg_parsed);
+            }
+        }
+        // --------------------------------------------------------
+
+        // --- Evolution API Trigger (treino_usuario_adicionado) ---
+        if ($comInstrutor && $instrutorId) {
+            $triggerInstr = $this->evolution_model->getEventTrigger('treino_usuario_adicionado');
+            if ($triggerInstr && $triggerInstr->status == 1) {
+                // Use generic DB get for instructor since we don't have a specific model loaded for them easily here
+                $instrutor = $this->db->where('idUsuarios', $instrutorId)->get('usuarios')->row();
+                if ($instrutor) {
+                    // Update config again or clone it if needed, but it's the same training object
+                    $msg_parsed_instr = $this->evolution_model->parseMessage($triggerInstr->mensagem, [
+                        'usuario' => $instrutor,
+                        'treino' => $config // Contains injected data_hora_inicio
+                    ]);
+                    $this->load->library('evolution_queue');
+                    $phoneInstr = $instrutor->celular ?: $instrutor->telefone;
+                    if ($phoneInstr)
+                        $this->evolution_queue->add($phoneInstr, $msg_parsed_instr);
+                }
+            }
+        }
+        // --------------------------------------------------------
+
         $this->session->set_flashdata('success', 'Treino agendado com sucesso!');
         redirect('mine/treinos');
     }
@@ -1390,7 +1440,7 @@ class Mine extends MY_Controller
         // Como o usuário pediu para "retirar a trava de no minimo 20 horas para funcionar o horario cadastrado",
         // vamos respeitar estritamente o cadastro. Se for 0, é 0 (pode cancelar até o último minuto).
         // Porém, código legado tinha 20h. Vamos assumir que 0 = sem restrição, mas se o admin quiser travar, ele coloca valor.
-        
+
         $agora = new DateTime();
         $inicioTreino = new DateTime($agendamento->data_hora_inicio);
 
@@ -1402,9 +1452,9 @@ class Mine extends MY_Controller
             $msgDias = $config->cancelamento_limite_dias > 0 ? $config->cancelamento_limite_dias . ' dias' : '';
             $msgHoras = $config->cancelamento_limite_horas > 0 ? $config->cancelamento_limite_horas . ' horas' : '';
             $msgConector = ($msgDias && $msgHoras) ? ' e ' : '';
-            
+
             $msgPrazo = $msgDias . $msgConector . $msgHoras;
-            
+
             if (empty($msgPrazo)) {
                 $msgPrazo = 'imediato'; // Caso raro onde configuração é 0, mas lógica cai aqui (ex: já passou da hora)
             }
@@ -1475,7 +1525,7 @@ class Mine extends MY_Controller
             'allowedTimes' => $allowedTimes,
             'disabledDates' => [],
             'disabledWeekDays' => array_values(array_diff([0, 1, 2, 3, 4, 5, 6], $diasPermitidos)),
-            'duration' => (int)$config->duracao_minutos,
+            'duration' => (int) $config->duracao_minutos,
         ];
 
         return $this->output->set_content_type('application/json')->set_output(json_encode($response));
@@ -1608,7 +1658,7 @@ class Mine extends MY_Controller
         $this->load->model('mapos_model');
         $this->load->model('os_model');
         $dados['result'] = $this->os_model->getById($idOs);
-        if (! isset($dados['result']->email)) {
+        if (!isset($dados['result']->email)) {
             return false;
         }
 
@@ -1617,7 +1667,7 @@ class Mine extends MY_Controller
         $dados['emitente'] = $this->mapos_model->getEmitente();
 
         $emitente = $dados['emitente'];
-        if (! isset($emitente)) {
+        if (!isset($emitente)) {
             return false;
         }
 
@@ -1731,7 +1781,7 @@ class Mine extends MY_Controller
 
         $this->session->set_userdata('captchaWord', $codigoCaptcha);
     }
-    
+
 }
 
 /* End of file conecte.php */
