@@ -1,6 +1,6 @@
 <?php
 
-if (! defined('BASEPATH')) {
+if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
@@ -24,7 +24,7 @@ class Financeiro_model extends CI_Model
 
         $query = $this->db->get();
 
-        $result = ! $one ? $query->result() : $query->row();
+        $result = !$one ? $query->result() : $query->row();
 
         return $result;
     }
@@ -142,6 +142,20 @@ class Financeiro_model extends CI_Model
         if ($query->num_rows() > 0) {
             foreach ($query->result_array() as $row) {
                 $row_set[] = ['label' => $row['nomeCliente'], 'id' => $row['idClientes']];
+            }
+            echo json_encode($row_set);
+        }
+    }
+
+    public function autoCompleteUsuario($q)
+    {
+        $this->db->select('idUsuarios, nome');
+        $this->db->limit(5);
+        $this->db->like('nome', $q);
+        $query = $this->db->get('usuarios');
+        if ($query->num_rows() > 0) {
+            foreach ($query->result_array() as $row) {
+                $row_set[] = ['label' => $row['nome'], 'id' => $row['idUsuarios']];
             }
             echo json_encode($row_set);
         }

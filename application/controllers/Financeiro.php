@@ -1,6 +1,6 @@
 <?php
 
-if (! defined('BASEPATH')) {
+if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
@@ -21,7 +21,7 @@ class Financeiro extends MY_Controller
 
     public function lancamentos()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'vLancamento')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vLancamento')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para visualizar lançamentos.');
             redirect(base_url());
         }
@@ -37,7 +37,7 @@ class Financeiro extends MY_Controller
 
         $periodo = $this->input->get('periodo');
 
-        if (! empty($vencimento_de)) {
+        if (!empty($vencimento_de)) {
             $date = DateTime::createFromFormat('d/m/Y', $vencimento_de);
 
             if (empty($where)) {
@@ -48,7 +48,7 @@ class Financeiro extends MY_Controller
             }
         }
 
-        if (! empty($vencimento_ate)) {
+        if (!empty($vencimento_ate)) {
             $date = DateTime::createFromFormat('d/m/Y', $vencimento_ate)->format('Y-m-d');
 
             if (empty($where)) {
@@ -66,7 +66,7 @@ class Financeiro extends MY_Controller
             }
         }
 
-        if (! empty($cliente)) {
+        if (!empty($cliente)) {
             if (empty($where)) {
                 $where = "cliente_fornecedor LIKE '%{$cliente}%'";
             } else {
@@ -74,7 +74,16 @@ class Financeiro extends MY_Controller
             }
         }
 
-        if (! empty($tipo)) {
+        $usuario = $this->input->get('usuario');
+        if (!empty($usuario)) {
+            if (empty($where)) {
+                $where = "cliente_fornecedor LIKE '%{$usuario}%' AND pagar_usuario_id IS NOT NULL";
+            } else {
+                $where .= " AND cliente_fornecedor LIKE '%{$usuario}%' AND pagar_usuario_id IS NOT NULL";
+            }
+        }
+
+        if (!empty($tipo)) {
             if (empty($where)) {
                 $where = "tipo = '$tipo'";
             } else {
@@ -84,7 +93,7 @@ class Financeiro extends MY_Controller
 
         $this->load->library('pagination');
 
-        $this->data['configuration']['base_url'] = site_url("financeiro/lancamentos/?vencimento_de=$vencimento_de&vencimento_ate=$vencimento_ate&cliente=$cliente&tipo=$tipo&status=$status&periodo=$periodo");
+        $this->data['configuration']['base_url'] = site_url("financeiro/lancamentos/?vencimento_de=$vencimento_de&vencimento_ate=$vencimento_ate&cliente=$cliente&tipo=$tipo&status=$status&periodo=$periodo&usuario=$usuario");
         $this->data['configuration']['total_rows'] = $this->financeiro_model->count('lancamentos', $where);
         $this->data['configuration']['page_query_string'] = true;
 
@@ -129,7 +138,7 @@ class Financeiro extends MY_Controller
             }
             // Formatação correta dos valores
             $valor = str_replace(',', '.', $this->input->post('valor'));
-            $valor_desconto = floatval(str_replace(',', '.', $this->input->post('valor_desconto')));   
+            $valor_desconto = floatval(str_replace(',', '.', $this->input->post('valor_desconto')));
             $desconto = $valor_desconto;
             $total_sem_desconto = $valor + $valor_desconto;
             $valor = $total_sem_desconto;
@@ -159,10 +168,19 @@ class Financeiro extends MY_Controller
                 'usuarios_id' => $this->session->userdata('id_admin'),
             ];
             if (set_value('idFornecedor')) {
+                // If idFornecedor is set, it might be a supplier or user depending on logic, but currently idFornecedor comes from autocomplete
+                // The view uses 'idCliente' for both Cliente/User in modalReceita
                 $data['clientes_id'] = set_value('idFornecedor');
             }
             if (set_value('idCliente')) {
-                $data['clientes_id'] = set_value('idCliente');
+                $tipo_pessoa = $this->input->post('tipo_pessoa') ?: 'cliente';
+                if ($tipo_pessoa == 'usuario') {
+                    $data['pagar_usuario_id'] = set_value('idCliente');
+                    $data['clientes_id'] = null;
+                } else {
+                    $data['clientes_id'] = set_value('idCliente');
+                    $data['pagar_usuario_id'] = null;
+                }
             }
             // Inserção dos dados no banco
             if ($this->financeiro_model->add('lancamentos', $data) == true) {
@@ -182,7 +200,7 @@ class Financeiro extends MY_Controller
         //$this->load->library('form_validation');
         //$this->data['custom_error'] = '';
         $urlAtual = $this->input->post('urlAtual');
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'aLancamento')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aLancamento')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para adicionar lançamentos.');
             redirect(base_url());
         } else {
@@ -234,8 +252,19 @@ class Financeiro extends MY_Controller
 
             $comissao = $this->input->post('comissao');
 
-            if (! validate_money($comissao)) {
+            if (!validate_money($comissao)) {
                 $comissao = str_replace([',', '.'], ['', ''], $comissao);
+            }
+
+            $tipo_pessoa = $this->input->post('tipo_pessoa_parc') ?: 'cliente';
+            $cliente_id = $this->input->post('idCliente_parc');
+            $clientes_id_save = null;
+            $pagar_usuario_id_save = null;
+
+            if ($tipo_pessoa == 'usuario') {
+                $pagar_usuario_id_save = $cliente_id;
+            } else {
+                $clientes_id_save = $cliente_id;
             }
 
             if ($entrada == 0) {
@@ -265,7 +294,8 @@ class Financeiro extends MY_Controller
                         'data_pagamento' => $recebimento ?: date_format($myDateTime, 'Y-m-d'),
                         'baixado' => 0,
                         'cliente_fornecedor' => $this->input->post('cliente_parc'),
-                        'clientes_id' => $this->input->post('idCliente_parc'),
+                        'clientes_id' => $clientes_id_save,
+                        'pagar_usuario_id' => $pagar_usuario_id_save,
                         'observacoes' => $this->input->post('observacoes_parc'),
                         'forma_pgto' => $this->input->post('formaPgto_parc'),
                         'tipo' => $this->input->post('tipo_parc'),
@@ -294,7 +324,8 @@ class Financeiro extends MY_Controller
                     'data_pagamento' => $dia_pgto != null ? $dia_pgto : date_format('Y-m-d'),
                     'baixado' => 1,
                     'cliente_fornecedor' => $this->input->post('cliente_parc'),
-                    'clientes_id' => $this->input->post('idCliente_parc'),
+                    'clientes_id' => $clientes_id_save,
+                    'pagar_usuario_id' => $pagar_usuario_id_save,
                     'observacoes' => $this->input->post('observacoes_parc'),
                     'forma_pgto' => $this->input->post('formaPgto_parc'),
                     'tipo' => $this->input->post('tipo_parc'),
@@ -336,6 +367,8 @@ class Financeiro extends MY_Controller
                         'forma_pgto' => $this->input->post('formaPgto_parc'),
                         'tipo' => $this->input->post('tipo_parc'),
                         'usuarios_id' => $this->session->userdata('id_admin'),
+                        'clientes_id' => $clientes_id_save,
+                        'pagar_usuario_id' => $pagar_usuario_id_save,
 
                     ];
 
@@ -362,7 +395,7 @@ class Financeiro extends MY_Controller
 
     public function adicionarDespesa()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'aLancamento')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aLancamento')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para adicionar lançamentos.');
             redirect(base_url());
         }
@@ -394,7 +427,7 @@ class Financeiro extends MY_Controller
 
             $valor = $this->input->post('valor');
 
-            if (! validate_money($valor)) {
+            if (!validate_money($valor)) {
                 $valor = str_replace([',', '.'], ['', ''], $valor);
             }
 
@@ -433,7 +466,7 @@ class Financeiro extends MY_Controller
 
     public function editar()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eLancamento')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eLancamento')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar lançamentos.');
             redirect(base_url());
         }
@@ -490,14 +523,30 @@ class Financeiro extends MY_Controller
             ];
 
             if (set_value('idFornecedor')) {
-                $data['clientes_id'] = set_value('idFornecedor');
+                // Logic for edit, check typesso
+                $tipo_pessoa = $this->input->post('tipo_pessoa') ?: 'cliente';
+                if ($tipo_pessoa == 'usuario') {
+                    $data['pagar_usuario_id'] = set_value('idFornecedor');
+                    $data['clientes_id'] = null;
+                } else {
+                    $data['clientes_id'] = set_value('idFornecedor');
+                    $data['pagar_usuario_id'] = null;
+                }
             }
             if (empty($data['valor_desconto'])) {
                 $data['valor_desconto'] = '0';
             }
 
             if (set_value('idCliente')) {
-                $data['clientes_id'] = set_value('idCliente');
+                // Same here
+                $tipo_pessoa = $this->input->post('tipo_pessoa') ?: 'cliente';
+                if ($tipo_pessoa == 'usuario') {
+                    $data['pagar_usuario_id'] = set_value('idCliente');
+                    $data['clientes_id'] = null;
+                } else {
+                    $data['clientes_id'] = set_value('idCliente');
+                    $data['pagar_usuario_id'] = null;
+                }
             }
             if ($this->financeiro_model->edit('lancamentos', $data, 'idLancamentos', $this->input->post('id')) == true) {
                 $this->session->set_flashdata('success', 'lançamento editado com sucesso!');
@@ -508,7 +557,6 @@ class Financeiro extends MY_Controller
                 redirect($urlAtual);
             }
         }
-
         $this->session->set_flashdata('error', 'Ocorreu um erro ao tentar editar lançamento.');
         redirect($urlAtual);
 
@@ -540,14 +588,14 @@ class Financeiro extends MY_Controller
 
     public function excluirLancamento()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'dLancamento')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dLancamento')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para excluir lançamentos.');
             redirect(base_url());
         }
 
         $id = $this->input->post('id');
 
-        if ($id == null || ! is_numeric($id)) {
+        if ($id == null || !is_numeric($id)) {
             $json = ['result' => false, 'message' => 'ID inválido'];
             echo json_encode($json);
             exit();
@@ -587,7 +635,7 @@ class Financeiro extends MY_Controller
         echo json_encode($json);
         exit();
     }
-    
+
     public function autoCompleteClienteFornecedor()
     {
         if (isset($_GET['term'])) {
@@ -601,6 +649,41 @@ class Financeiro extends MY_Controller
         if (isset($_GET['term'])) {
             $q = strtolower($_GET['term']);
             $this->financeiro_model->autoCompleteClienteReceita($q);
+        }
+    }
+
+    public function autoCompleteUsuario()
+    {
+        if (isset($_GET['term'])) {
+            $q = strtolower($_GET['term']);
+            $this->financeiro_model->autoCompleteUsuario($q);
+        }
+    }
+
+    public function migrate_add_pagar_usuario_id()
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aLancamento')) {
+            echo "Permissão negada (aLancamento needed).";
+            return;
+        }
+
+        $this->load->dbforge();
+        $fields = [
+            'pagar_usuario_id' => [
+                'type' => 'INT',
+                'constraint' => 11,
+                'null' => TRUE,
+                'default' => NULL,
+                'after' => 'clientes_id'
+            ]
+        ];
+
+        // Check if column exists
+        if (!$this->db->field_exists('pagar_usuario_id', 'lancamentos')) {
+            $this->dbforge->add_column('lancamentos', $fields);
+            echo "Coluna 'pagar_usuario_id' adicionada com sucesso na tabela 'lancamentos'.";
+        } else {
+            echo "A coluna 'pagar_usuario_id' já existe na tabela 'lancamentos'.";
         }
     }
 
