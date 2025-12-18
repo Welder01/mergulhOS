@@ -522,14 +522,16 @@ class Financeiro extends MY_Controller
                 'usuarios_id' => $this->session->userdata('id_admin'),
             ];
 
-            if (set_value('idFornecedor')) {
+            if ($this->input->post('idFornecedor') || $this->input->post('idCliente')) {
                 // Logic for edit, check typesso
                 $tipo_pessoa = $this->input->post('tipo_pessoa') ?: 'cliente';
+                $id_pessoa = $this->input->post('idFornecedor') ? $this->input->post('idFornecedor') : $this->input->post('idCliente');
+
                 if ($tipo_pessoa == 'usuario') {
-                    $data['pagar_usuario_id'] = set_value('idFornecedor');
+                    $data['pagar_usuario_id'] = $id_pessoa;
                     $data['clientes_id'] = null;
                 } else {
-                    $data['clientes_id'] = set_value('idFornecedor');
+                    $data['clientes_id'] = $id_pessoa;
                     $data['pagar_usuario_id'] = null;
                 }
             }
@@ -537,17 +539,6 @@ class Financeiro extends MY_Controller
                 $data['valor_desconto'] = '0';
             }
 
-            if (set_value('idCliente')) {
-                // Same here
-                $tipo_pessoa = $this->input->post('tipo_pessoa') ?: 'cliente';
-                if ($tipo_pessoa == 'usuario') {
-                    $data['pagar_usuario_id'] = set_value('idCliente');
-                    $data['clientes_id'] = null;
-                } else {
-                    $data['clientes_id'] = set_value('idCliente');
-                    $data['pagar_usuario_id'] = null;
-                }
-            }
             if ($this->financeiro_model->edit('lancamentos', $data, 'idLancamentos', $this->input->post('id')) == true) {
                 $this->session->set_flashdata('success', 'lançamento editado com sucesso!');
                 log_info('Alterou um lançamento no financeiro. ID' . $this->input->post('id'));
@@ -559,31 +550,6 @@ class Financeiro extends MY_Controller
         }
         $this->session->set_flashdata('error', 'Ocorreu um erro ao tentar editar lançamento.');
         redirect($urlAtual);
-
-        $data = [
-            'descricao' => $this->input->post('descricao'),
-            'data_vencimento' => $this->input->post('vencimento'),
-            'data_pagamento' => $pagamento,
-            'valor' => $this->input->post('valor'),
-            'valor_desconto' => $this->input->post('valor_desconto_editar'),
-            'tipo_desconto' => 'real',
-            'baixado' => $this->input->post('pago'),
-            'cliente_fornecedor' => set_value('fornecedor'),
-            'forma_pgto' => $this->input->post('formaPgto'),
-            'tipo' => $this->input->post('tipo'),
-            'usuarios_id' => $this->session->userdata('id_admin'),
-        ];
-        if (set_value('idFornecedor')) {
-            $data['clientes_id'] = set_value('idFornecedor');
-        }
-        if (empty($data['valor_desconto'])) {
-            $data['valor_desconto'] = '0';
-        }
-        if (set_value('idCliente')) {
-            $data['clientes_id'] = set_value('idCliente');
-        }
-
-        print_r($data);
     }
 
     public function excluirLancamento()

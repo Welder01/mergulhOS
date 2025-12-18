@@ -95,6 +95,7 @@ body {
   font-size  : 0.77em;
   min-height : 100vh;
   overflow-x : hidden;
+  text-shadow: none !important;
 }
 
 a {

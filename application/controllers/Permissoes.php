@@ -1,6 +1,6 @@
 <?php
 
-if (! defined('BASEPATH')) {
+if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
@@ -10,7 +10,7 @@ class Permissoes extends MY_Controller
     {
         parent::__construct();
 
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para configurar as permissões no sistema.');
             redirect(base_url());
         }
@@ -102,6 +102,8 @@ class Permissoes extends MY_Controller
                 'eLancamento' => $this->input->post('eLancamento'),
                 'dLancamento' => $this->input->post('dLancamento'),
                 'vLancamento' => $this->input->post('vLancamento'),
+
+                'faturarAtribuicao' => $this->input->post('faturarAtribuicao'),
 
                 'aCurso' => $this->input->post('aCurso'),
                 'eCurso' => $this->input->post('eCurso'),
@@ -221,6 +223,8 @@ class Permissoes extends MY_Controller
                 'dLancamento' => $this->input->post('dLancamento'),
                 'vLancamento' => $this->input->post('vLancamento'),
 
+                'faturarAtribuicao' => $this->input->post('faturarAtribuicao'),
+
                 'aCurso' => $this->input->post('aCurso'),
                 'eCurso' => $this->input->post('eCurso'),
                 'dCurso' => $this->input->post('dCurso'),
@@ -284,7 +288,7 @@ class Permissoes extends MY_Controller
     public function desativar()
     {
         $id = $this->input->post('id');
-        if (! $id) {
+        if (!$id) {
             $this->session->set_flashdata('error', 'Erro ao tentar desativar permissão.');
             redirect(site_url('permissoes/gerenciar/'));
         }

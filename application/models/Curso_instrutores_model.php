@@ -1,5 +1,5 @@
 <?php
-if (! defined('BASEPATH')) {
+if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
@@ -12,9 +12,10 @@ class Curso_instrutores_model extends CI_Model
 
     public function getByCurso($curso_id)
     {
-        $this->db->select('curso_instrutores.*, usuarios.nome as nome_instrutor');
+        $this->db->select('curso_instrutores.*, usuarios.nome as nome_instrutor, u_cad.nome as nome_cadastrou');
         $this->db->from('curso_instrutores');
         $this->db->join('usuarios', 'usuarios.idUsuarios = curso_instrutores.usuario_id');
+        $this->db->join('usuarios as u_cad', 'u_cad.idUsuarios = curso_instrutores.usuario_cadastrou_id', 'left');
         $this->db->where('curso_id', $curso_id);
         return $this->db->get()->result();
     }
@@ -22,6 +23,12 @@ class Curso_instrutores_model extends CI_Model
     public function add($data)
     {
         return $this->db->insert('curso_instrutores', $data);
+    }
+
+    public function edit($table, $data, $fieldID, $ID)
+    {
+        $this->db->where($fieldID, $ID);
+        return $this->db->update($table, $data);
     }
 
     public function getById($id)

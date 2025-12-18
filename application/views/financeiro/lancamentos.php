@@ -23,6 +23,14 @@ $periodo = $this->input->get('periodo');
     textarea {
         resize: vertical;
     }
+
+    .modal {
+        z-index: 1050 !important;
+    }
+
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
 </style>
 
 <div class="new122">
@@ -181,10 +189,10 @@ $periodo = $this->input->get('periodo');
                             }
 
                             if ($this->permission->checkPermission($this->session->userdata('permissao'), 'eLancamento')) {
-                                echo '<a href="#modalEditar" style="margin-right: 1%" data-toggle="modal" role="button" idLancamento="' . $r->idLancamentos . '" descricao="' . $r->descricao . '" valor="' . $r->valor . '" vencimento="' . date('d/m/Y', strtotime($r->data_vencimento)) . '" pagamento="' . $data_pagamento . '" baixado="' . $r->baixado . '" cliente="' . $r->cliente_fornecedor . '" formaPgto="' . $r->forma_pgto . '" tipo="' . $r->tipo . '" observacoes="' . $r->observacoes . '" descontos_editar="' . $r->desconto . '" valor_desconto_editar="' . $r->desconto . '" usuario="' . $r->nome . '" clientes_id="' . $r->clientes_id . '" pagar_usuario_id="' . $r->pagar_usuario_id . '" class="btn-nwe3 editar" title="Editar OS"><i class="bx bx-edit"></i></a>';
+                                echo '<a href="#" style="margin-right: 1%" role="button" idLancamento="' . $r->idLancamentos . '" descricao="' . $r->descricao . '" valor="' . $r->valor . '" vencimento="' . date('d/m/Y', strtotime($r->data_vencimento)) . '" pagamento="' . $data_pagamento . '" baixado="' . $r->baixado . '" cliente="' . $r->cliente_fornecedor . '" formaPgto="' . $r->forma_pgto . '" tipo="' . $r->tipo . '" observacoes="' . $r->observacoes . '" descontos_editar="' . $r->desconto . '" valor_desconto_editar="' . $r->desconto . '" usuario="' . $r->nome . '" clientes_id="' . $r->clientes_id . '" pagar_usuario_id="' . $r->pagar_usuario_id . '" class="btn-nwe3 editar" title="Editar OS"><i class="bx bx-edit"></i></a>';
                             }
                             if ($this->permission->checkPermission($this->session->userdata('permissao'), 'dLancamento')) {
-                                echo '<a href="#modalExcluir" data-toggle="modal" role="button" idLancamento="' . $r->idLancamentos . '" class="btn-nwe4 excluir" title="Excluir OS"><i class="bx bx-trash-alt"></i></a>';
+                                echo '<a href="#" role="button" idLancamento="' . $r->idLancamentos . '" class="btn-nwe4 excluir" title="Excluir OS"><i class="bx bx-trash-alt"></i></a>';
                             }
 
                             echo '</td>';
@@ -219,11 +227,13 @@ $periodo = $this->input->get('periodo');
                         </tr>
                         <tr>
                             <td colspan="7" style="text-align: left; color: green">Total Receitas (Pagas): R$
-                                <?php echo number_format($estatisticas_financeiro->total_receita, 2, ',', '.'); ?></td>
+                                <?php echo number_format($estatisticas_financeiro->total_receita, 2, ',', '.'); ?>
+                            </td>
                         </tr>
                         <tr>
                             <td colspan="7" style="text-align: left; color: red">Total Despesas (Pagas): R$
-                                <?php echo number_format($estatisticas_financeiro->total_despesa, 2, ',', '.'); ?></td>
+                                <?php echo number_format($estatisticas_financeiro->total_despesa, 2, ',', '.'); ?>
+                            </td>
                         </tr>
                         <tr>
                             <td colspan="7" style="text-align: left;"><strong>Total Receitas (-) Despesas = Saldo
@@ -659,113 +669,122 @@ $periodo = $this->input->get('periodo');
  -->
 
 <!-- Modal editar lançamento -->
-<div id="modalEditar" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+<!-- Modal editar lançamento -->
+<div id="modalEditarFixed" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
     aria-hidden="true">
     <form id="formEditar" action="<?php echo base_url() ?>index.php/financeiro/editar" method="post">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
             <h3 id="myModalLabel">Editar Lançamento</h3>
         </div>
-        <div class="modal-body">
-            <div class="span12 alert alert-info" style="margin-left: 0"> Obrigatório o preenchimento dos campos com
+        <div class="modal-body" style="overflow-x: hidden; padding-bottom: 20px;">
+            <div class="alert alert-info" style="margin-left: 0"> Obrigatório o preenchimento dos campos com
                 asterisco.
             </div>
-            <div class="span12" style="margin-left: 0">
-                <label for="descricao">Descrição/Referência*</label>
-                <input class="span12" id="descricaoEditar" type="text" name="descricao" required />
-                <input id="urlAtualEditar" type="hidden" name="urlAtual" value="" />
+
+            <!-- Row 1: Tipo, Descricao, Vencimento -->
+            <div class="row-fluid">
+                <div class="span3">
+                    <label for="tipo">Tipo</label>
+                    <select class="span12" name="tipo" id="tipoEditar">
+                        <option value="receita">Receita</option>
+                        <option value="despesa">Despesa</option>
+                    </select>
+                </div>
+                <div class="span6">
+                    <label for="descricao">Descrição/Referência*</label>
+                    <input class="span12" id="descricaoEditar" type="text" name="descricao" required />
+                    <input id="urlAtualEditar" type="hidden" name="urlAtual" value="" />
+                </div>
+                <div class="span3">
+                    <label for="vencimento">Data Vencimento*</label>
+                    <input class="span12 datepicker" type="text" name="vencimento" id="vencimentoEditar"
+                        autocomplete="off" required />
+                </div>
             </div>
-            <div class="span12" style="margin-left: 0">
-                <div class="span12" style="margin-left: 0">
+
+            <!-- Row 2: Beneficiario -->
+            <div class="row-fluid" style="margin-top: 5px;">
+                <div class="span12">
                     <label for="fornecedor">Beneficiário*</label>
                     <div class="control-group">
                         <label class="radio inline" style="padding-top:0"><input type="radio" name="tipo_pessoa"
                                 id="tipo_pessoa_cliente_edit" value="cliente" checked
-                                onchange="togglePessoa('cliente', '#fornecedorEditar', '#idFornecedor')">
+                                onchange="togglePessoa('cliente', '#fornecedorEditar', '#idFornecedorEditar')">
                             Cliente/Fornecedor </label>
                         <label class="radio inline" style="padding-top:0"><input type="radio" name="tipo_pessoa"
                                 id="tipo_pessoa_usuario_edit" value="usuario"
-                                onchange="togglePessoa('usuario', '#fornecedorEditar', '#idFornecedor')"> Usuário
+                                onchange="togglePessoa('usuario', '#fornecedorEditar', '#idFornecedorEditar')"> Usuário
                             (Instrutor) </label>
                     </div>
                     <input class="span12" id="fornecedorEditar" type="text" name="fornecedor" required />
-                    <input class="span12" id="idFornecedor" type="hidden" name="idFornecedor" value="" />
+                    <input class="span12" id="idFornecedorEditar" type="hidden" name="idFornecedor" value="" />
                 </div>
+            </div>
 
-                <div class="span12" style="margin-left: 0">
+            <!-- Row 3: Observacoes -->
+            <div class="row-fluid" style="margin-top: 5px;">
+                <div class="span12">
                     <label for="observacoes">Observações</label>
                     <textarea class="span12" id="observacoes_edit" name="observacoes"></textarea>
                 </div>
             </div>
-            <div class="span12" style="margin-left: 0">
-                <div class="span4" style="margin-left: 0">
+
+            <!-- Row 4: Valor, Desconto, Val.Desc, Pago -->
+            <div class="row-fluid" style="margin-top: 5px;">
+                <div class="span3">
                     <label for="valor">Valor*</label>
                     <input type="hidden" id="idEditar" name="id" value="" />
                     <input class="span12 money" type="text" name="valor" id="valorEditar"
                         value="<?php echo number_format("0.00", 2, ',', '.') ?>" required />
                 </div>
 
-                <div class="span4">
+                <div class="span3">
                     <label for="descontos">Desconto</label>
-                    <input class="span6 money" id="descontos_editar" type="text" name="descontos_editar" value=""
-                        placeholder="em R$" style="float: left;" />
-                    <input class="btn btn-inverse" onclick="mostrarValoresEditar();" type="button"
-                        name="valor_desconto_editar" value="Aplicar" placeholder="R$"
-                        style="width: 70px; margin-left:3px;" />
+                    <div class="input-append span12" style="margin: 0; display: flex;">
+                        <input class="money" id="descontos_editar" type="text" name="descontos_editar" value=""
+                            placeholder="R$" style="width: 70%;" />
+                        <button class="btn btn-inverse" onclick="mostrarValoresEditar();" type="button" 
+                        style="width: 30%; padding: 4px 0;"><i class="bx bx-check"></i></button>
+                    </div>
                 </div>
 
-                <div class="span2">
+                <div class="span3">
                     <label for="valor_desconto">Val.Desc</label>
                     <input class="span12 money" id="descontoEditar" name="valor_desconto_editar" type="text"
-                        value="<?php echo number_format("0.00", 2, ',', '.') ?>" />
+                        value="<?php echo number_format("0.00", 2, ',', '.') ?>" readonly />
+                </div>
+                
+                 <div class="span3">
+                     <label for="pago">Foi Pago?</label>
+                    &nbsp;&nbsp;<input id="pagoEditar" type="checkbox" name="pago" value="1" />
+                </div>
+            </div>
+
+            <div class="row-fluid" style="margin-top: 5px; display: none" id="divPagamentoEditar">
+                 <div class="span6">
+                    <label for="pagamento">Data Pagamento</label>
+                    <input class="span12 datepicker" id="pagamentoEditar" type="text" name="pagamento"
+                        autocomplete="off" />
                 </div>
 
-                <div class="span4" style="margin-left: 0">
-                    <label for="vencimento">Data Vencimento*</label>
-                    <input class="span12 datepicker2" type="text" name="vencimento" id="vencimentoEditar"
-                        autocomplete="off" required />
-                </div>
-                <div class="span4">
-                    <label for="vencimento">Tipo*</label>
-                    <select class="span12" name="tipo" id="tipoEditar">
-                        <option value="receita">Receita</option>
-                        <option value="despesa">Despesa</option>
+                <div class="span6">
+                    <label for="formaPgto">Forma Pgto</label>
+                    <select name="formaPgto" id="formaPgtoEditar" class="span12">
+                        <option value="Dinheiro">Dinheiro</option>
+                        <option value="Pix">Pix</option>
+                        <option value="Boleto">Boleto</option>
+                        <option value="Cartão de Crédito">Cartão de Crédito</option>
+                        <option value="Cartão de Débito">Cartão de Débito</option>
+                        <option value="Cheque">Cheque</option>
+                        <option value="Cheque Pré-datado">Cheque Pré-datado</option>
+                        <option value="Depósito">Depósito</option>
+                        <option value="Transferência DOC">Transferência DOC</option>
+                        <option value="Transferência TED">Transferência TED</option>
+                        <option value="Promissória">Promissória</option>
                     </select>
                 </div>
-
             </div>
-            <div class="span12" style="margin-left: 0">
-                <div class="span4" style="margin-left: 0">
-                    <label for="pago">Foi Pago?</label>
-                    &nbsp &nbsp &nbsp &nbsp<input id="pagoEditar" type="checkbox" name="pago" value="1" />
-                </div>
-                <div id="divPagamentoEditar" class="span8" style=" display: none">
-                    <div class="span6">
-                        <label for="pagamento">Data Pagamento</label>
-                        <input class="span12 datepicker2" id="pagamentoEditar" type="text" name="pagamento"
-                            autocomplete="off" />
-                    </div>
-
-                    <div class="span6">
-                        <label for="formaPgto">Forma Pgto</label>
-                        <select name="formaPgto" id="formaPgtoEditar" class="span12">
-                            <option value="Dinheiro">Dinheiro</option>
-                            <option value="Pix">Pix</option>
-                            <option value="Boleto">Boleto</option>
-                            <option value="Cartão de Crédito">Cartão de Crédito</option>
-                            <option value="Cartão de Débito">Cartão de Débito</option>
-                            <option value="Cheque">Cheque</option>
-                            <option value="Cheque Pré-datado">Cheque Pré-datado</option>
-                            <option value="Depósito">Depósito</option>
-                            <option value="Transferência DOC">Transferência DOC</option>
-                            <option value="Transferência TED">Transferência TED</option>
-                            <option value="Promissória">Promissória</option>
-                        </select>
-                    </div>
-                </div>
-
-            </div>
-
         </div>
         <div class="modal-footer" style="display:flex;justify-content: center">
             <label for="documento" class="control-label">Modificado por: </label>
@@ -807,6 +826,7 @@ $periodo = $this->input->get('periodo');
 <script src="<?php echo base_url(); ?>assets/js/maskmoney.js"></script>
 <script type="text/javascript">
 
+
     function mostrarValor() {
         if (document.getElementById('valor').value == "" || document.getElementById('desconto').value == "") {
 
@@ -825,6 +845,37 @@ $periodo = $this->input->get('periodo');
             document.getElementById('valor').value = total.toFixed(2);
             document.getElementById('valor_desconto').value = totaldesc.toFixed(2);
         }
+    }
+
+    function togglePessoa(tipo, inputSelector, idSelector) {
+        // reset inputs
+        $(inputSelector).val('');
+        $(idSelector).val('');
+
+        // destroy previous safely
+        try {
+            if ($(inputSelector).data('ui-autocomplete')) {
+                $(inputSelector).autocomplete("destroy");
+            }
+        } catch (e) {
+            // ignore destroy error
+        }
+
+        var urlSearch = "";
+        if (tipo == "usuario") {
+            urlSearch = "<?php echo base_url(); ?>index.php/financeiro/autoCompleteUsuario";
+        } else {
+            urlSearch = "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita";
+        }
+
+        $(inputSelector).autocomplete({
+            source: urlSearch,
+            minLength: 1,
+            select: function (event, ui) {
+                $(inputSelector).val(ui.item.label);
+                $(idSelector).val(ui.item.id);
+            }
+        });
     }
 
     function mostrarValores() {
@@ -992,226 +1043,249 @@ $periodo = $this->input->get('periodo');
 
 
         $(document).on('click', '.excluir', function (event) {
+            event.preventDefault(); // Prevent default link behavior
             $("#idExcluir").val($(this).attr('idLancamento'));
+            $('#modalExcluir').modal('show');
         });
 
 
         $(document).on('click', '.editar', function (event) {
-            $("#idEditar").val($(this).attr('idLancamento'));
-            $("#descricaoEditar").val($(this).attr('descricao'));
-            $("#usuarioEditar").val($(this).attr('usuario'));
-            $("#fornecedorEditar").val($(this).attr('cliente'));
-            $("#observacoes_edit").val($(this).attr('observacoes'));
-            $("#valorEditar").val($(this).attr('valor'));
-            $("#vencimentoEditar").val($(this).attr('vencimento'));
-            $("#pagamentoEditar").val($(this).attr('pagamento'));
-            $("#formaPgtoEditar").val($(this).attr('formaPgto'));
-            $("#tipoEditar").val($(this).attr('tipo'));
-            $("#descontos_editar").val($(this).attr('descontos_editar'));
-            $("#descontoEditar").val($(this).attr('valor_desconto_editar'));
-            $("#urlAtualEditar").val($(location).attr('href'));
-            var baixado = $(this).attr('baixado');
-            $("#pagoEditar").prop('checked', false);
-            $("#divPagamentoEditar").hide();
-        }
-            
-            var pagar_usuario_id = $(this).attr('pagar_usuario_id');
-        var clientes_id = $(this).attr('clientes_id');
+            event.preventDefault();
 
-        if (pagar_usuario_id && pagar_usuario_id != "0" && pagar_usuario_id != "") {
-            $("#tipo_pessoa_usuario_edit").prop("checked", true);
-            togglePessoa('usuario', '#fornecedorEditar', '#idFornecedor');
-            $("#idFornecedor").val(pagar_usuario_id);
-        } else {
-            $("#tipo_pessoa_cliente_edit").prop("checked", true);
-            togglePessoa('cliente', '#fornecedorEditar', '#idFornecedor');
-            $("#idFornecedor").val(clientes_id);
-        }
-        // Restore name after toggle (toggle clears it)
-        $("#fornecedorEditar").val($(this).attr('cliente'));
+            try {
+                var idLancamento = $(this).attr('idLancamento');
 
+                $("#idEditar").val(idLancamento);
+                $("#descricaoEditar").val($(this).attr('descricao'));
+                $("#usuarioEditar").val($(this).attr('usuario'));
+                $("#fornecedorEditar").val($(this).attr('cliente'));
+                $("#observacoes_edit").val($(this).attr('observacoes'));
+                $("#valorEditar").val($(this).attr('valor'));
+                $("#vencimentoEditar").val($(this).attr('vencimento'));
+                $("#pagamentoEditar").val($(this).attr('pagamento'));
+                $("#formaPgtoEditar").val($(this).attr('formaPgto'));
+                $("#tipoEditar").val($(this).attr('tipo'));
+                $("#descontos_editar").val($(this).attr('descontos_editar'));
+                $("#descontoEditar").val($(this).attr('valor_desconto_editar'));
+                $("#urlAtualEditar").val($(location).attr('href'));
 
-    });
+                var baixado = $(this).attr('baixado');
+                $("#pagoEditar").prop('checked', false);
+                $("#divPagamentoEditar").hide();
 
-    $(document).on('click', '#btnExcluir', function (event) {
-        var id = $("#idExcluir").val();
+                var pagar_usuario_id = $(this).attr('pagar_usuario_id');
+                var clientes_id = $(this).attr('clientes_id');
 
-        $.ajax({
-            type: "POST",
-            url: "<?php echo base_url(); ?>index.php/financeiro/excluirLancamento",
-            data: "id=" + id,
-            dataType: 'json',
-            success: function (data) {
-                if (data.result == true) {
-                    $("#btnCancelExcluir").trigger('click');
-                    $("#divLancamentos").html('<div class="progress progress-striped active"><div class="bar" style="width: 100%;"></div></div>');
-                    $("#divLancamentos").load($(location).attr('href') + " #divLancamentos");
-
-                } else {
-                    $("#btnCancelExcluir").trigger('click');
-                    Swal.fire({
-                        type: "error",
-                        title: "Atenção",
-                        text: "Ocorreu um erro ao tentar excluir lançamento."
-                    });
+                if (typeof togglePessoa === 'function') {
+                    if (pagar_usuario_id && pagar_usuario_id != "0" && pagar_usuario_id != "") {
+                        $("#tipo_pessoa_usuario_edit").prop("checked", true);
+                        togglePessoa('usuario', '#fornecedorEditar', '#idFornecedorEditar');
+                        $("#idFornecedorEditar").val(pagar_usuario_id);
+                    } else {
+                        $("#tipo_pessoa_cliente_edit").prop("checked", true);
+                        togglePessoa('cliente', '#fornecedorEditar', '#idFornecedorEditar');
+                        $("#idFornecedorEditar").val(clientes_id);
+                    }
+                    $("#fornecedorEditar").val($(this).attr('cliente'));
                 }
+
+                // Nuclear Option for Visibility
+                console.log("DEBUG: Found modals (FIXED ID):", $('#modalEditarFixed').length);
+
+                // Move to body to solve stacking context/overflow issues
+                if ($('#modalEditarFixed').parent().is('body') === false) {
+                    console.log("DEBUG: Moving modal to body to fix Z-Index");
+                    $('#modalEditarFixed').appendTo('body');
+                }
+
+                $('#modalEditarFixed').modal('show');
+
+                // Force styles after a short delay to override Bootstrap if needed
+                setTimeout(function () {
+                    $('#modalEditarFixed').removeClass('hide').addClass('in');
+                    $('#modalEditarFixed').css({
+                        'display': 'block',
+                        'z-index': '1050',
+                        'opacity': '1',
+                        'top': '',         // Reset to CSS default
+                        'margin-top': '',  // Reset to CSS default
+                        'position': '',    // Reset to CSS default
+                        'left': '',        // Reset to CSS default
+                        'margin-left': ''  // Reset to CSS default
+                    });
+                    $('.modal-backdrop').css('z-index', '1040');
+                }, 100);
+
+            } catch (e) {
+                console.error("Erro ao abrir modal:", e);
+                // Fallback
+                $('#modalEditarFixed').appendTo('body');
+                $('#modalEditarFixed').modal('show');
             }
         });
-        return false;
-    });
-    let controlBaixa = "<?php echo $configuration['control_baixa']; ?>";
-    let datePickerOptions = {
-        dateFormat: 'dd/mm/yy',
-    };
-    if (controlBaixa === '1') {
-        datePickerOptions.minDate = 0;
-        datePickerOptions.maxDate = 0;
-    }
-    $(".datepicker2").datepicker(
-        datePickerOptions
-    );
-    $(".datepicker").datepicker();
-    $('#periodo').on('change', function (event) {
-        const period = $('#periodo').val();
-        const today = dayjs().locale('pt-br');
 
-        switch (period) {
-            case 'dia':
-                $('#vencimento_de').val(today.format('DD/MM/YYYY'));
-                $('#vencimento_ate').val(today.format('DD/MM/YYYY'));
-                break;
-            case 'semana':
-                $('#vencimento_de').val(today.startOf('week').format('DD/MM/YYYY'));
-                $('#vencimento_ate').val(today.endOf('week').format('DD/MM/YYYY'));
-                break;
-            case 'mesAnterior':
-                const startOfPreviousMonth = today.subtract(1, 'month').startOf('month');
-                const endOfPreviousMonth = today.subtract(1, 'month').endOf('month');
+        $(document).on('click', '#btnExcluir', function (event) {
+            var id = $("#idExcluir").val();
 
-                $('#vencimento_de').val(startOfPreviousMonth.format('DD/MM/YYYY'));
-                $('#vencimento_ate').val(endOfPreviousMonth.format('DD/MM/YYYY'));
-                break;
-            case 'mes':
-                const startOfCurrentMonth = today.startOf('month');
-                const endOfCurrentMonth = today.endOf('month');
+            $.ajax({
+                type: "POST",
+                url: "<?php echo base_url(); ?>index.php/financeiro/excluirLancamento",
+                data: "id=" + id,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.result == true) {
+                        $("#btnCancelExcluir").trigger('click');
+                        $("#divLancamentos").html('<div class="progress progress-striped active"><div class="bar" style="width: 100%;"></div></div>');
+                        $("#divLancamentos").load($(location).attr('href') + " #divLancamentos");
 
-                $('#vencimento_de').val(startOfCurrentMonth.format('DD/MM/YYYY'));
-                $('#vencimento_ate').val(endOfCurrentMonth.format('DD/MM/YYYY'));
-                break;
-            case 'mesPosterior':
-                const startOfNextMonth = today.add(1, 'month').startOf('month');
-                const endOfNextMonth = today.add(1, 'month').endOf('month');
-
-                $('#vencimento_de').val(startOfNextMonth.format('DD/MM/YYYY'));
-                $('#vencimento_ate').val(endOfNextMonth.format('DD/MM/YYYY'));
-                break;
-            case 'ano':
-                $('#vencimento_de').val(today.startOf('year').format('DD/MM/YYYY'));
-                $('#vencimento_ate').val(today.endOf('year').format('DD/MM/YYYY'));
-                break;
-            case 'personalizado':
-                $('#vencimento_de').val('00/00/0000');
-                $('#vencimento_ate').val('00/00/0000');
-                break;
+                    } else {
+                        $("#btnCancelExcluir").trigger('click');
+                        Swal.fire({
+                            type: "error",
+                            title: "Atenção",
+                            text: "Ocorreu um erro ao tentar excluir lançamento."
+                        });
+                    }
+                }
+            });
+            return false;
+        });
+        let controlBaixa = "<?php echo $configuration['control_baixa']; ?>";
+        let datePickerOptions = {
+            dateFormat: 'dd/mm/yy',
+        };
+        if (controlBaixa === '1') {
+            datePickerOptions.minDate = 0;
+            datePickerOptions.maxDate = 0;
         }
-    });
+        $(".datepicker2").datepicker(
+            datePickerOptions
+        );
+        $(".datepicker").datepicker();
+        $('#periodo').on('change', function (event) {
+            const period = $('#periodo').val();
+            const today = dayjs().locale('pt-br');
 
-    $("#fornecedorEditar").autocomplete({
-        source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita",
-        minLength: 1,
-        select: function (event, ui) {
-            $("#fornecedorEditar").val(ui.item.label);
-        }
-    });
+            switch (period) {
+                case 'dia':
+                    $('#vencimento_de').val(today.format('DD/MM/YYYY'));
+                    $('#vencimento_ate').val(today.format('DD/MM/YYYY'));
+                    break;
+                case 'semana':
+                    $('#vencimento_de').val(today.startOf('week').format('DD/MM/YYYY'));
+                    $('#vencimento_ate').val(today.endOf('week').format('DD/MM/YYYY'));
+                    break;
+                case 'mesAnterior':
+                    const startOfPreviousMonth = today.subtract(1, 'month').startOf('month');
+                    const endOfPreviousMonth = today.subtract(1, 'month').endOf('month');
 
-    $("#cliente").autocomplete({
-        source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita",
-        minLength: 1,
-        select: function (event, ui) {
-            $("#cliente").val(ui.item.label);
-            $("#idCliente").val(ui.item.id);
-        }
-    });
+                    $('#vencimento_de').val(startOfPreviousMonth.format('DD/MM/YYYY'));
+                    $('#vencimento_ate').val(endOfPreviousMonth.format('DD/MM/YYYY'));
+                    break;
+                case 'mes':
+                    const startOfCurrentMonth = today.startOf('month');
+                    const endOfCurrentMonth = today.endOf('month');
 
-    $("#cliente_busca").autocomplete({
-        source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita",
-        minLength: 1,
-        select: function (event, ui) {
-            $("#cliente_busca").val(ui.item.label);
-        }
-    });
+                    $('#vencimento_de').val(startOfCurrentMonth.format('DD/MM/YYYY'));
+                    $('#vencimento_ate').val(endOfCurrentMonth.format('DD/MM/YYYY'));
+                    break;
+                case 'mesPosterior':
+                    const startOfNextMonth = today.add(1, 'month').startOf('month');
+                    const endOfNextMonth = today.add(1, 'month').endOf('month');
 
-    $("#cliente_parc").autocomplete({
-        source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita",
-        minLength: 1,
-        select: function (event, ui) {
-            $("#cliente_parc").val(ui.item.label);
-            $("#idCliente_parc").val(ui.item.id);
-        }
-    });
-
-    $("#fornecedor").autocomplete({
-        source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita",
-        minLength: 1,
-        select: function (event, ui) {
-            $("#fornecedor").val(ui.item.label);
-            $("#idFornecedor").val(ui.item.id);
-        }
-    });
-
-    $("#usuario_busca").autocomplete({
-        source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteUsuario",
-        minLength: 1,
-        select: function (event, ui) {
-            $("#usuario_busca").val(ui.item.label);
-        }
-    });
-
-    function valorParcelas() {
-        var valor_parc = $("#valor_parc").val();
-        var qtdparc = $("#qtdparcelas_parc").val();
-        var entrada = $("#entrada").val();
-        var result = (valor_parc - entrada) / qtdparc;
-
-        if (qtdparc > 1) {
-            if (entrada > 0) {
-                $("#string_parc").text('R$ ' + entrada + ' de entrada mais ' + qtdparc + ' parcelas de R$ ' + parseFloat(Math.round(result * 100) / 100).toFixed(2));
-                $("#valorparcelas").val(parseFloat(Math.round(result * 100) / 100).toFixed(2));
-            } else {
-                $("#string_parc").text(qtdparc + ' parcelas de R$ ' + parseFloat(Math.round(result * 100) / 100).toFixed(2));
-                $("#valorparcelas").val(parseFloat(Math.round(result * 100) / 100).toFixed(2));
+                    $('#vencimento_de').val(startOfNextMonth.format('DD/MM/YYYY'));
+                    $('#vencimento_ate').val(endOfNextMonth.format('DD/MM/YYYY'));
+                    break;
+                case 'ano':
+                    $('#vencimento_de').val(today.startOf('year').format('DD/MM/YYYY'));
+                    $('#vencimento_ate').val(today.endOf('year').format('DD/MM/YYYY'));
+                    break;
+                case 'personalizado':
+                    $('#vencimento_de').val('00/00/0000');
+                    $('#vencimento_ate').val('00/00/0000');
+                    break;
             }
-        } else {
-            if (entrada > 0) {
-                $("#string_parc").text('R$ ' + entrada + ' de entrada mais ' + qtdparc + ' parcela de R$ ' + parseFloat(Math.round(result * 100) / 100).toFixed(2));
-                $("#valorparcelas").val(parseFloat(Math.round(result * 100) / 100).toFixed(2));
+        });
+
+        $("#fornecedorEditar").autocomplete({
+            source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita",
+            minLength: 1,
+            select: function (event, ui) {
+                $("#fornecedorEditar").val(ui.item.label);
+            }
+        });
+
+        $("#cliente").autocomplete({
+            source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita",
+            minLength: 1,
+            select: function (event, ui) {
+                $("#cliente").val(ui.item.label);
+                $("#idCliente").val(ui.item.id);
+            }
+        });
+
+        $("#cliente_busca").autocomplete({
+            source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita",
+            minLength: 1,
+            select: function (event, ui) {
+                $("#cliente_busca").val(ui.item.label);
+            }
+        });
+
+        $("#cliente_parc").autocomplete({
+            source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita",
+            minLength: 1,
+            select: function (event, ui) {
+                $("#cliente_parc").val(ui.item.label);
+                $("#idCliente_parc").val(ui.item.id);
+            }
+        });
+
+        $("#fornecedor").autocomplete({
+            source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita",
+            minLength: 1,
+            select: function (event, ui) {
+                $("#fornecedor").val(ui.item.label);
+                $("#idFornecedor").val(ui.item.id);
+            }
+        });
+
+        $("#usuario_busca").autocomplete({
+            source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteUsuario",
+            minLength: 1,
+            select: function (event, ui) {
+                $("#usuario_busca").val(ui.item.label);
+            }
+        });
+
+        function valorParcelas() {
+            var valor_parc = $("#valor_parc").val();
+            var qtdparc = $("#qtdparcelas_parc").val();
+            var entrada = $("#entrada").val();
+            var result = (valor_parc - entrada) / qtdparc;
+
+            if (qtdparc > 1) {
+                if (entrada > 0) {
+                    $("#string_parc").text('R$ ' + entrada + ' de entrada mais ' + qtdparc + ' parcelas de R$ ' + parseFloat(Math.round(result * 100) / 100).toFixed(2));
+                    $("#valorparcelas").val(parseFloat(Math.round(result * 100) / 100).toFixed(2));
+                } else {
+                    $("#string_parc").text(qtdparc + ' parcelas de R$ ' + parseFloat(Math.round(result * 100) / 100).toFixed(2));
+                    $("#valorparcelas").val(parseFloat(Math.round(result * 100) / 100).toFixed(2));
+                }
             } else {
-                $("#string_parc").text(qtdparc + ' parcela de R$ ' + parseFloat(Math.round(result * 100) / 100).toFixed(2));
-                $("#valorparcelas").val(parseFloat(Math.round(result * 100) / 100).toFixed(2));
+                if (entrada > 0) {
+                    $("#string_parc").text('R$ ' + entrada + ' de entrada mais ' + qtdparc + ' parcela de R$ ' + parseFloat(Math.round(result * 100) / 100).toFixed(2));
+                    $("#valorparcelas").val(parseFloat(Math.round(result * 100) / 100).toFixed(2));
+                } else {
+                    $("#string_parc").text(qtdparc + ' parcela de R$ ' + parseFloat(Math.round(result * 100) / 100).toFixed(2));
+                    $("#valorparcelas").val(parseFloat(Math.round(result * 100) / 100).toFixed(2));
+                }
             }
         }
-    }
 
-    $('#qtdparcelas').change(function (event) {
-        var parcelas = $("#qtdparcelas").val();
-        if (parcelas > 1) {
-            $('#cancelar_nova_receita').trigger('click');
-            $('#abrirmodalreceitaparcelada').trigger('click');
-            $("#descricao_parc").val($("#descricao").val());
-            $("#cliente_parc").val($("#cliente").val());
-            $("#idCliente_parc").val($("#idCliente").val());
-            $("#tipo_parc").val($("#tipo").val());
-            $("#formaPgto_parc").val($("#formaPgto").val());
-            $("#pcontas_parc").val($("#pcontas").val());
-            $("#categoria_parc").val($("#categoria").val());
-            $("#observacoes_parc").val($("#observacoes").val());
-            $("#valor_parc").val($("#valor").val());
-            $("#desconto_parc").val($("#valor_desconto").val());
-            $("#qtdparcelas_parc").val($("#qtdparcelas").val());
-            valorParcelas();
-        }
-        else {
-            if (parcelas == 1) {
+        $('#qtdparcelas').change(function (event) {
+            var parcelas = $("#qtdparcelas").val();
+            if (parcelas > 1) {
                 $('#cancelar_nova_receita').trigger('click');
                 $('#abrirmodalreceitaparcelada').trigger('click');
                 $("#descricao_parc").val($("#descricao").val());
@@ -1222,83 +1296,82 @@ $periodo = $this->input->get('periodo');
                 $("#pcontas_parc").val($("#pcontas").val());
                 $("#categoria_parc").val($("#categoria").val());
                 $("#observacoes_parc").val($("#observacoes").val());
-                $("#desconto_parc").val($("#valor_desconto").val());
                 $("#valor_parc").val($("#valor").val());
-                $("#qtdparcelas_parc").val(1);
+                $("#desconto_parc").val($("#valor_desconto").val());
+                $("#qtdparcelas_parc").val($("#qtdparcelas").val());
                 valorParcelas();
             }
-        }
-    });
-
-    $('#valor_parc').keypress(function (event) {
-        valorParcelas();
-    });
-
-    $('#qtdparcelas_parc').change(function (event) {
-        valorParcelas();
-    });
-
-    window.togglePessoa = function (tipo, inputSelector, idSelector) {
-        // reset inputs
-        $(inputSelector).val('');
-        $(idSelector).val('');
-
-        // destroy previous
-        if ($(inputSelector).data('ui-autocomplete')) {
-            $(inputSelector).autocomplete("destroy");
-        }
-
-        var urlSearch = "";
-        if (tipo == "usuario") {
-            urlSearch = "<?php echo base_url(); ?>index.php/financeiro/autoCompleteUsuario";
-        } else {
-            urlSearch = "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita";
-        }
-
-        $(inputSelector).autocomplete({
-            source: urlSearch,
-            minLength: 1,
-            select: function (event, ui) {
-                $(inputSelector).val(ui.item.label);
-                $(idSelector).val(ui.item.id);
+            else {
+                if (parcelas == 1) {
+                    $('#cancelar_nova_receita').trigger('click');
+                    $('#abrirmodalreceitaparcelada').trigger('click');
+                    $("#descricao_parc").val($("#descricao").val());
+                    $("#cliente_parc").val($("#cliente").val());
+                    $("#idCliente_parc").val($("#idCliente").val());
+                    $("#tipo_parc").val($("#tipo").val());
+                    $("#formaPgto_parc").val($("#formaPgto").val());
+                    $("#pcontas_parc").val($("#pcontas").val());
+                    $("#categoria_parc").val($("#categoria").val());
+                    $("#observacoes_parc").val($("#observacoes").val());
+                    $("#desconto_parc").val($("#valor_desconto").val());
+                    $("#valor_parc").val($("#valor").val());
+                    $("#qtdparcelas_parc").val(1);
+                    valorParcelas();
+                }
             }
         });
+
+        $('#valor_parc').keypress(function (event) {
+            valorParcelas();
+        });
+
+        $('#qtdparcelas_parc').change(function (event) {
+            valorParcelas();
+        });
+
+
+
+
+    });
+
+    // Function to toggle between Client and User (Instructor)
+    function togglePessoa(tipo, inputForn, inputIdForn) {
+        if (tipo === 'usuario') {
+            $(inputForn).val('');
+            $(inputIdForn).val('');
+            $(inputForn).attr('placeholder', 'Digite o nome do usuário');
+            // Assuming autocomplete is initialized elsewhere, we might need to re-init or change source
+            // If autocomplete instance exists, change source:
+             if ($(inputForn).data('ui-autocomplete')) {
+                $(inputForn).autocomplete("option", "source", "<?php echo base_url(); ?>index.php/financeiro/autoCompleteUsuario");
+            } else {
+                 // Initialize if not exists (fallback)
+                 $(inputForn).autocomplete({
+                    source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteUsuario",
+                    minLength: 1,
+                    select: function (event, ui) {
+                        $(inputForn).val(ui.item.label);
+                        $(inputIdForn).val(ui.item.id);
+                    }
+                });
+            }
+
+        } else {
+            $(inputForn).val('');
+            $(inputIdForn).val('');
+            $(inputForn).attr('placeholder', 'Digite o nome do cliente/fornecedor');
+             if ($(inputForn).data('ui-autocomplete')) {
+                $(inputForn).autocomplete("option", "source", "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita");
+             } else {
+                $(inputForn).autocomplete({
+                    source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita",
+                    minLength: 1,
+                    select: function (event, ui) {
+                         $(inputForn).val(ui.item.label);
+                         $(inputIdForn).val(ui.item.id);
+                    }
+                });
+             }
+        }
     }
-
-
-    $('#entrada').keypress(function (event) {
-        valorParcelas();
-        var entrada = $("#entrada").val();
-        if (entrada > 0) {
-            $('#dia_pgto').css("color", "#444444");
-        } else {
-            $('#dia_pgto').css("color", "#eeeeee");
-        }
-    });
-
-    $('#valor_parc, #qtdparcelas_parc, #formaPgto_parc, #entrada, #dia_pgto, #dia_base_pgto').click(function (event) {
-        valorParcelas();
-    });
-
-    $('#add_receita').mouseover(function (event) {
-        valorParcelas();
-    });
-
-    $('#entrada').keypress(function (event) {
-        valorParcelas();
-        var entrada = $("#entrada").val();
-        if (entrada > 0) {
-            $('#dia_pgto').css("color", "#444444");
-        } else {
-            $('#dia_pgto').css("color", "#eeeeee");
-        }
-    });
-    $('#valor_parc, #qtdparcela_parc, #formaPgto_parc, #entrada, #dia_pgto, #dia_base_pgto').click(function (event) {
-        valorParcelas();
-    });
-
-    $('#add_receita').mouseover(function (event) {
-        valorParcelas();
-    });
-    });
 </script>

@@ -107,10 +107,10 @@ class Cursos extends MY_Controller
                 'data_cadastro' => date('Y-m-d H:i:s'),
             ];
 
-            if ($this->cursos_model->add('cursos', $data) == true) {
+            if ($id = $this->cursos_model->add('cursos', $data)) {
                 $this->session->set_flashdata('success', 'Curso adicionado com sucesso!');
-                log_info('Adicionou um curso. ID: ' . $this->db->insert_id());
-                redirect(site_url('cursos/gerenciar'));
+                log_info('Adicionou um curso. ID: ' . $id);
+                redirect(site_url('cursos/editar/' . $id));
             } else {
                 $this->data['custom_error'] = '<div class="form_error"><p>Ocorreu um erro.</p></div>';
             }
@@ -181,10 +181,10 @@ class Cursos extends MY_Controller
                 'preco' => $preco
             ];
 
-            if ($this->cursos_model->edit('cursos', $data, 'id', $this->input->post('id')) == true) {
+            if ($this->cursos_model->edit('cursos', $data, 'id', $this->input->post('id_curso'))) {
                 $this->session->set_flashdata('success', 'Curso editado com sucesso!');
-                log_info('Editou um curso. ID: ' . $this->input->post('id'));
-                redirect(site_url('cursos/editar/') . $this->input->post('id'));
+                log_info('Alterou um curso. ID: ' . $this->input->post('id_curso'));
+                redirect(site_url('cursos/editar/' . $this->input->post('id_curso')));
             } else {
                 $this->data['custom_error'] = '<div class="form_error"><p>Ocorreu um erro</p></div>';
             }
@@ -263,44 +263,92 @@ class Cursos extends MY_Controller
         $this->form_validation->set_rules('curso_id', 'Curso', 'trim|required');
 
         if ($this->form_validation->run() == false) {
-            $this->session->set_flashdata('error', 'Erro de validação: ' . validation_errors());
+            $val_errors = validation_errors();
+            $safe_val_errors = str_replace(["\r", "\n"], ' ', $val_errors);
+            $safe_val_errors = addslashes($safe_val_errors);
+            $this->session->set_flashdata('error', 'Erro de validação: ' . $safe_val_errors);
         } else {
             $curso_id = $this->input->post('curso_id');
             $usuario_id = $this->input->post('usuario_id');
+            $id_curso_instrutor = $this->input->post('id_curso_instrutor');
 
-            if ($this->curso_instrutores_model->isInstrutorInCurso($curso_id, $usuario_id)) {
-                $this->session->set_flashdata('error', 'Este instrutor já está atribuído a este curso.');
-            } else {
+            // Duplicate Check
+            $isDuplicate = $this->curso_instrutores_model->isInstrutorInCurso($curso_id, $usuario_id);
+
+            // If Editing...
+            if ($id_curso_instrutor) {
+                // Get current record to check if user changed
+                $current = $this->curso_instrutores_model->getById($id_curso_instrutor);
+                // If user changed AND new user exists in course -> Error
+                if ($current && $current->usuario_id != $usuario_id && $isDuplicate) {
+                    $this->session->set_flashdata('error', 'Este instrutor já está atribuído a este curso.');
+                    redirect('cursos/visualizar/' . $curso_id . '?tab=tab2');
+                }
+
                 $data = [
-                    'curso_id' => $curso_id,
                     'usuario_id' => $usuario_id,
-                    'data_atribuicao' => date('Y-m-d H:i:s'),
+                    'usuario_cadastrou_id' => $this->session->userdata('id_admin'),
+                    'valor_pagamento' => $this->input->post('valor_pagamento') ? str_replace(',', '.', $this->input->post('valor_pagamento')) : 0.00,
+                    'tipo_pagamento' => $this->input->post('tipo_pagamento'),
+                    'hora_inicio' => $this->input->post('hora_inicio'),
+                    'hora_fim' => $this->input->post('hora_fim'),
+                    'modulo_id' => $this->input->post('modulo_id'),
+                    'data_aula' => $this->input->post('data_aula'),
                 ];
 
-                if ($this->curso_instrutores_model->add($data)) {
-                    $this->session->set_flashdata('success', 'Instrutor adicionado com sucesso!');
-                    log_info('Adicionou instrutor ID: ' . $usuario_id . ' ao curso ID: ' . $curso_id);
-
-                    // --- Evolution API Trigger (curso_usuario_adicionado) ---
-                    $this->load->model('evolution_model');
-                    $trigger = $this->evolution_model->getEventTrigger('curso_usuario_adicionado');
-                    if ($trigger && $trigger->status == 1) {
-                        $curso = $this->cursos_model->getById($curso_id);
-                        $usuario = $this->db->where('idUsuarios', $usuario_id)->get('usuarios')->row();
-                        if ($usuario) {
-                            $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
-                                'usuario' => $usuario,
-                                'curso' => $curso
-                            ]);
-                            $this->load->library('evolution_queue');
-                            $phone = $usuario->celular ?: $usuario->telefone;
-                            if ($phone)
-                                $this->evolution_queue->add($phone, $msg_parsed);
-                        }
-                    }
-                    // --------------------------------------------------------
+                if ($this->curso_instrutores_model->edit('curso_instrutores', $data, 'id', $id_curso_instrutor)) {
+                    $this->session->set_flashdata('success', 'Instrutor atualizado com sucesso!');
+                    log_info('Alterou atribuição de instrutor. ID: ' . $id_curso_instrutor);
                 } else {
-                    $this->session->set_flashdata('error', 'Erro ao adicionar instrutor.');
+                    $this->session->set_flashdata('error', 'Erro ao atualizar instrutor.');
+                }
+
+            } else { // Adding...
+                if ($isDuplicate) {
+                    $this->session->set_flashdata('error', 'Este instrutor já está atribuído a este curso.');
+                } else {
+                    $data = [
+                        'curso_id' => $curso_id,
+                        'usuario_id' => $usuario_id,
+                        'usuario_cadastrou_id' => $this->session->userdata('id_admin'),
+                        'data_atribuicao' => date('Y-m-d H:i:s'),
+                        'valor_pagamento' => $this->input->post('valor_pagamento') ? str_replace(',', '.', $this->input->post('valor_pagamento')) : 0.00,
+                        'tipo_pagamento' => $this->input->post('tipo_pagamento'),
+                        'hora_inicio' => $this->input->post('hora_inicio'),
+                        'hora_fim' => $this->input->post('hora_fim'),
+                        'modulo_id' => $this->input->post('modulo_id'),
+                        'data_aula' => $this->input->post('data_aula'),
+                    ];
+
+                    if ($this->curso_instrutores_model->add($data)) {
+                        $this->session->set_flashdata('success', 'Instrutor adicionado com sucesso!');
+                        log_info('Adicionou instrutor ao curso. ID Curso: ' . $curso_id);
+
+                        // --- Evolution API Trigger (curso_usuario_adicionado) ---
+                        $this->load->model('evolution_model');
+                        $trigger = $this->evolution_model->getEventTrigger('curso_usuario_adicionado');
+                        if ($trigger && $trigger->status == 1) {
+                            $curso = $this->cursos_model->getById($curso_id);
+                            $usuario = $this->db->where('idUsuarios', $usuario_id)->get('usuarios')->row();
+                            if ($usuario) {
+                                $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
+                                    'usuario' => $usuario,
+                                    'curso' => $curso
+                                ]);
+                                $this->load->library('evolution_queue');
+                                $phone = $usuario->celular ?: $usuario->telefone;
+                                if ($phone)
+                                    $this->evolution_queue->add($phone, $msg_parsed);
+                            }
+                        }
+                        // --------------------------------------------------------
+                    } else {
+                        $db_err = $this->db->error();
+                        // Replace newlines with spaces and escape single quotes to prevent JS errors
+                        $safe_err_msg = str_replace(["\r", "\n"], ' ', $db_err['message']);
+                        $safe_err_msg = addslashes($safe_err_msg);
+                        $this->session->set_flashdata('error', 'Erro ao adicionar instrutor: ' . $safe_err_msg);
+                    }
                 }
             }
         }
@@ -322,9 +370,14 @@ class Cursos extends MY_Controller
         $instrutor = $this->curso_instrutores_model->getById($id);
         if ($instrutor && $this->curso_instrutores_model->delete($id)) {
             $this->session->set_flashdata('success', 'Instrutor removido com sucesso!');
-            log_info('Removeu instrutor ID: ' . $id . ' do curso ID: ' . $instrutor->curso_id);
+            log_info('Removeu instrutor do curso. ID da atribuição: ' . $id);
         } else {
-            $this->session->set_flashdata('error', 'Erro ao remover instrutor.');
+            $db_error = $this->db->error();
+            $msg = 'Erro ao remover instrutor.';
+            if (!empty($db_error['message'])) {
+                $msg .= ' ' . $db_error['message'];
+            }
+            $this->session->set_flashdata('error', $msg);
         }
         redirect('cursos/visualizar/' . $instrutor->curso_id . '?tab=tab2');
     }
@@ -443,6 +496,7 @@ class Cursos extends MY_Controller
 
         if ($this->curso_modulos_model->add('curso_modulos', $data)) {
             $this->session->set_flashdata('success', 'Módulo adicionado com sucesso!');
+            log_info('Adicionou um módulo ao curso. ID Curso: ' . $curso_id);
         } else {
             $this->session->set_flashdata('error', 'Erro ao adicionar módulo.');
         }
@@ -459,6 +513,7 @@ class Cursos extends MY_Controller
         $modulo = $this->curso_modulos_model->getById($id);
         if ($modulo && $this->curso_modulos_model->delete('curso_modulos', 'id', $id)) {
             $this->session->set_flashdata('success', 'Módulo removido com sucesso!');
+            log_info('Removeu um módulo do curso. ID Módulo: ' . $id);
         } else {
             $this->session->set_flashdata('error', 'Erro ao remover módulo.');
         }
@@ -604,14 +659,19 @@ class Cursos extends MY_Controller
     {
         if (isset($_GET['term'])) {
             $q = strtolower($_GET['term']);
-            $this->db->select('idUsuarios, nome');
+            $this->db->select('idUsuarios, nome, telefone, cpf');
             $this->db->limit(5);
+            $this->db->group_start();
             $this->db->like('nome', $q);
+            $this->db->or_like('telefone', $q);
+            $this->db->or_like('cpf', $q);
+            $this->db->group_end();
             $this->db->where('situacao', 1);
             $query = $this->db->get('usuarios');
             if ($query->num_rows() > 0) {
                 foreach ($query->result_array() as $row) {
-                    $row_set[] = ['label' => $row['nome'], 'id' => $row['idUsuarios']];
+                    $label = $row['nome'] . ' | Tel: ' . $row['telefone'] . ' | CPF: ' . $row['cpf'];
+                    $row_set[] = ['label' => $label, 'id' => $row['idUsuarios']];
                 }
                 echo json_encode($row_set);
             }

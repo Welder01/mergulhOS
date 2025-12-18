@@ -153,7 +153,10 @@ class Evolution_model extends CI_Model
         $this->db->from('evolution_eventos e');
         $this->db->join('evolution_mensagens m', 'e.mensagem_id = m.id', 'left');
         $this->db->order_by('e.evento', 'asc');
-        return $this->db->get()->result();
+        if ($query = $this->db->get()) {
+            return $query->result();
+        }
+        return [];
     }
 
     public function updateEvent($id, $data)
@@ -169,7 +172,11 @@ class Evolution_model extends CI_Model
         $this->db->join('evolution_mensagens m', 'e.mensagem_id = m.id');
         $this->db->where('e.evento', $eventName);
         $this->db->where('e.status', 1); // Only active
-        return $this->db->get()->row();
+
+        if ($query = $this->db->get()) {
+            return $query->row();
+        }
+        return false;
     }
 
     public function parseMessage($message, $data = [])
