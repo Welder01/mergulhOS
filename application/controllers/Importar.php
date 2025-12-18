@@ -32,11 +32,26 @@ class Importar extends MY_Controller
     public function upload_clientes()
     {
         if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aImportar')) {
-            $this->session->set_flashdata('error', 'Você não tem permissão para importar clientes.');
-            redirect(base_url());
+            echo json_encode(['error' => 'Você não tem permissão para importar clientes.']);
+            return;
         }
 
-        // Limpa erros da sessão anterior ao iniciar novo upload
+        $importId = $this->input->post('importId');
+        if (!$importId) {
+            // Fallback se não enviado (mas deve ser enviado pelo front)
+            $importId = 'import_' . time() . '_' . rand(1000, 9999);
+        }
+
+        // Validação de segurança do ID
+        if (!preg_match('/^import_\d+_\d+$/', $importId)) {
+            echo json_encode(['error' => 'ID de importação inválido.']);
+            return;
+        }
+
+        $progressFile = './assets/uploads/' . $importId . '.json';
+        file_put_contents($progressFile, json_encode(['status' => 'uploading', 'progress' => 0, 'message' => 'Carregando arquivo...']));
+
+        // Limpa erros da sessão (opcional, já que vamos retornar JSON)
         $this->session->unset_userdata('import_error_main');
         $this->session->unset_userdata('import_errors_list');
 
@@ -52,29 +67,69 @@ class Importar extends MY_Controller
         $this->load->library('upload', $config);
 
         if (!$this->upload->do_upload('file')) {
-            $this->session->set_flashdata('error', 'Erro no upload: ' . $this->upload->display_errors());
-            redirect('importar/clientes');
+            echo json_encode(['error' => 'Erro no upload: ' . $this->upload->display_errors()]);
+            return;
         }
 
         $upload_data = $this->upload->data();
         $filePath = $upload_data['full_path'];
 
+        // Aumenta limites de execução e memória para uploads grandes
+        set_time_limit(0);
+        ini_set('memory_limit', '1024M');
+        ignore_user_abort(true); // Continua executando mesmo se o cliente desconectar
+
+        // Libera a sessão para permitir polling
+        session_write_close();
+
         try {
+            file_put_contents($progressFile, json_encode(['status' => 'processing', 'progress' => 5, 'message' => 'Lendo arquivo...']));
+
+            // Verifica se o arquivo existe
+            if (!file_exists($filePath)) {
+                throw new Exception('Arquivo não encontrado após upload.');
+            }
+
             $spreadsheet = IOFactory::load($filePath);
             $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+            $totalRows = count($sheetData) - 1; // Desconsidera cabeçalho
+
+            if ($totalRows <= 0) {
+                unlink($filePath);
+                unlink($progressFile);
+                echo json_encode(['error' => 'O arquivo está vazio.']);
+                return;
+            }
 
             $errors = [];
             $validData = [];
-
             $rowErrors = [];
+
             // 1. FASE DE VALIDAÇÃO
+            $processedRows = 0;
             foreach ($sheetData as $rowIndex => $row) {
-                if ($rowIndex == 1) { // Pula o cabeçalho
+                if ($rowIndex == 1) {
                     continue;
+                } // Pula cabeçalho
+
+                // Atualiza progresso a cada 10 linhas ou se for a última
+                $processedRows++;
+                if ($processedRows % 10 == 0 || $processedRows == $totalRows) {
+                    $percent = 5 + round(($processedRows / $totalRows) * 45); // 5% a 50%
+                    file_put_contents($progressFile, json_encode([
+                        'status' => 'validating',
+                        'progress' => $percent,
+                        'message' => "Validando linha {$processedRows} de {$totalRows}..."
+                    ]));
+
+                    // Force garbage collection in heavy loops
+                    if ($processedRows % 100 == 0)
+                        gc_collect_cycles();
                 }
 
-                // Validações essenciais
-                $rowErrors = []; // Limpa os erros para a linha atual
+                $rowErrors = [];
+                $inconsistente = 0;
+                $observacoes = '';
 
                 $nome = trim($row['A']);
                 if (empty($nome)) {
@@ -83,7 +138,9 @@ class Importar extends MY_Controller
 
                 $email = trim($row['L']);
                 if (empty($email)) {
-                    $rowErrors[] = ['linha' => $rowIndex, 'coluna' => 'L (E-mail)', 'valor' => $email, 'erro' => 'O e-mail não pode estar vazio.'];
+                    $inconsistente = 1;
+                    $email = 'inconsistente_' . time() . '_' . $rowIndex . '@mergulhos.com';
+                    $observacoes .= "Email gerado automaticamente. ";
                 } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     $rowErrors[] = ['linha' => $rowIndex, 'coluna' => 'L (E-mail)', 'valor' => $email, 'erro' => 'Formato de e-mail inválido.'];
                 } elseif ($this->clientes_model->emailExists($email)) {
@@ -102,10 +159,11 @@ class Importar extends MY_Controller
 
                 $documento = !empty(trim($row['Q'])) ? trim($row['Q']) : trim($row['R']);
                 if (empty($documento)) {
-                    $rowErrors[] = ['linha' => $rowIndex, 'coluna' => 'Q/R (CPF/CNPJ)', 'valor' => $documento, 'erro' => 'CPF ou CNPJ é obrigatório.'];
+                    $inconsistente = 1;
+                    $documento = 'NA_' . time() . '_' . $rowIndex;
+                    $observacoes .= "Documento gerado automaticamente. ";
                 }
 
-                // Se não houver erros nesta linha, prepara os dados para inserção
                 if (empty($rowErrors)) {
                     $validData[] = [
                         'nomeCliente' => $row['A'],
@@ -136,69 +194,128 @@ class Importar extends MY_Controller
                         'contato_emergencia_parentesco' => $row['AD'],
                         'contato_emergencia_telefone' => $row['AE'],
                         'dataCadastro' => date('Y-m-d'),
-                        'senha' => password_hash(preg_replace('/[^\p{L}\p{N}\s]/', '', $documento), PASSWORD_DEFAULT)
+                        'senha' => password_hash(preg_replace('/[^\p{L}\p{N}\s]/', '', $documento), PASSWORD_DEFAULT),
+                        'importacao_inconsistente' => $inconsistente
                     ];
                 }
-
                 $errors = array_merge($errors, $rowErrors);
             }
 
-            // 2. VERIFICAÇÃO E INSERÇÃO
             if (!empty($errors)) {
-                // Se houver erros, não importa nada e exibe o relatório de erros
-                unlink($filePath); // Remove o arquivo
-                $this->session->set_userdata('import_error_main', 'A importação falhou. Foram encontrados erros na planilha.');
-                $this->session->set_userdata('import_errors_list', $errors);
-                log_info('Tentativa de importação de clientes falhou. Erros encontrados na planilha.');
-                redirect('importar/clientes');
+                unlink($filePath);
+                unlink($progressFile);
+                // CRITICAL: Re-enable session to save errors before returning JSON
+                session_start();
+                // CRITICAL FIX: Limit session error storage
+                $totalErrors = count($errors);
+                $displayedErrors = array_slice($errors, 0, 50);
+
+                $message = 'A importação falhou. Foram encontrados ' . $totalErrors . ' erros na planilha.';
+                if ($totalErrors > 50) {
+                    $message .= ' (Exibindo apenas os primeiros 50 erros).';
+                }
+
+                $this->session->set_userdata('import_error_main', $message);
+                $this->session->set_userdata('import_errors_list', $displayedErrors);
+                session_write_close();
+
+                echo json_encode(['error' => 'validation_errors', 'errors' => $displayedErrors, 'total_errors' => $totalErrors]);
+                return;
             }
 
-            // Se não houver erros, prossegue com a importação
+            // 2. INSERÇÃO
             $countSuccess = 0;
             $countError = 0;
             $insertionErrors = [];
+            $totalValid = count($validData);
 
+            // Reabre conexão se necessário
+            $this->db->reconnect();
             $this->db->trans_start();
 
+            $insertedCount = 0;
             foreach ($validData as $data) {
+                $insertedCount++;
+                if ($insertedCount % 5 == 0 || $insertedCount == $totalValid) {
+                    $percent = 50 + round(($insertedCount / $totalValid) * 50); // 50% a 100%
+                    file_put_contents($progressFile, json_encode([
+                        'status' => 'inserting',
+                        'progress' => $percent,
+                        'message' => "Importando registro {$insertedCount} de {$totalValid}..."
+                    ]));
+                }
+
                 if ($this->clientes_model->add('clientes', $data)) {
                     $countSuccess++;
                 } else {
                     $db_error = $this->db->error();
-                    $error_message = "Erro de banco de dados ao inserir cliente '{$data['nomeCliente']}'. Detalhes: " . ($db_error['message'] ?? 'Não foi possível obter o erro.');
-                    $countError++;
                     $insertionErrors[] = [
                         'linha' => 'N/A',
-                        'coluna' => 'Banco de Dados',
+                        'coluna' => 'DB',
                         'valor' => $data['nomeCliente'],
-                        'erro' => $error_message
+                        'erro' => "Erro ao inserir: " . ($db_error['message'] ?? 'Desconhecido')
                     ];
-                    log_info($error_message); // Log do erro específico do banco
+                    $countError++;
                 }
             }
 
             if ($countError > 0) {
                 $this->db->trans_rollback();
                 unlink($filePath);
+                unlink($progressFile);
+
+                session_start();
                 $this->session->set_userdata('import_error_main', 'Ocorreu um erro durante a inserção no banco de dados. Nenhuma alteração foi feita.');
                 $this->session->set_userdata('import_errors_list', $insertionErrors);
-                log_info('Tentativa de importação de clientes falhou durante a transação do banco de dados.');
-                redirect('importar/clientes');
+                session_write_close();
+
+                echo json_encode(['error' => 'db_errors', 'errors' => $insertionErrors]);
+                return;
             }
 
             $this->db->trans_complete();
 
-            unlink($filePath); // Remove o arquivo após o processamento
+            if ($this->db->trans_status() === FALSE) {
+                unlink($filePath);
+                unlink($progressFile);
+                echo json_encode(['error' => 'Erro crítico: A transação do banco de dados falhou. Nenhuma alteração foi salva.']);
+                return;
+            }
 
-            $this->session->set_flashdata('success', "Importação concluída com sucesso! {$countSuccess} clientes foram adicionados.");
-            log_info("Importação de clientes concluída. {$countSuccess} clientes adicionados.");
-        } catch (Exception $e) {
             unlink($filePath);
-            $this->session->set_flashdata('error', 'Ocorreu um erro ao processar o arquivo: ' . $e->getMessage());
-            log_info('Exceção durante importação de clientes: ' . $e->getMessage());
+
+            // Finaliza com 100%
+            file_put_contents($progressFile, json_encode(['status' => 'complete', 'progress' => 100, 'message' => 'Concluído!']));
+
+            // Aguarda um pouco para o front pegar o 100% antes de limpar
+            sleep(1);
+            unlink($progressFile);
+
+            echo json_encode(['success' => true, 'count' => $countSuccess]);
+
+        } catch (Throwable $e) {
+            unlink($filePath);
+            if (file_exists($progressFile)) {
+                file_put_contents($progressFile, json_encode(['status' => 'error', 'message' => 'Erro fatal: ' . $e->getMessage()]));
+            }
+            echo json_encode(['error' => 'Exceção: ' . $e->getMessage()]);
+        }
+    }
+
+    public function get_progress($importId)
+    {
+        // Validação básica do ID
+        if (!preg_match('/^import_\d+_\d+$/', $importId)) {
+            echo json_encode(['progress' => 0, 'message' => 'ID inválido']);
+            return;
         }
 
-        redirect('importar/clientes');
+        $file = './assets/uploads/' . $importId . '.json';
+        if (file_exists($file)) {
+            echo file_get_contents($file);
+        } else {
+            echo json_encode(['progress' => 0, 'message' => 'Aguardando início...']); // Ou talvez erro se já deveria existir
+        }
     }
 
     public function limpar_erros()

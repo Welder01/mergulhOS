@@ -62,7 +62,11 @@
                     foreach ($results as $r) {
                         echo '<tr>';
                         echo '<td>' . $r->idClientes . '</td>';
-                        echo '<td><a href="' . base_url() . 'index.php/clientes/visualizar/' . $r->idClientes . '" style="margin-right: 1%">' . $r->nomeCliente . '</a></td>';
+                        $warning = '';
+                        if (isset($r->importacao_inconsistente) && $r->importacao_inconsistente == 1) {
+                            $warning = ' <i class="fas fa-exclamation-triangle" style="color: #f39c12;" title="Cliente com dados inconsistentes da importação (Email ou Documento gerados automaticamente)"></i>';
+                        }
+                        echo '<td><a href="' . base_url() . 'index.php/clientes/visualizar/' . $r->idClientes . '" style="margin-right: 1%">' . $r->nomeCliente . '</a>' . $warning . '</td>';
                         echo '<td>' . $r->contato . '</td>';
                         echo '<td>' . $r->documento . '</td>';
                         echo '<td>' . $r->telefone . '</td>';
