@@ -30,10 +30,54 @@ class Evolution extends MY_Controller
         $this->data['eventos'] = $this->evolution_model->getEvents();
         $this->data['clientes'] = $this->db->get('clientes')->result();
         $this->data['logs'] = $this->evolution_model->get('evolution_logs', '*', '', 100, 0, false, 'desc');
+
+        // Fetch Queue
+        if ($this->db->table_exists('evolution_queue')) {
+            $this->db->select('*');
+            $this->db->from('evolution_queue');
+            $this->db->order_by('id', 'ASC');
+            $this->db->limit(200);
+            $query = $this->db->get();
+            $this->data['fila'] = $query ? $query->result() : [];
+        } else {
+            $this->data['fila'] = [];
+            $this->session->set_flashdata('error', 'Tabela evolution_queue não encontrada. Execute as migrações.');
+        }
+
         $this->data['usuarios'] = $this->db->get('usuarios')->result();
 
         $this->data['view'] = 'evolution/gerenciar';
         return $this->layout();
+    }
+
+    public function excluir_item_fila($id)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para gerenciar a fila.');
+            redirect('evolution/gerenciar#tabFila');
+        }
+
+        if ($this->evolution_model->delete('evolution_queue', 'id', $id)) {
+            $this->session->set_flashdata('success', 'Item removido da fila com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao remover item da fila.');
+        }
+        redirect('evolution/gerenciar#tabFila');
+    }
+
+    public function limpar_fila()
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para limpar a fila.');
+            redirect('evolution/gerenciar#tabFila');
+        }
+
+        if ($this->db->empty_table('evolution_queue')) {
+            $this->session->set_flashdata('success', 'Fila de envios limpa com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao limpar a fila.');
+        }
+        redirect('evolution/gerenciar#tabFila');
     }
 
     public function fetch_instance()
@@ -195,6 +239,8 @@ class Evolution extends MY_Controller
         }
         redirect('evolution/gerenciar#tabLogs');
     }
+
+
 
     public function enviar_mensagem()
     {

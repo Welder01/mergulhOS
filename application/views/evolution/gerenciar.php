@@ -42,6 +42,7 @@
             <li><a data-toggle="tab" href="#tabLogs">Logs de Envio</a></li>
             <li><a data-toggle="tab" href="#tabMensagens">Mensagens</a></li>
             <li><a data-toggle="tab" href="#tabEventos">Eventos Automáticos</a></li>
+            <li><a data-toggle="tab" href="#tabFila">Fila de Envio</a></li>
         </ul>
     </div>
     <div class="widget-content tab-content">
@@ -66,7 +67,7 @@
                     <pre id="json-resultado"></pre>
                 </div>
                 <div id="loading" style="display:none; text-align: center;">
-                    <img src="<?= base_url('assets/images/loading.gif') ?>" alt="Carregando..." />
+                    <img src="<?= base_url('assets/img/ajax-loader.gif') ?>" alt="Carregando..." />
                     <p>Verificando...</p>
                 </div>
             </div>
@@ -123,6 +124,90 @@
                             Configurações</button>
                     </div>
                 </form>
+            </div>
+            </div>
+
+        <!-- Aba Fila -->
+        <div id="tabFila" class="tab-pane">
+            <div class="span12" style="padding: 1%; margin-left: 0;">
+                <div class="widget-box">
+                    <div class="widget-header">
+                        <h5 class="cardHeader"><i class="fas fa-list-ol"></i> Fila de Envio</h5>
+                        <div class="widget-buttons" style="float: right; margin: 5px 10px 0 0;">
+                            <a href="<?= base_url('index.php/evolution/limpar_fila') ?>" class="btn btn-danger btn-mini"
+                                onclick="return confirm('Tem certeza que deseja limpar TODA a fila? Mensagens não enviadas serão perdidas.');"><i
+                                    class="fas fa-trash"></i> Limpar Fila</a>
+                        </div>
+                    </div>
+                    <div class="widget-content nopadding">
+                        <table class="table table-bordered table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%;">ID</th>
+                                    <th style="width: 15%;">Destinatário</th>
+                                    <th>Mensagem</th>
+                                    <th style="width: 10%;">Status</th>
+                                    <th style="width: 10%;">Tentativas</th>
+                                    <th style="width: 15%;">Criado em</th>
+                                    <th style="width: 10%;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (isset($fila) && count($fila)): ?>
+                                    <?php foreach ($fila as $item): ?>
+                                        <tr>
+                                            <td><?= $item->id ?></td>
+                                            <td><?= htmlspecialchars($item->phone_number) ?></td>
+                                            <td>
+                                                <small><?= mb_strimwidth(htmlspecialchars($item->message), 0, 80, "...") ?></small>
+                                                <a href="#modal-fila-details-<?= $item->id ?>" data-toggle="modal" class="btn btn-mini btn-link"><i class="fas fa-eye"></i></a>
+                                                
+                                                <!-- Modal Detalhes Item Fila -->
+                                                <div id="modal-fila-details-<?= $item->id ?>" class="modal hide fade" tabindex="-1" role="dialog">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal">×</button>
+                                                        <h3>Detalhes da Mensagem #<?= $item->id ?></h3>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p><strong>Destinatário:</strong> <?= htmlspecialchars($item->phone_number) ?></p>
+                                                        <p><strong>Status:</strong> <?= ucfirst($item->status) ?></p>
+                                                        <p><strong>Erro:</strong> <?= $item->last_error ? htmlspecialchars($item->last_error) : 'Nenhum' ?></p>
+                                                        <hr>
+                                                        <pre><?= htmlspecialchars($item->message) ?></pre>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td style="text-align:center;">
+                                                <?php
+                                                $statusClass = 'label-info';
+                                                switch ($item->status) {
+                                                    case 'pending': $statusClass = 'label-warning'; break;
+                                                    case 'sending': $statusClass = 'label-info'; break;
+                                                    case 'sent': $statusClass = 'label-success'; break;
+                                                    case 'failed': $statusClass = 'label-important'; break;
+                                                }
+                                                ?>
+                                                <span class="label <?= $statusClass ?>"><?= ucfirst($item->status) ?></span>
+                                            </td>
+                                            <td style="text-align:center;"><?= $item->attempts ?></td>
+                                            <td style="text-align:center;"><?= date('d/m/Y H:i', strtotime($item->created_at)) ?></td>
+                                            <td style="text-align: center;">
+                                                <a href="<?= base_url('index.php/evolution/excluir_item_fila/' . $item->id) ?>#tabFila"
+                                                    class="btn btn-danger btn-mini" title="Remover da Fila"
+                                                    onclick="return confirm('Remover este item da fila?');"><i
+                                                        class="fas fa-trash-alt"></i></a>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="7" style="text-align: center;">A fila de envios está vazia.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -449,14 +534,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="div-filtros-usuarios">
-                    <div class="control-group">
-                        <label class="control-label" for="select_permissoes_filtro">Filtrar por Permissão</label>
-                        <div class="controls">
-                            <input type="hidden" name="permissoes_ids" id="select_permissoes_filtro" class="span11">
-                        </div>
-                    </div>
-                </div>
+
                 <div id="div-filtros-usuarios-cursos" style="display:none;">
                     <div class="control-group">
                         <label class="control-label" for="select_cursos_filtro_usuarios">Filtrar por Cursos</label>
@@ -533,6 +611,8 @@
                 $('.nav-tabs a[href="#tabLogs"]').tab('show');
             } else if (urlTab === '#tabEventos') {
                 $('.nav-tabs a[href="#tabEventos"]').tab('show');
+            } else if (urlTab === '#tabFila') {
+                $('.nav-tabs a[href="#tabFila"]').tab('show');
             }
         }
 
