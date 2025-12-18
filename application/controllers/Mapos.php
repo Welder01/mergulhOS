@@ -1,5 +1,8 @@
-<?php if (!defined('BASEPATH')) { exit('No direct script access allowed'); }
-class Mapos extends MY_Controller {
+<?php if (!defined('BASEPATH')) {
+    exit('No direct script access allowed');
+}
+class Mapos extends MY_Controller
+{
     public function __construct()
     {
         parent::__construct();
@@ -656,7 +659,7 @@ class Mapos extends MY_Controller {
                 'title' => "INÍCIO Curso: {$curso->nome_curso}",
                 'start' => $curso->data_inicio,
                 'color' => '#28a745', // Verde
-                'url'   => base_url() . 'index.php/cursos/visualizar/' . $curso->id,
+                'url' => base_url() . 'index.php/cursos/visualizar/' . $curso->id,
             ];
 
             // Evento de Fim do Curso
@@ -665,7 +668,7 @@ class Mapos extends MY_Controller {
                     'title' => "FIM Curso: {$curso->nome_curso}",
                     'start' => $curso->data_fim,
                     'color' => '#dc3545', // Vermelho
-                    'url'   => base_url() . 'index.php/cursos/visualizar/' . $curso->id,
+                    'url' => base_url() . 'index.php/cursos/visualizar/' . $curso->id,
                 ];
             }
         }
@@ -677,7 +680,7 @@ class Mapos extends MY_Controller {
                 'title' => "PARTIDA Viagem: {$viagem->nome_viagem}",
                 'start' => $viagem->data_partida,
                 'color' => '#17a2b8', // Azul
-                'url'   => base_url() . 'index.php/viagens/visualizar/' . $viagem->id,
+                'url' => base_url() . 'index.php/viagens/visualizar/' . $viagem->id,
             ];
 
             // Evento de Retorno da Viagem
@@ -686,7 +689,7 @@ class Mapos extends MY_Controller {
                     'title' => "RETORNO Viagem: {$viagem->nome_viagem}",
                     'start' => $viagem->data_retorno,
                     'color' => '#ffc107', // Amarelo
-                    'url'   => base_url() . 'index.php/viagens/visualizar/' . $viagem->id,
+                    'url' => base_url() . 'index.php/viagens/visualizar/' . $viagem->id,
                 ];
             }
         }
@@ -698,7 +701,7 @@ class Mapos extends MY_Controller {
                 'start' => $treino->data_hora_inicio,
                 'end' => $treino->data_hora_fim,
                 'color' => '#ff69b4', // Rosa para treinos
-                'url'   => site_url('treinos/visualizar/' . $treino->id), // Link para detalhes do agendamento
+                'url' => site_url('treinos/visualizarTreino/' . $treino->id), // Link para detalhes do agendamento
             ];
         }
 

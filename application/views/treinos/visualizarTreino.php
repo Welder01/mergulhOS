@@ -28,7 +28,8 @@
                         </tr>
                         <tr>
                             <td><strong>Instrutor</strong></td>
-                            <td><?php echo $result->com_instrutor ? htmlspecialchars($result->nome_instrutor ?? 'Não definido') : 'Sem instrutor'; ?></td>
+                            <td><?php echo $result->com_instrutor ? htmlspecialchars($result->nome_instrutor ?? 'Não definido') : 'Sem instrutor'; ?>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -38,8 +39,10 @@
                 $isCliente = $this->session->userdata('tipo_usuario') == 'cliente';
                 $backUrl = $isCliente ? site_url('mine/treinos') : site_url('treinos');
                 ?>
-                <a href="<?php echo $backUrl; ?>" class="button btn btn-mini btn-warning">
-                    <span class="button__icon"><i class="bx bx-undo"></i></span> <span class="button__text2">Voltar</span>
+                <a href="<?php echo $backUrl; ?>" class="button btn btn-mini btn-warning"
+                    style="display: inline-block; width: auto;">
+                    <span class="button__icon"><i class="bx bx-undo"></i></span> <span
+                        class="button__text2">Voltar</span>
                 </a>
             </div>
         </div>
