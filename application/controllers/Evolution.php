@@ -164,6 +164,36 @@ class Evolution extends MY_Controller
         redirect('evolution/gerenciar#tabLogs');
     }
 
+    public function excluir_log($id)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para excluir logs.');
+            redirect('evolution/gerenciar#tabLogs');
+        }
+
+        if ($this->evolution_model->delete('evolution_logs', 'id', $id)) {
+            $this->session->set_flashdata('success', 'Log excluído com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao excluir log.');
+        }
+        redirect('evolution/gerenciar#tabLogs');
+    }
+
+    public function limpar_logs()
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para limpar logs.');
+            redirect('evolution/gerenciar#tabLogs');
+        }
+
+        if ($this->db->empty_table('evolution_logs')) {
+            $this->session->set_flashdata('success', 'Todos os logs foram apagados com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao limpar logs.');
+        }
+        redirect('evolution/gerenciar#tabLogs');
+    }
+
     public function enviar_mensagem()
     {
         if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {

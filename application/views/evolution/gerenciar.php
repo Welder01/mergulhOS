@@ -75,15 +75,21 @@
         <div id="tabLogs" class="tab-pane">
             <div class="span12" style="padding: 1%; margin-left: 0;">
                 <div class="widget-box" id="divLogs">
+                    <div class="widget-header">
+                        <h5 class="cardHeader"><i class="fas fa-history"></i> Logs de Envio</h5>
+                        <div class="widget-buttons" style="float: right; margin: 5px 10px 0 0;">
+                            <a href="<?= base_url('index.php/evolution/limpar_logs') ?>" class="btn btn-danger btn-mini" onclick="return confirm('Tem certeza que deseja apagar TODOS os logs? Esta ação não pode ser desfeita.');"><i class="fas fa-trash"></i> Limpar Todos</a>
+                        </div>
+                    </div>
                     <div class="widget-content nopadding">
-                        <table class="table table-bordered table-striped">
+                        <table class="table table-bordered table-striped table-hover">
                             <thead>
                                 <tr>
                                     <th style="width: 15%;">Data/Hora</th>
-                                    <th style="width: 15%;">Número</th>
-                                    <th style="width: 10%;">Status HTTP</th>
-                                    <th>Requisição</th>
-                                    <th>Resposta</th>
+                                    <th style="width: 15%;">Destinatário</th>
+                                    <th style="width: 10%;">Status</th>
+                                    <th>Detalhes</th>
+                                    <th style="width: 10%;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -95,26 +101,31 @@
                                             <td>
                                                 <?php
                                                 $statusClass = 'label-inverse';
+                                                $statusText = $log->response_code;
                                                 if ($log->response_code >= 200 && $log->response_code < 300) {
-                                                    $statusClass = 'label-success';
+                                                    $statusClass = 'badge-success';
                                                 } elseif ($log->response_code >= 400) {
-                                                    $statusClass = 'label-important';
+                                                    $statusClass = 'badge-important';
                                                 }
                                                 ?>
-                                                <span class="label <?= $statusClass; ?>"><?= $log->response_code; ?></span>
+                                                <span class="badge <?= $statusClass; ?>"><?= $statusText; ?></span>
                                             </td>
-                                            <td><a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info"
+                                            <td>
+                                                <a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info"
                                                     data-title="Requisição"
-                                                    data-content="<?= htmlspecialchars($log->request_payload); ?>">Ver</a></td>
-                                            <td><a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-info"
+                                                    data-content="<?= htmlspecialchars($log->request_payload); ?>"><i class="fas fa-arrow-up"></i> Req</a>
+                                                <a href="#modal-log-details" data-toggle="modal" class="btn btn-mini btn-warning"
                                                     data-title="Resposta"
-                                                    data-content="<?= htmlspecialchars($log->response_body . ($log->curl_error ? ' | Erro cURL: ' . $log->curl_error : '')); ?>">Ver</a>
+                                                    data-content="<?= htmlspecialchars($log->response_body . ($log->curl_error ? ' | Erro cURL: ' . $log->curl_error : '')); ?>"><i class="fas fa-arrow-down"></i> Resp</a>
+                                            </td>
+                                            <td style="text-align: center;">
+                                                <a href="<?= base_url('index.php/evolution/excluir_log/' . $log->id) ?>#tabLogs" class="btn btn-danger btn-mini" title="Excluir Log" onclick="return confirm('Deseja excluir este log?');"><i class="fas fa-trash-alt"></i></a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="5">Nenhum log encontrado.</td>
+                                        <td colspan="5" style="text-align: center;">Nenhum log encontrado.</td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>
