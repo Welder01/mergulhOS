@@ -181,6 +181,104 @@ class Evolution_model extends CI_Model
 
     public function parseMessage($message, $data = [])
     {
+        // 1. Enrich Data with Related Info (Instructors, etc)
+        // This ensures {CURSO.INSTRUTORES} or {VIAGEM.INSTRUTORES} is available without changing every controller
+
+        // Enrich EMITENTE (Company Info) - GLOBAL
+        if (!isset($this->mapos_model)) {
+            $this->load->model('mapos_model');
+        }
+        $emitente = $this->mapos_model->getEmitente();
+        if ($emitente) {
+            $data['emitente'] = $emitente;
+        }
+
+        // Enrich COURSE
+        if (isset($data['curso']) && is_object($data['curso'])) {
+            // Load models if not loaded (safety check)
+            if (!isset($this->curso_instrutores_model))
+                $this->load->model('curso_instrutores_model');
+
+            $instrutores = $this->curso_instrutores_model->getByCurso($data['curso']->id);
+            if ($instrutores) {
+                $names = [];
+                foreach ($instrutores as $inst) {
+                    $names[] = $inst->usuario_nome; // Assuming model returns joined name
+                }
+                $data['curso']->lista_instrutores = implode(', ', $names);
+                // Also attach first instructor generic
+                $data['curso']->nome_instrutor = isset($names[0]) ? $names[0] : '';
+            }
+        }
+
+        // Enrich TRIP
+        if (isset($data['viagem']) && is_object($data['viagem'])) {
+            if (!isset($this->viagem_instrutores_model))
+                $this->load->model('viagem_instrutores_model');
+
+            $instrutores = $this->viagem_instrutores_model->getByViagem($data['viagem']->id);
+            if ($instrutores) {
+                $names = [];
+                foreach ($instrutores as $inst) {
+                    $names[] = $inst->usuario_nome;
+                }
+                $data['viagem']->lista_instrutores = implode(', ', $names);
+                $data['viagem']->nome_instrutor = isset($names[0]) ? $names[0] : '';
+            }
+        }
+
+        // Enrich TRAINING (Treino) - check if object has id
+        if (isset($data['treino']) && is_object($data['treino'])) {
+            // If getAgendamentoById was used, it already has 'nome_instrutor'.
+            // We ensure it's available as 'instrutor' for convenience if desired, but dynamic parser handles 'nome_instrutor'
+        }
+
+        // Enrich PAYMENT (Lançamento)
+        if (isset($data['lancamento']) && is_object($data['lancamento'])) {
+            $l = $data['lancamento'];
+            $data['lancamento']->valor_formatado = 'R$ ' . number_format($l->valor, 2, ',', '.');
+            $data['lancamento']->data_vencimento_formatada = date('d/m/Y', strtotime($l->data_vencimento));
+            if (isset($l->data_pagamento)) {
+                $data['lancamento']->data_pagamento_formatada = date('d/m/Y', strtotime($l->data_pagamento));
+            }
+        }
+
+        // Enrich OS (Service Order / Tarefa)
+        if (isset($data['os']) && is_object($data['os'])) {
+            $os = $data['os'];
+            $data['os']->data_inicial_formatada = date('d/m/Y', strtotime($os->dataInicial));
+            $data['os']->data_final_formatada = date('d/m/Y', strtotime($os->dataFinal));
+            $data['os']->valor_total_formatado = 'R$ ' . number_format($os->valorTotal, 2, ',', '.');
+            $data['os']->link_visualizar = base_url('index.php/os/visualizar/' . $os->idOs);
+        }
+
+        // Helper: Client Access Link
+        $message = str_replace('{LINK_ACESSO_CLIENTE}', base_url('index.php/mine'), $message);
+
+
+        // 2. Dynamic Parsing Loop (The Flexible Part)
+        // Format: {OBJECT.PROPERTY} -> {CURSO.NOME_CURSO}, {CLIENTE.BAIRRO}
+
+        foreach ($data as $key => $object) {
+            if (is_object($object)) {
+                $vars = get_object_vars($object);
+                foreach ($vars as $prop => $val) {
+                    if (is_string($val) || is_numeric($val)) {
+                        $token = '{' . strtoupper($key) . '.' . strtoupper($prop) . '}';
+                        $message = str_ireplace($token, $val, $message);
+                    }
+                }
+            } elseif (is_array($object)) {
+                foreach ($object as $prop => $val) {
+                    if (is_string($val) || is_numeric($val)) {
+                        $token = '{' . strtoupper($key) . '.' . strtoupper($prop) . '}';
+                        $message = str_ireplace($token, $val, $message);
+                    }
+                }
+            }
+        }
+
+        // 3. Backward Compatibility (Hardcoded replacements)
         // Client Replacements
         if (isset($data['cliente']) && is_object($data['cliente'])) {
             $c = $data['cliente'];
@@ -195,7 +293,6 @@ class Evolution_model extends CI_Model
         if (isset($data['usuario']) && is_object($data['usuario'])) {
             $u = $data['usuario'];
             $message = str_replace('{NOME_USUARIO}', $u->nome, $message);
-            // $message = str_replace('{EMAIL_USUARIO}', $u->email, $message); // Field might conflict or need adding
             $message = str_replace('{TELEFONE_USUARIO}', $u->celular ?: $u->telefone, $message);
         }
 
@@ -213,6 +310,13 @@ class Evolution_model extends CI_Model
             $message = str_replace('{NOME_CURSO}', $cur->nome_curso, $message);
             $message = str_replace('{DATA_INICIO_CURSO}', date('d/m/Y', strtotime($cur->data_inicio)), $message);
             $message = str_replace('{DATA_FIM_CURSO}', date('d/m/Y', strtotime($cur->data_fim)), $message);
+        }
+
+        // Emitente Replacements (Legacy)
+        if (isset($data['emitente'])) {
+            $e = $data['emitente'];
+            $message = str_replace('{EMITENTE}', $e->nome, $message);
+            $message = str_replace('{TELEFONE_EMITENTE}', $e->telefone, $message);
         }
 
         return $message;

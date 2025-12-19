@@ -20,19 +20,19 @@ class Treinos extends MY_Controller
     public function index()
     {
         $this->data['results'] = $this->treinos_model->get('treinos_config', '*', '', 100, 0, false);
-    
+
         // Filtros
         $pesquisaCliente = $this->input->get('pesquisa_cliente');
         $pesquisaTreino = $this->input->get('pesquisa_treino');
         $dataInicial = $this->input->get('data_inicial');
         $dataFinal = $this->input->get('data_final');
         $status = $this->input->get('status');
-    
+
         $this->db->select('ta.*, tc.nome as nome_treino, c.nomeCliente as nome_cliente');
         $this->db->from('treinos_agendados as ta');
         $this->db->join('treinos_config as tc', 'tc.id = ta.config_id');
         $this->db->join('clientes as c', 'c.idClientes = ta.cliente_id');
-    
+
         if ($pesquisaCliente) {
             $this->db->like('c.nomeCliente', $pesquisaCliente);
         }
@@ -48,10 +48,10 @@ class Treinos extends MY_Controller
         if ($status) {
             $this->db->where('ta.status', $status);
         }
-    
+
         $this->db->order_by('ta.data_hora_inicio', 'DESC');
         $this->data['agendamentos'] = $this->db->get()->result();
-    
+
         $this->data['menuTreinos'] = 'active';
         $this->data['view'] = 'treinos/treinos';
 
@@ -60,7 +60,7 @@ class Treinos extends MY_Controller
 
     public function adicionarConfiguracao()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'aTreino')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aTreino')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para adicionar configurações de treino.');
             redirect(base_url());
         }
@@ -112,12 +112,12 @@ class Treinos extends MY_Controller
 
     public function editarConfiguracao()
     {
-        if (! $this->uri->segment(3) || ! is_numeric($this->uri->segment(3))) {
+        if (!$this->uri->segment(3) || !is_numeric($this->uri->segment(3))) {
             $this->session->set_flashdata('error', 'Item não pode ser encontrado, parâmetro não foi passado corretamente.');
             redirect('treinos');
         }
 
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eTreino')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eTreino')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar configurações de treino.');
             redirect(base_url());
         }
@@ -169,7 +169,7 @@ class Treinos extends MY_Controller
 
     public function excluirConfiguracao()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'dTreino')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dTreino')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para excluir configurações de treino.');
             redirect(base_url());
         }
@@ -197,7 +197,7 @@ class Treinos extends MY_Controller
             $this->db->group_end();
             $this->db->limit(10);
             $query = $this->db->get('usuarios');
-            
+
             $result = [];
             foreach ($query->result() as $row) {
                 $nomeCompleto = explode(' ', $row->nome);
@@ -218,14 +218,14 @@ class Treinos extends MY_Controller
             $this->db->select('idUsuarios, nome, cpf, celular, telefone');
             $this->db->where_in('idUsuarios', $ids);
             $query = $this->db->get('usuarios');
-            
+
             $result = [];
             foreach ($query->result() as $row) {
                 $nomeCompleto = explode(' ', $row->nome);
                 $nomeCurto = $nomeCompleto[0] . (isset($nomeCompleto[1]) ? ' ' . $nomeCompleto[1] : '');
                 $telefone = !empty($row->celular) ? $row->celular : $row->telefone;
                 $label = $nomeCurto . ' (CPF: ' . $row->cpf . ' | Cel: ' . $telefone . ')';
-                
+
                 $result[] = ['id' => $row->idUsuarios, 'label' => $label];
             }
             echo json_encode($result);
@@ -234,7 +234,7 @@ class Treinos extends MY_Controller
 
     public function excluirAgendamento()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'dTreino')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dTreino')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para excluir agendamentos de treino.');
             redirect(base_url());
         }
@@ -244,6 +244,55 @@ class Treinos extends MY_Controller
             $this->session->set_flashdata('error', 'Erro ao tentar excluir agendamento.');
             redirect(site_url('treinos'));
         }
+
+        // --- Evolution API Trigger (treino_excluido) ---
+        $agendamento = $this->treinos_model->getAgendamentoById($id);
+        if ($agendamento) {
+            $this->load->model('evolution_model');
+
+            // 1. Notify Client
+            $triggerCliente = $this->evolution_model->getEventTrigger('treino_excluido_cliente');
+            if ($triggerCliente && $triggerCliente->status == 1) {
+                // Ensure we have client object for parsing
+                $this->load->model('clientes_model');
+                $cliente = $this->clientes_model->getById($agendamento->cliente_id);
+
+                if ($cliente) {
+                    $msg_parsed = $this->evolution_model->parseMessage($triggerCliente->mensagem, [
+                        'cliente' => $cliente,
+                        'treino' => $agendamento // $agendamento contains joined fields
+                    ]);
+                    $this->load->library('evolution_queue');
+                    $phone = $cliente->celular ?: $cliente->telefone;
+                    if ($phone) {
+                        $this->evolution_queue->add($phone, $msg_parsed);
+                    }
+                }
+            }
+
+            // 2. Notify User (Instructor)
+            $triggerUsuario = $this->evolution_model->getEventTrigger('treino_excluido_usuario');
+            if ($triggerUsuario && $triggerUsuario->status == 1 && $agendamento->instrutor_id) {
+                $this->load->model('usuarios_model');
+                $instrutor = $this->usuarios_model->getById($agendamento->instrutor_id);
+
+                if ($instrutor) {
+                    $msg_parsed = $this->evolution_model->parseMessage($triggerUsuario->mensagem, [
+                        'usuario' => $instrutor,
+                        'treino' => $agendamento,
+                        'cliente' => (isset($cliente) ? $cliente : $this->clientes_model->getById($agendamento->cliente_id))
+                    ]);
+                    $this->load->library('evolution_queue');
+                    $phone = $instrutor->celular ?: $instrutor->telefone;
+                    if ($phone) {
+                        $this->evolution_queue->add($phone, $msg_parsed);
+                    }
+                }
+            }
+        }
+        // -------------------------------------------------------
+        // -------------------------------------------------------
+        // -------------------------------------------------------
 
         $this->treinos_model->delete('treinos_agendados', 'id', $id);
         log_info('Removeu um agendamento de treino. ID: ' . $id);
@@ -295,7 +344,7 @@ class Treinos extends MY_Controller
 
     public function reagendarTreino()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eTreino')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eTreino')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para reagendar treinos.');
             redirect(site_url('treinos'));
         }
@@ -305,8 +354,7 @@ class Treinos extends MY_Controller
         $this->form_validation->set_rules('data_hora_reagendamento', 'Nova Data e Hora', 'required');
         $this->form_validation->set_rules('treino_config_id', 'Tipo de Treino', 'required|integer');
 
-        if ($this->form_validation->run() == false)
-        {
+        if ($this->form_validation->run() == false) {
             $this->session->set_flashdata('error', 'Erro de validação: ' . validation_errors());
             redirect(site_url('treinos'));
             return;
@@ -319,8 +367,7 @@ class Treinos extends MY_Controller
         $instrutorId = $this->input->post('instrutor_id') ?: null;
 
         $config = $this->treinos_model->getById($configId);
-        if (!$config)
-        {
+        if (!$config) {
             // Se a configuração não for encontrada, pode ser que o treino não foi alterado.
             // Vamos buscar o agendamento original para pegar o config_id.
             $agendamentoOriginal = $this->treinos_model->getAgendamentoById($idAgendamento);
@@ -387,10 +434,10 @@ class Treinos extends MY_Controller
         $this->db->from('usuarios u');
         $this->db->where('u.situacao', 1);
         $this->db->where_in('u.idUsuarios', $instrutores_configurados_ids); // Filtra apenas pelos instrutores configurados
-        
+
         // Adicionar lógica para verificar disponibilidade futura (se necessário)
         // Por exemplo, verificar se o instrutor já tem um treino agendado no mesmo horário.
-        
+
         $instrutores = $this->db->get()->result();
 
         return $this->output->set_content_type('application/json')->set_output(json_encode($instrutores));

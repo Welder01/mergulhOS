@@ -93,11 +93,32 @@
                         <tbody>
                             <?php if (isset($eventos) && !empty($eventos)): ?>
                                 <?php foreach ($eventos as $evento): ?>
-                                    <tr>
-                                        <td><strong><?= ucfirst(str_replace('_', ' ', $evento->evento)) ?></strong></td>
+                                    <?php 
+                                        $eventName = $evento->evento;
+                                        $label = '';
+                                        $rowClass = '';
+                                        
+                                        if (strpos($eventName, '_cliente') !== false) {
+                                            $label = '<span class="label label-info"><i class="fas fa-user"></i> Cliente</span>';
+                                            $cleanName = str_replace('_cliente', '', $eventName);
+                                        } elseif (strpos($eventName, '_usuario') !== false) {
+                                            $label = '<span class="label label-inverse"><i class="fas fa-user-cog"></i> Usuário (Equipe)</span>';
+                                            $cleanName = str_replace('_usuario', '', $eventName);
+                                            $rowClass = 'warning'; // Visual hint
+                                        } else {
+                                            // Fallback/Legacy
+                                            $label = '<span class="label">Geral</span>';
+                                            $cleanName = $eventName;
+                                        }
+                                        $cleanName = ucfirst(str_replace('_', ' ', $cleanName));
+                                    ?>
+                                    <tr class="<?= $rowClass ?>">
+                                        <td style="vertical-align: middle;">
+                                            <strong><?= $cleanName ?></strong><br>
+                                            <?= $label ?>
+                                        </td>
                                         <td>
-                                            <select name="eventos[<?= $evento->id ?>][mensagem_id]" class="span12"
-                                                style="width: 100%;">
+                                            <select name="eventos[<?= $evento->id ?>][mensagem_id]" class="span12 select2" style="width: 100%;">
                                                 <option value="">-- Selecione uma Mensagem --</option>
                                                 <?php foreach ($mensagens as $msg): ?>
                                                     <option value="<?= $msg->id ?>" <?= $evento->mensagem_id == $msg->id ? 'selected' : '' ?>>
@@ -107,8 +128,9 @@
                                             </select>
                                         </td>
                                         <td style="text-align: center; vertical-align: middle;">
-                                            <input type="checkbox" name="eventos[<?= $evento->id ?>][status]" value="1"
-                                                <?= $evento->status == 1 ? 'checked' : '' ?>>
+                                            <div class="switch switch-small" data-on="success" data-off="danger">
+                                                <input type="checkbox" name="eventos[<?= $evento->id ?>][status]" value="1" <?= $evento->status == 1 ? 'checked' : '' ?>>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -130,6 +152,25 @@
         <!-- Aba Fila -->
         <div id="tabFila" class="tab-pane">
             <div class="span12" style="padding: 1%; margin-left: 0;">
+                
+                <div class="alert alert-info" style="border: 1px solid #bce8f1; background-color: #f7fcff;">
+                    <button class="close" data-dismiss="alert">×</button>
+                    <h4 style="margin-bottom: 10px; color: #2c93b5;"><i class="fas fa-robot"></i> Automação da Fila de Mensagens</h4>
+                    <p>Para que as mensagens desta fila sejam enviadas automaticamente em segundo plano, você precisa configurar uma tarefa agendada (Cron Job) no seu painel de hospedagem (cPanel, Plesk, etc).</p>
+                    
+                    <p style="margin-top: 10px;"><strong>Comando para Execução:</strong></p>
+                    <div style="background: #fff; padding: 12px; border: 1px dashed #ced4da; border-radius: 4px; font-family: 'Courier New', monospace; color: #333; margin-top: 5px; font-size: 13px;">
+                        curl -s "<?= base_url() ?>index.php/evolution/process_queue" >/dev/null 2>&1
+                    </div>
+                    
+                    <p style="margin-top: 12px; font-size: 0.9em; color: #555;">
+                        <i class="fas fa-clock"></i> <strong>Frequência Recomendada:</strong> Executar a cada <strong>1 minuto</strong> (`* * * * *`).
+                    </p>
+                    <p style="font-size: 0.9em; margin-bottom: 0; color: #555;">
+                        <i class="fas fa-info-circle"></i> O comando irá processar as mensagens pendentes em lotes para evitar sobrecarga.
+                    </p>
+                </div>
+
                 <div class="widget-box">
                     <div class="widget-header">
                         <h5 class="cardHeader"><i class="fas fa-list-ol"></i> Fila de Envio</h5>
@@ -311,33 +352,67 @@
                             <div class="controls">
                                 <textarea name="mensagem" id="mensagem" rows="5" class="span11" required></textarea>
                                 <div class="help-block" style="margin-top: 10px;">
-                                    <p><strong>Variáveis disponíveis (clique para inserir):</strong></p>
-                                    <p>
+                                    <p><strong>Variáveis Disponíveis:</strong></p>
+                                    <div style="max-height: 150px; overflow-y: auto; font-size: 0.9em; line-height: 1.4em;">
+                                        <p style="margin-bottom: 5px;">Você pode usar <strong>qualquer campo</strong> do banco de dados usando o formato <code>{OBJETO.CAMPO}</code> (Ex: <code>{CLIENTE.BAIRRO}</code>).</p>
+                                        
                                         <strong>Cliente:</strong>
-                                        <small class="variable-tag">{NOME_CLIENTE}</small>
-                                        <small class="variable-tag">{TELEFONE_CLIENTE}</small>
-                                        <small class="variable-tag">{LINK_CLIENTE}</small>
-                                    </p>
-                                    <p>
-                                        <strong>Usuário:</strong>
-                                        <small class="variable-tag">{NOME_USUARIO}</small>
-                                        <small class="variable-tag">{TELEFONE_USUARIO}</small>
-                                    </p>
-                                    <p>
-                                        <strong>Viagem:</strong>
-                                        <small class="variable-tag">{NOME_VIAGEM}</small>
-                                        <small class="variable-tag">{DATA_PARTIDA_VIAGEM}</small>
-                                    </p>
-                                    <p>
+                                        <div style="margin-bottom: 5px;">
+                                            <small class="variable-tag">{NOME_CLIENTE}</small> 
+                                            <small class="variable-tag">{TELEFONE_CLIENTE}</small>
+                                            <small class="variable-tag">{LINK_ACESSO_CLIENTE}</small>
+                                        </div>
+
                                         <strong>Curso:</strong>
-                                        <small class="variable-tag">{NOME_CURSO}</small>
-                                        <small class="variable-tag">{DATA_INICIO_CURSO}</small>
-                                    </p>
-                                    <p>
+                                        <div style="margin-bottom: 5px;">
+                                            <small class="variable-tag">{NOME_CURSO}</small> 
+                                            <small class="variable-tag">{DATA_INICIO_CURSO}</small>
+                                            <small class="variable-tag">{CURSO.LISTA_INSTRUTORES}</small>
+                                        </div>
+
+                                        <strong>Viagem:</strong>
+                                        <div style="margin-bottom: 5px;">
+                                            <small class="variable-tag">{NOME_VIAGEM}</small> 
+                                            <small class="variable-tag">{VIAGEM.DATA_PARTIDA}</small>
+                                            <small class="variable-tag">{VIAGEM.LISTA_INSTRUTORES}</small>
+                                        </div>
+                                        
+                                        <strong>Financeiro (Pagamento):</strong>
+                                        <div style="margin-bottom: 5px;">
+                                            <small class="variable-tag">{LANCAMENTO.DESCRICAO}</small>
+                                            <small class="variable-tag">{LANCAMENTO.VALOR_FORMATADO}</small>
+                                            <small class="variable-tag">{LANCAMENTO.DATA_VENCIMENTO_FORMATADA}</small>
+                                        </div>
+
+                                        <strong>Tarefas (OS):</strong>
+                                        <div style="margin-bottom: 5px;">
+                                            <small class="variable-tag">{OS.IDOs}</small>
+                                            <small class="variable-tag">{OS.STATUS}</small>
+                                            <small class="variable-tag">{OS.VALOR_TOTAL_FORMATADO}</small>
+                                            <small class="variable-tag">{OS.VALOR_TOTAL_FORMATADO}</small>
+                                            <small class="variable-tag">{OS.LINK_VISUALIZAR}</small>
+                                        </div>
+
+                                        <strong>Empresa (Emitente):</strong>
+                                        <div style="margin-bottom: 5px;">
+                                            <small class="variable-tag">{EMITENTE.NOME}</small>
+                                            <small class="variable-tag">{EMITENTE.CNPJ}</small>
+                                            <small class="variable-tag">{EMITENTE.TELEFONE}</small>
+                                            <small class="variable-tag">{EMITENTE.EMAIL}</small>
+                                            <small class="variable-tag">{EMITENTE.RUA}</small>
+                                            <small class="variable-tag">{EMITENTE.RUA}</small>
+                                            <small class="variable-tag">{EMITENTE.CIDADE}</small>
+                                        </div>
+
                                         <strong>Treino:</strong>
-                                        <small class="variable-tag">{NOME_TREINO}</small>
-                                        <small class="variable-tag">{DATA_TREINO}</small>
-                                    </p>
+                                        <div style="margin-bottom: 5px;">
+                                            <small class="variable-tag">{TREINO.DATA_AGENDAMENTO}</small>
+                                            <small class="variable-tag">{TREINO.NOME_INSTRUTOR}</small>
+                                            <small class="variable-tag">{TREINO.LOCAL}</small>
+                                            <small class="variable-tag">{TREINO.OBSERVACOES}</small>
+                                            <small class="variable-tag">{TREINO.STATUS}</small>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -396,53 +471,85 @@
         <h3>Editar Mensagem</h3>
     </div>
     <div class="modal-body">
-        <form id="formEditarMensagem" action="<?= base_url() ?>index.php/evolution/editar_mensagem" method="post"
-            class="form-horizontal">
+        <form id="formEditarMensagem" action="<?= base_url() ?>index.php/evolution/editar_mensagem" method="post">
             <input type="hidden" id="edit_id" name="id">
             <div class="control-group">
                 <label for="edit_titulo" class="control-label">Título<span class="required">*</span></label>
                 <div class="controls">
-                    <input type="text" name="titulo" id="edit_titulo" class="span11" required>
+                    <input type="text" name="titulo" id="edit_titulo" class="span12" style="width: 97%;" required>
                 </div>
             </div>
             <div class="control-group">
                 <label for="edit_imagem_url" class="control-label">URL da Imagem (Opcional)</label>
                 <div class="controls">
-                    <input type="url" name="imagem_url" id="edit_imagem_url" class="span11">
+                    <input type="url" name="imagem_url" id="edit_imagem_url" class="span12" style="width: 97%;">
                 </div>
             </div>
             <div class="control-group">
                 <label for="edit_mensagem" class="control-label">Mensagem<span class="required">*</span></label>
                 <div class="controls">
-                    <textarea name="mensagem" id="edit_mensagem" rows="5" class="span11" required></textarea>
+                    <textarea name="mensagem" id="edit_mensagem" rows="5" class="span12" style="width: 97%;" required></textarea>
                     <div class="help-block" style="margin-top: 10px;">
-                        <p><strong>Variáveis disponíveis (clique para inserir):</strong></p>
-                        <p>
+                        <p><strong>Variáveis Disponíveis:</strong></p>
+                        <div style="max-height: 150px; overflow-y: auto; font-size: 0.9em; line-height: 1.4em;">
+                            <p style="margin-bottom: 5px;">Você pode usar <strong>qualquer campo</strong> do banco de dados usando o formato <code>{OBJETO.CAMPO}</code> (Ex: <code>{CLIENTE.BAIRRO}</code>).</p>
+                            
                             <strong>Cliente:</strong>
-                            <small class="variable-tag">{NOME_CLIENTE}</small>
-                            <small class="variable-tag">{TELEFONE_CLIENTE}</small>
-                            <small class="variable-tag">{LINK_CLIENTE}</small>
-                        </p>
-                        <p>
-                            <strong>Usuário:</strong>
-                            <small class="variable-tag">{NOME_USUARIO}</small>
-                            <small class="variable-tag">{TELEFONE_USUARIO}</small>
-                        </p>
-                        <p>
-                            <strong>Viagem:</strong>
-                            <small class="variable-tag">{NOME_VIAGEM}</small>
-                            <small class="variable-tag">{DATA_PARTIDA_VIAGEM}</small>
-                        </p>
-                        <p>
+                            <div style="margin-bottom: 5px;">
+                                <small class="variable-tag">{NOME_CLIENTE}</small> 
+                                <small class="variable-tag">{TELEFONE_CLIENTE}</small>
+                                <small class="variable-tag">{LINK_ACESSO_CLIENTE}</small>
+                            </div>
+
                             <strong>Curso:</strong>
-                            <small class="variable-tag">{NOME_CURSO}</small>
-                            <small class="variable-tag">{DATA_INICIO_CURSO}</small>
-                        </p>
-                        <p>
+                            <div style="margin-bottom: 5px;">
+                                <small class="variable-tag">{NOME_CURSO}</small> 
+                                <small class="variable-tag">{DATA_INICIO_CURSO}</small>
+                                <small class="variable-tag">{CURSO.LISTA_INSTRUTORES}</small>
+                            </div>
+
+                            <strong>Viagem:</strong>
+                            <div style="margin-bottom: 5px;">
+                                <small class="variable-tag">{NOME_VIAGEM}</small> 
+                                <small class="variable-tag">{VIAGEM.DATA_PARTIDA}</small>
+                                <small class="variable-tag">{VIAGEM.LISTA_INSTRUTORES}</small>
+                            </div>
+                            
+                            <strong>Financeiro (Pagamento):</strong>
+                            <div style="margin-bottom: 5px;">
+                                <small class="variable-tag">{LANCAMENTO.DESCRICAO}</small>
+                                <small class="variable-tag">{LANCAMENTO.VALOR_FORMATADO}</small>
+                                <small class="variable-tag">{LANCAMENTO.DATA_VENCIMENTO_FORMATADA}</small>
+                            </div>
+
+                            <strong>Tarefas (OS):</strong>
+                            <div style="margin-bottom: 5px;">
+                                <small class="variable-tag">{OS.IDOs}</small>
+                                <small class="variable-tag">{OS.STATUS}</small>
+                                <small class="variable-tag">{OS.VALOR_TOTAL_FORMATADO}</small>
+                                <small class="variable-tag">{OS.LINK_VISUALIZAR}</small>
+                            </div>
+
+                            <strong>Empresa (Emitente):</strong>
+                            <div style="margin-bottom: 5px;">
+                                <small class="variable-tag">{EMITENTE.NOME}</small>
+                                <small class="variable-tag">{EMITENTE.CNPJ}</small>
+                                <small class="variable-tag">{EMITENTE.TELEFONE}</small>
+                                <small class="variable-tag">{EMITENTE.EMAIL}</small>
+                                <small class="variable-tag">{EMITENTE.RUA}</small>
+                                <small class="variable-tag">{EMITENTE.RUA}</small>
+                                <small class="variable-tag">{EMITENTE.CIDADE}</small>
+                            </div>
+
                             <strong>Treino:</strong>
-                            <small class="variable-tag">{NOME_TREINO}</small>
-                            <small class="variable-tag">{DATA_TREINO}</small>
-                        </p>
+                            <div style="margin-bottom: 5px;">
+                                <small class="variable-tag">{TREINO.DATA_AGENDAMENTO}</small>
+                                <small class="variable-tag">{TREINO.NOME_INSTRUTOR}</small>
+                                <small class="variable-tag">{TREINO.LOCAL}</small>
+                                <small class="variable-tag">{TREINO.OBSERVACOES}</small>
+                                <small class="variable-tag">{TREINO.STATUS}</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

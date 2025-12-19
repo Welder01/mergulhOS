@@ -324,9 +324,9 @@ class Cursos extends MY_Controller
                         $this->session->set_flashdata('success', 'Instrutor adicionado com sucesso!');
                         log_info('Adicionou instrutor ao curso. ID Curso: ' . $curso_id);
 
-                        // --- Evolution API Trigger (curso_usuario_adicionado) ---
+                        // --- Evolution API Trigger (curso_instrutor_adicionado) ---
                         $this->load->model('evolution_model');
-                        $trigger = $this->evolution_model->getEventTrigger('curso_usuario_adicionado');
+                        $trigger = $this->evolution_model->getEventTrigger('curso_instrutor_adicionado');
                         if ($trigger && $trigger->status == 1) {
                             $curso = $this->cursos_model->getById($curso_id);
                             $usuario = $this->db->where('idUsuarios', $usuario_id)->get('usuarios')->row();
@@ -368,16 +368,40 @@ class Cursos extends MY_Controller
         }
 
         $instrutor = $this->curso_instrutores_model->getById($id);
-        if ($instrutor && $this->curso_instrutores_model->delete($id)) {
-            $this->session->set_flashdata('success', 'Instrutor removido com sucesso!');
-            log_info('Removeu instrutor do curso. ID da atribuição: ' . $id);
-        } else {
-            $db_error = $this->db->error();
-            $msg = 'Erro ao remover instrutor.';
-            if (!empty($db_error['message'])) {
-                $msg .= ' ' . $db_error['message'];
+        if ($instrutor) {
+            // --- Evolution API Trigger (curso_instrutor_removido) ---
+            $this->load->model('evolution_model');
+            $trigger = $this->evolution_model->getEventTrigger('curso_instrutor_removido');
+            if ($trigger && $trigger->status == 1) {
+                $curso = $this->cursos_model->getById($instrutor->curso_id);
+                $usuario = $this->db->where('idUsuarios', $instrutor->usuario_id)->get('usuarios')->row();
+                if ($curso && $usuario) {
+                    $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
+                        'usuario' => $usuario,
+                        'curso' => $curso
+                    ]);
+                    $this->load->library('evolution_queue');
+                    $phone = $usuario->celular ?: $usuario->telefone;
+                    if ($phone) {
+                        $this->evolution_queue->add($phone, $msg_parsed);
+                    }
+                }
             }
-            $this->session->set_flashdata('error', $msg);
+            // ---------------------------------------------------------
+
+            if ($this->curso_instrutores_model->delete($id)) {
+                $this->session->set_flashdata('success', 'Instrutor removido com sucesso!');
+                log_info('Removeu instrutor do curso. ID da atribuição: ' . $id);
+            } else {
+                $db_error = $this->db->error();
+                $msg = 'Erro ao remover instrutor.';
+                if (!empty($db_error['message'])) {
+                    $msg .= ' ' . $db_error['message'];
+                }
+                $this->session->set_flashdata('error', $msg);
+            }
+        } else {
+            $this->session->set_flashdata('error', 'Registro não encontrado.');
         }
         redirect('cursos/visualizar/' . $instrutor->curso_id . '?tab=tab2');
     }
@@ -410,13 +434,15 @@ class Cursos extends MY_Controller
 
             // --- Evolution API Trigger (curso_cliente_adicionado) ---
             $this->load->model('evolution_model');
-            $trigger = $this->evolution_model->getEventTrigger('curso_cliente_adicionado');
-            if ($trigger && $trigger->status == 1) {
+
+            // 1. Client Notification
+            $triggerClient = $this->evolution_model->getEventTrigger('curso_cliente_adicionado_cliente');
+            if ($triggerClient && $triggerClient->status == 1) {
                 $curso = $this->cursos_model->getById($curso_id);
                 $this->load->model('clientes_model');
                 $cliente = $this->clientes_model->getById($cliente_id);
                 if ($cliente) {
-                    $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
+                    $msg_parsed = $this->evolution_model->parseMessage($triggerClient->mensagem, [
                         'cliente' => $cliente,
                         'curso' => $curso
                     ]);
@@ -424,6 +450,32 @@ class Cursos extends MY_Controller
                     $phone = $cliente->celular ?: $cliente->telefone;
                     if ($phone)
                         $this->evolution_queue->add($phone, $msg_parsed);
+                }
+            }
+
+            // 2. Instructors Notification
+            $triggerUser = $this->evolution_model->getEventTrigger('curso_cliente_adicionado_usuario');
+            if ($triggerUser && $triggerUser->status == 1) {
+                $curso = $this->cursos_model->getById($curso_id); // Ensure we have course
+                $cliente = $this->clientes_model->getById($cliente_id); // Ensure we have client
+
+                $this->load->model('curso_instrutores_model');
+                $instrutores = $this->curso_instrutores_model->getByCurso($curso_id);
+                if ($instrutores) {
+                    $this->load->library('evolution_queue');
+                    foreach ($instrutores as $inst) {
+                        $u = $this->usuarios_model->getById($inst->usuario_id);
+                        if ($u) {
+                            $msg_parsed = $this->evolution_model->parseMessage($triggerUser->mensagem, [
+                                'cliente' => $cliente,
+                                'curso' => $curso,
+                                'usuario' => $u
+                            ]);
+                            $phone = $u->celular ?: $u->telefone;
+                            if ($phone)
+                                $this->evolution_queue->add($phone, $msg_parsed);
+                        }
+                    }
                 }
             }
             // --------------------------------------------------------
@@ -469,7 +521,57 @@ class Cursos extends MY_Controller
         }
 
         $aluno = $this->curso_alunos_model->getById($id); // Precisa para o redirect
+
+        // Fetch Data for Trigger
+        if ($aluno) {
+            $cliente = $this->clientes_model->getById($aluno->cliente_id);
+            $curso = $this->cursos_model->getById($aluno->curso_id);
+        }
+
         $resultado = $this->cursos_model->remover_aluno($id);
+
+        if ($resultado['success'] && isset($cliente) && isset($curso)) {
+            // --- Evolution API Trigger (curso_cliente_removido) ---
+            $this->load->model('evolution_model');
+
+            // 1. Client Notification
+            $triggerClient = $this->evolution_model->getEventTrigger('curso_cliente_removido_cliente');
+            if ($triggerClient && $triggerClient->status == 1) {
+                $msg_parsed = $this->evolution_model->parseMessage($triggerClient->mensagem, [
+                    'cliente' => $cliente,
+                    'curso' => $curso
+                ]);
+                $this->load->library('evolution_queue');
+                $phone = $cliente->celular ?: $cliente->telefone;
+                if ($phone) {
+                    $this->evolution_queue->add($phone, $msg_parsed);
+                }
+            }
+
+            // 2. Instructors Notification
+            $triggerUser = $this->evolution_model->getEventTrigger('curso_cliente_removido_usuario');
+            if ($triggerUser && $triggerUser->status == 1) {
+                $this->load->model('curso_instrutores_model');
+                $instrutores = $this->curso_instrutores_model->getByCurso($curso->id);
+                if ($instrutores) {
+                    $this->load->library('evolution_queue');
+                    foreach ($instrutores as $inst) {
+                        $u = $this->usuarios_model->getById($inst->usuario_id);
+                        if ($u) {
+                            $msg_parsed = $this->evolution_model->parseMessage($triggerUser->mensagem, [
+                                'cliente' => $cliente,
+                                'curso' => $curso,
+                                'usuario' => $u
+                            ]);
+                            $phone = $u->celular ?: $u->telefone;
+                            if ($phone)
+                                $this->evolution_queue->add($phone, $msg_parsed);
+                        }
+                    }
+                }
+            }
+            // ------------------------------------------------------
+        }
 
         $this->session->set_flashdata(
             $resultado['success'] ? 'success' : 'error',

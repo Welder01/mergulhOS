@@ -427,6 +427,24 @@ class Clientes extends MY_Controller
             redirect(site_url('clientes/gerenciar/'));
         }
 
+        // --- Evolution API Trigger (cliente_excluido) ---
+        $this->load->model('evolution_model');
+        $trigger = $this->evolution_model->getEventTrigger('cliente_excluido');
+        if ($trigger && $trigger->status == 1 && $trigger->mensagem_id) {
+            $cliente = $this->clientes_model->getById($id);
+            if ($cliente) {
+                // For 'excluido', we might want to notify the Admin or generic number,
+                // but if the user wants to notify the client BYE BYE, we do this:
+                $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, (array) $cliente);
+                $this->load->library('evolution_queue');
+                $phone = !empty($cliente->celular) ? $cliente->celular : (!empty($cliente->telefone) ? $cliente->telefone : '');
+                if ($phone) {
+                    $this->evolution_queue->add($phone, $msg_parsed);
+                }
+            }
+        }
+        // ------------------------------------------------
+
         $os = $this->clientes_model->getAllOsByClient($id);
         if ($os != null) {
             $this->clientes_model->removeClientOs($os);
@@ -438,25 +456,11 @@ class Clientes extends MY_Controller
             $this->clientes_model->removeClientVendas($vendas);
         }
 
-        // --- Evolution API Trigger (cliente_excluido) ---
-        $this->load->model('evolution_model');
-        $trigger = $this->evolution_model->getEventTrigger('cliente_excluido');
-        if ($trigger && $trigger->status == 1 && $trigger->mensagem_id) {
-            $clientData = $this->clientes_model->getById($id);
-            if ($clientData) {
-                $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, (array) $clientData);
-                $this->load->library('evolution_queue');
-                $phone = !empty($clientData->celular) ? $clientData->celular : (!empty($clientData->telefone) ? $clientData->telefone : '');
-                if ($phone) {
-                    $this->evolution_queue->add($phone, $msg_parsed);
-                }
-            }
-        }
-
         $this->clientes_model->delete('clientes', 'idClientes', $id);
         log_info('Removeu um cliente. ID' . $id);
 
-        $this->session->set_flashdata('success', 'Cliente excluido com sucesso!');
+        $this->session->set_flashdata('success', 'Cliente excluído com sucesso!');
         redirect(site_url('clientes/gerenciar/'));
     }
 }
+

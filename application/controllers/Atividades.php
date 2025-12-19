@@ -194,6 +194,34 @@ class Atividades extends MY_Controller
             }
 
             log_info('Gerou pagamento p/ ativ. ID: ' . $id . ' Lanc: ' . $idLancamento . ' Valor: ' . $valor);
+
+            // --- Evolution API Trigger (tarefa_pagamento_realizado) ---
+            $this->load->model('evolution_model');
+            $trigger = $this->evolution_model->getEventTrigger('tarefa_pagamento_realizado');
+
+            // Need the full lancamento object and user (instructor)
+            $lancamentoObj = $this->mapos_model->get('lancamentos', '*', 'idLancamentos = ' . $idLancamento, 1, 0, true);
+
+            $usuarioPagamento = null;
+            if (isset($instrutor_id) && $instrutor_id) {
+                // Assuming $this->usuarios_model is available or load it
+                if (!isset($this->usuarios_model))
+                    $this->load->model('usuarios_model');
+                $usuarioPagamento = $this->usuarios_model->getById($instrutor_id);
+            }
+
+            if ($trigger && $trigger->status == 1 && $usuarioPagamento && $lancamentoObj) {
+                $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
+                    'lancamento' => $lancamentoObj,
+                    'usuario' => $usuarioPagamento
+                ]);
+                $this->load->library('evolution_queue');
+                $phone = $usuarioPagamento->celular ?: $usuarioPagamento->telefone;
+                if ($phone)
+                    $this->evolution_queue->add($phone, $msg_parsed);
+            }
+            // ---------------------------------------------------------
+
             echo json_encode(['result' => true, 'message' => 'Pagamento gerado com sucesso.']);
         } else {
             echo json_encode(['result' => false, 'message' => 'Erro ao inserir lançamento financeiro.']);
@@ -356,6 +384,40 @@ class Atividades extends MY_Controller
             if ($orphans_deleted > 0) {
                 $msg .= " (Sistema removeu $orphans_deleted duplicatas encontradas).";
             }
+
+            // --- Evolution API Trigger (tarefa_pagamento_estornado) ---
+            // Triggered when payment is reversed
+            $this->load->model('evolution_model');
+            $this->load->model('usuarios_model');
+            $trigger = $this->evolution_model->getEventTrigger('tarefa_pagamento_estornado');
+            // Try to find the instructor/user related to this activity
+            // If instrutor_id is available from earlier in function
+            $usuarioEstorno = null;
+            if (isset($instrutor_id) && $instrutor_id) {
+                $usuarioEstorno = $this->usuarios_model->getById($instrutor_id);
+            } else {
+                // Fallback to logged in user if it makes sense contextually, 
+                // but usually the message is FOR the instructor. 
+                // Let's stick to instrutor_id.
+            }
+
+            if ($trigger && $trigger->status == 1 && $usuarioEstorno) {
+                // Construct a dummy 'lancamento' object for basic info since the real one might be deleted
+                $dummyLancamento = (object) [
+                    'descricao' => $search_desc ?? 'Pagamento Estornado',
+                    'valor' => $search_val ?? '0.00',
+                ];
+
+                $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
+                    'lancamento' => $dummyLancamento,
+                    'usuario' => $usuarioEstorno
+                ]);
+                $this->load->library('evolution_queue');
+                $phone = $usuarioEstorno->celular ?: $usuarioEstorno->telefone;
+                if ($phone)
+                    $this->evolution_queue->add($phone, $msg_parsed);
+            }
+            // ---------------------------------------------------------
 
             echo json_encode(['result' => true, 'message' => $msg]);
         } else {

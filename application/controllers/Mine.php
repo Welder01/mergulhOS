@@ -1353,9 +1353,9 @@ class Mine extends MY_Controller
 
         $this->treinos_model->add('treinos_agendados', $data);
 
-        // --- Evolution API Trigger (treino_cliente_adicionado) ---
+        // --- Evolution API Trigger (treino_cliente_adicionado_cliente) ---
         $this->load->model('evolution_model');
-        $trigger = $this->evolution_model->getEventTrigger('treino_cliente_adicionado');
+        $trigger = $this->evolution_model->getEventTrigger('treino_cliente_adicionado_cliente');
         if ($trigger && $trigger->status == 1) {
             $config->data_hora_inicio = $data['data_hora_inicio']; // Inject specific date
             $config->nome_treino = $config->nome; // Ensure NOME_TREINO works
@@ -1377,9 +1377,9 @@ class Mine extends MY_Controller
         }
         // --------------------------------------------------------
 
-        // --- Evolution API Trigger (treino_usuario_adicionado) ---
+        // --- Evolution API Trigger (treino_cliente_adicionado_usuario) ---
         if ($comInstrutor && $instrutorId) {
-            $triggerInstr = $this->evolution_model->getEventTrigger('treino_usuario_adicionado');
+            $triggerInstr = $this->evolution_model->getEventTrigger('treino_cliente_adicionado_usuario');
             if ($triggerInstr && $triggerInstr->status == 1) {
                 // Use generic DB get for instructor since we don't have a specific model loaded for them easily here
                 $instrutor = $this->db->where('idUsuarios', $instrutorId)->get('usuarios')->row();
@@ -1387,7 +1387,8 @@ class Mine extends MY_Controller
                     // Update config again or clone it if needed, but it's the same training object
                     $msg_parsed_instr = $this->evolution_model->parseMessage($triggerInstr->mensagem, [
                         'usuario' => $instrutor,
-                        'treino' => $config // Contains injected data_hora_inicio
+                        'treino' => $config, // Contains injected data_hora_inicio
+                        'cliente' => (isset($cliente) ? $cliente : $this->clientes_model->getById($clienteId))
                     ]);
                     $this->load->library('evolution_queue');
                     $phoneInstr = $instrutor->celular ?: $instrutor->telefone;
@@ -1466,6 +1467,49 @@ class Mine extends MY_Controller
         $data = ['status' => 'Cancelado'];
         if ($this->treinos_model->edit('treinos_agendados', $data, 'id', $idAgendamento)) {
             $this->session->set_flashdata('success', 'Agendamento cancelado com sucesso!');
+
+            // --- Evolution API Trigger (treino_status_alterado) ---
+            $this->load->model('evolution_model');
+            // Update agendamento status for parsing
+            $agendamento->status = 'Cancelado';
+
+            // 1. Notify Client
+            $triggerCliente = $this->evolution_model->getEventTrigger('treino_status_alterado_cliente');
+            if ($triggerCliente && $triggerCliente->status == 1) {
+                $this->load->model('clientes_model');
+                $cliente = $this->clientes_model->getById($agendamento->cliente_id);
+                if ($cliente) {
+                    $msg_parsed = $this->evolution_model->parseMessage($triggerCliente->mensagem, [
+                        'cliente' => $cliente,
+                        'treino' => $agendamento
+                    ]);
+                    $this->load->library('evolution_queue');
+                    $phone = $cliente->celular ?: $cliente->telefone;
+                    if ($phone)
+                        $this->evolution_queue->add($phone, $msg_parsed);
+                }
+            }
+
+            // 2. Notify User (Instructor)
+            if ($agendamento->instrutor_id) {
+                $triggerUsuario = $this->evolution_model->getEventTrigger('treino_status_alterado_usuario');
+                if ($triggerUsuario && $triggerUsuario->status == 1) {
+                    $this->load->model('usuarios_model');
+                    $instrutor = $this->usuarios_model->getById($agendamento->instrutor_id);
+                    if ($instrutor) {
+                        $msg_parsed = $this->evolution_model->parseMessage($triggerUsuario->mensagem, [
+                            'usuario' => $instrutor, // Assigned instructor
+                            'cliente' => (isset($cliente) ? $cliente : $this->clientes_model->getById($agendamento->cliente_id)),
+                            'treino' => $agendamento
+                        ]);
+                        $this->load->library('evolution_queue');
+                        $phone = $instrutor->celular ?: $instrutor->telefone;
+                        if ($phone)
+                            $this->evolution_queue->add($phone, $msg_parsed);
+                    }
+                }
+            }
+            // ------------------------------------------------------
         } else {
             $this->session->set_flashdata('error', 'Ocorreu um erro ao cancelar o agendamento.');
         }

@@ -715,4 +715,20 @@ class Evolution extends MY_Controller
 
         redirect('evolution/gerenciar?tab=eventos');
     }
+    public function process_queue()
+    {
+        // This method is intended to be called by CRON job
+        // curl http://your-domain.com/index.php/evolution/process_queue
+
+        $this->load->library('evolution_queue');
+        $result = $this->evolution_queue->process();
+
+        if ($this->input->is_cli_request()) {
+            echo "Processed: " . $result['processed'] . "\n";
+            echo "Failed: " . $result['failed'] . "\n";
+        } else {
+            header('Content-Type: application/json');
+            echo json_encode($result);
+        }
+    }
 }
