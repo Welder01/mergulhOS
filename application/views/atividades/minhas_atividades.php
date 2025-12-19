@@ -250,7 +250,7 @@ if (!empty($cursos)) {
 if (!empty($viagens)) {
     foreach ($viagens as $v) {
         $v->type = 'trip';
-        $v->sort_date = $v->data_saida;
+        $v->sort_date = $v->data_partida;
         $events[] = $v;
     }
 }
@@ -536,15 +536,38 @@ usort($events, function ($a, $b) {
     function faturarAtividade(id, type, valor, descricao) {
         Swal.fire({
             title: 'Gerar Pagamento',
-            text: "Gerar pagamento de R$ " + parseFloat(valor).toFixed(2).replace('.', ',') + " para esta atividade?",
+            html: `
+                <p>Gerar pagamento de <b>R$ ` + parseFloat(valor).toFixed(2).replace('.', ',') + `</b>?</p>
+                <div style='text-align: left; margin-top: 15px;'>
+                    <label>Forma de Pagamento</label>
+                    <select id='forma_pgto' class='swal2-input' style='width: 100%; margin: 5px 0;'>
+                        <option value='Dinheiro'>Dinheiro</option>
+                        <option value='Pix'>Pix</option>
+                        <option value='Boleto'>Boleto</option>
+                        <option value='Cartão de Crédito'>Cartão de Crédito</option>
+                        <option value='Cartão de Débito'>Cartão de Débito</option>
+                        <option value='Cheque'>Cheque</option>
+                        <option value='Cheque Pré-datado'>Cheque Pré-datado</option>
+                        <option value='Depósito'>Depósito</option>
+                        <option value='Transferência DOC'>Transferência DOC</option>
+                        <option value='Transferência TED'>Transferência TED</option>
+                        <option value='Promissória'>Promissória</option>
+                    </select>
+                </div>
+            `,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Sim, pagar!',
-            cancelButtonText: 'Cancelar'
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                return document.getElementById('forma_pgto').value;
+            }
         }).then((result) => {
-            if (result.isConfirmed || result.value) { // Support for different SweetAlert versions
+            if (result.isConfirmed || result.value) { 
+                var forma_pgto = result.value || document.getElementById('forma_pgto').value;
+                
                 $.ajax({
                     url: '<?= base_url() ?>index.php/atividades/faturar_atividade',
                     type: 'POST',
@@ -553,7 +576,8 @@ usort($events, function ($a, $b) {
                         id: id,
                         type: type,
                         valor: valor,
-                        descricao: descricao
+                        descricao: descricao,
+                        forma_pgto: forma_pgto
                     },
                     success: function (response) {
                         if (response.result) {

@@ -84,7 +84,7 @@ class Atividades extends MY_Controller
 
         // Identify table and user column
         $table = '';
-        $user_col = 'instrutor_id'; // default
+        $user_col = 'usuario_id'; // Default for courses and trips
         switch ($type) {
             case 'course':
                 $table = 'curso_instrutores';
@@ -94,7 +94,7 @@ class Atividades extends MY_Controller
                 break;
             case 'training':
                 $table = 'treinos_agendados';
-                $user_col = 'staff_id'; // Verify if this is correct provided previous knowledge, if not default to instructor_id or similar
+                $user_col = 'instrutor_id'; // Based on Atividades_model join
                 break;
         }
 
@@ -127,7 +127,7 @@ class Atividades extends MY_Controller
             'data_pagamento' => $data_vencimento,
             'baixado' => 1,
             'cliente_fornecedor' => 'Instrutor: ' . $instrutor_nome,
-            'forma_pgto' => 'Dinheiro',
+            'forma_pgto' => $this->input->post('forma_pgto') ?: 'Dinheiro',
             'tipo' => 'despesa',
             'anexo' => null,
             'clientes_id' => null, // Correct field name
