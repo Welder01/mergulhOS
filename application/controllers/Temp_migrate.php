@@ -4,7 +4,7 @@ class Temp_migrate extends CI_Controller
     public function index()
     {
         $this->load->library('migration');
-        if ($this->migration->latest()) {
+        if ($this->migration->version(20251219040000) === FALSE) {
             echo "Migration success. Current version: " . $this->migration->current() . "<br>";
             $files = $this->migration->find_migrations();
             echo "Available migrations:<br>";

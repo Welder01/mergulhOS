@@ -136,10 +136,14 @@ class Atividades extends MY_Controller
         ];
 
         $this->load->model('mapos_model');
-        if ($this->mapos_model->add('lancamentos', $data)) {
-            // Update Activity to Paid
+        $idLancamento = $this->mapos_model->add('lancamentos', $data);
+        if ($idLancamento) {
+            // Update Activity to Paid and link Lancamento
             $this->db->where('id', $id);
-            $this->db->update($table, ['status_pagamento' => 'pago']);
+            $this->db->update($table, [
+                'status_pagamento' => 'pago',
+                'lancamento_id' => $idLancamento
+            ]);
 
             log_info('Gerou pagamento para atividade ID: ' . $id . ' (' . $type . ')');
 

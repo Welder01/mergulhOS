@@ -185,16 +185,8 @@ $total_receber = 0;
 $total_recebido = 0;
 $total_bloqueado = 0;
 
-// Calculate from Lancamentos (Already processed/paid expenses usually go here if fetched)
-// The controller sends ALL lancamentos. We should filter? 
-// For now, respect existing logic: baixado 1 = recebido.
-foreach ($lancamentos as $l) {
-    if ($l->baixado == 1) {
-        $total_recebido += $l->valor;
-    } else {
-        $total_receber += $l->valor;
-    }
-}
+// Remove calculation from Lancamentos as per user request:
+// "O TOTAL RECEBIDO É SÓ A SOMA DAS ATRIBUIÇÕES... O LANÇAMENTO QUE É O CONTROLE DO ADMINISTRADOR."
 
 // Helper to process value
 function process_activity_value($activity, &$t_recebido, &$t_receber, &$t_bloqueado)
@@ -211,7 +203,7 @@ function process_activity_value($activity, &$t_recebido, &$t_receber, &$t_bloque
     }
 
     // Logic:
-    // Paid -> Recebido
+    // Paid -> Recebido (Strictly from activity status)
     // Accepted + Pending Payment -> Bloqueado
     // Pending Acceptance -> A Receber
     // Rejected -> Ignored
@@ -220,17 +212,7 @@ function process_activity_value($activity, &$t_recebido, &$t_receber, &$t_bloque
     $aceite = isset($activity->aceite) ? $activity->aceite : null; // null = pending
 
     if ($status_pagamento == 'pago') {
-        // Check if already counted in lancamentos? 
-        // Assuming activity tables record payment status INDEPENDENTLY or concurrently.
-        // If we want to sum here, we should be careful of double counting if lancamentos are also fetched.
-        // For this view, usually activity summation is preferred if lancamentos are generic.
-        // Let's assume we sum all activities here for the "Minhas Atividades" specific totals.
-        // But the previous code summed BOTH. Let's stick to safe logic:
-        // If it's paid, it's likely in lancamentos if linked. 
-        // To avoid confusion, let's ONLY sum what is NOT in lancamentos or sum everything if we ignore lancamentos loop?
-        // The user request was specific about "A Receber" vs "Bloqueado".
-        // Let's only modify the "future" values logic.
-        // $t_recebido += $valor; // Optional: depending on if lancamentos are complete
+        $t_recebido += $valor;
     } elseif ($aceite === '1' || $aceite === 1) {
         $t_bloqueado += $valor;
     } elseif (is_null($aceite)) {
@@ -255,6 +237,34 @@ foreach ($viagens as $v) {
 foreach ($treinos as $t) {
     $t->valor_total = process_activity_value($t, $total_recebido, $total_receber, $total_bloqueado);
 }
+
+// --- Hoist Event Aggregation for use in both tabs ---
+$events = [];
+if (!empty($cursos)) {
+    foreach ($cursos as $c) {
+        $c->type = 'course';
+        $c->sort_date = $c->data_inicio;
+        $events[] = $c;
+    }
+}
+if (!empty($viagens)) {
+    foreach ($viagens as $v) {
+        $v->type = 'trip';
+        $v->sort_date = $v->data_saida;
+        $events[] = $v;
+    }
+}
+if (!empty($treinos)) {
+    foreach ($treinos as $t) {
+        $t->type = 'training';
+        $t->sort_date = $t->data_hora_inicio;
+        $events[] = $t;
+    }
+}
+usort($events, function ($a, $b) {
+    return strtotime($b->sort_date) - strtotime($a->sort_date); // Descending
+});
+// ----------------------------------------------------
 ?>
 
 <!-- Row 1: Financial Cards -->
@@ -296,32 +306,9 @@ foreach ($treinos as $t) {
 
                 <!-- Activities Tab -->
                 <div id="tabAtividades" class="tab-pane active">
-                    <?php if (empty($cursos) && empty($viagens) && empty($treinos)): ?>
+                    <?php if (empty($events)): ?>
                         <div class="alert alert-info">Nenhuma atividade atribuída encontrada.</div>
                     <?php else: ?>
-                        <?php
-                        // Merge and sort
-                        $events = [];
-                        foreach ($cursos as $c) {
-                            $c->type = 'course';
-                            $c->sort_date = $c->data_inicio;
-                            // Value already calculated
-                            $events[] = $c;
-                        }
-                        foreach ($viagens as $v) {
-                            $v->type = 'trip';
-                            $v->sort_date = $v->data_partida;
-                            $events[] = $v;
-                        }
-                        foreach ($treinos as $t) {
-                            $t->type = 'training';
-                            $t->sort_date = $t->data_hora_inicio;
-                            $events[] = $t;
-                        }
-                        usort($events, function ($a, $b) {
-                            return strtotime($b->sort_date) - strtotime($a->sort_date); // Descending
-                        });
-                        ?>
 
                         <?php foreach ($events as $event): ?>
                             <div class="activity-card <?= $event->type ?>">
@@ -428,25 +415,41 @@ foreach ($treinos as $t) {
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (empty($lancamentos)): ?>
+                                <?php if (empty($events)): ?>
                                     <tr>
-                                        <td colspan="5" style="text-align: center; padding: 20px;">Nenhum lançamento
-                                            encontrado.</td>
+                                        <td colspan="5" style="text-align: center; padding: 20px;">Nenhuma atividade
+                                            encontrada.</td>
                                     </tr>
                                 <?php else: ?>
-                                    <?php foreach ($lancamentos as $l): ?>
+                                    <?php foreach ($events as $event): ?>
+                                        <?php
+                                        // Determine Descricao
+                                        $descricao = isset($event->nome_curso) ? "Curso: " . $event->nome_curso : (isset($event->nome_viagem) ? "Viagem: " . $event->nome_viagem : "Treino: " . $event->nome_treino);
+
+                                        // Determine Data
+                                        $data_ref = date('d/m/Y', strtotime($event->sort_date));
+
+                                        // Determine Status Label
+                                        $status_pagamento = isset($event->status_pagamento) ? $event->status_pagamento : 'pendente';
+                                        $aceite = isset($event->aceite) ? $event->aceite : null;
+
+                                        $status_label = '<span class="badge badge-warning">Pendente</span>';
+                                        if ($status_pagamento == 'pago') {
+                                            $status_label = '<span class="badge badge-success">Recebido</span>';
+                                        } elseif ($aceite === '1' || $aceite === 1) {
+                                            $status_label = '<span class="badge badge-info">Bloqueado/Agendado</span>';
+                                        } elseif ($aceite === '0' || $aceite === 0) {
+                                            $status_label = '<span class="badge badge-important">Recusado</span>';
+                                        }
+                                        ?>
                                         <tr>
-                                            <td><?= $l->descricao ?></td>
-                                            <td><?= date('d/m/Y', strtotime($l->data_vencimento)) ?></td>
+                                            <td><?= $descricao ?></td>
+                                            <td><?= $data_ref ?></td>
                                             <td style="font-weight: bold; color: #2e363f;">R$
-                                                <?= number_format($l->valor, 2, ',', '.') ?>
+                                                <?= number_format($event->valor_total, 2, ',', '.') ?>
                                             </td>
                                             <td>
-                                                <?php if ($l->baixado == 1): ?>
-                                                    <span class="badge badge-success" style="padding: 5px 10px;">Pago</span>
-                                                <?php else: ?>
-                                                    <span class="badge badge-warning" style="padding: 5px 10px;">Pendente</span>
-                                                <?php endif; ?>
+                                                <?= $status_label ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
