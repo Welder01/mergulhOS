@@ -242,20 +242,9 @@ class Atividades extends MY_Controller
             return;
         }
 
-        if (empty($activity->lancamento_id)) {
-            // Already unlinked? Just reset status to be sure.
-            $this->db->where('id', $id);
-            $this->db->update($table, ['status_pagamento' => 'pendente']);
-            echo json_encode(['result' => true, 'message' => 'Atividade marcada como pendente (Nenhum lançamento vinculado encontrado para excluir). Verifique duplicatas antigas manualmente.']);
-            return;
-        }
+        $deleted = false;
 
-        // Direct delete
-        $this->db->where('idLancamentos', $activity->lancamento_id);
-        $deleted = $this->db->delete('lancamentos');
-
-        // MASSIVE CLEANUP: Reconstruct details to delete orphans
-        // Wrapped in try-catch to prevent fatal errors from blocking the main estorno response
+        // 1. MASSIVE CLEANUP: Reconstruct details to delete orphans (Run this unconditionally first)
         $orphans_deleted = 0;
         try {
             // We need to match the logic from faturar_atividades in JS/PHP
@@ -299,19 +288,22 @@ class Atividades extends MY_Controller
             $search_desc = '';
             $search_val = 0; // Use 0 to ignore value check if unsafe
 
+            $search_desc = '';
+            $search_val = 0; // Use 0 to ignore value check if unsafe
+
             if ($type == 'trip') {
                 if ($activity_name) {
-                    $search_desc = 'Pagamento Viagem - ' . $activity_name;
+                    $search_desc = 'Pagamento Trip - ' . $activity_name;
                     $search_val = isset($activity->preco) ? $activity->preco : 0;
                 }
             } elseif ($type == 'course') {
                 if ($activity_name) {
-                    $search_desc = 'Pagamento Curso - ' . $activity_name;
+                    $search_desc = 'Pagamento Course - ' . $activity_name;
                     $search_val = isset($activity->preco) ? $activity->preco : 0;
                 }
             } elseif ($type == 'training') {
                 if (isset($activity->data_aula)) {
-                    $search_desc = 'Pagamento Treino - ' . $activity->data_aula;
+                    $search_desc = 'Pagamento Training - ' . $activity->data_aula;
                     if (isset($activity->valor_pagamento))
                         $search_val = $activity->valor_pagamento;
                     elseif (isset($activity->preco))
@@ -338,7 +330,17 @@ class Atividades extends MY_Controller
             }
         } catch (Exception $e) {
             log_info('MASSIVE CLEANUP ERROR: ' . $e->getMessage());
-            // Do not fail the request, just log it. The main deletion already happened.
+        }
+
+        // 2. Direct delete of linked ID (if exists and wasn't caught by cleanup)
+        if (!empty($activity->lancamento_id)) {
+            $this->db->where('idLancamentos', $activity->lancamento_id);
+            if ($this->db->delete('lancamentos')) {
+                $deleted = true;
+            }
+        } else {
+            // If no linked ID, we consider it "deleted" if we found orphans or if we just need to reset status
+            $deleted = true;
         }
 
         if ($deleted || $orphans_deleted > 0) {
@@ -357,7 +359,13 @@ class Atividades extends MY_Controller
 
             echo json_encode(['result' => true, 'message' => $msg]);
         } else {
-            echo json_encode(['result' => false, 'message' => 'Erro ao excluir (Nenhum registro encontrado).']);
+            // Even if nothing was deleted (maybe already gone), we ensure status is reset
+            $this->db->where('id', $id);
+            $this->db->update($table, [
+                'status_pagamento' => 'pendente',
+                'lancamento_id' => null
+            ]);
+            echo json_encode(['result' => true, 'message' => 'Atividade marcada como pendente.']);
         }
     }
 
