@@ -1,6 +1,6 @@
 <?php
 
-if (! defined('BASEPATH')) {
+if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
@@ -22,7 +22,7 @@ class Produtos extends MY_Controller
 
     public function gerenciar()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'vProduto')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vProduto')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para visualizar produtos.');
             redirect(base_url());
         }
@@ -33,9 +33,9 @@ class Produtos extends MY_Controller
 
         $this->data['configuration']['base_url'] = site_url('produtos/gerenciar/');
         $this->data['configuration']['total_rows'] = $this->produtos_model->count('produtos');
-        if($pesquisa) {
+        if ($pesquisa) {
             $this->data['configuration']['suffix'] = "?pesquisa={$pesquisa}";
-            $this->data['configuration']['first_url'] = base_url("index.php/produtos")."\?pesquisa={$pesquisa}";
+            $this->data['configuration']['first_url'] = base_url("index.php/produtos") . "\?pesquisa={$pesquisa}";
         }
 
         $this->pagination->initialize($this->data['configuration']);
@@ -49,7 +49,7 @@ class Produtos extends MY_Controller
 
     public function adicionar()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'aProduto')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aProduto')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para adicionar produtos.');
             redirect(base_url());
         }
@@ -77,6 +77,19 @@ class Produtos extends MY_Controller
             ];
 
             if ($this->produtos_model->add('produtos', $data) == true) {
+                // --- Evolution API Trigger (produto_criado) ---
+                $this->load->model('evolution_model');
+                $trigger = $this->evolution_model->getEventTrigger('produto_criado');
+                if ($trigger && $trigger->status == 1 && $trigger->mensagem_id) {
+                    $this->load->model('mapos_model');
+                    $emitente = $this->mapos_model->getEmitente();
+                    if ($emitente && !empty($emitente->telefone)) {
+                        $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, $data);
+                        $this->load->library('evolution_queue');
+                        $this->evolution_queue->add($emitente->telefone, $msg_parsed);
+                    }
+                }
+
                 $this->session->set_flashdata('success', 'Produto adicionado com sucesso!');
                 log_info('Adicionou um produto');
                 redirect(site_url('produtos/adicionar/'));
@@ -91,12 +104,12 @@ class Produtos extends MY_Controller
 
     public function editar()
     {
-        if (! $this->uri->segment(3) || ! is_numeric($this->uri->segment(3)) || ! $this->produtos_model->getById($this->uri->segment(3))) {
+        if (!$this->uri->segment(3) || !is_numeric($this->uri->segment(3)) || !$this->produtos_model->getById($this->uri->segment(3))) {
             $this->session->set_flashdata('error', 'Produto não encontrado ou parâmetro inválido.');
             redirect('produtos/gerenciar');
         }
 
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eProduto')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eProduto')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar produtos.');
             redirect(base_url());
         }
@@ -123,6 +136,19 @@ class Produtos extends MY_Controller
             ];
 
             if ($this->produtos_model->edit('produtos', $data, 'idProdutos', $this->input->post('idProdutos')) == true) {
+                // --- Evolution API Trigger (produto_editado) ---
+                $this->load->model('evolution_model');
+                $trigger = $this->evolution_model->getEventTrigger('produto_editado');
+                if ($trigger && $trigger->status == 1 && $trigger->mensagem_id) {
+                    $this->load->model('mapos_model');
+                    $emitente = $this->mapos_model->getEmitente();
+                    if ($emitente && !empty($emitente->telefone)) {
+                        $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, $data);
+                        $this->load->library('evolution_queue');
+                        $this->evolution_queue->add($emitente->telefone, $msg_parsed);
+                    }
+                }
+
                 $this->session->set_flashdata('success', 'Produto editado com sucesso!');
                 log_info('Alterou um produto. ID: ' . $this->input->post('idProdutos'));
                 redirect(site_url('produtos/editar/') . $this->input->post('idProdutos'));
@@ -140,12 +166,12 @@ class Produtos extends MY_Controller
 
     public function visualizar()
     {
-        if (! $this->uri->segment(3) || ! is_numeric($this->uri->segment(3))) {
+        if (!$this->uri->segment(3) || !is_numeric($this->uri->segment(3))) {
             $this->session->set_flashdata('error', 'Item não pode ser encontrado, parâmetro não foi passado corretamente.');
             redirect('mapos');
         }
 
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'vProduto')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vProduto')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para visualizar produtos.');
             redirect(base_url());
         }
@@ -164,7 +190,7 @@ class Produtos extends MY_Controller
 
     public function excluir()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'dProduto')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dProduto')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para excluir produtos.');
             redirect(base_url());
         }
@@ -177,6 +203,20 @@ class Produtos extends MY_Controller
 
         $this->produtos_model->delete('produtos_os', 'produtos_id', $id);
         $this->produtos_model->delete('itens_de_vendas', 'produtos_id', $id);
+        $produto = $this->produtos_model->getById($id);
+        // --- Evolution API Trigger (produto_excluido) ---
+        $this->load->model('evolution_model');
+        $trigger = $this->evolution_model->getEventTrigger('produto_excluido');
+        if ($trigger && $trigger->status == 1 && $trigger->mensagem_id && $produto) {
+            $this->load->model('mapos_model');
+            $emitente = $this->mapos_model->getEmitente();
+            if ($emitente && !empty($emitente->telefone)) {
+                $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, (array) $produto);
+                $this->load->library('evolution_queue');
+                $this->evolution_queue->add($emitente->telefone, $msg_parsed);
+            }
+        }
+
         $this->produtos_model->delete('produtos', 'idProdutos', $id);
 
         log_info('Removeu um produto. ID: ' . $id);
@@ -187,7 +227,7 @@ class Produtos extends MY_Controller
 
     public function atualizar_estoque()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eProduto')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eProduto')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para atualizar estoque de produtos.');
             redirect(base_url());
         }

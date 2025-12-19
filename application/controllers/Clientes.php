@@ -1,6 +1,6 @@
 <?php
 
-if (! defined('BASEPATH')) {
+if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
@@ -26,7 +26,7 @@ class Clientes extends MY_Controller
 
     public function gerenciar()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'vCliente')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vCliente')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para visualizar clientes.');
             redirect(base_url());
         }
@@ -37,9 +37,9 @@ class Clientes extends MY_Controller
 
         $this->data['configuration']['base_url'] = site_url('clientes/gerenciar/');
         $this->data['configuration']['total_rows'] = $this->clientes_model->count('clientes');
-        if($pesquisa) {
+        if ($pesquisa) {
             $this->data['configuration']['suffix'] = "?pesquisa={$pesquisa}";
-            $this->data['configuration']['first_url'] = base_url("index.php/clientes")."\?pesquisa={$pesquisa}";
+            $this->data['configuration']['first_url'] = base_url("index.php/clientes") . "\?pesquisa={$pesquisa}";
         }
 
         $this->pagination->initialize($this->data['configuration']);
@@ -53,7 +53,7 @@ class Clientes extends MY_Controller
 
     public function adicionar()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'aCliente')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aCliente')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para adicionar clientes.');
             redirect(base_url());
         }
@@ -79,36 +79,50 @@ class Clientes extends MY_Controller
                 $this->data['custom_error'] = '<div class="form_error"><p>Este e-mail já está sendo utilizado por outro cliente.</p></div>';
             } else {
                 $data = [
-                'nomeCliente' => set_value('nomeCliente'),
-                'contato' => set_value('contato'),
-                'sexo' => set_value('sexo'),
-                'data_nascimento' => set_value('data_nascimento') ? date('Y-m-d', strtotime(str_replace('/', '-', set_value('data_nascimento')))) : null,
-                'pessoa_fisica' => $pessoa_fisica,
-                'altura' => str_replace(',', '.', set_value('altura')),
-                'peso' => str_replace(',', '.', set_value('peso')),
-                'documento' => set_value('documento'),
-                'telefone' => set_value('telefone'),
-                'celular' => set_value('celular'),
-                'email' => set_value('email'),
-                'senha' => password_hash($senhaCliente, PASSWORD_DEFAULT),
-                'rua' => set_value('rua'),
-                'numero' => set_value('numero'),
-                'complemento' => set_value('complemento'),
-                'bairro' => set_value('bairro'),
-                'cidade' => set_value('cidade'),
-                'estado' => set_value('estado'),
-                'cep' => set_value('cep'),
-                'dataCadastro' => date('Y-m-d'),
-                'fornecedor' => $this->input->post('fornecedor') ? 1 : 0,
-            ];
+                    'nomeCliente' => set_value('nomeCliente'),
+                    'contato' => set_value('contato'),
+                    'sexo' => set_value('sexo'),
+                    'data_nascimento' => set_value('data_nascimento') ? date('Y-m-d', strtotime(str_replace('/', '-', set_value('data_nascimento')))) : null,
+                    'pessoa_fisica' => $pessoa_fisica,
+                    'altura' => str_replace(',', '.', set_value('altura')),
+                    'peso' => str_replace(',', '.', set_value('peso')),
+                    'documento' => set_value('documento'),
+                    'telefone' => set_value('telefone'),
+                    'celular' => set_value('celular'),
+                    'email' => set_value('email'),
+                    'senha' => password_hash($senhaCliente, PASSWORD_DEFAULT),
+                    'rua' => set_value('rua'),
+                    'numero' => set_value('numero'),
+                    'complemento' => set_value('complemento'),
+                    'bairro' => set_value('bairro'),
+                    'cidade' => set_value('cidade'),
+                    'estado' => set_value('estado'),
+                    'cep' => set_value('cep'),
+                    'dataCadastro' => date('Y-m-d'),
+                    'fornecedor' => $this->input->post('fornecedor') ? 1 : 0,
+                ];
 
-            if ($this->clientes_model->add('clientes', $data) == true) {
-                $this->session->set_flashdata('success', 'Cliente adicionado com sucesso!');
-                log_info('Adicionou um cliente.');
-                redirect(site_url('clientes/'));
-            } else {
-                $this->data['custom_error'] = '<div class="form_error"><p>Ocorreu um erro.</p></div>';
-            }
+                if ($this->clientes_model->add('clientes', $data) == true) {
+                    // --- Evolution API Trigger (cliente_criado) ---
+                    $this->load->model('evolution_model');
+                    $trigger = $this->evolution_model->getEventTrigger('cliente_criado');
+                    if ($trigger && $trigger->status == 1 && $trigger->mensagem_id) {
+                        $newId = $this->db->insert_id();
+                        $msg_data = array_merge($data, ['id' => $newId]);
+                        $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, $msg_data);
+                        $this->load->library('evolution_queue');
+                        $phone = !empty($data['celular']) ? $data['celular'] : (!empty($data['telefone']) ? $data['telefone'] : '');
+                        if ($phone) {
+                            $this->evolution_queue->add($phone, $msg_parsed);
+                        }
+                    }
+
+                    $this->session->set_flashdata('success', 'Cliente adicionado com sucesso!');
+                    log_info('Adicionou um cliente.');
+                    redirect(site_url('clientes/'));
+                } else {
+                    $this->data['custom_error'] = '<div class="form_error"><p>Ocorreu um erro.</p></div>';
+                }
             }
         }
 
@@ -119,12 +133,12 @@ class Clientes extends MY_Controller
 
     public function editar()
     {
-        if (! $this->uri->segment(3) || ! is_numeric($this->uri->segment(3)) || ! $this->clientes_model->getById($this->uri->segment(3))) {
+        if (!$this->uri->segment(3) || !is_numeric($this->uri->segment(3)) || !$this->clientes_model->getById($this->uri->segment(3))) {
             $this->session->set_flashdata('error', 'Cliente não encontrado ou parâmetro inválido.');
             redirect('clientes/gerenciar');
         }
 
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCliente')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCliente')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar clientes.');
             redirect(base_url());
         }
@@ -135,7 +149,7 @@ class Clientes extends MY_Controller
         if ($this->form_validation->run('clientes') == false) {
             $this->data['custom_error'] = (validation_errors() ? '<div class="form_error">' . validation_errors() . '</div>' : false);
         } else {
-            
+
             $email = $this->input->post('email');
             $idCliente = $this->input->post('idClientes');
             if ($email && $this->clientes_model->emailExists($email, $idCliente)) {
@@ -203,81 +217,94 @@ class Clientes extends MY_Controller
                     $data['senha'] = password_hash($senha, PASSWORD_DEFAULT);
                 }
 
-            // Upload do atestado médico
-            if (!empty($_FILES['atestado_medico_arquivo']['name'])) {
-                $config['upload_path'] = './assets/uploads/atestados/';
-                $config['allowed_types'] = 'pdf|jpg|jpeg|png';
-                $config['max_size'] = 5120; // 5MB
-                $config['encrypt_name'] = true;
+                // Upload do atestado médico
+                if (!empty($_FILES['atestado_medico_arquivo']['name'])) {
+                    $config['upload_path'] = './assets/uploads/atestados/';
+                    $config['allowed_types'] = 'pdf|jpg|jpeg|png';
+                    $config['max_size'] = 5120; // 5MB
+                    $config['encrypt_name'] = true;
 
-                $this->upload->initialize($config);
+                    $this->upload->initialize($config);
 
-                if ($this->upload->do_upload('atestado_medico_arquivo')) {
-                    // Remove o arquivo antigo, se existir
-                    $clienteAtual = $this->clientes_model->getById($this->input->post('idClientes'));
-                    if ($clienteAtual && $clienteAtual->atestado_medico_arquivo) {
-                        $old_file = './assets/uploads/atestados/' . $clienteAtual->atestado_medico_arquivo;
-                        if (file_exists($old_file)) {
-                            unlink($old_file);
+                    if ($this->upload->do_upload('atestado_medico_arquivo')) {
+                        // Remove o arquivo antigo, se existir
+                        $clienteAtual = $this->clientes_model->getById($this->input->post('idClientes'));
+                        if ($clienteAtual && $clienteAtual->atestado_medico_arquivo) {
+                            $old_file = './assets/uploads/atestados/' . $clienteAtual->atestado_medico_arquivo;
+                            if (file_exists($old_file)) {
+                                unlink($old_file);
+                            }
+                        }
+
+                        // Adiciona o novo arquivo aos dados a serem salvos
+                        $upload_data = $this->upload->data();
+                        $data['atestado_medico_arquivo'] = $upload_data['file_name'];
+                    } else {
+                        $this->data['custom_error'] = '<div class="form_error"><p>Erro no upload do atestado: ' . $this->upload->display_errors() . '</p></div>';
+                    }
+                }
+
+                // Adicionar nova restrição, se houver
+                if ($this->input->post('restricao')) {
+                    $dataRestricao = [
+                        'cliente_id' => $this->input->post('idClientes'),
+                        'restricao' => $this->input->post('restricao'),
+                        'observacoes' => $this->input->post('observacoes_restricao')
+                    ];
+                    $this->restricao_alimentar_model->add($dataRestricao);
+                }
+
+                // Adicionar nova certificação, se houver
+                if ($this->input->post('nome_certificacao')) {
+                    $dataCertificacao = [
+                        'cliente_id' => $this->input->post('idClientes'),
+                        'nome_certificacao' => $this->input->post('nome_certificacao'),
+                        'orgao_emissor' => $this->input->post('orgao_emissor'),
+                        'numero_certificacao' => $this->input->post('numero_certificacao'),
+                        'data_emissao' => $this->input->post('data_emissao') ?: null,
+                        'data_validade' => $this->input->post('data_validade') ?: null,
+                        'observacoes' => $this->input->post('observacoes_cert')
+                    ];
+
+                    if (!empty($_FILES['arquivo']['name'])) {
+                        $configCert['upload_path'] = './uploads/certificados/';
+                        $configCert['allowed_types'] = 'pdf|jpg|jpeg|png';
+                        $configCert['max_size'] = 5120;
+                        $configCert['encrypt_name'] = true;
+
+                        if (!is_dir($configCert['upload_path'])) {
+                            mkdir($configCert['upload_path'], 0777, true);
+                        }
+
+                        $this->upload->initialize($configCert);
+                        if ($this->upload->do_upload('arquivo')) {
+                            $dataCertificacao['arquivo'] = $this->upload->data('file_name');
+                        }
+                    }
+                    $this->certificacao_mergulhador_model->add($dataCertificacao);
+                }
+
+                if ($this->clientes_model->edit('clientes', $data, 'idClientes', $this->input->post('idClientes')) == true) {
+                    // --- Evolution API Trigger (cliente_editado) ---
+                    $this->load->model('evolution_model');
+                    $trigger = $this->evolution_model->getEventTrigger('cliente_editado');
+                    if ($trigger && $trigger->status == 1 && $trigger->mensagem_id) {
+                        $msg_data = array_merge($data, ['id' => $this->input->post('idClientes')]);
+                        $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, $msg_data);
+                        $this->load->library('evolution_queue');
+                        $phone = !empty($data['celular']) ? $data['celular'] : (!empty($data['telefone']) ? $data['telefone'] : '');
+                        if ($phone) {
+                            $this->evolution_queue->add($phone, $msg_parsed);
                         }
                     }
 
-                    // Adiciona o novo arquivo aos dados a serem salvos
-                    $upload_data = $this->upload->data();
-                    $data['atestado_medico_arquivo'] = $upload_data['file_name'];
+                    $this->session->set_flashdata('success', 'Cliente editado com sucesso!');
+                    $activeTab = ltrim($this->input->post('active_tab'), '#');
+                    log_info('Alterou um cliente. ID' . $this->input->post('idClientes'));
+                    redirect(site_url('clientes/editar/') . $this->input->post('idClientes') . '?tab=' . $activeTab);
                 } else {
-                    $this->data['custom_error'] = '<div class="form_error"><p>Erro no upload do atestado: ' . $this->upload->display_errors() . '</p></div>';
+                    $this->data['custom_error'] = '<div class="form_error"><p>Ocorreu um erro</p></div>';
                 }
-            }
-
-            // Adicionar nova restrição, se houver
-            if ($this->input->post('restricao')) {
-                $dataRestricao = [
-                    'cliente_id' => $this->input->post('idClientes'),
-                    'restricao' => $this->input->post('restricao'),
-                    'observacoes' => $this->input->post('observacoes_restricao')
-                ];
-                $this->restricao_alimentar_model->add($dataRestricao);
-            }
-
-            // Adicionar nova certificação, se houver
-            if ($this->input->post('nome_certificacao')) {
-                $dataCertificacao = [
-                    'cliente_id' => $this->input->post('idClientes'),
-                    'nome_certificacao' => $this->input->post('nome_certificacao'),
-                    'orgao_emissor' => $this->input->post('orgao_emissor'),
-                    'numero_certificacao' => $this->input->post('numero_certificacao'),
-                    'data_emissao' => $this->input->post('data_emissao') ?: null,
-                    'data_validade' => $this->input->post('data_validade') ?: null,
-                    'observacoes' => $this->input->post('observacoes_cert')
-                ];
-
-                if (!empty($_FILES['arquivo']['name'])) {
-                    $configCert['upload_path'] = './uploads/certificados/';
-                    $configCert['allowed_types'] = 'pdf|jpg|jpeg|png';
-                    $configCert['max_size'] = 5120;
-                    $configCert['encrypt_name'] = true;
-                    
-                    if (!is_dir($configCert['upload_path'])) {
-                        mkdir($configCert['upload_path'], 0777, true);
-                    }
-
-                    $this->upload->initialize($configCert);
-                    if ($this->upload->do_upload('arquivo')) {
-                        $dataCertificacao['arquivo'] = $this->upload->data('file_name');
-                    }
-                }
-                $this->certificacao_mergulhador_model->add($dataCertificacao);
-            }
-
-            if ($this->clientes_model->edit('clientes', $data, 'idClientes', $this->input->post('idClientes')) == true) {
-                $this->session->set_flashdata('success', 'Cliente editado com sucesso!');
-                $activeTab = ltrim($this->input->post('active_tab'), '#');
-                log_info('Alterou um cliente. ID' . $this->input->post('idClientes'));
-                redirect(site_url('clientes/editar/') . $this->input->post('idClientes') . '?tab=' . $activeTab);
-            } else {
-                $this->data['custom_error'] = '<div class="form_error"><p>Ocorreu um erro</p></div>';
-            }
             }
         }
 
@@ -285,7 +312,7 @@ class Clientes extends MY_Controller
         $this->data['restricoes'] = $this->restricao_alimentar_model->getByCliente($this->uri->segment(3));
         $this->data['certificacoes'] = $this->certificacao_mergulhador_model->getByCliente($this->uri->segment(3));
         $this->data['active_tab'] = $this->input->get('tab');
-        
+
         $tipos_certificacao_str = $this->mapos_model->get_ci_config('certificacao_tipos');
         $this->data['tipos_certificacao'] = !empty($tipos_certificacao_str) ? explode(',', $tipos_certificacao_str) : [];
 
@@ -299,12 +326,12 @@ class Clientes extends MY_Controller
 
     public function visualizar()
     {
-        if (! $this->uri->segment(3) || ! is_numeric($this->uri->segment(3))) {
+        if (!$this->uri->segment(3) || !is_numeric($this->uri->segment(3))) {
             $this->session->set_flashdata('error', 'Item não pode ser encontrado, parâmetro não foi passado corretamente.');
             redirect('mapos');
         }
 
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'vCliente')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vCliente')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para visualizar clientes.');
             redirect(base_url());
         }
@@ -389,7 +416,7 @@ class Clientes extends MY_Controller
 
     public function excluir()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'dCliente')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dCliente')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para excluir clientes.');
             redirect(base_url());
         }
@@ -409,6 +436,21 @@ class Clientes extends MY_Controller
         $vendas = $this->clientes_model->getAllVendasByClient($id);
         if ($vendas != null) {
             $this->clientes_model->removeClientVendas($vendas);
+        }
+
+        // --- Evolution API Trigger (cliente_excluido) ---
+        $this->load->model('evolution_model');
+        $trigger = $this->evolution_model->getEventTrigger('cliente_excluido');
+        if ($trigger && $trigger->status == 1 && $trigger->mensagem_id) {
+            $clientData = $this->clientes_model->getById($id);
+            if ($clientData) {
+                $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, (array) $clientData);
+                $this->load->library('evolution_queue');
+                $phone = !empty($clientData->celular) ? $clientData->celular : (!empty($clientData->telefone) ? $clientData->telefone : '');
+                if ($phone) {
+                    $this->evolution_queue->add($phone, $msg_parsed);
+                }
+            }
         }
 
         $this->clientes_model->delete('clientes', 'idClientes', $id);

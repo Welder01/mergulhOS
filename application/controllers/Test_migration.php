@@ -3,12 +3,15 @@ class Test_migration extends CI_Controller
 {
     public function index()
     {
-        echo "Running Test_migration " . date('H:i:s');
+        echo "Running Verification " . date('H:i:s') . "<br>";
         $this->load->library('migration');
-        if ($this->migration->latest()) {
-            echo "SUCCESS";
-        } else {
-            echo "FAIL: " . $this->migration->error_string();
+        $this->migration->latest();
+
+        $this->load->database();
+        $SlugsToCheck = ['cliente_criado', 'produto_criado', 'servico_criado', 'cobranca_criada'];
+        foreach ($SlugsToCheck as $slug) {
+            $exists = $this->db->get_where('evolution_eventos', ['evento' => $slug])->row();
+            echo "$slug: " . ($exists ? "EXISTS" : "MISSING") . "<br>";
         }
     }
 }

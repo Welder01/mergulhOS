@@ -1,6 +1,6 @@
 <?php
 
-if (! defined('BASEPATH')) {
+if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
@@ -22,7 +22,7 @@ class Cobrancas extends MY_Controller
 
     public function adicionar()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'aCobranca')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aCobranca')) {
             return $this->output
                 ->set_content_type('application/json')
                 ->set_status_header(403)
@@ -62,6 +62,32 @@ class Cobrancas extends MY_Controller
                     $formaPagamento
                 );
 
+                // --- Evolution API Trigger (cobranca_criada) ---
+                $this->load->model('evolution_model');
+                $trigger = $this->evolution_model->getEventTrigger('cobranca_criada');
+                if ($trigger && $trigger->status == 1 && $trigger->mensagem_id) {
+                    $this->load->model('clientes_model');
+                    $client = null;
+                    if ($tipo == 'os') {
+                        $osUrl = $this->Os_model->getById($id);
+                        if ($osUrl)
+                            $client = $this->clientes_model->getById($osUrl->clientes_id);
+                    } else {
+                        $vendaUrl = $this->vendas_model->getById($id);
+                        if ($vendaUrl)
+                            $client = $this->clientes_model->getById($vendaUrl->clientes_id);
+                    }
+
+                    if ($client) {
+                        $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, array_merge((array) $cobranca, (array) $client));
+                        $this->load->library('evolution_queue');
+                        $phone = !empty($client->celular) ? $client->celular : (!empty($client->telefone) ? $client->telefone : '');
+                        if ($phone) {
+                            $this->evolution_queue->add($phone, $msg_parsed);
+                        }
+                    }
+                }
+
                 return $this->output
                     ->set_content_type('application/json')
                     ->set_status_header(200)
@@ -82,7 +108,7 @@ class Cobrancas extends MY_Controller
 
     public function cobrancas()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'vCobranca')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vCobranca')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para visualizar cobrancas.');
             redirect(base_url());
         }
@@ -104,12 +130,30 @@ class Cobrancas extends MY_Controller
 
     public function excluir()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'dCobranca')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dCobranca')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para excluir cobranças');
             redirect(site_url('cobrancas/cobrancas/'));
         }
         try {
             $this->cobrancas_model->cancelarPagamento($this->input->post('excluir_id'));
+
+            // --- Evolution API Trigger (cobranca_excluida) ---
+            $this->load->model('evolution_model');
+            $trigger = $this->evolution_model->getEventTrigger('cobranca_excluida');
+            if ($trigger && $trigger->status == 1 && $trigger->mensagem_id) {
+                $cob = $this->cobrancas_model->getById($this->input->post('excluir_id'));
+                if ($cob) {
+                    $this->load->model('clientes_model');
+                    $client = $this->clientes_model->getById($cob->clientes_id);
+                    if ($client) {
+                        $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, array_merge((array) $cob, (array) $client));
+                        $this->load->library('evolution_queue');
+                        $phone = !empty($client->celular) ? $client->celular : (!empty($client->telefone) ? $client->telefone : '');
+                        if ($phone)
+                            $this->evolution_queue->add($phone, $msg_parsed);
+                    }
+                }
+            }
 
             if ($this->cobrancas_model->delete('cobrancas', 'idCobranca', $this->input->post('excluir_id')) == true) {
                 log_info('Removeu uma cobrança. ID' . $this->input->post('excluir_id'));
@@ -125,12 +169,12 @@ class Cobrancas extends MY_Controller
 
     public function atualizar()
     {
-        if (! $this->uri->segment(3) || ! is_numeric($this->uri->segment(3))) {
+        if (!$this->uri->segment(3) || !is_numeric($this->uri->segment(3))) {
             $this->session->set_flashdata('error', 'Item não pode ser encontrado, parâmetro não foi passado corretamente.');
             redirect('mapos');
         }
 
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCobranca')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCobranca')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para atualizar cobrança.');
             redirect(base_url());
         }
@@ -145,13 +189,31 @@ class Cobrancas extends MY_Controller
 
     public function confirmarPagamento()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCobranca')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCobranca')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para confirmar pagamento da cobrança.');
             redirect(base_url());
         }
         try {
             $this->load->model('cobrancas_model');
             $this->cobrancas_model->confirmarPagamento($this->input->post('confirma_id'));
+
+            // --- Evolution API Trigger (cobranca_pagamento_confirmado) ---
+            $this->load->model('evolution_model');
+            $trigger = $this->evolution_model->getEventTrigger('cobranca_pagamento_confirmado');
+            if ($trigger && $trigger->status == 1 && $trigger->mensagem_id) {
+                $cob = $this->cobrancas_model->getById($this->input->post('confirma_id'));
+                if ($cob) {
+                    $this->load->model('clientes_model');
+                    $client = $this->clientes_model->getById($cob->clientes_id);
+                    if ($client) {
+                        $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, array_merge((array) $cob, (array) $client));
+                        $this->load->library('evolution_queue');
+                        $phone = !empty($client->celular) ? $client->celular : (!empty($client->telefone) ? $client->telefone : '');
+                        if ($phone)
+                            $this->evolution_queue->add($phone, $msg_parsed);
+                    }
+                }
+            }
         } catch (Exception $e) {
             $this->session->set_flashdata('error', $e->getMessage());
         }
@@ -160,13 +222,31 @@ class Cobrancas extends MY_Controller
 
     public function cancelar()
     {
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'eCobranca')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eCobranca')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para cancelar cobrança.');
             redirect(base_url());
         }
         try {
             $this->load->model('cobrancas_model');
             $this->cobrancas_model->cancelarPagamento($this->input->post('cancela_id'));
+
+            // --- Evolution API Trigger (cobranca_cancelada) ---
+            $this->load->model('evolution_model');
+            $trigger = $this->evolution_model->getEventTrigger('cobranca_cancelada');
+            if ($trigger && $trigger->status == 1 && $trigger->mensagem_id) {
+                $cob = $this->cobrancas_model->getById($this->input->post('cancela_id'));
+                if ($cob) {
+                    $this->load->model('clientes_model');
+                    $client = $this->clientes_model->getById($cob->clientes_id);
+                    if ($client) {
+                        $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, array_merge((array) $cob, (array) $client));
+                        $this->load->library('evolution_queue');
+                        $phone = !empty($client->celular) ? $client->celular : (!empty($client->telefone) ? $client->telefone : '');
+                        if ($phone)
+                            $this->evolution_queue->add($phone, $msg_parsed);
+                    }
+                }
+            }
         } catch (Exception $e) {
             $this->session->set_flashdata('error', $e->getMessage());
         }
@@ -175,12 +255,12 @@ class Cobrancas extends MY_Controller
 
     public function visualizar()
     {
-        if (! $this->uri->segment(3) || ! is_numeric($this->uri->segment(3))) {
+        if (!$this->uri->segment(3) || !is_numeric($this->uri->segment(3))) {
             $this->session->set_flashdata('error', 'Item não pode ser encontrado, parâmetro não foi passado corretamente.');
             redirect('cobrancas');
         }
 
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'vCobranca')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vCobranca')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para visualizar cobranças.');
             redirect(base_url());
         }
@@ -200,12 +280,12 @@ class Cobrancas extends MY_Controller
 
     public function enviarEmail()
     {
-        if (! $this->uri->segment(3) || ! is_numeric($this->uri->segment(3))) {
+        if (!$this->uri->segment(3) || !is_numeric($this->uri->segment(3))) {
             $this->session->set_flashdata('error', 'Item não pode ser encontrado, parâmetro não foi passado corretamente.');
             redirect('cobrancas');
         }
 
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'vCobranca')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vCobranca')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para visualizar cobranças.');
             redirect(base_url());
         }
