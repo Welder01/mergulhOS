@@ -189,7 +189,7 @@ $periodo = $this->input->get('periodo');
                             }
 
                             if ($this->permission->checkPermission($this->session->userdata('permissao'), 'eLancamento')) {
-                                echo '<a href="#" style="margin-right: 1%" role="button" idLancamento="' . $r->idLancamentos . '" descricao="' . $r->descricao . '" valor="' . $r->valor . '" vencimento="' . date('d/m/Y', strtotime($r->data_vencimento)) . '" pagamento="' . $data_pagamento . '" baixado="' . $r->baixado . '" cliente="' . $r->cliente_fornecedor . '" formaPgto="' . $r->forma_pgto . '" tipo="' . $r->tipo . '" observacoes="' . $r->observacoes . '" descontos_editar="' . $r->desconto . '" valor_desconto_editar="' . $r->desconto . '" usuario="' . $r->nome . '" clientes_id="' . $r->clientes_id . '" pagar_usuario_id="' . $r->pagar_usuario_id . '" class="btn-nwe3 editar" title="Editar OS"><i class="bx bx-edit"></i></a>';
+                                echo '<a href="#" style="margin-right: 1%" role="button" idLancamento="' . $r->idLancamentos . '" descricao="' . $r->descricao . '" valor="' . $r->valor . '" vencimento="' . date('d/m/Y', strtotime($r->data_vencimento)) . '" pagamento="' . $data_pagamento . '" baixado="' . $r->baixado . '" cliente="' . $r->cliente_fornecedor . '" formaPgto="' . $r->forma_pgto . '" tipo="' . $r->tipo . '" observacoes="' . $r->observacoes . '" descontos_editar="' . $r->desconto . '" valor_desconto_editar="' . $r->desconto . '" usuario="' . $r->nome_modificador . '" pagar_usuario_nome="' . $r->nome_beneficiario . '" clientes_id="' . $r->clientes_id . '" pagar_usuario_id="' . $r->pagar_usuario_id . '" class="btn-nwe3 editar" title="Editar OS"><i class="bx bx-edit"></i></a>';
                             }
                             if ($this->permission->checkPermission($this->session->userdata('permissao'), 'dLancamento')) {
                                 echo '<a href="#" role="button" idLancamento="' . $r->idLancamentos . '" class="btn-nwe4 excluir" title="Excluir OS"><i class="bx bx-trash-alt"></i></a>';
@@ -744,8 +744,8 @@ $periodo = $this->input->get('periodo');
                     <div class="input-append span12" style="margin: 0; display: flex;">
                         <input class="money" id="descontos_editar" type="text" name="descontos_editar" value=""
                             placeholder="R$" style="width: 70%;" />
-                        <button class="btn btn-inverse" onclick="mostrarValoresEditar();" type="button" 
-                        style="width: 30%; padding: 4px 0;"><i class="bx bx-check"></i></button>
+                        <button class="btn btn-inverse" onclick="mostrarValoresEditar();" type="button"
+                            style="width: 30%; padding: 4px 0;"><i class="bx bx-check"></i></button>
                     </div>
                 </div>
 
@@ -754,15 +754,15 @@ $periodo = $this->input->get('periodo');
                     <input class="span12 money" id="descontoEditar" name="valor_desconto_editar" type="text"
                         value="<?php echo number_format("0.00", 2, ',', '.') ?>" readonly />
                 </div>
-                
-                 <div class="span3">
-                     <label for="pago">Foi Pago?</label>
+
+                <div class="span3">
+                    <label for="pago">Foi Pago?</label>
                     &nbsp;&nbsp;<input id="pagoEditar" type="checkbox" name="pago" value="1" />
                 </div>
             </div>
 
             <div class="row-fluid" style="margin-top: 5px; display: none" id="divPagamentoEditar">
-                 <div class="span6">
+                <div class="span6">
                     <label for="pagamento">Data Pagamento</label>
                     <input class="span12 datepicker" id="pagamentoEditar" type="text" name="pagamento"
                         autocomplete="off" />
@@ -847,36 +847,7 @@ $periodo = $this->input->get('periodo');
         }
     }
 
-    function togglePessoa(tipo, inputSelector, idSelector) {
-        // reset inputs
-        $(inputSelector).val('');
-        $(idSelector).val('');
 
-        // destroy previous safely
-        try {
-            if ($(inputSelector).data('ui-autocomplete')) {
-                $(inputSelector).autocomplete("destroy");
-            }
-        } catch (e) {
-            // ignore destroy error
-        }
-
-        var urlSearch = "";
-        if (tipo == "usuario") {
-            urlSearch = "<?php echo base_url(); ?>index.php/financeiro/autoCompleteUsuario";
-        } else {
-            urlSearch = "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita";
-        }
-
-        $(inputSelector).autocomplete({
-            source: urlSearch,
-            minLength: 1,
-            select: function (event, ui) {
-                $(inputSelector).val(ui.item.label);
-                $(idSelector).val(ui.item.id);
-            }
-        });
-    }
 
     function mostrarValores() {
         if (document.getElementById('valor').value == "" || document.getElementById('descontos').value == "" || document.getElementById('valor_desconto').value == "") {
@@ -1045,7 +1016,22 @@ $periodo = $this->input->get('periodo');
         $(document).on('click', '.excluir', function (event) {
             event.preventDefault(); // Prevent default link behavior
             $("#idExcluir").val($(this).attr('idLancamento'));
-            $('#modalExcluir').modal('show');
+
+            var $modal = $('#modalExcluir');
+
+            // Fix visibility: append to body if needed
+            if ($modal.parent().is('body') === false) {
+                $modal.appendTo('body');
+            }
+
+            $modal.modal('show');
+
+            // Ensure Z-Index is high enough
+            $modal.css({
+                'z-index': '1050',
+                'margin-top': '0',
+                'top': '50px'
+            });
         });
 
 
@@ -1067,6 +1053,7 @@ $periodo = $this->input->get('periodo');
                 $("#descontos_editar").val($(this).attr('descontos_editar'));
                 $("#descontoEditar").val($(this).attr('valor_desconto_editar'));
                 $("#urlAtualEditar").val($(location).attr('href'));
+                $("#usuarioEditar").val($(this).attr('usuario')); // Populate Modified By
 
                 // Handle Pago Checkbox
                 var baixado = $(this).attr('baixado');
@@ -1085,36 +1072,38 @@ $periodo = $this->input->get('periodo');
                 if (pagar_usuario_id && pagar_usuario_id != "0") {
                     // It's a User
                     $("#tipo_pessoa_usuario_edit").prop("checked", true);
-                    $("#fornecedorEditar").val($(this).attr('usuario')); // Use User Name
-                    $("#idFornecedorEditar").val(pagar_usuario_id);
-                    // Update Autocomplete Source
+                    // Update Autocomplete Source FIRST (clears inputs)
                     togglePessoa('usuario', '#fornecedorEditar', '#idFornecedorEditar');
+                    // THEN Set User Name and ID
+                    $("#fornecedorEditar").val($(this).attr('pagar_usuario_nome'));
+                    $("#idFornecedorEditar").val(pagar_usuario_id);
                 } else {
                     // It's a Client
                     $("#tipo_pessoa_cliente_edit").prop("checked", true);
-                    $("#fornecedorEditar").val($(this).attr('cliente')); // Use Client Name
-                    $("#idFornecedorEditar").val(clientes_id);
-                    // Update Autocomplete Source
+                    // Update Autocomplete Source FIRST (clears inputs)
                     togglePessoa('cliente', '#fornecedorEditar', '#idFornecedorEditar');
+                    // THEN Set Client Name and ID
+                    $("#fornecedorEditar").val($(this).attr('cliente'));
+                    $("#idFornecedorEditar").val(clientes_id);
                 }
 
                 // Show Modal with Z-Index Fixes
                 var $modal = $('#modalEditarFixed');
-                
+
                 // Ensure it's not hidden by overflow in parent
                 if ($modal.parent().is('body') === false) {
                     $modal.appendTo('body');
                 }
 
                 $modal.modal('show');
-                
+
                 // Force specific styles to ensure visibility
                 $modal.css({
-                    'margin-top': '0', 
+                    'margin-top': '0',
                     'top': '50px',
-                    'z-index': '1050' 
+                    'z-index': '1050'
                 });
-                
+
             } catch (e) {
                 console.error("Erro ao abrir modal:", e);
                 alert("Erro ao abrir modal de edição. Verifique o console.");
@@ -1339,11 +1328,11 @@ $periodo = $this->input->get('periodo');
             $(inputForn).attr('placeholder', 'Digite o nome do usuário');
             // Assuming autocomplete is initialized elsewhere, we might need to re-init or change source
             // If autocomplete instance exists, change source:
-             if ($(inputForn).data('ui-autocomplete')) {
+            if ($(inputForn).data('ui-autocomplete')) {
                 $(inputForn).autocomplete("option", "source", "<?php echo base_url(); ?>index.php/financeiro/autoCompleteUsuario");
             } else {
-                 // Initialize if not exists (fallback)
-                 $(inputForn).autocomplete({
+                // Initialize if not exists (fallback)
+                $(inputForn).autocomplete({
                     source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteUsuario",
                     minLength: 1,
                     select: function (event, ui) {
@@ -1357,18 +1346,18 @@ $periodo = $this->input->get('periodo');
             $(inputForn).val('');
             $(inputIdForn).val('');
             $(inputForn).attr('placeholder', 'Digite o nome do cliente/fornecedor');
-             if ($(inputForn).data('ui-autocomplete')) {
+            if ($(inputForn).data('ui-autocomplete')) {
                 $(inputForn).autocomplete("option", "source", "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita");
-             } else {
+            } else {
                 $(inputForn).autocomplete({
                     source: "<?php echo base_url(); ?>index.php/financeiro/autoCompleteClienteAddReceita",
                     minLength: 1,
                     select: function (event, ui) {
-                         $(inputForn).val(ui.item.label);
-                         $(inputIdForn).val(ui.item.id);
+                        $(inputForn).val(ui.item.label);
+                        $(inputIdForn).val(ui.item.id);
                     }
                 });
-             }
+            }
         }
     }
 </script>

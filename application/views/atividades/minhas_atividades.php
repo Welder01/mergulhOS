@@ -361,6 +361,12 @@ usort($events, function ($a, $b) {
 
                                     <?php if (isset($event->status_pagamento) && $event->status_pagamento == 'pago'): ?>
                                         <span class="financial-status status-paid">Pago</span>
+                                        <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'faturarAtribuicao')): ?>
+                                            <button class="btn btn-mini btn-danger"
+                                                onclick="estornarPagamento(<?= $event->id ?>, '<?= $event->type ?>')"
+                                                title="Desfazer Pagamento" style="margin-top: 5px; width: 100%;"><i
+                                                    class="fas fa-undo"></i> Estornar</button>
+                                        <?php endif; ?>
                                     <?php else: ?>
                                         <!-- Acceptance Logic -->
                                         <?php if (is_null($event->aceite)): ?>
@@ -435,7 +441,7 @@ usort($events, function ($a, $b) {
 
                                         $status_label = '<span class="badge badge-warning">Pendente</span>';
                                         if ($status_pagamento == 'pago') {
-                                            $status_label = '<span class="badge badge-success">Recebido</span>';
+                                            $status_label = '<span class="badge badge-success">Recebido</span> <button class="btn btn-mini btn-danger" onclick="estornarPagamento(' . $event->id . ', \'' . $event->type . '\')" title="Desfazer Pagamento" style="margin-left:5px;"><i class="fas fa-undo"></i></button>';
                                         } elseif ($aceite === '1' || $aceite === 1) {
                                             $status_label = '<span class="badge badge-info">Bloqueado/Agendado</span>';
                                         } elseif ($aceite === '0' || $aceite === 0) {
@@ -533,6 +539,55 @@ usort($events, function ($a, $b) {
         });
     }
 
+    function estornarPagamento(id, type) {
+        Swal.fire({
+            title: 'Tem certeza?',
+            text: "Você deseja estornar este pagamento? O lançamento financeiro será excluído.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sim, estornar!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "<?php echo base_url(); ?>index.php/atividades/estornar_pagamento",
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        type: type
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.result == true) {
+                            Swal.fire(
+                                'Estornado!',
+                                'O pagamento foi estornado com sucesso.',
+                                'success'
+                            ).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire(
+                                'Erro!',
+                                data.message,
+                                'error'
+                            );
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        Swal.fire(
+                            'Erro!',
+                            'Erro ao conectar com servidor: ' + textStatus,
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    }
+
     function faturarAtividade(id, type, valor, descricao) {
         Swal.fire({
             title: 'Gerar Pagamento',
@@ -559,17 +614,26 @@ usort($events, function ($a, $b) {
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Sim, pagar!',
+            confirmButtonText: 'Sim, faturar!',
             cancelButtonText: 'Cancelar',
             preConfirm: () => {
                 return document.getElementById('forma_pgto').value;
             }
         }).then((result) => {
-            if (result.isConfirmed || result.value) { 
+            if (result.isConfirmed) {
                 var forma_pgto = result.value || document.getElementById('forma_pgto').value;
-                
+
+                // Show loading
+                Swal.fire({
+                    title: 'Processando...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                         Swal.showLoading();
+                    }
+                });
+
                 $.ajax({
-                    url: '<?= base_url() ?>index.php/atividades/faturar_atividade',
+                    url: '<?php echo base_url() ?>index.php/atividades/faturar_atividade',
                     type: 'POST',
                     dataType: 'json',
                     data: {
@@ -579,14 +643,14 @@ usort($events, function ($a, $b) {
                         descricao: descricao,
                         forma_pgto: forma_pgto
                     },
-                    success: function (response) {
+                    success: function(response) {
                         if (response.result) {
                             Swal.fire(
                                 'Sucesso!',
                                 response.message,
                                 'success'
                             ).then(() => {
-                                location.reload();
+                                window.location.reload();
                             });
                         } else {
                             Swal.fire(
@@ -596,10 +660,68 @@ usort($events, function ($a, $b) {
                             );
                         }
                     },
-                    error: function () {
+                    error: function() {
                         Swal.fire(
                             'Erro!',
-                            'Ocorreu um erro ao processar o pagamento.',
+                            'Ocorreu um erro ao processar a solicitação.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    }
+
+    function estornarPagamento(id, type) {
+        Swal.fire({
+            title: 'Confirmar Estorno?',
+            text: "Isso excluirá o lançamento financeiro e a atividade voltará a ser pendente. Tem certeza?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, estornar!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                 // Show loading
+                Swal.fire({
+                    title: 'Processando...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                         Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: '<?php echo base_url() ?>index.php/atividades/estornar_pagamento',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        id: id,
+                        type: type
+                    },
+                    success: function(response) {
+                        if (response.result) {
+                            Swal.fire(
+                                'Estornado!',
+                                response.message,
+                                'success'
+                            ).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire(
+                                'Erro!',
+                                response.message,
+                                'error'
+                            );
+                        }
+                    },
+                    error: function() {
+                        Swal.fire(
+                            'Erro!',
+                            'Ocorreu um erro ao processar a solicitação.',
                             'error'
                         );
                     }

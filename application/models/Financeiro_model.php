@@ -13,9 +13,10 @@ class Financeiro_model extends CI_Model
 
     public function get($table, $fields, $where = '', $perpage = 0, $start = 0, $one = false, $array = 'array')
     {
-        $this->db->select($fields . ', usuarios.*');
+        $this->db->select($fields . ', u_mod.nome as nome_modificador, u_ben.nome as nome_beneficiario');
         $this->db->from($table);
-        $this->db->join('usuarios', 'usuarios.idUsuarios = usuarios_id', 'left');
+        $this->db->join('usuarios as u_mod', 'u_mod.idUsuarios = lancamentos.usuarios_id', 'left');
+        $this->db->join('usuarios as u_ben', 'u_ben.idUsuarios = lancamentos.pagar_usuario_id', 'left');
         $this->db->order_by('data_vencimento', 'asc');
         $this->db->limit($perpage, $start);
         if ($where) {

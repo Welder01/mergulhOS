@@ -98,6 +98,9 @@ class Permissoes extends MY_Controller
                 'dPagamento' => $this->input->post('dPagamento'),
                 'vPagamento' => $this->input->post('vPagamento'),
 
+                'eEstorno' => $this->input->post('eEstorno'),
+
+
                 'aLancamento' => $this->input->post('aLancamento'),
                 'eLancamento' => $this->input->post('eLancamento'),
                 'dLancamento' => $this->input->post('dLancamento'),
@@ -217,6 +220,9 @@ class Permissoes extends MY_Controller
                 'ePagamento' => $this->input->post('ePagamento'),
                 'dPagamento' => $this->input->post('dPagamento'),
                 'vPagamento' => $this->input->post('vPagamento'),
+
+                'eEstorno' => $this->input->post('eEstorno'),
+
 
                 'aLancamento' => $this->input->post('aLancamento'),
                 'eLancamento' => $this->input->post('eLancamento'),

@@ -330,6 +330,29 @@
                                                                 </label>
                                                             </td>
                                                         </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <label>
+                                                                    <input name="ePagamento" class="marcar" type="checkbox"
+                                                                        <?php if (isset($permissoes['ePagamento']) && $permissoes['ePagamento'] == '1') {
+                                                                            echo 'checked';
+                                                                        } ?>
+                                                                        value="1" />
+                                                                    <span class="lbl"> Editar Pagamento</span>
+                                                                </label>
+                                                            </td>
+                                                            <td>
+                                                                <label>
+                                                                    <input name="dPagamento" class="marcar" type="checkbox"
+                                                                        <?php if (isset($permissoes['dPagamento']) && $permissoes['dPagamento'] == '1') {
+                                                                            echo 'checked';
+                                                                        } ?>
+                                                                        value="1" />
+                                                                    <span class="lbl"> Excluir Pagamento</span>
+                                                                </label>
+                                                            </td>
+                                                            <td colspan="2"></td>
+                                                        </tr>
                                                     </table>
                                                 </div>
                                             </div>
@@ -819,6 +842,16 @@
                                                                 </label>
                                                             </td>
                                                             <td colspan="3"></td>
+                                                            <td>
+                                                                <label>
+                                                                    <input name="eEstorno" class="marcar" type="checkbox"
+                                                                        <?php if (isset($permissoes['eEstorno']) && $permissoes['eEstorno'] == '1') {
+                                                                            echo 'checked';
+                                                                        } ?>
+                                                                        value="1" />
+                                                                    <span class="lbl"> Estornar Pagamento</span>
+                                                                </label>
+                                                            </td>
                                                         </tr>
                                                     </table>
                                                 </div>
