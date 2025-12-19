@@ -1055,10 +1055,9 @@ $periodo = $this->input->get('periodo');
             try {
                 var idLancamento = $(this).attr('idLancamento');
 
+                // Populate Standard Fields
                 $("#idEditar").val(idLancamento);
                 $("#descricaoEditar").val($(this).attr('descricao'));
-                $("#usuarioEditar").val($(this).attr('usuario'));
-                $("#fornecedorEditar").val($(this).attr('cliente'));
                 $("#observacoes_edit").val($(this).attr('observacoes'));
                 $("#valorEditar").val($(this).attr('valor'));
                 $("#vencimentoEditar").val($(this).attr('vencimento'));
@@ -1069,58 +1068,56 @@ $periodo = $this->input->get('periodo');
                 $("#descontoEditar").val($(this).attr('valor_desconto_editar'));
                 $("#urlAtualEditar").val($(location).attr('href'));
 
+                // Handle Pago Checkbox
                 var baixado = $(this).attr('baixado');
-                $("#pagoEditar").prop('checked', false);
-                $("#divPagamentoEditar").hide();
+                if (baixado == "1") {
+                    $("#pagoEditar").prop('checked', true);
+                    $("#divPagamentoEditar").show();
+                } else {
+                    $("#pagoEditar").prop('checked', false);
+                    $("#divPagamentoEditar").hide();
+                }
 
+                // Handle User/Client Toggle
                 var pagar_usuario_id = $(this).attr('pagar_usuario_id');
                 var clientes_id = $(this).attr('clientes_id');
 
-                if (typeof togglePessoa === 'function') {
-                    if (pagar_usuario_id && pagar_usuario_id != "0" && pagar_usuario_id != "") {
-                        $("#tipo_pessoa_usuario_edit").prop("checked", true);
-                        togglePessoa('usuario', '#fornecedorEditar', '#idFornecedorEditar');
-                        $("#idFornecedorEditar").val(pagar_usuario_id);
-                    } else {
-                        $("#tipo_pessoa_cliente_edit").prop("checked", true);
-                        togglePessoa('cliente', '#fornecedorEditar', '#idFornecedorEditar');
-                        $("#idFornecedorEditar").val(clientes_id);
-                    }
-                    $("#fornecedorEditar").val($(this).attr('cliente'));
+                if (pagar_usuario_id && pagar_usuario_id != "0") {
+                    // It's a User
+                    $("#tipo_pessoa_usuario_edit").prop("checked", true);
+                    $("#fornecedorEditar").val($(this).attr('usuario')); // Use User Name
+                    $("#idFornecedorEditar").val(pagar_usuario_id);
+                    // Update Autocomplete Source
+                    togglePessoa('usuario', '#fornecedorEditar', '#idFornecedorEditar');
+                } else {
+                    // It's a Client
+                    $("#tipo_pessoa_cliente_edit").prop("checked", true);
+                    $("#fornecedorEditar").val($(this).attr('cliente')); // Use Client Name
+                    $("#idFornecedorEditar").val(clientes_id);
+                    // Update Autocomplete Source
+                    togglePessoa('cliente', '#fornecedorEditar', '#idFornecedorEditar');
                 }
 
-                // Nuclear Option for Visibility
-                console.log("DEBUG: Found modals (FIXED ID):", $('#modalEditarFixed').length);
-
-                // Move to body to solve stacking context/overflow issues
-                if ($('#modalEditarFixed').parent().is('body') === false) {
-                    console.log("DEBUG: Moving modal to body to fix Z-Index");
-                    $('#modalEditarFixed').appendTo('body');
+                // Show Modal with Z-Index Fixes
+                var $modal = $('#modalEditarFixed');
+                
+                // Ensure it's not hidden by overflow in parent
+                if ($modal.parent().is('body') === false) {
+                    $modal.appendTo('body');
                 }
 
-                $('#modalEditarFixed').modal('show');
-
-                // Force styles after a short delay to override Bootstrap if needed
-                setTimeout(function () {
-                    $('#modalEditarFixed').removeClass('hide').addClass('in');
-                    $('#modalEditarFixed').css({
-                        'display': 'block',
-                        'z-index': '1050',
-                        'opacity': '1',
-                        'top': '',         // Reset to CSS default
-                        'margin-top': '',  // Reset to CSS default
-                        'position': '',    // Reset to CSS default
-                        'left': '',        // Reset to CSS default
-                        'margin-left': ''  // Reset to CSS default
-                    });
-                    $('.modal-backdrop').css('z-index', '1040');
-                }, 100);
-
+                $modal.modal('show');
+                
+                // Force specific styles to ensure visibility
+                $modal.css({
+                    'margin-top': '0', 
+                    'top': '50px',
+                    'z-index': '1050' 
+                });
+                
             } catch (e) {
                 console.error("Erro ao abrir modal:", e);
-                // Fallback
-                $('#modalEditarFixed').appendTo('body');
-                $('#modalEditarFixed').modal('show');
+                alert("Erro ao abrir modal de edição. Verifique o console.");
             }
         });
 
