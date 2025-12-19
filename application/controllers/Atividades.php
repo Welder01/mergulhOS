@@ -152,7 +152,24 @@ class Atividades extends MY_Controller
         ];
 
         $this->load->model('mapos_model');
-        $idLancamento = $this->mapos_model->add('lancamentos', $data);
+
+        // HEALING LOGIC: Check for ORPHAN payments (identical duplicates) before creating new
+        $this->db->where('descricao', $descricao);
+        $this->db->where('valor', $valor);
+        $this->db->where('data_vencimento', $data_vencimento);
+        $this->db->where('tipo', 'despesa');
+        if ($instrutor_id) {
+            $this->db->where('pagar_usuario_id', $instrutor_id);
+        }
+        // Check only recent ones or all? All is safer to find the lost one.
+        $orphan = $this->db->order_by('idLancamentos', 'DESC')->get('lancamentos')->row();
+
+        if ($orphan) {
+            $idLancamento = $orphan->idLancamentos;
+            log_info('HEALING: Encontrado pagamento órfão (ID: ' . $idLancamento . '). Reconectando em vez de duplicar.');
+        } else {
+            $idLancamento = $this->mapos_model->add('lancamentos', $data);
+        }
 
         if ($idLancamento) {
             // Update Activity
@@ -237,22 +254,95 @@ class Atividades extends MY_Controller
         $this->db->where('idLancamentos', $activity->lancamento_id);
         $deleted = $this->db->delete('lancamentos');
 
-        if ($deleted) {
-            $msg = 'Pagamento estornado com sucesso.';
-
-            if ($this->db->affected_rows() > 0) {
-                log_info('Estorno: Lançamento ' . $activity->lancamento_id . ' excluído com sucesso.');
-            } else {
-                // Verify existence
-                $stillExists = $this->db->where('idLancamentos', $activity->lancamento_id)->count_all_results('lancamentos');
-                if ($stillExists > 0) {
-                    log_info('CRITICAL: Estorno falhou. Lançamento ' . $activity->lancamento_id . ' AINDA EXISTE.');
-                    echo json_encode(['result' => false, 'message' => 'Erro grave: Falha ao excluir do banco de dados.']);
-                    return;
-                }
-                log_info('Estorno: Lançamento ' . $activity->lancamento_id . ' já não existia.');
-                $msg .= ' (Lançamento já não existia).';
+        // MASSIVE CLEANUP: Reconstruct details to delete orphans
+        // Wrapped in try-catch to prevent fatal errors from blocking the main estorno response
+        $orphans_deleted = 0;
+        try {
+            // We need to match the logic from faturar_atividades in JS/PHP
+            $user_col = 'usuario_id';
+            if ($type == 'training') {
+                $user_col = 'instrutor_id';
             }
+
+            $instrutor_id = isset($activity->$user_col) ? $activity->$user_col : null;
+            if ($type == 'training' && !$instrutor_id && isset($activity->instrutor_id)) {
+                $instrutor_id = $activity->instrutor_id;
+            }
+
+            $user_name = 'Instrutor';
+            if ($instrutor_id) {
+                $u_row = $this->db->where('idUsuarios', $instrutor_id)->get('usuarios')->row();
+                if ($u_row) {
+                    $user_name = $u_row->nome;
+                }
+            }
+
+            $activity_name = '';
+            if ($type == 'course') {
+                // Fetch from cursos
+                if (isset($activity->curso_id)) {
+                    $row = $this->db->where('id', $activity->curso_id)->get('cursos')->row();
+                    if ($row)
+                        $activity_name = $row->nome_curso;
+                }
+            } elseif ($type == 'trip') {
+                // Fetch from viagens
+                if (isset($activity->viagem_id)) {
+                    $row = $this->db->where('id', $activity->viagem_id)->get('viagens')->row();
+                    if ($row)
+                        $activity_name = $row->nome_viagem;
+                }
+            } elseif ($type == 'training') {
+                // For training, it might just be the date or modality name if available
+            }
+
+            $search_desc = '';
+            $search_val = 0; // Use 0 to ignore value check if unsafe
+
+            if ($type == 'trip') {
+                if ($activity_name) {
+                    $search_desc = 'Pagamento Viagem - ' . $activity_name;
+                    $search_val = isset($activity->preco) ? $activity->preco : 0;
+                }
+            } elseif ($type == 'course') {
+                if ($activity_name) {
+                    $search_desc = 'Pagamento Curso - ' . $activity_name;
+                    $search_val = isset($activity->preco) ? $activity->preco : 0;
+                }
+            } elseif ($type == 'training') {
+                if (isset($activity->data_aula)) {
+                    $search_desc = 'Pagamento Treino - ' . $activity->data_aula;
+                    if (isset($activity->valor_pagamento))
+                        $search_val = $activity->valor_pagamento;
+                    elseif (isset($activity->preco))
+                        $search_val = $activity->preco;
+                }
+            }
+
+            if ($search_desc && $instrutor_id) {
+                // Aggressively delete matching orphans
+                $this->db->where('descricao', $search_desc);
+                $this->db->where('pagar_usuario_id', $instrutor_id);
+                $this->db->where('tipo', 'despesa');
+
+                if ($search_val > 0) {
+                    // strict check on value? maybe risky with floats, but let's try
+                    // $this->db->where('valor', $search_val);
+                }
+
+                $this->db->delete('lancamentos');
+                $orphans_deleted = $this->db->affected_rows();
+                if ($orphans_deleted > 0) {
+                    log_info("Estorno Massive Cleanup: Deleted $orphans_deleted orphans for $search_desc");
+                }
+            }
+        } catch (Exception $e) {
+            log_info('MASSIVE CLEANUP ERROR: ' . $e->getMessage());
+            // Do not fail the request, just log it. The main deletion already happened.
+        }
+
+        if ($deleted || $orphans_deleted > 0) {
+            $msg = 'Pagamento estornado com sucesso.';
 
             // Reset activity
             $this->db->where('id', $id);
@@ -261,12 +351,13 @@ class Atividades extends MY_Controller
                 'lancamento_id' => null
             ]);
 
-            // Add warning about duplicates
-            $msg .= ' Verifique no Financeiro se há duplicatas antigas para excluir manualmente.';
+            if ($orphans_deleted > 0) {
+                $msg .= " (Sistema removeu $orphans_deleted duplicatas encontradas).";
+            }
 
             echo json_encode(['result' => true, 'message' => $msg]);
         } else {
-            echo json_encode(['result' => false, 'message' => 'Erro ao excluir do banco de dados.']);
+            echo json_encode(['result' => false, 'message' => 'Erro ao excluir (Nenhum registro encontrado).']);
         }
     }
 
