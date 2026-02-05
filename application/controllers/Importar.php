@@ -137,14 +137,14 @@ class Importar extends MY_Controller
                 }
 
                 $email = trim($row['L']);
-                if (empty($email)) {
+                if (!empty($email) && $this->clientes_model->emailExists($email)) {
+                    continue;
+                }
+
+                if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     $inconsistente = 1;
                     $email = 'inconsistente_' . time() . '_' . $rowIndex . '@mergulhos.com';
                     $observacoes .= "Email gerado automaticamente. ";
-                } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    $rowErrors[] = ['linha' => $rowIndex, 'coluna' => 'L (E-mail)', 'valor' => $email, 'erro' => 'Formato de e-mail inválido.'];
-                } elseif ($this->clientes_model->emailExists($email)) {
-                    $rowErrors[] = ['linha' => $rowIndex, 'coluna' => 'L (E-mail)', 'valor' => $email, 'erro' => 'Este e-mail já está cadastrado.'];
                 }
 
                 $dataNascimento = null;
