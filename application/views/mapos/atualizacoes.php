@@ -9,6 +9,26 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
+                    <strong>v4.53.2 - Faturamento de Treinos e Pagamento de Instrutores</strong><br>
+                    Novas funcionalidades para gestão financeira de treinos e correções de interface.
+                </div>
+
+                <h3>Novidades e Melhorias</h3>
+                <hr>
+                <h4>1. Financeiro de Treinos</h4>
+                <ul>
+                    <li><strong>Faturamento de Treinos:</strong> Adicionado botão "Faturar" na listagem de treinos agendados. Agora é possível lançar a receita diretamente no financeiro e marcar o treino como faturado.</li>
+                    <li><strong>Pagamento de Instrutores:</strong> O modal de pagamento de instrutores agora permite selecionar a <strong>Data do Pagamento</strong> e a <strong>Forma de Pagamento</strong>. Ao confirmar, uma despesa é lançada automaticamente no financeiro.</li>
+                </ul>
+
+                <h4>2. Interface e Correções</h4>
+                <ul>
+                    <li><strong>Calendários em Modais:</strong> Corrigido o problema onde os seletores de data (datepickers) não apareciam corretamente dentro dos modais de faturamento e pagamento.</li>
+                    <li><strong>Validação de Formulários:</strong> Corrigidos erros de script que impediam a validação correta dos formulários de treino.</li>
+                </ul>
+                <br>
+
+                <div class="alert alert-success">
                     <strong>v4.53.1 - Correções no Agendamento e Financeiro de Treinos</strong><br>
                     Ajustes críticos na disponibilidade de datas, seleção de instrutores e cálculo de comissões.
                 </div>

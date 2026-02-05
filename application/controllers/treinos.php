@@ -310,17 +310,52 @@ class Treinos extends MY_Controller
         $id = $this->input->post('id');
         $valor = $this->input->post('valor_pagamento');
         $valor = str_replace(['.', ','], ['', '.'], $valor);
+        $data_pagamento = $this->input->post('data_pagamento');
+        $forma_pgto = $this->input->post('forma_pgto');
 
-        $data = [
-            'valor_pagamento' => $valor,
-            'status_pagamento' => 'Pago'
+        try {
+            $data_pagamento_db = DateTime::createFromFormat('d/m/Y', $data_pagamento)->format('Y-m-d');
+        } catch (Exception $e) {
+            $data_pagamento_db = date('Y-m-d');
+        }
+
+        $agendamento = $this->treinos_model->getAgendamentoById($id);
+        if (!$agendamento) {
+            $this->session->set_flashdata('error', 'Agendamento não encontrado.');
+            redirect(site_url('treinos'));
+        }
+
+        $this->load->model('usuarios_model');
+        $instrutor = $this->usuarios_model->getById($agendamento->instrutor_id);
+        $nome_instrutor = $instrutor ? $instrutor->nome : 'Instrutor Indefinido';
+
+        $data_lancamento = [
+            'descricao' => 'Pagamento Instrutor - Treino #' . $id . ' - ' . $agendamento->nome_treino,
+            'valor' => $valor,
+            'data_vencimento' => $data_pagamento_db,
+            'data_pagamento' => $data_pagamento_db,
+            'baixado' => 1,
+            'cliente_fornecedor' => $nome_instrutor,
+            'forma_pgto' => $forma_pgto,
+            'tipo' => 'despesa',
+            'observacoes' => 'Pagamento referente ao treino #' . $id,
+            'usuarios_id' => $this->session->userdata('id_admin'),
         ];
 
-        if ($this->treinos_model->edit('treinos_agendados', $data, 'id', $id)) {
-            $this->session->set_flashdata('success', 'Pagamento registrado com sucesso!');
-            log_info('Registrou pagamento de instrutor. ID Agendamento: ' . $id . ', Valor: ' . $valor);
+        if ($this->db->field_exists('pagar_usuario_id', 'lancamentos')) {
+            $data_lancamento['pagar_usuario_id'] = $agendamento->instrutor_id;
+        }
+
+        if ($this->treinos_model->add('lancamentos', $data_lancamento)) {
+            $data = ['valor_pagamento' => $valor, 'status_pagamento' => 'Pago'];
+            if ($this->treinos_model->edit('treinos_agendados', $data, 'id', $id)) {
+                $this->session->set_flashdata('success', 'Pagamento registrado e faturado com sucesso!');
+                log_info('Registrou pagamento de instrutor e lançou despesa. ID Agendamento: ' . $id . ', Valor: ' . $valor);
+            } else {
+                $this->session->set_flashdata('error', 'Erro ao atualizar status do treino, mas lançamento financeiro foi criado.');
+            }
         } else {
-            $this->session->set_flashdata('error', 'Erro ao registrar pagamento.');
+            $this->session->set_flashdata('error', 'Erro ao registrar lançamento financeiro.');
         }
 
         redirect(site_url('treinos'));
@@ -411,12 +446,6 @@ class Treinos extends MY_Controller
         $fimTreino = clone $inicioTreino;
         $fimTreino->add(new DateInterval('PT' . $config->duracao_minutos . 'M'));
 
-        $valor_pagamento = 0.00;
-        if ($comInstrutor) {
-            $valor_pagamento = $config->preco_com_instrutor - $config->preco_sem_instrutor;
-            if ($valor_pagamento < 0) $valor_pagamento = 0.00;
-        }
-
         $data = [
             'data_hora_inicio' => $inicioTreino->format('Y-m-d H:i:s'),
             'data_hora_fim' => $fimTreino->format('Y-m-d H:i:s'),
@@ -424,7 +453,6 @@ class Treinos extends MY_Controller
             'com_instrutor' => $comInstrutor,
             'instrutor_id' => $instrutorId,
             'valor_cobrado' => $comInstrutor ? $config->preco_com_instrutor : $config->preco_sem_instrutor,
-            'valor_pagamento' => $valor_pagamento,
         ];
 
         if ($this->treinos_model->edit('treinos_agendados', $data, 'id', $idAgendamento)) {

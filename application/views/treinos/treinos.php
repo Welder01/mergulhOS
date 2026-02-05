@@ -2,6 +2,7 @@
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <script src="<?php echo base_url(); ?>assets/js/maskmoney.js"></script>
 <link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/jquery.datetimepicker.min.css" />
+<script src="<?php echo base_url() ?>assets/js/jquery.validate.js"></script>
 
 <?php if ($this->session->flashdata('success') != null) { ?>
     <div class="alert alert-success">
@@ -134,6 +135,7 @@
                             <th>Treino</th>
                             <th>Data/Hora Início</th>
                             <th>Custo Instrutor</th>
+                            <th>Faturado</th>
                             <th>Status</th>
                             <th>Ações</th>
                         </tr>
@@ -156,12 +158,14 @@
                                     $cor = '#CD0000';
                                     break;
                             }
+                            $faturado = (isset($agendamento->faturado) && $agendamento->faturado == 1) ? 'Sim' : 'Não';
                             echo '<tr>';
                             echo '<td>' . $agendamento->id . '</td>';
                             echo '<td>' . htmlspecialchars($agendamento->nome_cliente) . '</td>';
                             echo '<td>' . htmlspecialchars($agendamento->nome_treino) . '</td>';
                             echo '<td>' . date('d/m/Y H:i', strtotime($agendamento->data_hora_inicio)) . '</td>';
                             echo '<td>R$ ' . number_format($agendamento->valor_pagamento, 2, ',', '.') . '</td>';
+                            echo '<td>' . $faturado . '</td>';
                             echo '<td><span class="badge" style="background-color: ' . $cor . '; border-color: ' . $cor . '">' . $agendamento->status . '</span></td>';
                             echo '<td>';
                             echo '<a href="' . base_url() . 'index.php/treinos/visualizarTreino/' . $agendamento->id . '" class="btn-nwe tip-top" title="Ver Detalhes" style="margin-right: 5px;"><i class="fas fa-eye"></i></a>';
@@ -170,6 +174,9 @@
                             }
                             if ($this->permission->checkPermission($this->session->userdata('permissao'), 'eTreino') && $agendamento->com_instrutor) {
                                 echo '<button class="btn-inverse tip-top btn-pagar-instrutor" data-id="' . $agendamento->id . '" data-valor="' . ($agendamento->valor_pagamento > 0 ? $agendamento->valor_pagamento : $agendamento->preco_com_instrutor) . '" title="Pagar Instrutor" style="margin-right: 5px;"><i class="fas fa-money-bill-wave"></i></button>';
+                            }
+                            if ($this->permission->checkPermission($this->session->userdata('permissao'), 'aLancamento') && (!isset($agendamento->faturado) || $agendamento->faturado != 1)) {
+                                echo '<a href="#modal-faturar" role="button" data-toggle="modal" treino_id="' . $agendamento->id . '" valor="' . $agendamento->valor_cobrado . '" cliente="' . htmlspecialchars($agendamento->nome_cliente) . '" cliente_id="' . $agendamento->cliente_id . '" class="btn-nwe5 tip-top" title="Faturar" style="margin-right: 5px;"><i class="bx bx-dollar"></i></a>';
                             }
                             if ($this->permission->checkPermission($this->session->userdata('permissao'), 'dTreino')) {
                                 echo '<a href="#modal-excluir-agendamento" role="button" data-toggle="modal" agendamento_id="' . $agendamento->id . '" class="btn-nwe4 tip-top" title="Excluir"><i class="fas fa-trash-alt"></i></a>';
@@ -259,6 +266,69 @@
             $('#valor_pagamento_instrutor').maskMoney({decimal:",", thousands:"."});
             $('#valor_pagamento_instrutor').maskMoney('mask', parseFloat(valor));
             $('#modal-pagar-instrutor').modal('show');
+        });
+
+        $(document).on('click', 'a[href="#modal-faturar"]', function(event) {
+            var treino_id = $(this).attr('treino_id');
+            var valor = $(this).attr('valor');
+            var cliente = $(this).attr('cliente');
+            var cliente_id = $(this).attr('cliente_id');
+
+            $('#treino_id').val(treino_id);
+            $('#descricao').val('Fatura de Treino - #' + treino_id);
+            $('#cliente').val(cliente);
+            $('#clientes_id').val(cliente_id);
+            $('#valor').val(valor);
+            $('#valor').maskMoney('mask');
+            $('#vencimento').val('<?php echo date('d/m/Y'); ?>');
+        });
+
+        $('#recebido').click(function(event) {
+            var flag = $(this).is(':checked');
+            if (flag == true) {
+                $('#divRecebimento').show();
+            } else {
+                $('#divRecebimento').hide();
+            }
+        });
+
+        $("#formFaturar").validate({
+            rules: {
+                descricao: { required: true },
+                cliente: { required: true },
+                valor: { required: true },
+                vencimento: { required: true }
+            },
+            messages: {
+                descricao: { required: 'Campo Requerido.' },
+                cliente: { required: 'Campo Requerido.' },
+                valor: { required: 'Campo Requerido.' },
+                vencimento: { required: 'Campo Requerido.' }
+            },
+            submitHandler: function(form) {
+                var dados = $(form).serialize();
+                $('#btn-cancelar-faturar').trigger('click');
+                $.ajax({
+                    type: "POST",
+                    url: "<?php echo base_url(); ?>index.php/treinos/faturar",
+                    data: dados,
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.result == true) {
+                            window.location.reload(true);
+                        } else {
+                            alert('Ocorreu um erro ao tentar faturar treino.');
+                        }
+                    }
+                });
+                return false;
+            }
+        });
+
+        $('#vencimento, #recebimento, #data_pagamento_instrutor').datetimepicker({
+            format: 'd/m/Y',
+            timepicker: false,
+            zIndex: 100000
         });
 
         // Autocomplete Cliente no Modal Novo Agendamento
@@ -381,7 +451,6 @@
                     </select>
                 </div>
             </div>
-            <div id="instrutor_message_reagendar" style="display:none; margin-left: 140px; margin-right: 20px; margin-bottom: 10px;"></div>
 
 
             <div class="control-group">
@@ -485,10 +554,27 @@
                     <input type="text" name="valor_pagamento" id="valor_pagamento_instrutor" class="money" required />
                 </div>
             </div>
+            <div class="control-group">
+                <label for="data_pagamento_instrutor" class="control-label">Data do Pagamento</label>
+                <div class="controls">
+                    <input type="text" name="data_pagamento" id="data_pagamento_instrutor" value="<?php echo date('d/m/Y'); ?>" required />
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="forma_pgto_instrutor" class="control-label">Forma de Pagamento</label>
+                <div class="controls">
+                    <select name="forma_pgto" id="forma_pgto_instrutor">
+                        <option value="Dinheiro">Dinheiro</option>
+                        <option value="Pix">Pix</option>
+                        <option value="Transferência Bancária">Transferência Bancária</option>
+                        <option value="Cheque">Cheque</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <div class="modal-footer" style="display:flex;justify-content: center">
             <button class="button btn btn-warning" data-dismiss="modal" aria-hidden="true"><span class="button__icon"><i class="bx bx-x"></i></span><span class="button__text2">Cancelar</span></button>
-            <button class="button btn btn-primary"><span class="button__icon"><i class="bx bx-check"></i></span> <span class="button__text2">Salvar</span></button>
+            <button class="button btn btn-primary"><span class="button__icon"><i class="bx bx-check"></i></span> <span class="button__text2">Faturar</span></button>
         </div>
     </form>
 </div>
@@ -525,6 +611,70 @@
         <div class="modal-footer" style="display:flex;justify-content: center">
             <button class="button btn btn-warning" data-dismiss="modal" aria-hidden="true"><span class="button__icon"><i class="bx bx-x"></i></span><span class="button__text2">Cancelar</span></button>
             <button class="button btn btn-danger"><span class="button__icon"><i class='bx bx-trash'></i></span> <span class="button__text2">Excluir</span></button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal Faturar -->
+<div id="modal-faturar" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <form id="formFaturar" action="<?php echo current_url() ?>" method="post">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="myModalLabel">Faturar Treino</h3>
+        </div>
+        <div class="modal-body">
+            <div class="span12 alert alert-info" style="margin-left: 0"> Obrigatório o preenchimento dos campos com asterisco.</div>
+            <div class="span12" style="margin-left: 0">
+                <label for="descricao">Descrição*</label>
+                <input class="span12" id="descricao" type="text" name="descricao" value="" required readonly />
+            </div>
+            <div class="span12" style="margin-left: 0">
+                <div class="span12" style="margin-left: 0">
+                    <label for="cliente">Cliente*</label>
+                    <input class="span12" id="cliente" type="text" name="cliente" value="" required readonly />
+                    <input type="hidden" name="clientes_id" id="clientes_id" value="">
+                    <input type="hidden" name="treino_id" id="treino_id" value="">
+                </div>
+            </div>
+            <div class="span12" style="margin-left: 0">
+                <div class="span4" style="margin-left: 0">
+                    <label for="valor">Valor*</label>
+                    <input type="hidden" id="tipo" name="tipo" value="receita" />
+                    <input class="span12 money" id="valor" type="text" name="valor" value="" required />
+                </div>
+                <div class="span4">
+                    <label for="vencimento">Data Vencimento*</label>
+                    <input class="span12" id="vencimento" type="text" name="vencimento" required />
+                </div>
+            </div>
+            <div class="span12" style="margin-left: 0">
+                <div class="span4" style="margin-left: 0">
+                    <label for="recebido">Recebido?</label>
+                    &nbsp &nbsp &nbsp &nbsp <input id="recebido" type="checkbox" name="recebido" value="1" />
+                </div>
+                <div id="divRecebimento" class="span8" style=" display: none">
+                    <div class="span6">
+                        <label for="recebimento">Data Recebimento</label>
+                        <input class="span12" id="recebimento" type="text" name="recebimento" />
+                    </div>
+                    <div class="span6">
+                        <label for="formaPgto">Forma Pgto</label>
+                        <select name="formaPgto" id="formaPgto" class="span12">
+                            <option value="Dinheiro">Dinheiro</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            <option value="Cheque">Cheque</option>
+                            <option value="Boleto">Boleto</option>
+                            <option value="Depósito">Depósito</option>
+                            <option value="Débito">Débito</option>
+                            <option value="Pix">Pix</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true" id="btn-cancelar-faturar">Cancelar</button>
+            <button class="btn btn-primary">Faturar</button>
         </div>
     </form>
 </div>
@@ -585,8 +735,8 @@
         // Lógica para mostrar/ocultar e buscar instrutores no modal de reagendamento
         $('#com_instrutor_reagendar, #treino_config_id_reagendar, #data_hora_reagendamento').on('change', function () {
             var comInstrutor = $('#com_instrutor_reagendar').is(':checked');
-            $('#instrutor_message_reagendar').hide().html('');
             if (comInstrutor) {
+                $('#instrutor_div_reagendar').slideDown();
                 buscarInstrutoresReagendar();
             } else {
                 $('#instrutor_div_reagendar').slideUp();
@@ -601,18 +751,11 @@
             if (configId) {
                 $('#instrutor_id_reagendar').prop('disabled', true).html('<option>Buscando...</option>');
                 $.get('<?= site_url('treinos/getInstrutoresDisponiveis') ?>', { config_id: configId, data_hora: dataHora }, function (data) {
-                    if (data.length > 0) {
-                        var options = '<option value="">Qualquer um disponível</option>';
-                        data.forEach(function (instrutor) {
-                            options += '<option value="' + instrutor.id + '">' + instrutor.nome + '</option>';
-                        });
-                        $('#instrutor_id_reagendar').html(options).prop('disabled', false);
-                        $('#instrutor_div_reagendar').slideDown();
-                    } else {
-                        $('#instrutor_div_reagendar').slideUp();
-                        $('#com_instrutor_reagendar').prop('checked', false);
-                        $('#instrutor_message_reagendar').html('<div class="alert alert-info" style="margin-bottom: 0;">Nenhum instrutor disponível para este treino. Prossiga com o agendamento sem instrutor.</div>').slideDown();
-                    }
+                    var options = '<option value="">Qualquer um disponível</option>';
+                    data.forEach(function (instrutor) {
+                        options += '<option value="' + instrutor.id + '">' + instrutor.nome + '</option>';
+                    });
+                    $('#instrutor_id_reagendar').html(options).prop('disabled', false);
                 }, 'json');
             }
         }
