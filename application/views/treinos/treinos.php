@@ -1,6 +1,20 @@
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
+<script src="<?php echo base_url(); ?>assets/js/maskmoney.js"></script>
 <link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/jquery.datetimepicker.min.css" />
+
+<?php if ($this->session->flashdata('success') != null) { ?>
+    <div class="alert alert-success">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <?php echo $this->session->flashdata('success'); ?>
+    </div>
+<?php } ?>
+<?php if ($this->session->flashdata('error') != null) { ?>
+    <div class="alert alert-danger">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <?php echo $this->session->flashdata('error'); ?>
+    </div>
+<?php } ?>
 
 <div class="row-fluid" style="margin-top: 0">
     <div class="span12">
@@ -61,6 +75,11 @@
             </div>
             <div class="widget-content nopadding">
                 <div style="padding: 20px;">
+                    <div class="span12" style="margin-left: 0; margin-bottom: 15px;">
+                        <a href="#modal-agendar-treino" role="button" data-toggle="modal" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Novo Agendamento
+                        </a>
+                    </div>
                     <form action="<?= site_url('treinos') ?>" method="get">
                         <div class="row-fluid"
                             style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
@@ -114,6 +133,7 @@
                             <th>Cliente</th>
                             <th>Treino</th>
                             <th>Data/Hora Início</th>
+                            <th>Custo Instrutor</th>
                             <th>Status</th>
                             <th>Ações</th>
                         </tr>
@@ -141,11 +161,15 @@
                             echo '<td>' . htmlspecialchars($agendamento->nome_cliente) . '</td>';
                             echo '<td>' . htmlspecialchars($agendamento->nome_treino) . '</td>';
                             echo '<td>' . date('d/m/Y H:i', strtotime($agendamento->data_hora_inicio)) . '</td>';
+                            echo '<td>R$ ' . number_format($agendamento->valor_pagamento, 2, ',', '.') . '</td>';
                             echo '<td><span class="badge" style="background-color: ' . $cor . '; border-color: ' . $cor . '">' . $agendamento->status . '</span></td>';
                             echo '<td>';
                             echo '<a href="' . base_url() . 'index.php/treinos/visualizarTreino/' . $agendamento->id . '" class="btn-nwe tip-top" title="Ver Detalhes" style="margin-right: 5px;"><i class="fas fa-eye"></i></a>';
                             if ($this->permission->checkPermission($this->session->userdata('permissao'), 'eTreino')) {
                                 echo '<button class="btn-nwe3 tip-top btn-reagendar" data-id="' . $agendamento->id . '" title="Reagendar" style="margin-right: 5px;"><i class="fas fa-calendar-alt"></i></button>';
+                            }
+                            if ($this->permission->checkPermission($this->session->userdata('permissao'), 'eTreino') && $agendamento->com_instrutor) {
+                                echo '<button class="btn-inverse tip-top btn-pagar-instrutor" data-id="' . $agendamento->id . '" data-valor="' . ($agendamento->valor_pagamento > 0 ? $agendamento->valor_pagamento : $agendamento->preco_com_instrutor) . '" title="Pagar Instrutor" style="margin-right: 5px;"><i class="fas fa-money-bill-wave"></i></button>';
                             }
                             if ($this->permission->checkPermission($this->session->userdata('permissao'), 'dTreino')) {
                                 echo '<a href="#modal-excluir-agendamento" role="button" data-toggle="modal" agendamento_id="' . $agendamento->id . '" class="btn-nwe4 tip-top" title="Excluir"><i class="fas fa-trash-alt"></i></a>';
@@ -196,6 +220,22 @@
     #ui-datepicker-div {
         z-index: 100000 !important;
     }
+    .form-modal .control-label {
+        width: 120px;
+    }
+    .form-modal .controls {
+        margin-left: 140px;
+    }
+    .ui-autocomplete {
+        z-index: 100000 !important;
+        max-height: 200px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    .ui-menu .ui-menu-item a {
+        font-size: 12px;
+        white-space: normal;
+    }
 </style>
 
 
@@ -210,6 +250,90 @@
                 $('#agendamento_id_excluir').val(agendamento_id);
             }
         });
+
+        $(document).on('click', '.btn-pagar-instrutor', function () {
+            var id = $(this).data('id');
+            var valor = $(this).data('valor');
+            $('#pagar_id_agendamento').val(id);
+            $('#valor_pagamento_instrutor').val(valor);
+            $('#valor_pagamento_instrutor').maskMoney({decimal:",", thousands:"."});
+            $('#valor_pagamento_instrutor').maskMoney('mask', parseFloat(valor));
+            $('#modal-pagar-instrutor').modal('show');
+        });
+
+        // Autocomplete Cliente no Modal Novo Agendamento
+        $("#cliente_nome").autocomplete({
+            source: "<?php echo base_url(); ?>index.php/treinos/autoCompleteCliente",
+            minLength: 1,
+            select: function(event, ui) {
+                $("#cliente_id").val(ui.item.id);
+                $("#cliente_nome").val(ui.item.nome);
+                return false;
+            }
+        });
+
+        // Datepicker para Novo Agendamento
+        var datetimepickerNovo = $('#data_hora_treino_novo').datetimepicker({
+            format: 'd/m/Y H:i', step: 30, zIndex: 99999
+        });
+
+        // Atualiza calendário ao selecionar treino
+        $('#treino_config_id_novo').change(function() {
+            var config_id = $(this).val();
+            if (config_id) {
+                $('#data_hora_treino_novo').val('').prop('disabled', true).attr('placeholder', 'Carregando horários...');
+                $.getJSON('<?= site_url('treinos/getHorariosDisponiveis') ?>', { config_id: config_id }, function(response) {
+                    $('#data_hora_treino_novo').datetimepicker('destroy');
+                    $('#data_hora_treino_novo').datetimepicker({
+                        format: 'd/m/Y H:i',
+                        step: parseInt(response.duration) || 30,
+                        allowTimes: response.allowedTimes || [],
+                        disabledWeekDays: response.disabledWeekDays || [],
+                        zIndex: 99999
+                    });
+                    $('#data_hora_treino_novo').prop('disabled', false).attr('placeholder', 'DD/MM/AAAA HH:MM');
+                });
+            } else {
+                $('#data_hora_treino_novo').val('').prop('disabled', true);
+            }
+        });
+
+        // Lógica de Instrutor no Modal Novo Agendamento
+        $('#com_instrutor_novo, #treino_config_id_novo, #data_hora_treino_novo').on('change', function () {
+            var comInstrutor = $('#com_instrutor_novo').is(':checked');
+            $('#instrutor_message_novo').hide().html('');
+            if (comInstrutor) {
+                buscarInstrutoresNovo();
+            } else {
+                $('#instrutor_div_novo').slideUp();
+                $('#instrutor_id_novo').html('<option value="">Selecione um instrutor</option>');
+            }
+        });
+ 
+        function buscarInstrutoresNovo() {
+            var configId = $('#treino_config_id_novo').val();
+            var dataHora = $('#data_hora_treino_novo').val();
+
+            if (configId) {
+                $('#instrutor_id_novo').prop('disabled', true).html('<option>Buscando...</option>');
+                $.get('<?= site_url('treinos/getInstrutoresDisponiveis') ?>', { config_id: configId, data_hora: dataHora }, function (data) {
+                    if(data.length > 0) {
+                        var options = '<option value="">Qualquer um disponível</option>';
+                        data.forEach(function (instrutor) {
+                            options += '<option value="' + instrutor.id + '">' + instrutor.nome + '</option>';
+                        });
+                        $('#instrutor_id_novo').html(options).prop('disabled', false);
+                        $('#instrutor_div_novo').slideDown();
+                    } else {
+                        $('#instrutor_div_novo').slideUp();
+                        $('#com_instrutor_novo').prop('checked', false);
+                        $('#instrutor_message_novo').html('<div class="alert alert-info" style="margin-bottom: 0;">Nenhum instrutor disponível para este treino. Prossiga com o agendamento sem instrutor.</div>').slideDown();
+                    }
+                }, 'json');
+            } else {
+                $('#com_instrutor_novo').prop('checked', false);
+            }
+        }
     });
 </script>
 
@@ -257,6 +381,7 @@
                     </select>
                 </div>
             </div>
+            <div id="instrutor_message_reagendar" style="display:none; margin-left: 140px; margin-right: 20px; margin-bottom: 10px;"></div>
 
 
             <div class="control-group">
@@ -273,6 +398,133 @@
                         class="bx bx-x"></i></span><span class="button__text2">Voltar</span></button>
             <button class="button btn btn-primary"><span class="button__icon"><i
                         class="bx bx-calendar-check"></i></span> <span class="button__text2">Reagendar</span></button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal Novo Agendamento -->
+<div id="modal-agendar-treino" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <form action="<?php echo site_url('treinos/adicionarAgendamento'); ?>" method="post" class="form-horizontal form-modal">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h5 id="myModalLabel">Novo Agendamento</h5>
+        </div>
+        <div class="modal-body">
+            <div class="control-group">
+                <label for="cliente_nome" class="control-label">Cliente<span class="required">*</span></label>
+                <div class="controls">
+                    <input id="cliente_nome" type="text" name="cliente_nome" class="span12" placeholder="Digite o nome do cliente" required />
+                    <input id="cliente_id" type="hidden" name="cliente_id" value="" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="treino_config_id_novo" class="control-label">Tipo de Treino<span class="required">*</span></label>
+                <div class="controls">
+                    <select name="treino_config_id" id="treino_config_id_novo" class="span12" required>
+                        <option value="">Selecione um treino</option>
+                        <?php foreach ($results as $treino): ?>
+                            <option value="<?= $treino->id ?>" data-duracao="<?= $treino->duracao_minutos ?>"
+                                data-preco-sem="<?= $treino->preco_sem_instrutor ?>"
+                                data-preco-com="<?= $treino->preco_com_instrutor ?>">
+                                <?= htmlspecialchars($treino->nome) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Com Instrutor</label>
+                <div class="controls">
+                    <label class="switch" style="display: inline-block; vertical-align: middle;">
+                        <input type="checkbox" name="com_instrutor" id="com_instrutor_novo" value="1">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="control-group" id="instrutor_div_novo" style="display: none;">
+                <label for="instrutor_id_novo" class="control-label">Instrutor</label>
+                <div class="controls">
+                    <select name="instrutor_id" id="instrutor_id_novo" class="span12">
+                        <option value="">Selecione um instrutor</option>
+                    </select>
+                </div>
+            </div>
+            <div id="instrutor_message_novo" style="display:none; margin-left: 140px; margin-right: 20px; margin-bottom: 10px;"></div>
+            <div class="control-group">
+                <label for="data_hora_treino_novo" class="control-label">Data e Hora<span class="required">*</span></label>
+                <div class="controls">
+                    <input type="text" name="data_hora_treino" id="data_hora_treino_novo" class="span12" required>
+                </div>
+            </div>
+             <div class="control-group">
+                <label for="observacoes" class="control-label">Observações</label>
+                <div class="controls">
+                    <textarea name="observacoes" id="observacoes" class="span12" rows="3"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" style="display:flex;justify-content: center">
+            <button class="button btn btn-warning" data-dismiss="modal" aria-hidden="true"><span class="button__icon"><i class="bx bx-x"></i></span><span class="button__text2">Cancelar</span></button>
+            <button class="button btn btn-primary"><span class="button__icon"><i class="bx bx-check"></i></span> <span class="button__text2">Agendar</span></button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal Pagar Instrutor -->
+<div id="modal-pagar-instrutor" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <form action="<?php echo site_url('treinos/pagarInstrutor'); ?>" method="post">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h5 id="myModalLabel">Pagar Instrutor</h5>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="pagar_id_agendamento" name="id" value="" />
+            <div class="control-group">
+                <label for="valor_pagamento_instrutor" class="control-label">Valor a Pagar</label>
+                <div class="controls">
+                    <input type="text" name="valor_pagamento" id="valor_pagamento_instrutor" class="money" required />
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" style="display:flex;justify-content: center">
+            <button class="button btn btn-warning" data-dismiss="modal" aria-hidden="true"><span class="button__icon"><i class="bx bx-x"></i></span><span class="button__text2">Cancelar</span></button>
+            <button class="button btn btn-primary"><span class="button__icon"><i class="bx bx-check"></i></span> <span class="button__text2">Salvar</span></button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal Excluir Configuração -->
+<div id="modal-excluir" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <form action="<?php echo base_url() ?>index.php/treinos/excluirConfiguracao" method="post">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h5 id="myModalLabel">Excluir Configuração</h5>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="configuracao_id" name="id" value="" />
+            <h5 style="text-align: center">Deseja realmente excluir esta configuração de treino?</h5>
+        </div>
+        <div class="modal-footer" style="display:flex;justify-content: center">
+            <button class="button btn btn-warning" data-dismiss="modal" aria-hidden="true"><span class="button__icon"><i class="bx bx-x"></i></span><span class="button__text2">Cancelar</span></button>
+            <button class="button btn btn-danger"><span class="button__icon"><i class='bx bx-trash'></i></span> <span class="button__text2">Excluir</span></button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal Excluir Agendamento -->
+<div id="modal-excluir-agendamento" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <form action="<?php echo base_url() ?>index.php/treinos/excluirAgendamento" method="post">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h5 id="myModalLabel">Excluir Agendamento</h5>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="agendamento_id_excluir" name="id" value="" />
+            <h5 style="text-align: center">Deseja realmente excluir este agendamento?</h5>
+        </div>
+        <div class="modal-footer" style="display:flex;justify-content: center">
+            <button class="button btn btn-warning" data-dismiss="modal" aria-hidden="true"><span class="button__icon"><i class="bx bx-x"></i></span><span class="button__text2">Cancelar</span></button>
+            <button class="button btn btn-danger"><span class="button__icon"><i class='bx bx-trash'></i></span> <span class="button__text2">Excluir</span></button>
         </div>
     </form>
 </div>
@@ -333,8 +585,8 @@
         // Lógica para mostrar/ocultar e buscar instrutores no modal de reagendamento
         $('#com_instrutor_reagendar, #treino_config_id_reagendar, #data_hora_reagendamento').on('change', function () {
             var comInstrutor = $('#com_instrutor_reagendar').is(':checked');
+            $('#instrutor_message_reagendar').hide().html('');
             if (comInstrutor) {
-                $('#instrutor_div_reagendar').slideDown();
                 buscarInstrutoresReagendar();
             } else {
                 $('#instrutor_div_reagendar').slideUp();
@@ -346,14 +598,21 @@
             var configId = $('#treino_config_id_reagendar').val();
             var dataHora = $('#data_hora_reagendamento').val();
 
-            if (configId && dataHora) {
+            if (configId) {
                 $('#instrutor_id_reagendar').prop('disabled', true).html('<option>Buscando...</option>');
                 $.get('<?= site_url('treinos/getInstrutoresDisponiveis') ?>', { config_id: configId, data_hora: dataHora }, function (data) {
-                    var options = '<option value="">Qualquer um disponível</option>';
-                    data.forEach(function (instrutor) {
-                        options += '<option value="' + instrutor.id + '">' + instrutor.nome + '</option>';
-                    });
-                    $('#instrutor_id_reagendar').html(options).prop('disabled', false);
+                    if (data.length > 0) {
+                        var options = '<option value="">Qualquer um disponível</option>';
+                        data.forEach(function (instrutor) {
+                            options += '<option value="' + instrutor.id + '">' + instrutor.nome + '</option>';
+                        });
+                        $('#instrutor_id_reagendar').html(options).prop('disabled', false);
+                        $('#instrutor_div_reagendar').slideDown();
+                    } else {
+                        $('#instrutor_div_reagendar').slideUp();
+                        $('#com_instrutor_reagendar').prop('checked', false);
+                        $('#instrutor_message_reagendar').html('<div class="alert alert-info" style="margin-bottom: 0;">Nenhum instrutor disponível para este treino. Prossiga com o agendamento sem instrutor.</div>').slideDown();
+                    }
                 }, 'json');
             }
         }

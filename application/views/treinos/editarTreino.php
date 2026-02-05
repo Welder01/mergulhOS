@@ -12,6 +12,18 @@
                 <h5>Editar Configuração de Treino</h5>
             </div>
             <div class="widget-content nopadding tab-content">
+                <?php if ($this->session->flashdata('success') != null) { ?>
+                    <div class="alert alert-success">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <?php echo $this->session->flashdata('success'); ?>
+                    </div>
+                <?php } ?>
+                <?php if ($this->session->flashdata('error') != null) { ?>
+                    <div class="alert alert-danger">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <?php echo $this->session->flashdata('error'); ?>
+                    </div>
+                <?php } ?>
                 <?php echo $custom_error; ?>
                 <form action="<?php echo current_url(); ?>" id="formTreino" method="post" class="form-horizontal">
                     <?php echo form_hidden('id', $result->id) ?>

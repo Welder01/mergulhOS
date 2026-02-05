@@ -1340,6 +1340,12 @@ class Mine extends MY_Controller
             return;
         }
 
+        $valor_pagamento = 0.00;
+        if ($comInstrutor) {
+            $valor_pagamento = $config->preco_com_instrutor - $config->preco_sem_instrutor;
+            if ($valor_pagamento < 0) $valor_pagamento = 0.00;
+        }
+
         $data = [
             'config_id' => $configId,
             'cliente_id' => $clienteId,
@@ -1348,6 +1354,7 @@ class Mine extends MY_Controller
             'data_hora_inicio' => $inicioTreino->format('Y-m-d H:i:s'),
             'data_hora_fim' => $fimTreino->format('Y-m-d H:i:s'),
             'valor_cobrado' => $comInstrutor ? $config->preco_com_instrutor : $config->preco_sem_instrutor,
+            'valor_pagamento' => $valor_pagamento,
             'status' => 'Agendado'
         ];
 

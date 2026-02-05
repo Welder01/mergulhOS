@@ -8,12 +8,61 @@
                 <h5>Notas de Atualização e Evolução do Sistema</h5>
             </div>
             <div class="widget-content">
+                <div class="alert alert-success">
+                    <strong>v4.53.1 - Correções no Agendamento e Financeiro de Treinos</strong><br>
+                    Ajustes críticos na disponibilidade de datas, seleção de instrutores e cálculo de comissões.
+                </div>
+
+                <h3>Correções e Melhorias</h3>
+                <hr>
+                <h4>1. Agendamento e Reagendamento (Admin)</h4>
+                <ul>
+                    <li><strong>Disponibilidade de Datas:</strong> O calendário agora respeita corretamente os dias da semana e horários configurados para cada tipo de treino ao agendar pelo painel administrativo.</li>
+                    <li><strong>Seleção de Instrutor:</strong> Corrigido o comportamento do campo de instrutor que não aparecia ao marcar a opção "Com Instrutor".</li>
+                    <li><strong>Mensagens de Alerta:</strong> Restaurada a exibição de mensagens quando não há instrutores disponíveis no modal de reagendamento.</li>
+                </ul>
+
+                <h4>2. Financeiro de Instrutores</h4>
+                <ul>
+                    <li><strong>Cálculo Automático:</strong> Corrigido o erro que registrava o valor de pagamento como R$ 0,00. O sistema agora calcula automaticamente (Preço com Instrutor - Preço sem Instrutor) tanto no agendamento pelo cliente quanto pelo administrador.</li>
+                    <li><strong>Atualização no Reagendamento:</strong> O valor a ser pago ao instrutor é recalculado automaticamente ao reagendar um treino, considerando as alterações de "Com/Sem Instrutor".</li>
+                </ul>
+                <br>
+
+                <div class="alert alert-success">
+                    <strong>v4.53.0 - Gestão Financeira de Treinos & Otimização de Importação</strong><br>
+                    Novas ferramentas para controle de pagamento de instrutores e melhorias na importação de dados.
+                </div>
+
+                <h3>Novidades no Módulo de Treinos</h3>
+                <hr>
+                <h4>1. Pagamento de Instrutores</h4>
+                <p>Implementado fluxo financeiro para instrutores dentro dos agendamentos:</p>
+                <ul>
+                    <li><strong>Visualização de Custos:</strong> Coluna dedicada para exibir o valor a ser pago ao instrutor na listagem de treinos.</li>
+                    <li><strong>Ação de Pagamento:</strong> Botão rápido para efetivar o pagamento, com modal que permite confirmar ou ajustar o valor antes de salvar.</li>
+                </ul>
+
+                <h4>2. Capacidades do Sistema de Treinos</h4>
+                <p>O módulo de treinos do Mergulho-OS agora oferece um ciclo completo de gestão:</p>
+                <ul>
+                    <li><strong>Configuração Flexível:</strong> Definição de tipos de treino com duração, preços variáveis (com/sem instrutor), limites de vagas e regras de cancelamento.</li>
+                    <li><strong>Agendamento Inteligente:</strong> Controle de disponibilidade de instrutores e horários, com cálculo automático de valores.</li>
+                    <li><strong>Notificações Automáticas:</strong> Integração com WhatsApp para avisar alunos e instrutores sobre agendamentos, cancelamentos e alterações de status.</li>
+                </ul>
+
+                <h4>3. Melhorias na Importação de Clientes</h4>
+                <ul>
+                    <li><strong>Inteligência de Dados:</strong> O sistema agora ignora automaticamente e-mails duplicados e gera e-mails provisórios para registros inválidos, garantindo que a importação de grandes listas não pare por erros simples.</li>
+                </ul>
+                <br>
+
                 <div class="alert alert-info">
                     <strong>Integração Evolution API & Automação de Notificações</strong><br>
                     Desenvolvimento focado na expansão das capacidades de comunicação e automação do MergulhOS.
                 </div>
 
-                <h3>Versão Atual: Integração Completa Evolution API</h3>
+                <h3>Versão Anterior: Integração Completa Evolution API</h3>
                 <hr>
 
                 <h4>1. Sistema de Notificação Dupla (Cliente & Instrutor)</h4>

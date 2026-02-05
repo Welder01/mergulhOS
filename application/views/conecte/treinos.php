@@ -88,11 +88,12 @@
                             <option value="">Selecione um instrutor</option>
                         </select>
                     </div>
+                    <div class="span12" id="instrutor_message" style="display: none; margin-left: 0;"></div>
                     <div class="span12" style="margin-left: 0;">
                         <div id="info-preco" style="font-size: 1.2em; margin-top: 10px;"></div>
                     </div>
                     <div class="span12" style="margin-left: 0; text-align: center; padding-top: 20px;">
-                        <button class="button btn btn-success"><span class="button__icon"><i class="bx bx-calendar-check"></i></span><span class="button__text2">Agendar</span></button>
+                        <button id="btn-agendar" class="button btn btn-success"><span class="button__icon"><i class="bx bx-calendar-check"></i></span><span class="button__text2">Agendar</span></button>
                     </div>
                 </form>
             </div>
@@ -236,6 +237,9 @@
             var dataHora = $('#data_hora_treino').val();
             var configId = $('#treino_config_id').val();
 
+            $('#btn-agendar').prop('disabled', false);
+            $('#instrutor_message').hide();
+
             if (dataHora && configId && $('#com_instrutor').is(':checked')) {
                 $('#instrutor_id').prop('disabled', true).html('<option>Buscando...</option>');
                 $.ajax({
@@ -250,7 +254,9 @@
                                 options += '<option value="' + instrutor.id + '">' + instrutor.nome + '</option>';
                             });
                         } else if ($('#com_instrutor').is(':checked')) {
-                            options = '<option value="">Nenhum instrutor disponível</option>';
+                            options = '<option value="">Nenhum disponível</option>';
+                            $('#instrutor_message').html('<div class="alert alert-warning">Não há instrutores disponíveis para este treino neste horário.</div>').show();
+                            $('#btn-agendar').prop('disabled', true);
                         }
                         $('#instrutor_id').html(options).prop('disabled', false);
                     },
@@ -311,6 +317,8 @@
                 }
             } else {
                 $('#instrutor_div').slideUp();
+                $('#btn-agendar').prop('disabled', false);
+                $('#instrutor_message').hide();
             }
 
             if(preco) {
