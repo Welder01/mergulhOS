@@ -189,6 +189,13 @@
         color: #555;
         font-weight: 600;
     }
+    /* Fix para o calendário aparecer sobre o modal */
+    .xdsoft_datetimepicker {
+        z-index: 100000 !important;
+    }
+    #ui-datepicker-div {
+        z-index: 100000 !important;
+    }
 </style>
 
 
