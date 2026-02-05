@@ -121,6 +121,7 @@ Solicite sua hospedagem agora [Clique Aqui!](https://sysgo.com.br/mapos)
 * [chillerlan/php-qrcode](https://github.com/chillerlan/php-qrcode)
 * [mercadopago/dx-php](https://github.com/mercadopago/dx-php)
 * [gerencianet/gerencianet-sdk-php](https://github.com/gerencianet/gerencianet-sdk-php)
+* [phpoffice/phpspreadsheet](https://github.com/PHPOffice/PhpSpreadsheet)
 
 ### Requerimentos
 * PHP >= 8.3

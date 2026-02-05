@@ -94,7 +94,7 @@ fi
     if [ ! -d "$dirDefault" ]; then
         mkdir $dirDefault
     fi
-    $installCommand install -y wget unzip curl &> /dev/null
+    $installCommand install -y wget unzip curl git &> /dev/null
 # <=== Fim Download de Dependências ===>
 
 # <=== Inicio Instalação XAMPP ===>
@@ -113,7 +113,7 @@ fi
         sudo $dirDefault/xampp-installer.run --mode unattended
         echo
         echo "* Por favor aguarde, instalando Extensões PHP"
-        $installCommand install -y php-curl php-gd php-zip php-xml php-mbstring php-mysql php-bcmath &> /dev/null
+        $installCommand install -y php-curl php-gd php-zip php-xml php-mbstring php-mysql php-bcmath php-intl &> /dev/null
         $dirXampp/lampp restart
     fi
     echo
@@ -184,7 +184,7 @@ fi
     fi
     echo
     echo "* Verificando complemento"
-    if [ -f "$dirHtdocs/mapos/application/vendor" ]
+    if [ -d "$dirHtdocs/mapos/application/vendor" ]
     then
         echo "* Complementos ja instalados."
     else
