@@ -117,6 +117,10 @@ Solicite sua hospedagem agora [Clique Aqui!](https://sysgo.com.br/mapos)
 * [mpdf/mpdf](https://github.com/mpdf/mpdf)
 * [Matrix Admin](http://wrappixel.com/demos/free-admin-templates/matrix-admin/index.html)
 * [filp/whoops](https://github.com/filp/whoops)
+* [symfony/var-dumper](https://github.com/symfony/var-dumper)
+* [chillerlan/php-qrcode](https://github.com/chillerlan/php-qrcode)
+* [mercadopago/dx-php](https://github.com/mercadopago/dx-php)
+* [gerencianet/gerencianet-sdk-php](https://github.com/gerencianet/gerencianet-sdk-php)
 
 ### Requerimentos
 * PHP >= 8.3

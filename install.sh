@@ -31,7 +31,7 @@ fi
 # <=== Inicio SET Diretorios ===>
     installCommand="sudo apt-get -y"
     dirDefault=/opt/InstaladorMAPOS
-    urlXampp="https://sourceforge.net/projects/xampp/files/XAMPP%20Linux/8.2.12/xampp-linux-x64-8.2.12-0-installer.run/download"
+    urlXampp="https://sourceforge.net/projects/xampp/files/XAMPP%20Linux/8.3.0/xampp-linux-x64-8.3.0-0-installer.run/download"
     dirXampp=/opt/lampp
     dirMaposConfig=/opt/lampp/htdocs/mapos/application/.env
     dirHtdocs=/opt/lampp/htdocs
@@ -113,7 +113,7 @@ fi
         sudo $dirDefault/xampp-installer.run --mode unattended
         echo
         echo "* Por favor aguarde, instalando Extensões PHP"
-        $installCommand install -y php-curl php-gd php-zip php-xml &> /dev/null
+        $installCommand install -y php-curl php-gd php-zip php-xml php-mbstring php-mysql php-bcmath &> /dev/null
         $dirXampp/lampp restart
     fi
     echo

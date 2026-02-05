@@ -7,14 +7,14 @@
 
 * INSTALAÇÃO DO **COMPOSER** E DO **XAMPP** É SIMPLES, ESTILO _NEXT_... _NEXT_... _FINISH_.
 
-* _SEMPRE BAIXAR A VERSÃO MAIS RECENTE DO **MAPOS**, NESTE EXEMPLO FOI USADO A VERSÃO 4.8.0_
+* _SEMPRE BAIXAR A VERSÃO MAIS RECENTE DO **MAPOS**, NESTE EXEMPLO FOI USADO A VERSÃO 4.52.0_
 
 * ESTE GUIA DE INSTALAÇÃO NÃO SERVE PARA ATUALIZAÇÃO.
 
 **DOWNLOAD COMPOSER LINK**: ` https://getcomposer.org/Composer-Setup.exe`
 
 **DOWNLOAD DO XAMPP LINK**: `https://www.apachefriends.org/download.html`
-> **_Escolha a versão de sua preferência desde que seja superior ao php 7.1_**
+> **_Escolha a versão de sua preferência desde que seja superior ao php 8.3_**
 
 
 

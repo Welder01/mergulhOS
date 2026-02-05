@@ -4,6 +4,32 @@ Todas as alterações serão documentadas neste arquivo
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 e [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Funcionalidades do Sistema]
+### Gestão e Operacional
+- **Dashboard**: Painel de controle com estatísticas e gráficos de receitas, despesas e ordens de serviço.
+- **Ordens de Serviço (OS)**: Gerenciamento completo com status personalizáveis, garantias, anexos, anotações e laudos técnicos.
+- **Vendas**: Controle de vendas de produtos e serviços, orçamentos e integração com estoque.
+- **Clientes e Fornecedores**: Cadastro completo com histórico de transações e contatos.
+- **Produtos e Serviços**: Controle de estoque, alertas de nível mínimo e precificação.
+
+### Financeiro
+- **Controle Financeiro**: Gestão de receitas, despesas e lançamentos futuros.
+- **Pagamentos**: Integração com gateways (Mercado Pago, Asaas, Efipay) e suporte a PIX.
+- **Cobranças**: Geração de boletos e links de pagamento.
+
+### Relatórios e Documentos
+- **Relatórios**: Diversos relatórios gerenciais (Financeiro, Vendas, OS, Estoque, Clientes).
+- **Impressão**: Suporte a impressão térmica (cupom) e A4 para OS e Vendas.
+- **Etiquetas**: Geração de etiquetas com códigos de barras e QR Code.
+
+### Sistema e Segurança
+- **Área do Cliente**: Portal para clientes acompanharem OS, Vendas e imprimirem 2ª via.
+- **Controle de Acesso**: Permissões granulares por usuário.
+- **Auditoria**: Logs de atividades do sistema.
+- **Notificações**: Envio de e-mails e integração para envio via WhatsApp.
+- **Backup**: Ferramenta de backup do banco de dados.
+- **Atualização**: Sistema de atualização automática via GitHub.
+
 ## [4.52.0] - 2025-02-01
 ### Added
 - Action de release no GitHub. [@Pr3d4dor](https://github.com/Pr3d4dor)
