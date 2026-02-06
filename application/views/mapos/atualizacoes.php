@@ -9,6 +9,33 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
+                    <strong>v4.53.3 - Melhorias na Integração Evolution API</strong><br>
+                    Novas funcionalidades para envio de mídia, controle da fila e tratamento de mensagens.
+                </div>
+
+                <h3>Novidades e Melhorias</h3>
+                <hr>
+                <h4>1. Envio de Mídia e Arquivos</h4>
+                <ul>
+                    <li><strong>Upload de Mídia:</strong> Agora é possível anexar imagens, vídeos, áudios e documentos (PDF, DOCX, etc.) diretamente no cadastro de mensagens.</li>
+                    <li><strong>Conversão Automática:</strong> O sistema converte automaticamente arquivos locais para Base64, garantindo o envio mesmo em ambiente local (localhost).</li>
+                </ul>
+
+                <h4>2. Gerenciamento da Fila de Envios</h4>
+                <ul>
+                    <li><strong>Envio Manual:</strong> Adicionado botão "Forçar Envio (Cron)" para processar a fila imediatamente sem aguardar o agendamento.</li>
+                    <li><strong>Envio Individual:</strong> Novo botão na listagem da fila para forçar o envio de uma mensagem específica.</li>
+                    <li><strong>Atualização em Tempo Real:</strong> A lista da fila agora possui atualização automática (AJAX), permitindo acompanhar o status dos envios sem recarregar a página.</li>
+                </ul>
+
+                <h4>3. Tratamento de Mensagens</h4>
+                <ul>
+                    <li><strong>Limpeza de HTML:</strong> Implementada função para remover tags HTML do editor de texto e converter formatação (negrito, itálico) para o padrão do WhatsApp.</li>
+                    <li><strong>Logs Detalhados:</strong> Melhoria no registro de logs de envio, incluindo tentativas falhas e respostas da API.</li>
+                </ul>
+                <br>
+
+                <div class="alert alert-success">
                     <strong>v4.53.2 - Faturamento de Treinos e Pagamento de Instrutores</strong><br>
                     Novas funcionalidades para gestão financeira de treinos e correções de interface.
                 </div>
