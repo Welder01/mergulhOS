@@ -971,4 +971,24 @@ class Evolution extends MY_Controller
             echo json_encode($result);
         }
     }
+
+    public function refresh_queue()
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+            return $this->output->set_status_header(403)->set_output('Acesso negado');
+        }
+
+        if ($this->db->table_exists('evolution_queue')) {
+            $this->db->select('*');
+            $this->db->from('evolution_queue');
+            $this->db->order_by('id', 'ASC');
+            $this->db->limit(200);
+            $query = $this->db->get();
+            $data['fila'] = $query ? $query->result() : [];
+        } else {
+            $data['fila'] = [];
+        }
+
+        $this->load->view('evolution/fila_rows', $data);
+    }
 }
