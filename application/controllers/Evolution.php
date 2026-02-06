@@ -65,6 +65,79 @@ class Evolution extends MY_Controller
         redirect('evolution/gerenciar#tabFila');
     }
 
+    public function forcar_envio_fila()
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para gerenciar a fila.');
+            redirect('evolution/gerenciar#tabFila');
+        }
+
+        $this->load->library('evolution_queue');
+        $result = $this->evolution_queue->process();
+
+        if ($result['processed'] > 0) {
+            $this->session->set_flashdata('success', "Fila processada: {$result['processed']} enviados, {$result['failed']} falhas.");
+        } else {
+            $this->session->set_flashdata('info', "Processamento concluído. {$result['processed']} enviados, {$result['failed']} falhas.");
+        }
+
+        redirect('evolution/gerenciar#tabFila');
+    }
+
+    public function forcar_envio_item($id)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para gerenciar a fila.');
+            redirect('evolution/gerenciar#tabFila');
+        }
+
+        $item = $this->db->where('id', $id)->get('evolution_queue')->row();
+        if (!$item) {
+            $this->session->set_flashdata('error', 'Item não encontrado na fila.');
+            redirect('evolution/gerenciar#tabFila');
+        }
+
+        $apiUrl = $this->mapos_model->get_ci_config('evolution_api_url');
+        $apiKey = $this->mapos_model->get_ci_config('evolution_api_key');
+        $instanceName = $this->mapos_model->get_ci_config('evolution_api_instance');
+
+        if (empty($apiUrl) || empty($apiKey) || empty($instanceName)) {
+            $this->session->set_flashdata('error', 'Configurações da API incompletas.');
+            redirect('evolution/gerenciar#tabFila');
+        }
+
+        // Tenta identificar as colunas (ajuste conforme seu banco de dados se necessário)
+        $phone = $this->evolution_model->formatPhone(isset($item->phone) ? $item->phone : (isset($item->numero) ? $item->numero : null));
+        $message = isset($item->message) ? $item->message : (isset($item->mensagem) ? $item->mensagem : null);
+
+        if (!$phone || !$message) {
+            $this->session->set_flashdata('error', 'Dados da mensagem inválidos ou estrutura da tabela desconhecida.');
+            redirect('evolution/gerenciar#tabFila');
+        }
+
+        $url = rtrim($apiUrl, '/') . "/message/sendText/{$instanceName}";
+        $body = ["number" => $phone, "text" => $message];
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url, CURLOPT_RETURNTRANSFER => true, CURLOPT_ENCODING => "", CURLOPT_MAXREDIRS => 10, CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1, CURLOPT_CUSTOMREQUEST => "POST", CURLOPT_POSTFIELDS => json_encode($body),
+            CURLOPT_HTTPHEADER => ["apikey: {$apiKey}", "Content-Type: application/json"],
+        ]);
+
+        $response = curl_exec($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+
+        if ($httpcode >= 200 && $httpcode < 300) {
+            $this->db->delete('evolution_queue', ['id' => $id]);
+            $this->session->set_flashdata('success', 'Mensagem enviada e removida da fila.');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao enviar: ' . $response);
+        }
+        redirect('evolution/gerenciar#tabFila');
+    }
+
     public function limpar_fila()
     {
         if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
@@ -278,13 +351,7 @@ class Evolution extends MY_Controller
             $results = $this->db->get($tabela)->result();
             foreach ($results as $contato) {
                 if (!empty($contato->$campoTelefone)) {
-                    $numeroLimpo = preg_replace('/[^0-9]/', '', $contato->$campoTelefone);
-                    // Garante que o número tenha o DDI 55 (Brasil) se não tiver
-                    if (strlen($numeroLimpo) <= 11) {
-                        $numerosParaEnvio[] = '55' . $numeroLimpo;
-                    } else {
-                        $numerosParaEnvio[] = $numeroLimpo;
-                    }
+                    $numerosParaEnvio[] = $this->evolution_model->formatPhone($contato->$campoTelefone);
                 }
 
                 // Substituição de variáveis na mensagem
@@ -521,13 +588,9 @@ class Evolution extends MY_Controller
             }
 
             if ($numero) {
-                $numeroLimpo = preg_replace('/[^0-9]/', '', $numero);
-                if (strlen($numeroLimpo) >= 10) {
-                    if (strlen($numeroLimpo) <= 11) {
-                        $destinatarios[$numeroLimpo] = ['numero' => '55' . $numeroLimpo, 'dados' => $contato];
-                    } else {
-                        $destinatarios[$numeroLimpo] = ['numero' => $numeroLimpo, 'dados' => $contato];
-                    }
+                $formattedPhone = $this->evolution_model->formatPhone($numero);
+                if ($formattedPhone) {
+                    $destinatarios[$formattedPhone] = ['numero' => $formattedPhone, 'dados' => $contato];
                 }
             }
         }
@@ -537,9 +600,9 @@ class Evolution extends MY_Controller
             $numerosEspecificos = $this->input->post('numeros_especificos');
             $numerosArray = preg_split('/[,\s\n]+/ ', $numerosEspecificos, -1, PREG_SPLIT_NO_EMPTY);
             foreach ($numerosArray as $numero) {
-                $numeroLimpo = preg_replace('/[^0-9]/', '', $numero);
-                if (strlen($numeroLimpo) >= 10) {
-                    $destinatarios[$numeroLimpo] = ['numero' => $numeroLimpo, 'dados' => null]; // Sem dados para substituição
+                $formattedPhone = $this->evolution_model->formatPhone($numero);
+                if ($formattedPhone) {
+                    $destinatarios[$formattedPhone] = ['numero' => $formattedPhone, 'dados' => null]; // Sem dados para substituição
                 }
             }
         }

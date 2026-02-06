@@ -263,7 +263,7 @@ class Treinos extends MY_Controller
                         'treino' => $agendamento // $agendamento contains joined fields
                     ]);
                     $this->load->library('evolution_queue');
-                    $phone = $cliente->celular ?: $cliente->telefone;
+                    $phone = $this->evolution_model->formatPhone($cliente->celular ?: $cliente->telefone);
                     if ($phone) {
                         $this->evolution_queue->add($phone, $msg_parsed);
                     }
@@ -283,7 +283,7 @@ class Treinos extends MY_Controller
                         'cliente' => (isset($cliente) ? $cliente : $this->clientes_model->getById($agendamento->cliente_id))
                     ]);
                     $this->load->library('evolution_queue');
-                    $phone = $instrutor->celular ?: $instrutor->telefone;
+                    $phone = $this->evolution_model->formatPhone($instrutor->celular ?: $instrutor->telefone);
                     if ($phone) {
                         $this->evolution_queue->add($phone, $msg_parsed);
                     }
@@ -625,7 +625,7 @@ class Treinos extends MY_Controller
                 if ($cliente) {
                     $msg_parsed = $this->evolution_model->parseMessage($triggerCliente->mensagem, ['cliente' => $cliente, 'treino' => $config]);
                     $this->load->library('evolution_queue');
-                    $phone = $cliente->celular ?: $cliente->telefone;
+                    $phone = $this->evolution_model->formatPhone($cliente->celular ?: $cliente->telefone);
                     if ($phone) $this->evolution_queue->add($phone, $msg_parsed);
                 }
             }

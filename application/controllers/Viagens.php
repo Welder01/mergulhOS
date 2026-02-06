@@ -191,7 +191,7 @@ class Viagens extends MY_Controller
                     $cliData = $this->clientes_model->getById($cv->cliente_id);
                     if ($cliData) {
                         $msg_parsed = $this->evolution_model->parseMessage($triggerC->mensagem, ['viagem' => $viagem, 'cliente' => $cliData]);
-                        $phone = $cliData->celular ?: $cliData->telefone;
+                        $phone = $this->evolution_model->formatPhone($cliData->celular ?: $cliData->telefone);
                         if ($phone)
                             $this->evolution_queue->add($phone, $msg_parsed);
                     }
@@ -205,7 +205,7 @@ class Viagens extends MY_Controller
                     $usrData = $this->usuarios_model->getById($inst->usuario_id);
                     if ($usrData) {
                         $msg_parsed = $this->evolution_model->parseMessage($triggerU->mensagem, ['viagem' => $viagem, 'usuario' => $usrData]);
-                        $phone = $usrData->celular ?: $usrData->telefone;
+                        $phone = $this->evolution_model->formatPhone($usrData->celular ?: $usrData->telefone);
                         if ($phone)
                             $this->evolution_queue->add($phone, $msg_parsed);
                     }
@@ -402,7 +402,7 @@ class Viagens extends MY_Controller
                     $cliData = $this->clientes_model->getById($cv->cliente_id);
                     if ($cliData) {
                         $msg_parsed = $this->evolution_model->parseMessage($triggerC->mensagem, ['viagem' => $viagem, 'cliente' => $cliData]);
-                        $phone = $cliData->celular ?: $cliData->telefone;
+                        $phone = $this->evolution_model->formatPhone($cliData->celular ?: $cliData->telefone);
                         if ($phone)
                             $this->evolution_queue->add($phone, $msg_parsed);
                     }
@@ -417,7 +417,7 @@ class Viagens extends MY_Controller
                     $usrData = $this->usuarios_model->getById($inst->usuario_id);
                     if ($usrData) {
                         $msg_parsed = $this->evolution_model->parseMessage($triggerU->mensagem, ['viagem' => $viagem, 'usuario' => $usrData]);
-                        $phone = $usrData->celular ?: $usrData->telefone; // Assuming Usuario has phone
+                        $phone = $this->evolution_model->formatPhone($usrData->celular ?: $usrData->telefone); // Assuming Usuario has phone
                         if ($phone)
                             $this->evolution_queue->add($phone, $msg_parsed);
                     }
@@ -478,7 +478,7 @@ class Viagens extends MY_Controller
                     'viagem' => $viagem
                 ]);
                 $this->load->library('evolution_queue');
-                $phone = $cliente->celular ?: $cliente->telefone;
+                $phone = $this->evolution_model->formatPhone($cliente->celular ?: $cliente->telefone);
                 if ($phone) {
                     $this->evolution_queue->add($phone, $msg_parsed);
                 }
@@ -501,7 +501,7 @@ class Viagens extends MY_Controller
                                 'viagem' => $viagem,
                                 'usuario' => $u // Context for the notified user
                             ]);
-                            $phone = $u->celular ?: $u->telefone;
+                            $phone = $this->evolution_model->formatPhone($u->celular ?: $u->telefone);
                             if ($phone)
                                 $this->evolution_queue->add($phone, $msg_parsed);
                         }
@@ -634,20 +634,22 @@ class Viagens extends MY_Controller
 
             $resultado = $this->viagens_model->remover_cliente($id);
             if ($resultado['success']) {
-                $this->log_auditoria('Removeu o cliente "' . $cliente_viagem->nomeCliente . '" da viagem "' . $viagem->nome_viagem . '"');
+                $nomeCliente = $cliente ? $cliente->nomeCliente : 'Cliente ID ' . $cliente_viagem->cliente_id;
+                $nomeViagem = $viagem ? $viagem->nome_viagem : 'Viagem ID ' . $cliente_viagem->viagem_id;
+                $this->log_auditoria('Removeu o cliente "' . $nomeCliente . '" da viagem "' . $nomeViagem . '"');
 
                 // --- Evolution API Trigger (viagem_cliente_removido) ---
                 $this->load->model('evolution_model');
 
                 // 1. Client Notification
                 $triggerClient = $this->evolution_model->getEventTrigger('viagem_cliente_removido_cliente');
-                if ($triggerClient && $triggerClient->status == 1 && $cliente) {
+                if ($triggerClient && $triggerClient->status == 1 && $cliente && $viagem) {
                     $msg_parsed = $this->evolution_model->parseMessage($triggerClient->mensagem, [
                         'cliente' => $cliente,
                         'viagem' => $viagem
                     ]);
                     $this->load->library('evolution_queue');
-                    $phone = $cliente->celular ?: $cliente->telefone;
+                    $phone = $this->evolution_model->formatPhone($cliente->celular ?: $cliente->telefone);
                     if ($phone) {
                         $this->evolution_queue->add($phone, $msg_parsed);
                     }
@@ -655,7 +657,7 @@ class Viagens extends MY_Controller
 
                 // 2. Instructors Notification (Notify ALL instructors in this trip)
                 $triggerUser = $this->evolution_model->getEventTrigger('viagem_cliente_removido_usuario');
-                if ($triggerUser && $triggerUser->status == 1) {
+                if ($triggerUser && $triggerUser->status == 1 && $viagem) {
                     // We need to fetch instructors for this trip
                     $this->load->model('viagem_instrutores_model');
                     $instrutores = $this->viagem_instrutores_model->getByViagem($viagem->id);
@@ -670,7 +672,7 @@ class Viagens extends MY_Controller
                                     'viagem' => $viagem,
                                     'usuario' => $u // The recipient context
                                 ]);
-                                $phone = $u->celular ?: $u->telefone;
+                                $phone = $this->evolution_model->formatPhone($u->celular ?: $u->telefone);
                                 if ($phone)
                                     $this->evolution_queue->add($phone, $msg_parsed);
                             }
@@ -740,7 +742,7 @@ class Viagens extends MY_Controller
                             'viagem' => $viagem
                         ]);
                         $this->load->library('evolution_queue');
-                        $phone = $usuario->celular ?: $usuario->telefone;
+                        $phone = $this->evolution_model->formatPhone($usuario->celular ?: $usuario->telefone);
                         if ($phone) {
                             $this->evolution_queue->add($phone, $msg_parsed);
                         }
@@ -775,7 +777,7 @@ class Viagens extends MY_Controller
                         'viagem' => $viagem
                     ]);
                     $this->load->library('evolution_queue');
-                    $phone = $usuario->celular ?: $usuario->telefone;
+                    $phone = $this->evolution_model->formatPhone($usuario->celular ?: $usuario->telefone);
                     if ($phone) {
                         $this->evolution_queue->add($phone, $msg_parsed);
                     }

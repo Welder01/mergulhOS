@@ -79,7 +79,7 @@ class Servicos extends MY_Controller
                     if ($emitente && !empty($emitente->telefone)) {
                         $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, $data);
                         $this->load->library('evolution_queue');
-                        $this->evolution_queue->add($emitente->telefone, $msg_parsed);
+                        $this->evolution_queue->add($this->evolution_model->formatPhone($emitente->telefone), $msg_parsed);
                     }
                 }
 
@@ -130,7 +130,7 @@ class Servicos extends MY_Controller
                     if ($emitente && !empty($emitente->telefone)) {
                         $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, $data);
                         $this->load->library('evolution_queue');
-                        $this->evolution_queue->add($emitente->telefone, $msg_parsed);
+                        $this->evolution_queue->add($this->evolution_model->formatPhone($emitente->telefone), $msg_parsed);
                     }
                 }
 
@@ -174,7 +174,7 @@ class Servicos extends MY_Controller
             if ($emitente && !empty($emitente->telefone)) {
                 $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, ['id' => $id]);
                 $this->load->library('evolution_queue');
-                $this->evolution_queue->add($emitente->telefone, $msg_parsed);
+                $this->evolution_queue->add($this->evolution_model->formatPhone($emitente->telefone), $msg_parsed);
             }
         }
 

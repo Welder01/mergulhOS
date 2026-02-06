@@ -175,6 +175,7 @@
                     <div class="widget-header">
                         <h5 class="cardHeader"><i class="fas fa-list-ol"></i> Fila de Envio</h5>
                         <div class="widget-buttons" style="float: right; margin: 5px 10px 0 0;">
+                            <a href="<?= base_url('index.php/evolution/forcar_envio_fila') ?>" class="btn btn-inverse btn-mini tip-top" title="Forçar Envio Manual"><i class="fas fa-paper-plane"></i> Forçar Envio Manual</a>
                             <a href="<?= base_url('index.php/evolution/limpar_fila') ?>" class="btn btn-danger btn-mini"
                                 onclick="return confirm('Tem certeza que deseja limpar TODA a fila? Mensagens não enviadas serão perdidas.');"><i
                                     class="fas fa-trash"></i> Limpar Fila</a>
@@ -233,6 +234,7 @@
                                             <td style="text-align:center;"><?= $item->attempts ?></td>
                                             <td style="text-align:center;"><?= date('d/m/Y H:i', strtotime($item->created_at)) ?></td>
                                             <td style="text-align: center;">
+                                                <a href="<?= base_url('index.php/evolution/forcar_envio_item/' . $item->id) ?>" class="btn btn-success btn-mini tip-top" title="Forçar Envio Imediato" style="margin-right: 3px;"><i class="fas fa-paper-plane"></i></a>
                                                 <a href="<?= base_url('index.php/evolution/excluir_item_fila/' . $item->id) ?>#tabFila"
                                                     class="btn btn-danger btn-mini" title="Remover da Fila"
                                                     onclick="return confirm('Remover este item da fila?');"><i

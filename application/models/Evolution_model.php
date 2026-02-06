@@ -203,7 +203,10 @@ class Evolution_model extends CI_Model
             if ($instrutores) {
                 $names = [];
                 foreach ($instrutores as $inst) {
-                    $names[] = $inst->usuario_nome; // Assuming model returns joined name
+                    $name = isset($inst->nome_instrutor) ? $inst->nome_instrutor : (isset($inst->usuario_nome) ? $inst->usuario_nome : (isset($inst->nome) ? $inst->nome : ''));
+                    if ($name) {
+                        $names[] = $name;
+                    }
                 }
                 $data['curso']->lista_instrutores = implode(', ', $names);
                 // Also attach first instructor generic
@@ -220,7 +223,10 @@ class Evolution_model extends CI_Model
             if ($instrutores) {
                 $names = [];
                 foreach ($instrutores as $inst) {
-                    $names[] = $inst->usuario_nome;
+                    $name = isset($inst->nome_instrutor) ? $inst->nome_instrutor : (isset($inst->usuario_nome) ? $inst->usuario_nome : (isset($inst->nome) ? $inst->nome : ''));
+                    if ($name) {
+                        $names[] = $name;
+                    }
                 }
                 $data['viagem']->lista_instrutores = implode(', ', $names);
                 $data['viagem']->nome_instrutor = isset($names[0]) ? $names[0] : '';
@@ -322,4 +328,18 @@ class Evolution_model extends CI_Model
         return $message;
     }
 
+    public function formatPhone($phone)
+    {
+        $numeroLimpo = preg_replace('/[^0-9]/', '', $phone);
+
+        if (empty($numeroLimpo)) {
+            return null;
+        }
+
+        if (strlen($numeroLimpo) >= 10 && strlen($numeroLimpo) <= 11) {
+            return '55' . $numeroLimpo;
+        }
+
+        return $numeroLimpo;
+    }
 }

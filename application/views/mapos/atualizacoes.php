@@ -9,6 +9,21 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
+                    <strong>v4.53.3 - Melhorias na Integração Evolution API</strong><br>
+                    Correções de bugs em notificações e ferramentas para gerenciamento manual da fila de envios.
+                </div>
+
+                <h3>Novidades e Correções</h3>
+                <hr>
+                <h4>1. Evolution API & Notificações</h4>
+                <ul>
+                    <li><strong>Gerenciamento da Fila:</strong> Adicionado botão "Forçar Envio Manual" para processar a fila imediatamente sem depender do CRON. Também foi incluído um botão para envio individual de mensagens na lista.</li>
+                    <li><strong>Formatação de Números:</strong> Implementada validação automática que adiciona o DDI 55 (Brasil) caso o número tenha apenas DDD+Número, evitando falhas de envio.</li>
+                    <li><strong>Correção de Bugs:</strong> Ajustes no acesso a propriedades de clientes e instrutores que causavam erros ao disparar notificações de viagens e cursos.</li>
+                </ul>
+                <br>
+
+                <div class="alert alert-success">
                     <strong>v4.53.2 - Faturamento de Treinos e Pagamento de Instrutores</strong><br>
                     Novas funcionalidades para gestão financeira de treinos e correções de interface.
                 </div>

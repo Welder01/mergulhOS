@@ -285,7 +285,7 @@ class Os extends MY_Controller
                         'usuario' => $oldUser
                     ]);
                     $this->load->library('evolution_queue');
-                    $phone = $oldUser->celular ?: $oldUser->telefone;
+                    $phone = $this->evolution_model->formatPhone($oldUser->celular ?: $oldUser->telefone);
                     if ($phone)
                         $this->evolution_queue->add($phone, $msg_parsed);
                 }
@@ -301,7 +301,7 @@ class Os extends MY_Controller
                         'usuario' => $newUser
                     ]);
                     $this->load->library('evolution_queue');
-                    $phone = $newUser->celular ?: $newUser->telefone;
+                    $phone = $this->evolution_model->formatPhone($newUser->celular ?: $newUser->telefone);
                     if ($phone)
                         $this->evolution_queue->add($phone, $msg_parsed);
                 }
@@ -337,7 +337,7 @@ class Os extends MY_Controller
                             'usuario' => $tecnicoOs
                         ]);
                         $this->load->library('evolution_queue');
-                        $phone = $clienteOs->celular ?: $clienteOs->telefone;
+                        $phone = $this->evolution_model->formatPhone($clienteOs->celular ?: $clienteOs->telefone);
                         if ($phone) {
                             $this->evolution_queue->add($phone, $msg_parsed);
                         }
@@ -352,7 +352,7 @@ class Os extends MY_Controller
                             'usuario' => $tecnicoOs
                         ]);
                         $this->load->library('evolution_queue');
-                        $phone = $tecnicoOs->celular ?: $tecnicoOs->telefone;
+                        $phone = $this->evolution_model->formatPhone($tecnicoOs->celular ?: $tecnicoOs->telefone);
                         if ($phone) {
                             $this->evolution_queue->add($phone, $msg_parsed);
                         }

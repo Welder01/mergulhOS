@@ -86,7 +86,7 @@ class Produtos extends MY_Controller
                     if ($emitente && !empty($emitente->telefone)) {
                         $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, $data);
                         $this->load->library('evolution_queue');
-                        $this->evolution_queue->add($emitente->telefone, $msg_parsed);
+                        $this->evolution_queue->add($this->evolution_model->formatPhone($emitente->telefone), $msg_parsed);
                     }
                 }
 
@@ -145,7 +145,7 @@ class Produtos extends MY_Controller
                     if ($emitente && !empty($emitente->telefone)) {
                         $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, $data);
                         $this->load->library('evolution_queue');
-                        $this->evolution_queue->add($emitente->telefone, $msg_parsed);
+                        $this->evolution_queue->add($this->evolution_model->formatPhone($emitente->telefone), $msg_parsed);
                     }
                 }
 
@@ -213,7 +213,7 @@ class Produtos extends MY_Controller
             if ($emitente && !empty($emitente->telefone)) {
                 $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, (array) $produto);
                 $this->load->library('evolution_queue');
-                $this->evolution_queue->add($emitente->telefone, $msg_parsed);
+                $this->evolution_queue->add($this->evolution_model->formatPhone($emitente->telefone), $msg_parsed);
             }
         }
 
