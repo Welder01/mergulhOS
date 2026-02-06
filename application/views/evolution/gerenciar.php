@@ -1,77 +1,68 @@
-<link rel="stylesheet" href="<?= base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
-<link rel="stylesheet" href="<?= base_url(); ?>assets/css/select2.css" />
-<link rel="stylesheet" href="<?= base_url(); ?>assets/trumbowyg/ui/trumbowyg.min.css" />
-<script type="text/javascript" src="<?= base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
-<script type="text/javascript" src="<?= base_url() ?>assets/js/select2.min.js"></script>
-<script type="text/javascript" src="<?= base_url(); ?>assets/trumbowyg/trumbowyg.min.js"></script>
-<script type="text/javascript" src="<?= base_url(); ?>assets/trumbowyg/langs/pt_br.min.js"></script>
-
+<link rel="stylesheet" href="<?= base_url() ?>assets/js/trumbowyg/ui/trumbowyg.min.css">
+<script src="<?= base_url() ?>assets/js/trumbowyg/trumbowyg.min.js"></script>
+<script src="<?= base_url() ?>assets/js/trumbowyg/langs/pt_br.min.js"></script>
 <style>
     .variable-tag {
-        background-color: #e8f0fe;
-        color: #1a73e8;
-        border: 1px solid #d2e3fc;
-        border-radius: 16px;
-        padding: 4px 12px;
-        margin: 2px;
         cursor: pointer;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        font-size: 0.9em;
+        background-color: #f9f9f9;
+        border: 1px solid #d1d1d1;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-right: 4px;
+        margin-bottom: 4px;
         display: inline-block;
-        transition: all 0.2s;
+        font-family: monospace;
+        font-size: 11px;
+        color: #333;
+        transition: all 0.2s ease;
     }
-
     .variable-tag:hover {
-        background-color: #d2e3fc;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Fix para o z-index do Select2 dentro do modal */
-    .select2-drop,
-    .select2-drop-mask {
-        z-index: 99999 !important;
-        /* Garante que fique acima de qualquer modal ou overlay */
+        background-color: #e6e6e6;
+        border-color: #adadad;
+        text-decoration: none;
+        color: #000;
     }
 </style>
-
 <div class="widget-box">
-    <div class="widget-title" style="margin: 0;font-size: 1.1em">
+    <div class="widget-title">
+        <span class="icon"><i class="fas fa-rocket"></i></span>
+        <h5>Integração com Evolution API</h5>
         <ul class="nav nav-tabs">
-            <li class="active"><a data-toggle="tab" href="#tabStatus">Status da Instância</a></li>
-            <li><a data-toggle="tab" href="#tabLogs">Logs de Envio</a></li>
+            <li class="active"><a data-toggle="tab" href="#tabStatus">Status</a></li>
             <li><a data-toggle="tab" href="#tabMensagens">Mensagens</a></li>
-            <li><a data-toggle="tab" href="#tabEventos">Eventos Automáticos</a></li>
-            <li><a data-toggle="tab" href="#tabFila">Fila de Envio</a></li>
+            <li><a data-toggle="tab" href="#tabEventos">Eventos</a></li>
+            <li><a data-toggle="tab" href="#tabFila">Fila de Envios</a></li>
+            <li><a data-toggle="tab" href="#tabLogs">Logs</a></li>
         </ul>
     </div>
     <div class="widget-content tab-content">
         <!-- Aba Status -->
         <div id="tabStatus" class="tab-pane active">
             <div class="span12 well">
-                <p>Nesta seção, você pode verificar o status de conexão da instância da Evolution API configurada no
-                    sistema.</p>
-                <p>Certifique-se de que a <strong>URL da API</strong>, a <strong>Chave (apikey)</strong> e o
-                    <strong>Nome da Instância</strong> estejam salvos corretamente em <strong>Configurações ->
-                        Sistema</strong>.
-                </p>
+                <p>Nesta seção, você pode verificar o status de conexão de uma instância da Evolution API.</p>
+                <p>Certifique-se de que a <strong>URL da API</strong> e a <strong>Chave (apikey)</strong> estejam salvas corretamente em <strong>Configurações -> Sistema</strong>.</p>
             </div>
 
             <div class="span12" style="margin-left: 0">
-                <button type="button" class="btn btn-primary" id="btnVerificar">Verificar Status da Instância</button>
+                <form id="formVerificar" class="form-horizontal">
+                    <div class="control-group">
+                        <label for="instance_name" class="control-label">Nome da Instância<span class="required">*</span></label>
+                        <div class="controls">
+                            <input id="instance_name" type="text" name="instance_name" class="span6" required placeholder="Ex: meu-whatsapp" />
+                            <button type="submit" class="btn btn-primary" id="btnVerificar">Verificar Status</button>
+                        </div>
+                    </div>
+                </form>
             </div>
 
             <div class="span12" style="margin-left: 0; margin-top: 20px;">
-                <div id="resultado" style="display:none;">
-                    <h4>Resultado:</h4>
                     <pre id="json-resultado"></pre>
                 </div>
                 <div id="loading" style="display:none; text-align: center;">
-                    <img src="<?= base_url('assets/img/ajax-loader.gif') ?>" alt="Carregando..." />
+                    <img src="<?= base_url('assets/img/loading.gif') ?>" alt="Carregando...">
                     <p>Verificando...</p>
                 </div>
             </div>
-        </div>
 
 
 
@@ -151,100 +142,44 @@
 
         <!-- Aba Fila -->
         <div id="tabFila" class="tab-pane">
-            <div class="span12" style="padding: 1%; margin-left: 0;">
-                
-                <div class="alert alert-info" style="border: 1px solid #bce8f1; background-color: #f7fcff;">
-                    <button class="close" data-dismiss="alert">×</button>
-                    <h4 style="margin-bottom: 10px; color: #2c93b5;"><i class="fas fa-robot"></i> Automação da Fila de Mensagens</h4>
-                    <p>Para que as mensagens desta fila sejam enviadas automaticamente em segundo plano, você precisa configurar uma tarefa agendada (Cron Job) no seu painel de hospedagem (cPanel, Plesk, etc).</p>
-                    
-                    <p style="margin-top: 10px;"><strong>Comando para Execução:</strong></p>
-                    <div style="background: #fff; padding: 12px; border: 1px dashed #ced4da; border-radius: 4px; font-family: 'Courier New', monospace; color: #333; margin-top: 5px; font-size: 13px;">
-                        curl -s "<?= base_url() ?>index.php/evolution/process_queue" >/dev/null 2>&1
-                    </div>
-                    
-                    <p style="margin-top: 12px; font-size: 0.9em; color: #555;">
-                        <i class="fas fa-clock"></i> <strong>Frequência Recomendada:</strong> Executar a cada <strong>1 minuto</strong> (`* * * * *`).
-                    </p>
-                    <p style="font-size: 0.9em; margin-bottom: 0; color: #555;">
-                        <i class="fas fa-info-circle"></i> O comando irá processar as mensagens pendentes em lotes para evitar sobrecarga.
-                    </p>
-                </div>
-
+            <div class="span12" style="margin-left: 0">
                 <div class="widget-box">
-                    <div class="widget-header">
-                        <h5 class="cardHeader"><i class="fas fa-list-ol"></i> Fila de Envio</h5>
-                        <div class="widget-buttons" style="float: right; margin: 5px 10px 0 0;">
-                            <a href="<?= base_url('index.php/evolution/forcar_envio_fila') ?>" class="btn btn-inverse btn-mini tip-top" title="Forçar Envio Manual"><i class="fas fa-paper-plane"></i> Forçar Envio Manual</a>
-                            <a href="<?= base_url('index.php/evolution/limpar_fila') ?>" class="btn btn-danger btn-mini"
-                                onclick="return confirm('Tem certeza que deseja limpar TODA a fila? Mensagens não enviadas serão perdidas.');"><i
-                                    class="fas fa-trash"></i> Limpar Fila</a>
-                        </div>
+                    <div class="widget-title">
+                        <span class="icon"><i class="fas fa-list"></i></span>
+                        <h5>Fila de Envios</h5>
                     </div>
                     <div class="widget-content nopadding">
-                        <table class="table table-bordered table-striped table-hover">
+                        <div class="span12" style="padding: 10px;">
+                            <a href="<?= site_url('evolution/forcar_envio_fila') ?>" class="btn btn-inverse tip-top" title="Forçar Envio Manual"><i class="fas fa-paper-plane"></i> Forçar Envio Manual</a>
+                            <a href="<?= site_url('evolution/limpar_fila') ?>" class="btn btn-danger tip-top" title="Limpar Fila"><i class="fas fa-trash"></i> Limpar Fila</a>
+                        </div>
+                        <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th style="width: 5%;">ID</th>
-                                    <th style="width: 15%;">Destinatário</th>
+                                    <th>ID</th>
+                                    <th>Número</th>
                                     <th>Mensagem</th>
-                                    <th style="width: 10%;">Status</th>
-                                    <th style="width: 10%;">Tentativas</th>
-                                    <th style="width: 15%;">Criado em</th>
-                                    <th style="width: 10%;">Ações</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (isset($fila) && count($fila)): ?>
-                                    <?php foreach ($fila as $item): ?>
+                                <?php if (isset($fila) && !empty($fila)) : ?>
+                                    <?php foreach ($fila as $item) : ?>
                                         <tr>
                                             <td><?= $item->id ?></td>
-                                            <td><?= htmlspecialchars($item->phone_number) ?></td>
-                                            <td>
-                                                <small><?= mb_strimwidth(htmlspecialchars($item->message), 0, 80, "...") ?></small>
-                                                <a href="#modal-fila-details-<?= $item->id ?>" data-toggle="modal" class="btn btn-mini btn-link"><i class="fas fa-eye"></i></a>
-                                                
-                                                <!-- Modal Detalhes Item Fila -->
-                                                <div id="modal-fila-details-<?= $item->id ?>" class="modal hide fade" tabindex="-1" role="dialog">
-                                                    <div class="modal-header">
-                                                        <button type="button" class="close" data-dismiss="modal">×</button>
-                                                        <h3>Detalhes da Mensagem #<?= $item->id ?></h3>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <p><strong>Destinatário:</strong> <?= htmlspecialchars($item->phone_number) ?></p>
-                                                        <p><strong>Status:</strong> <?= ucfirst($item->status) ?></p>
-                                                        <p><strong>Erro:</strong> <?= $item->last_error ? htmlspecialchars($item->last_error) : 'Nenhum' ?></p>
-                                                        <hr>
-                                                        <pre><?= htmlspecialchars($item->message) ?></pre>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td style="text-align:center;">
-                                                <?php
-                                                $statusClass = 'label-info';
-                                                switch ($item->status) {
-                                                    case 'pending': $statusClass = 'label-warning'; break;
-                                                    case 'sending': $statusClass = 'label-info'; break;
-                                                    case 'sent': $statusClass = 'label-success'; break;
-                                                    case 'failed': $statusClass = 'label-important'; break;
-                                                }
-                                                ?>
-                                                <span class="label <?= $statusClass ?>"><?= ucfirst($item->status) ?></span>
-                                            </td>
-                                            <td style="text-align:center;"><?= $item->attempts ?></td>
-                                            <td style="text-align:center;"><?= date('d/m/Y H:i', strtotime($item->created_at)) ?></td>
+                                            <td><?= isset($item->phone_number) ? $item->phone_number : (isset($item->phone) ? $item->phone : '') ?></td>
+                                            <td><?= substr($item->message, 0, 50) . '...' ?></td>
+                                            <td><?= $item->status ?></td>
                                             <td style="text-align: center;">
-                                                <a href="<?= base_url('index.php/evolution/forcar_envio_item/' . $item->id) ?>" class="btn btn-success btn-mini tip-top" title="Forçar Envio Imediato" style="margin-right: 3px;"><i class="fas fa-paper-plane"></i></a>
-                                                <a href="<?= base_url('index.php/evolution/excluir_item_fila/' . $item->id) ?>#tabFila"
-                                                    class="btn btn-danger btn-mini" title="Remover da Fila"
-                                                    onclick="return confirm('Remover este item da fila?');"><i
-                                                        class="fas fa-trash-alt"></i></a>
+                                                <a href="<?= site_url('evolution/forcar_envio_item/' . $item->id) ?>" class="btn btn-mini btn-success tip-top" title="Forçar Envio Imediato" style="margin-right: 3px;"><i class="fas fa-paper-plane"></i></a>
+                                                <a href="<?= site_url('evolution/excluir_item_fila/' . $item->id) ?>#tabFila" class="btn btn-mini btn-danger tip-top" title="Remover da Fila" onclick="return confirm('Remover este item da fila?');"><i class="fas fa-trash-alt"></i></a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
-                                <?php else: ?>
+                                <?php else : ?>
                                     <tr>
-                                        <td colspan="7" style="text-align: center;">A fila de envios está vazia.</td>
+                                        <td colspan="5" style="text-align: center;">A fila de envios está vazia.</td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>
@@ -360,8 +295,12 @@
                             <label for="mensagem" class="control-label">Mensagem<span class="required">*</span></label>
                             <div class="controls">
                                 <textarea name="mensagem" id="mensagem" rows="5" class="span11" required></textarea>
-                                <div class="help-block" style="margin-top: 10px;">
-                                    <p><strong>Variáveis Disponíveis:</strong></p>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <div class="controls">
+                                <div class="help-block">
+                                    <strong>Variáveis Disponíveis:</strong>
                                     <div style="max-height: 150px; overflow-y: auto; font-size: 0.9em; line-height: 1.4em;">
                                         <p style="margin-bottom: 5px;">Você pode usar <strong>qualquer campo</strong> do banco de dados usando o formato <code>{OBJETO.CAMPO}</code> (Ex: <code>{CLIENTE.BAIRRO}</code>).</p>
                                         
@@ -509,8 +448,12 @@
                 <label for="edit_mensagem" class="control-label">Mensagem<span class="required">*</span></label>
                 <div class="controls">
                     <textarea name="mensagem" id="edit_mensagem" rows="5" class="span12" style="width: 97%;" required></textarea>
-                    <div class="help-block" style="margin-top: 10px;">
-                        <p><strong>Variáveis Disponíveis:</strong></p>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <div class="help-block">
+                        <strong>Variáveis Disponíveis:</strong>
                         <div style="max-height: 150px; overflow-y: auto; font-size: 0.9em; line-height: 1.4em;">
                             <p style="margin-bottom: 5px;">Você pode usar <strong>qualquer campo</strong> do banco de dados usando o formato <code>{OBJETO.CAMPO}</code> (Ex: <code>{CLIENTE.BAIRRO}</code>).</p>
                             
@@ -724,27 +667,18 @@
 
 <script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
 <script type="text/javascript">
-    $(document).ready(function () {
-        // Script para manter a aba ativa após redirecionamento
+    $(document).ready(function() {
+        // Tab persistence
         var hash = window.location.hash;
         if (hash) {
-            $('a[href="' + hash + '"]').tab('show');
-        } else if (window.location.search.includes('tab=')) {
-            var urlParams = new URLSearchParams(window.location.search);
-            const urlTab = '#' + urlParams.get('tab');
-            if (urlTab === '#tabMensagens') {
-                $('.nav-tabs a[href="#tabMensagens"]').tab('show');
-            } else if (urlTab === '#tabLogs') {
-                $('.nav-tabs a[href="#tabLogs"]').tab('show');
-            } else if (urlTab === '#tabEventos') {
-                $('.nav-tabs a[href="#tabEventos"]').tab('show');
-            } else if (urlTab === '#tabFila') {
-                $('.nav-tabs a[href="#tabFila"]').tab('show');
-            }
+            $('.nav-tabs a[href="' + hash + '"]').tab('show');
         }
+        $('.nav-tabs a').click(function (e) {
+            $(this).tab('show');
+            window.location.hash = this.hash;
+        });
 
-        //--- LÓGICA DA ABA STATUS ---//
-        $('#btnVerificar').on('click', function (e) {
+        $('#formVerificar').on('submit', function(e) {
             e.preventDefault();
 
             $('#btnVerificar').prop('disabled', true);
@@ -752,32 +686,26 @@
             $('#loading').show();
 
             $.ajax({
-                url: '<?= base_url() ?>index.php/evolution/fetch_instance',
+                url: '<?= site_url('evolution/fetch_instance') ?>',
                 type: 'POST',
                 data: {
                     '<?= $this->security->get_csrf_token_name(); ?>': '<?= $this->security->get_csrf_hash(); ?>'
                 },
                 dataType: 'json',
-                success: function (response) {
+                success: function(response) {
                     var jsonString = JSON.stringify(response, null, 2);
                     $('#json-resultado').text(jsonString);
                     $('#resultado').show();
                 },
-                error: function (jqXHR, textStatus, errorThrown) {
+                error: function(jqXHR, textStatus, errorThrown) {
                     var errorMessage = 'Ocorreu um erro desconhecido.';
                     if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
                         errorMessage = jqXHR.responseJSON.error;
-                    } else if (jqXHR.responseText) {
-                        try {
-                            var response = JSON.parse(jqXHR.responseText);
-                            errorMessage = response.error || response.message || jqXHR.responseText;
-                        } catch (e) {
-                            errorMessage = jqXHR.responseText;
-                        }
+@ -777,317 +141,11 @@
                     }
                     Swal.fire('Erro!', errorMessage, 'error');
                 },
-                complete: function () {
+                complete: function() {
                     $('#loading').hide();
                     $('#btnVerificar').prop('disabled', false);
                 }
@@ -975,15 +903,14 @@
         });
 
         // Adiciona o editor de texto Trumbowyg
-        // Adiciona o editor de texto Trumbowyg
         if (typeof ($.fn.trumbowyg) != 'undefined') {
+            $.trumbowyg.svgPath = '<?= base_url() ?>assets/js/trumbowyg/ui/icons.svg';
             var trumbowygConfig = {
                 lang: 'pt_br',
                 autogrow: true,
+                removeformatPasted: true,
                 btns: [
-                    ['viewHTML'],
-                    ['strong', 'em', 'del'],
-                    ['removeformat']
+                    ['strong', 'em', 'del']
                 ]
             };
             $('#mensagem').trumbowyg(trumbowygConfig);
@@ -1040,42 +967,93 @@
         //--- LÓGICA DE INSERÇÃO DE VARIÁVEL ---//
         var lastFocusedEditor = null;
 
-        // Rastreia qual editor teve o foco por último
+        // Rastreia qual editor teve o foco por último (Trumbowyg e Textarea comum)
         $('#mensagem, #edit_mensagem')
             .on('tbwfocus', function () {
                 lastFocusedEditor = $(this);
             })
-            .on('tbwblur', function () {
-                // Mantém a referência, pois o clique no botão tira o foco
+            .on('focus', function () {
                 lastFocusedEditor = $(this);
             });
 
-        $(document).on('click', '.variable-tag', function () {
-            var textToInsert = $(this).text();
+        // Usa mousedown para evitar perder o foco do editor antes do click
+        $(document).on('mousedown', '.variable-tag', function (e) {
+            e.preventDefault();
+        });
 
-            if (lastFocusedEditor) {
-                lastFocusedEditor.trumbowyg('restoreRange');
-                lastFocusedEditor.trumbowyg('execCmd', {
-                    cmd: 'insertText',
-                    param: textToInsert,
-                    forceCss: false
-                });
-            } else {
-                // Fallback se nenhum editor foi focado ainda (ex: usuário acabou de abrir a página)
-                // Tenta inserir no primeiro editor visível ou alerta
-                 if ($('#mensagem').is(':visible')) {
-                    $('#mensagem').trumbowyg('execCmd', {
-                        cmd: 'insertText',
-                        param: textToInsert,
-                        forceCss: false
-                    });
-                } else if ($('#edit_mensagem').is(':visible')) {
-                     $('#edit_mensagem').trumbowyg('execCmd', {
-                        cmd: 'insertText',
-                        param: textToInsert,
-                        forceCss: false
-                    });
+        $(document).on('click', '.variable-tag', function (e) {
+            e.preventDefault();
+            var textToInsert = $(this).text();
+            var targetEditor = lastFocusedEditor;
+
+            // Se nenhum editor foi focado, tenta identificar pelo contexto (Modal aberto ou Principal)
+            if (!targetEditor || targetEditor.length === 0) {
+                if ($('#modalEditar').is(':visible')) {
+                    targetEditor = $('#edit_mensagem');
+                } else {
+                    targetEditor = $('#mensagem');
                 }
+            }
+
+            if (targetEditor && targetEditor.data('trumbowyg')) {
+                try {
+                    targetEditor.trumbowyg('restoreRange');
+                    targetEditor.trumbowyg('execCmd', {
+                        cmd: 'insertHtml',
+                        param: textToInsert,
+                        forceCss: false
+                    });
+                } catch (e) {
+                    // Fallback: insere no final se não conseguir restaurar a posição
+                    targetEditor.trumbowyg('html', targetEditor.trumbowyg('html') + textToInsert);
+                }
+                // Garante que o textarea seja atualizado
+                targetEditor.trigger('tbwchange');
+            } else {
+                // Fallback para Textarea comum (se o Trumbowyg não carregar)
+                var el = targetEditor[0];
+                if (el && (el.selectionStart || el.selectionStart == '0')) {
+                    var startPos = el.selectionStart;
+                    var endPos = el.selectionEnd;
+                    el.value = el.value.substring(0, startPos)
+                        + textToInsert
+                        + el.value.substring(endPos, el.value.length);
+                    el.selectionStart = startPos + textToInsert.length;
+                    el.selectionEnd = startPos + textToInsert.length;
+                } else if (el) {
+                    el.value += textToInsert;
+                }
+            }
+        });
+
+        // Função para converter HTML do editor para Markdown do WhatsApp
+        function convertHtmlToWhatsapp(html) {
+            var text = html;
+            // Converte quebras de linha
+            text = text.replace(/<br\s*\/?>/gi, "\n");
+            text = text.replace(/<\/p>\s*<p>/gi, "\n\n");
+            text = text.replace(/<\/p>/gi, "\n");
+            text = text.replace(/<p>/gi, "");
+            
+            // Converte formatação
+            text = text.replace(/<(b|strong)>(.*?)<\/\1>/gi, "*$2*");
+            text = text.replace(/<(i|em)>(.*?)<\/\1>/gi, "_$2_");
+            text = text.replace(/<(del|s|strike)>(.*?)<\/\1>/gi, "~$2~");
+            
+            // Remove tags restantes e decodifica entidades
+            var tmp = document.createElement("DIV");
+            tmp.innerHTML = text;
+            return tmp.textContent || tmp.innerText || "";
+        }
+
+        // Intercepta o envio dos formulários para converter o conteúdo
+        $('form[action*="adicionar_mensagem"], #formEditarMensagem').on('submit', function() {
+            var form = $(this);
+            var textarea = form.find('textarea[name="mensagem"]');
+            if(textarea.length && textarea.data('trumbowyg')) {
+                var html = textarea.trumbowyg('html');
+                var markdown = convertHtmlToWhatsapp(html);
+                textarea.val(markdown);
             }
         });
 
