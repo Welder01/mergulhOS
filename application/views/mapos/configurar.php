@@ -534,6 +534,9 @@
                             </div>
                             <div id="api-logs" class="tab-pane fade">
                                 <div class="span12" style="padding: 1%; margin-left: 0;">
+                                    <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                                        <button type="button" id="btn-force-cron" class="btn btn-inverse"><i class="fas fa-sync"></i> Forçar Envio (Cron)</button>
+                                    </div>
                                     <div class="widget-box" id="divLogs">
                                         <div class="widget-content nopadding">
                                             <table class="table table-bordered table-striped">
@@ -754,5 +757,26 @@
         }
         $('#log-details-title').text(title);
         $('#log-details-content').text(content);
+    });
+
+    $('#btn-force-cron').click(function() {
+        var btn = $(this);
+        var originalText = btn.html();
+        btn.prop('disabled', true).html('<i class="fas fa-sync fa-spin"></i> Processando...');
+
+        $.ajax({
+            url: '<?= base_url() ?>index.php/evolution/process_queue',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                btn.prop('disabled', false).html(originalText);
+                alert('Processamento concluído.\nEnviados: ' + (data.processed || 0) + '\nFalhas: ' + (data.failed || 0));
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                btn.prop('disabled', false).html(originalText);
+                alert('Erro na requisição: ' + error);
+            }
+        });
     });
 </script>

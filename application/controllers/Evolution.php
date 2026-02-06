@@ -130,6 +130,218 @@ class Evolution extends MY_Controller
         return $this->output->set_content_type('application/json')->set_output($response);
     }
 
+    private function cleanMessage($message)
+    {
+        $message = html_entity_decode($message);
+        $message = str_ireplace(['<br />', '<br>', '<br/>'], "\n", $message);
+        $message = str_ireplace(['<p>', '</p>'], ['', "\n"], $message);
+        $message = str_ireplace(['<b>', '</b>', '<strong>', '</strong>'], '*', $message);
+        $message = str_ireplace(['<i>', '</i>', '<em>', '</em>'], '_', $message);
+        $message = str_ireplace(['<s>', '</s>', '<strike>', '</strike>', '<del>', '</del>'], '~', $message);
+        $message = strip_tags($message);
+        return trim($message);
+    }
+
+    public function enviar_item_fila($id)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+            return $this->output->set_status_header(403)->set_output(json_encode(['message' => 'Você não tem permissão para realizar esta ação.']));
+        }
+
+        $item = $this->db->where('id', $id)->get('evolution_queue')->row();
+        if (!$item) {
+            return $this->output->set_status_header(404)->set_output(json_encode(['message' => 'Item não encontrado na fila.']));
+        }
+
+        $apiUrl = $this->mapos_model->get_ci_config('evolution_api_url');
+        $apiKey = $this->mapos_model->get_ci_config('evolution_api_key');
+        $instanceName = $this->mapos_model->get_ci_config('evolution_api_instance');
+
+        if (empty($apiUrl) || empty($apiKey) || empty($instanceName)) {
+            return $this->output->set_status_header(400)->set_output(json_encode(['message' => 'Configurações da API incompletas.']));
+        }
+
+        // Verifica se há mídia (na coluna ou nas opções)
+        $mediaUrl = $item->media_url;
+        if (empty($mediaUrl) && !empty($item->options)) {
+            $opts = json_decode($item->options, true);
+            if (isset($opts['media_url'])) {
+                $mediaUrl = $opts['media_url'];
+            }
+        }
+
+        $cleanMessage = $this->cleanMessage($item->message);
+
+        if (!empty($mediaUrl)) {
+            $url = rtrim($apiUrl, '/') . "/message/sendMedia/{$instanceName}";
+            
+            // Extrai o nome do arquivo original antes de qualquer conversão
+            $fileName = basename($mediaUrl);
+            if (strpos($fileName, '?') !== false) {
+                $fileName = explode('?', $fileName)[0];
+            }
+
+            // Lógica robusta para converter arquivos locais em Base64
+            $localPath = '';
+            
+            // 1. Se não for URL (caminho absoluto ou relativo do sistema)
+            if (strpos($mediaUrl, 'http') !== 0) {
+                $localPath = $mediaUrl;
+                $cleanPath = ltrim($mediaUrl, '/\\');
+                if (!file_exists($localPath) && file_exists(FCPATH . $cleanPath)) {
+                    $localPath = FCPATH . $cleanPath;
+                }
+            } 
+            // 2. Tenta identificar se é local pela URL
+            else {
+                if (strpos($mediaUrl, base_url()) === 0) {
+                    $localPath = FCPATH . substr($mediaUrl, strlen(base_url()));
+                } elseif (strpos($mediaUrl, '/assets/') !== false) {
+                    $pathParts = explode('/assets/', $mediaUrl, 2);
+                    if (isset($pathParts[1])) {
+                        $localPath = FCPATH . 'assets/' . $pathParts[1];
+                    }
+                } elseif (strpos($mediaUrl, '/application/') !== false) {
+                    $pathParts = explode('/application/', $mediaUrl, 2);
+                    if (isset($pathParts[1])) {
+                        $localPath = FCPATH . 'application/' . $pathParts[1];
+                    }
+                }
+            }
+
+            if ($localPath) {
+                $localPath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $localPath);
+                $localPath = explode('?', $localPath)[0]; // Remove query string do caminho local
+                
+                if (file_exists($localPath)) {
+                    $fileData = file_get_contents($localPath);
+                    $base64 = base64_encode($fileData);
+                    $mime = mime_content_type($localPath);
+                    if (!$mime) $mime = 'application/octet-stream';
+                    // Envia apenas o Base64 puro, pois o mimetype já vai em outro campo
+                    $mediaUrl = $base64;
+                }
+            }
+
+            $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            $mediaType = 'document';
+            $mimeType = 'application/octet-stream'; // Default
+
+            $mimeTypes = [
+                'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif', 'webp' => 'image/webp',
+                'mp4' => 'video/mp4', 'avi' => 'video/x-msvideo', 'mov' => 'video/quicktime', 'mkv' => 'video/x-matroska',
+                'mp3' => 'audio/mpeg', 'ogg' => 'audio/ogg', 'wav' => 'audio/wav',
+                'pdf' => 'application/pdf', 'doc' => 'application/msword', 'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            ];
+
+            if (isset($mimeTypes[$extension])) {
+                $mimeType = $mimeTypes[$extension];
+            }
+            
+            if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                $mediaType = 'image';
+            } elseif (in_array($extension, ['mp4', 'avi', 'mov', 'mkv'])) {
+                $mediaType = 'video';
+            } elseif (in_array($extension, ['mp3', 'ogg', 'wav'])) {
+                $mediaType = 'audio';
+            }
+
+            $body = [
+                "number" => $item->phone_number,
+                "mediatype" => $mediaType,
+                "mimetype" => $mimeType,
+                "caption" => $cleanMessage,
+                "media" => $mediaUrl,
+                "fileName" => $fileName,
+                "delay" => 1200
+            ];
+        } else {
+            $url = rtrim($apiUrl, '/') . "/message/sendText/{$instanceName}";
+            
+            $body = [
+                "number" => $item->phone_number,
+                "options" => [
+                    "delay" => 1200,
+                    "presence" => "composing",
+                    "linkPreview" => false
+                ],
+                "text" => $cleanMessage
+            ];
+        }
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => json_encode($body, JSON_UNESCAPED_SLASHES),
+            CURLOPT_HTTPHEADER => [
+                "apikey: {$apiKey}",
+                "Content-Type: application/json"
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+
+        // Registrar log do envio manual
+        $this->db->insert('evolution_logs', [
+            'timestamp' => date('Y-m-d H:i:s'),
+            'phone_number' => $item->phone_number,
+            'request_payload' => json_encode($body),
+            'response_body' => $response,
+            'response_code' => $httpCode,
+            'curl_error' => $err
+        ]);
+
+        if ($err) {
+            $this->db->set('attempts', 'attempts+1', false);
+            $this->db->set('last_error', 'Erro cURL: ' . $err);
+            $this->db->where('id', $id);
+            $this->db->update('evolution_queue');
+            return $this->output->set_status_header(500)->set_output(json_encode(['message' => 'Erro cURL: ' . $err]));
+        }
+
+        $httpCode = ($httpCode > 0) ? $httpCode : 500;
+
+        if ($httpCode >= 200 && $httpCode < 300) {
+            $this->db->delete('evolution_queue', ['id' => $id]);
+            return $this->output->set_content_type('application/json')->set_output(json_encode(['success' => true, 'message' => 'Mensagem enviada e removida da fila.']));
+        } else {
+            $this->db->set('attempts', 'attempts+1', false);
+            $this->db->set('last_error', 'Erro API (' . $httpCode . '): ' . $response);
+            $this->db->where('id', $id);
+            $this->db->update('evolution_queue');
+            return $this->output->set_status_header($httpCode)->set_output(json_encode(['message' => 'Erro API: ' . $response]));
+        }
+    }
+
+    private function do_upload()
+    {
+        $config['upload_path'] = FCPATH . 'application/uploads/evolution/';
+        $config['allowed_types'] = 'gif|jpg|png|jpeg|pdf|doc|docx|mp4|mp3|ogg|wav';
+        $config['max_size'] = 10240; // 10MB
+        $config['encrypt_name'] = true;
+
+        if (!is_dir($config['upload_path'])) {
+            mkdir($config['upload_path'], 0777, true);
+        }
+
+        $this->load->library('upload', $config);
+
+        if (!$this->upload->do_upload('userfile')) {
+            return ['error' => $this->upload->display_errors()];
+        } else {
+            return ['upload_data' => $this->upload->data()];
+        }
+    }
+
     public function adicionar_mensagem()
     {
         if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
@@ -137,10 +349,22 @@ class Evolution extends MY_Controller
             redirect('evolution/gerenciar?tab=mensagens');
         }
 
+        $imagem_url = $this->input->post('imagem_url');
+
+        if (!empty($_FILES['userfile']['name'])) {
+            $upload = $this->do_upload();
+            if (isset($upload['upload_data'])) {
+                $imagem_url = 'application/uploads/evolution/' . $upload['upload_data']['file_name'];
+            } else {
+                $this->session->set_flashdata('error', 'Erro no upload: ' . $upload['error']);
+                redirect('evolution/gerenciar?tab=mensagens');
+            }
+        }
+
         $data = [
             'titulo' => $this->input->post('titulo'),
             'mensagem' => $this->input->post('mensagem'),
-            'imagem_url' => $this->input->post('imagem_url'),
+            'imagem_url' => $imagem_url,
         ];
 
         if ($this->evolution_model->add('evolution_mensagens', $data)) {
@@ -161,10 +385,22 @@ class Evolution extends MY_Controller
         }
 
         $id = $this->input->post('id');
+        $imagem_url = $this->input->post('imagem_url');
+
+        if (!empty($_FILES['userfile']['name'])) {
+            $upload = $this->do_upload();
+            if (isset($upload['upload_data'])) {
+                $imagem_url = 'application/uploads/evolution/' . $upload['upload_data']['file_name'];
+            } else {
+                $this->session->set_flashdata('error', 'Erro no upload: ' . $upload['error']);
+                redirect('evolution/gerenciar#tabMensagens');
+            }
+        }
+
         $data = [
             'titulo' => $this->input->post('titulo'),
             'mensagem' => $this->input->post('mensagem'),
-            'imagem_url' => $this->input->post('imagem_url'),
+            'imagem_url' => $imagem_url,
         ];
 
         if ($this->evolution_model->edit('evolution_mensagens', $data, 'id', $id)) {
@@ -374,7 +610,9 @@ class Evolution extends MY_Controller
             // Note: Use the current state of $mensagem->mensagem which might be modified by the buggy loop above
             // or correct if single send.
 
-            if ($this->evolution_queue->add($numero, $mensagem->mensagem, ['delay' => $delay, 'presence' => $presence])) {
+            $mensagem->mensagem = $this->cleanMessage($mensagem->mensagem);
+
+            if ($this->evolution_queue->add($numero, $mensagem->mensagem, ['delay' => $delay, 'presence' => $presence, 'media_url' => $mensagem->imagem_url])) {
                 $sucessos++;
             } else {
                 $falhas++;
@@ -595,8 +833,10 @@ class Evolution extends MY_Controller
                 }
             }
 
+            $mensagemFinal = $this->cleanMessage($mensagemFinal);
+
             // Enqueue message
-            if ($this->evolution_queue->add($destinatario['numero'], $mensagemFinal, ['delay' => $delay, 'presence' => $presence])) {
+            if ($this->evolution_queue->add($destinatario['numero'], $mensagemFinal, ['delay' => $delay, 'presence' => $presence, 'media_url' => $mensagemOriginal->imagem_url])) {
                 $sucessos++;
             } else {
                 $falhas++;

@@ -152,6 +152,9 @@
         <!-- Aba Fila -->
         <div id="tabFila" class="tab-pane">
             <div class="span12" style="padding: 1%; margin-left: 0;">
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                    <button type="button" id="btn-force-cron-fila" class="btn btn-inverse"><i class="fas fa-sync"></i> Forçar Envio (Cron)</button>
+                </div>
                 
                 <div class="alert alert-info" style="border: 1px solid #bce8f1; background-color: #f7fcff;">
                     <button class="close" data-dismiss="alert">×</button>
@@ -233,6 +236,7 @@
                                             <td style="text-align:center;"><?= $item->attempts ?></td>
                                             <td style="text-align:center;"><?= date('d/m/Y H:i', strtotime($item->created_at)) ?></td>
                                             <td style="text-align: center;">
+                                                <button class="btn btn-mini btn-success btn-envio-manual" data-id="<?= $item->id ?>" title="Enviar Agora"><i class="fas fa-paper-plane"></i></button>
                                                 <a href="<?= base_url('index.php/evolution/excluir_item_fila/' . $item->id) ?>#tabFila"
                                                     class="btn btn-danger btn-mini" title="Remover da Fila"
                                                     onclick="return confirm('Remover este item da fila?');"><i
@@ -330,7 +334,7 @@
                     <h5>Criar Nova Mensagem</h5>
                 </div>
                 <div class="widget-content">
-                    <form action="<?= base_url() ?>index.php/evolution/adicionar_mensagem" method="post"
+                    <form action="<?= base_url() ?>index.php/evolution/adicionar_mensagem" method="post" enctype="multipart/form-data"
                         class="form-horizontal">
                         <input type="hidden" name="active_tab" id="active_tab" value="#tabStatus">
                         <div class="control-group">
@@ -345,6 +349,13 @@
                             <div class="controls">
                                 <input type="url" name="imagem_url" id="imagem_url" class="span11"
                                     placeholder="https://exemplo.com/imagem.jpg">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label for="userfile" class="control-label">Upload de Mídia</label>
+                            <div class="controls">
+                                <input type="file" name="userfile" id="userfile" class="span11">
+                                <span class="help-block">Selecione um arquivo para upload (Imagem, Vídeo, Áudio ou Documento). O upload terá prioridade sobre a URL.</span>
                             </div>
                         </div>
                         <div class="control-group">
@@ -471,7 +482,7 @@
         <h3>Editar Mensagem</h3>
     </div>
     <div class="modal-body">
-        <form id="formEditarMensagem" action="<?= base_url() ?>index.php/evolution/editar_mensagem" method="post">
+        <form id="formEditarMensagem" action="<?= base_url() ?>index.php/evolution/editar_mensagem" method="post" enctype="multipart/form-data">
             <input type="hidden" id="edit_id" name="id">
             <div class="control-group">
                 <label for="edit_titulo" class="control-label">Título<span class="required">*</span></label>
@@ -483,6 +494,12 @@
                 <label for="edit_imagem_url" class="control-label">URL da Imagem (Opcional)</label>
                 <div class="controls">
                     <input type="url" name="imagem_url" id="edit_imagem_url" class="span12" style="width: 97%;">
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="edit_userfile" class="control-label">Upload de Mídia</label>
+                <div class="controls">
+                    <input type="file" name="userfile" id="edit_userfile" class="span12" style="width: 97%;">
                 </div>
             </div>
             <div class="control-group">
@@ -1060,6 +1077,85 @@
             $('body').css('overflow', 'auto');
         });
 
+        // Forçar Cron (Processar Fila)
+        $('#btn-force-cron-fila').click(function() {
+            var btn = $(this);
+            var originalText = btn.html();
+            btn.prop('disabled', true).html('<i class="fas fa-sync fa-spin"></i> Processando...');
+
+            $.ajax({
+                url: '<?= base_url() ?>index.php/evolution/process_queue',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    btn.prop('disabled', false).html(originalText);
+                    alert('Processamento concluído.\nEnviados: ' + (data.processed || 0) + '\nFalhas: ' + (data.failed || 0));
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    btn.prop('disabled', false).html(originalText);
+                    alert('Erro na requisição: ' + error);
+                }
+            });
+        });
+
+        // Envio Manual Individual
+        $('.btn-envio-manual').click(function() {
+            var btn = $(this);
+            var id = btn.data('id');
+            
+            Swal.fire({
+                title: 'Deseja forçar o envio?',
+                text: "Esta ação tentará enviar a mensagem imediatamente.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sim, enviar!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+                    var csrfName = '<?= $this->security->get_csrf_token_name(); ?>';
+                    var csrfHash = '<?= $this->security->get_csrf_hash(); ?>';
+                    var data = {};
+                    data[csrfName] = csrfHash;
+
+                    $.ajax({
+                        url: '<?= base_url() ?>index.php/evolution/enviar_item_fila/' + id,
+                        type: 'POST',
+                        data: data,
+                        dataType: 'json',
+                        success: function(data) {
+                            if (data.success) {
+                                Swal.fire('Sucesso!', data.message, 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                btn.prop('disabled', false).html('<i class="fas fa-paper-plane"></i>');
+                                Swal.fire('Erro!', data.message || 'Erro desconhecido.', 'error');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            btn.prop('disabled', false).html('<i class="fas fa-paper-plane"></i>');
+                            var msg = 'Erro ao processar requisição.';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                msg = xhr.responseJSON.message;
+                            } else if (xhr.responseText) {
+                                try {
+                                    var json = JSON.parse(xhr.responseText);
+                                    if(json.message) msg = json.message;
+                                } catch(e) {
+                                    msg = 'Erro HTTP ' + xhr.status + ': ' + error;
+                                }
+                            }
+                            Swal.fire('Erro!', msg, 'error');
+                        }
+                    });
+                }
+            });
+        });
     });
 
 </script>
