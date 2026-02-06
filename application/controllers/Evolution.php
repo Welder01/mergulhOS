@@ -73,7 +73,7 @@ class Evolution extends MY_Controller
         }
 
         $this->load->library('evolution_queue');
-        $result = $this->evolution_queue->process();
+        $result = $this->process_queue_internal(true);
 
         if ($result['processed'] > 0) {
             $this->session->set_flashdata('success', "Fila processada: {$result['processed']} enviados, {$result['failed']} falhas.");
@@ -106,34 +106,12 @@ class Evolution extends MY_Controller
             redirect('evolution/gerenciar#tabFila');
         }
 
-        // Tenta identificar as colunas (ajuste conforme seu banco de dados se necessário)
-        $phone = $this->evolution_model->formatPhone(isset($item->phone) ? $item->phone : (isset($item->numero) ? $item->numero : null));
-        $message = isset($item->message) ? $item->message : (isset($item->mensagem) ? $item->mensagem : null);
+        $success = $this->send_item_internal($item, $apiUrl, $apiKey, $instanceName);
 
-        if (!$phone || !$message) {
-            $this->session->set_flashdata('error', 'Dados da mensagem inválidos ou estrutura da tabela desconhecida.');
-            redirect('evolution/gerenciar#tabFila');
-        }
-
-        $url = rtrim($apiUrl, '/') . "/message/sendText/{$instanceName}";
-        $body = ["number" => $phone, "text" => $message];
-
-        $curl = curl_init();
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $url, CURLOPT_RETURNTRANSFER => true, CURLOPT_ENCODING => "", CURLOPT_MAXREDIRS => 10, CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1, CURLOPT_CUSTOMREQUEST => "POST", CURLOPT_POSTFIELDS => json_encode($body),
-            CURLOPT_HTTPHEADER => ["apikey: {$apiKey}", "Content-Type: application/json"],
-        ]);
-
-        $response = curl_exec($curl);
-        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        curl_close($curl);
-
-        if ($httpcode >= 200 && $httpcode < 300) {
-            $this->db->delete('evolution_queue', ['id' => $id]);
+        if ($success) {
             $this->session->set_flashdata('success', 'Mensagem enviada e removida da fila.');
         } else {
-            $this->session->set_flashdata('error', 'Erro ao enviar: ' . $response);
+            $this->session->set_flashdata('error', 'Erro ao enviar. Verifique os logs.');
         }
         redirect('evolution/gerenciar#tabFila');
     }
@@ -210,10 +188,24 @@ class Evolution extends MY_Controller
             redirect('evolution/gerenciar?tab=mensagens');
         }
 
+        $mediaUrl = $this->input->post('imagem_url');
+        
+        // Verifica se houve upload de arquivo
+        if (!empty($_FILES['userfile']['name'])) {
+            $uploadedUrl = $this->do_upload_media();
+            if ($uploadedUrl) {
+                $mediaUrl = $uploadedUrl;
+            } else {
+                 $this->session->set_flashdata('error', 'Erro ao fazer upload do arquivo: ' . $this->upload->display_errors());
+                 redirect('evolution/gerenciar?tab=mensagens');
+                 return;
+            }
+        }
+
         $data = [
             'titulo' => $this->input->post('titulo'),
             'mensagem' => $this->input->post('mensagem'),
-            'imagem_url' => $this->input->post('imagem_url'),
+            'imagem_url' => $mediaUrl,
         ];
 
         if ($this->evolution_model->add('evolution_mensagens', $data)) {
@@ -234,10 +226,24 @@ class Evolution extends MY_Controller
         }
 
         $id = $this->input->post('id');
+        $mediaUrl = $this->input->post('imagem_url');
+
+        // Verifica se houve upload de arquivo
+        if (!empty($_FILES['userfile']['name'])) {
+            $uploadedUrl = $this->do_upload_media();
+            if ($uploadedUrl) {
+                $mediaUrl = $uploadedUrl;
+            } else {
+                 $this->session->set_flashdata('error', 'Erro ao fazer upload do arquivo: ' . $this->upload->display_errors());
+                 redirect('evolution/gerenciar#tabMensagens');
+                 return;
+            }
+        }
+
         $data = [
             'titulo' => $this->input->post('titulo'),
             'mensagem' => $this->input->post('mensagem'),
-            'imagem_url' => $this->input->post('imagem_url'),
+            'imagem_url' => $mediaUrl,
         ];
 
         if ($this->evolution_model->edit('evolution_mensagens', $data, 'id', $id)) {
@@ -441,7 +447,7 @@ class Evolution extends MY_Controller
             // Note: Use the current state of $mensagem->mensagem which might be modified by the buggy loop above
             // or correct if single send.
 
-            if ($this->evolution_queue->add($numero, $mensagem->mensagem, ['delay' => $delay, 'presence' => $presence])) {
+            if ($this->add_to_queue_internal($numero, $mensagem->mensagem, $mensagem->imagem_url, ['delay' => $delay, 'presence' => $presence])) {
                 $sucessos++;
             } else {
                 $falhas++;
@@ -659,7 +665,7 @@ class Evolution extends MY_Controller
             }
 
             // Enqueue message
-            if ($this->evolution_queue->add($destinatario['numero'], $mensagemFinal, ['delay' => $delay, 'presence' => $presence])) {
+            if ($this->add_to_queue_internal($destinatario['numero'], $mensagemFinal, $mensagemOriginal->imagem_url, ['delay' => $delay, 'presence' => $presence])) {
                 $sucessos++;
             } else {
                 $falhas++;
@@ -783,8 +789,7 @@ class Evolution extends MY_Controller
         // This method is intended to be called by CRON job
         // curl http://your-domain.com/index.php/evolution/process_queue
 
-        $this->load->library('evolution_queue');
-        $result = $this->evolution_queue->process();
+        $result = $this->process_queue_internal(false);
 
         if ($this->input->is_cli_request()) {
             echo "Processed: " . $result['processed'] . "\n";
@@ -793,5 +798,247 @@ class Evolution extends MY_Controller
             header('Content-Type: application/json');
             echo json_encode($result);
         }
+    }
+
+    /**
+     * Internal method to add to queue with media support
+     */
+    private function add_to_queue_internal($phone, $message, $mediaUrl = null, $options = [])
+    {
+        $data = [
+            'phone_number' => $phone,
+            'message' => $message,
+            'media_url' => $mediaUrl,
+            'status' => 'pending',
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+            'attempts' => 0
+        ];
+        
+        // If table uses 'numero' instead of 'phone' or 'mensagem' instead of 'message', adjust here.
+        // Based on previous context, it seems to use 'phone' and 'message' or 'phone_number'.
+        // Let's try to be safe or check fields. Assuming standard structure from migration.
+        
+        return $this->db->insert('evolution_queue', $data);
+    }
+
+    /**
+     * Process queue with delay and media support
+     */
+    private function process_queue_internal($retryFailed = false)
+    {
+        $apiUrl = $this->mapos_model->get_ci_config('evolution_api_url');
+        $apiKey = $this->mapos_model->get_ci_config('evolution_api_key');
+        $instanceName = $this->mapos_model->get_ci_config('evolution_api_instance');
+        
+        $delayFixo = (int) ($this->mapos_model->get_ci_config('evolution_delay_fixo') ?: 1200);
+        $delayMin = (int) ($this->mapos_model->get_ci_config('evolution_delay_min') ?: 1000);
+        $delayMax = (int) ($this->mapos_model->get_ci_config('evolution_delay_max') ?: 5000);
+
+        if (empty($apiUrl) || empty($apiKey) || empty($instanceName)) {
+            return ['processed' => 0, 'failed' => 0, 'error' => 'Configurações da API incompletas.'];
+        }
+
+        $limit = $this->input->is_cli_request() ? 50 : 20;
+        
+        $this->db->group_start();
+        $this->db->where('status', 'pending');
+        if ($retryFailed) {
+            $this->db->or_where('status', 'failed');
+        }
+        $this->db->group_end();
+        $this->db->order_by('id', 'ASC');
+        $this->db->limit($limit);
+        $queue = $this->db->get('evolution_queue')->result();
+
+        $processed = 0;
+        $failed = 0;
+        $total = count($queue);
+
+        foreach ($queue as $index => $item) {
+            $success = $this->send_item_internal($item, $apiUrl, $apiKey, $instanceName);
+            
+            if ($success) {
+                $processed++;
+            } else {
+                $failed++;
+            }
+
+            if ($index < $total - 1) {
+                if ($delayFixo > 0) {
+                    usleep($delayFixo * 1000);
+                } else {
+                    usleep(rand($delayMin, $delayMax) * 1000);
+                }
+            }
+        }
+
+        return ['processed' => $processed, 'failed' => $failed];
+    }
+
+    private function send_item_internal($item, $apiUrl, $apiKey, $instanceName)
+    {
+        $this->db->where('id', $item->id);
+        $this->db->update('evolution_queue', ['status' => 'sending', 'updated_at' => date('Y-m-d H:i:s')]);
+
+        $phoneRaw = isset($item->phone_number) ? $item->phone_number : (isset($item->phone) ? $item->phone : (isset($item->numero) ? $item->numero : null));
+        $phone = $this->evolution_model->formatPhone($phoneRaw);
+        $message = isset($item->message) ? $item->message : (isset($item->mensagem) ? $item->mensagem : null);
+        $mediaUrl = isset($item->media_url) ? trim($item->media_url) : null;
+
+        if (!$phone) {
+             $errorMsg = 'Telefone inválido ou não formatado corretamente: ' . ($phoneRaw ?: 'Vazio');
+
+             $this->db->where('id', $item->id);
+             $this->db->update('evolution_queue', ['status' => 'failed', 'last_error' => $errorMsg, 'attempts' => ($item->attempts ?? 0) + 1]);
+             
+             $this->evolution_model->add('evolution_logs', [
+                'phone_number' => $phoneRaw,
+                'message' => $message . ($mediaUrl ? " [Media: $mediaUrl]" : ""),
+                'request_payload' => json_encode(['number' => $phoneRaw, 'text' => $message, 'media' => $mediaUrl]),
+                'status' => 'failed',
+                'response_code' => 0,
+                'response_body' => $errorMsg,
+                'curl_error' => '',
+                'timestamp' => date('Y-m-d H:i:s')
+            ]);
+
+             return false;
+        }
+
+        $body = [];
+        $endpoint = "";
+
+        // Verifica se é uma URL válida ou Base64
+        $isUrl = filter_var($mediaUrl, FILTER_VALIDATE_URL);
+        $isBase64 = preg_match('/^data:(\w+)\/(\w+);base64,/', $mediaUrl);
+
+        // FIX: Converter URL local para Base64 se necessário (evita erro 400 em localhost)
+        if ($isUrl && !empty($mediaUrl)) {
+            if (strpos($mediaUrl, 'localhost') !== false || strpos($mediaUrl, '127.0.0.1') !== false || strpos($mediaUrl, base_url()) === 0) {
+                $relativePath = str_replace(base_url(), '', $mediaUrl);
+                $localPath = FCPATH . $relativePath;
+                $localPath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $localPath);
+
+                if (file_exists($localPath)) {
+                    $fileContent = file_get_contents($localPath);
+                    if ($fileContent !== false) {
+                        $mime = mime_content_type($localPath);
+                        $base64 = base64_encode($fileContent);
+                        $mediaUrl = "data:{$mime};base64,{$base64}";
+                        $isBase64 = true;
+                        $isUrl = false;
+                    }
+                }
+            }
+        }
+
+        if (!empty($mediaUrl) && ($isUrl || $isBase64)) {
+            $endpoint = "/message/sendMedia/{$instanceName}";
+            $mediaInfo = $this->get_media_info($mediaUrl);
+            
+            $body = [
+                "number" => $phone,
+                "media" => $mediaUrl,
+                "mediatype" => $mediaInfo['type'],
+                "mimetype" => $mediaInfo['mime'],
+                "caption" => $message ? strip_tags(str_replace(['<br>', '<br/>', '<br />', '&nbsp;'], ["\n", "\n", "\n", " "], html_entity_decode($message))) : "",
+                "fileName" => $isUrl ? basename(parse_url($mediaUrl, PHP_URL_PATH)) : 'file'
+            ];
+        } else {
+            $endpoint = "/message/sendText/{$instanceName}";
+            $body = ["number" => $phone, "text" => $message ?: ""];
+        }
+
+        $url = rtrim($apiUrl, '/') . $endpoint;
+        
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => json_encode($body),
+            CURLOPT_HTTPHEADER => ["apikey: {$apiKey}", "Content-Type: application/json"],
+        ]);
+
+        $response = curl_exec($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $err = curl_error($curl);
+        curl_close($curl);
+
+        $status = ($httpcode >= 200 && $httpcode < 300 && !$err) ? 'sent' : 'failed';
+        
+        $this->db->where('id', $item->id);
+        $this->db->update('evolution_queue', [
+            'status' => $status, 
+            'last_error' => $err ?: $response, 
+            'attempts' => ($item->attempts ?? 0) + 1,
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
+        
+        $this->evolution_model->add('evolution_logs', [
+            'phone_number' => $phone,
+            'message' => $message . ($mediaUrl ? " [Media: $mediaUrl]" : ""),
+            'request_payload' => json_encode($body),
+            'status' => $status,
+            'response_code' => $httpcode,
+            'response_body' => is_string($response) ? $response : json_encode($response),
+            'curl_error' => $err,
+            'timestamp' => date('Y-m-d H:i:s')
+        ]);
+        
+        return $status === 'sent';
+    }
+
+    private function get_media_info($url) {
+        // Check for Base64
+        if (preg_match('/^data:(\w+)\/(\w+);base64,/', $url, $matches)) {
+             $mime = $matches[1] . '/' . $matches[2];
+             $type = $matches[1]; // image, video, audio
+             if ($type == 'application') $type = 'document';
+             return ['type' => $type, 'mime' => $mime];
+        }
+
+        $path = parse_url($url, PHP_URL_PATH);
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $mime = 'application/octet-stream';
+        $type = 'document';
+
+        $images = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+        $videos = ['mp4', 'avi', 'mov', 'mkv'];
+        $audio = ['mp3', 'ogg', 'wav'];
+
+        if (in_array($ext, $images)) { $type = 'image'; $mime = 'image/' . ($ext == 'jpg' ? 'jpeg' : $ext); }
+        elseif (in_array($ext, $videos)) { $type = 'video'; $mime = 'video/' . $ext; }
+        elseif (in_array($ext, $audio)) { $type = 'audio'; $mime = 'audio/' . $ext; }
+        elseif ($ext == 'pdf') { $type = 'document'; $mime = 'application/pdf'; }
+
+        return ['type' => $type, 'mime' => $mime];
+    }
+
+    private function do_upload_media()
+    {
+        $config['upload_path'] = './assets/uploads/evolution/';
+        $config['allowed_types'] = 'gif|jpg|png|jpeg|mp4|pdf|doc|docx|txt';
+        $config['max_size'] = 20480; // 20MB
+        $config['encrypt_name'] = true;
+
+        if (!is_dir($config['upload_path'])) {
+            mkdir($config['upload_path'], 0777, true);
+        }
+
+        $this->load->library('upload', $config);
+        $this->upload->initialize($config);
+
+        if ($this->upload->do_upload('userfile')) {
+            $data = $this->upload->data();
+            return base_url('assets/uploads/evolution/' . $data['file_name']);
+        }
+        
+        return null;
     }
 }

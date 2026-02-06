@@ -9,17 +9,21 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
-                    <strong>v4.53.3 - Melhorias na Integração Evolution API</strong><br>
-                    Correções de bugs em notificações e ferramentas para gerenciamento manual da fila de envios.
+                    <strong>v4.53.3 - Melhorias na Integração Evolution API e Segurança</strong><br>
+                    Correções de bugs, ferramentas de gerenciamento de fila e proteção contra banimento (Delay).
                 </div>
 
                 <h3>Novidades e Correções</h3>
                 <hr>
                 <h4>1. Evolution API & Notificações</h4>
                 <ul>
-                    <li><strong>Gerenciamento da Fila:</strong> Adicionado botão "Forçar Envio Manual" para processar a fila imediatamente sem depender do CRON. Também foi incluído um botão para envio individual de mensagens na lista.</li>
-                    <li><strong>Formatação de Números:</strong> Implementada validação automática que adiciona o DDI 55 (Brasil) caso o número tenha apenas DDD+Número, evitando falhas de envio.</li>
-                    <li><strong>Correção de Bugs:</strong> Ajustes no acesso a propriedades de clientes e instrutores que causavam erros ao disparar notificações de viagens e cursos.</li>
+                    <li><strong>Proteção Anti-Banimento (Delay):</strong> Implementado sistema de atraso randômico entre os envios de mensagens na fila. O sistema agora respeita os tempos configurados (mínimo e máximo) para simular comportamento humano e evitar bloqueios pelo WhatsApp.</li>
+                    <li><strong>Gerenciamento da Fila:</strong> Adicionado botão "Forçar Envio Manual" para processar a fila imediatamente. O processamento agora ocorre internamente no controlador para garantir que os delays sejam respeitados, mesmo em envios manuais.</li>
+                    <li><strong>Envio Individual:</strong> Adicionado botão para forçar o envio de uma única mensagem específica da fila.</li>
+                    <li><strong>Formatação de Números:</strong> Implementada validação automática que adiciona o DDI 55 (Brasil) caso o número tenha apenas DDD+Número (10 ou 11 dígitos), evitando falhas de envio.</li>
+                    <li><strong>Correção de Bugs:</strong> Ajustes no acesso a propriedades de clientes e instrutores que causavam erros ao disparar notificações de viagens e cursos (objetos nulos).</li>
+                    <li><strong>Envio de Mídia Local:</strong> Implementada conversão automática de arquivos locais para Base64, corrigindo erro de envio de mídia em ambiente localhost.</li>
+                    <li><strong>Formatação de Texto:</strong> Adicionado tratamento para remover tags HTML das mensagens e legendas, garantindo que o texto chegue limpo no WhatsApp.</li>
                 </ul>
                 <br>
 

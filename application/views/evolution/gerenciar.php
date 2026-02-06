@@ -333,7 +333,7 @@
                 </div>
                 <div class="widget-content">
                     <form action="<?= base_url() ?>index.php/evolution/adicionar_mensagem" method="post"
-                        class="form-horizontal">
+                        class="form-horizontal" enctype="multipart/form-data">
                         <input type="hidden" name="active_tab" id="active_tab" value="#tabStatus">
                         <div class="control-group">
                             <label for="titulo" class="control-label">Título<span class="required">*</span></label>
@@ -343,10 +343,17 @@
                             </div>
                         </div>
                         <div class="control-group">
-                            <label for="imagem_url" class="control-label">URL da Imagem (Opcional)</label>
+                            <label for="imagem_url" class="control-label">Mídia (URL ou Arquivo)</label>
                             <div class="controls">
                                 <input type="url" name="imagem_url" id="imagem_url" class="span11"
-                                    placeholder="https://exemplo.com/imagem.jpg">
+                                    placeholder="https://exemplo.com/arquivo.pdf ou .jpg, .mp4">
+                                <div style="margin-top: 5px;">
+                                    <input type="file" name="userfile" class="span11" accept=".jpg,.jpeg,.png,.mp4,.pdf,.doc,.docx,.txt">
+                                </div>
+                                <div class="alert alert-info" style="margin-top: 8px; padding: 8px 14px; font-size: 13px; width: 88%;">
+                                    <i class="fas fa-info-circle"></i> Cole uma URL direta <b>OU</b> envie um arquivo (Max 20MB).<br>
+                                    <span style="font-size: 12px;">Suporta Imagens, Vídeos e Documentos.</span>
+                                </div>
                             </div>
                         </div>
                         <div class="control-group">
@@ -473,7 +480,7 @@
         <h3>Editar Mensagem</h3>
     </div>
     <div class="modal-body">
-        <form id="formEditarMensagem" action="<?= base_url() ?>index.php/evolution/editar_mensagem" method="post">
+        <form id="formEditarMensagem" action="<?= base_url() ?>index.php/evolution/editar_mensagem" method="post" enctype="multipart/form-data">
             <input type="hidden" id="edit_id" name="id">
             <div class="control-group">
                 <label for="edit_titulo" class="control-label">Título<span class="required">*</span></label>
@@ -482,9 +489,20 @@
                 </div>
             </div>
             <div class="control-group">
-                <label for="edit_imagem_url" class="control-label">URL da Imagem (Opcional)</label>
+                <label for="edit_imagem_url" class="control-label">Mídia (URL ou Arquivo)</label>
                 <div class="controls">
                     <input type="url" name="imagem_url" id="edit_imagem_url" class="span12" style="width: 97%;">
+                    <div id="current_media_container" style="margin-top: 5px; display: none;">
+                        <span class="label label-info">Mídia Atual:</span>
+                        <a href="" id="current_media_link" target="_blank" style="margin-left: 5px; word-break: break-all;">Visualizar Mídia</a>
+                    </div>
+                    <div style="margin-top: 5px;">
+                        <input type="file" name="userfile" class="span12" style="width: 97%;" accept=".jpg,.jpeg,.png,.mp4,.pdf,.doc,.docx,.txt">
+                    </div>
+                    <div class="alert alert-info" style="margin-top: 8px; padding: 8px 14px; font-size: 13px; width: 93%;">
+                        <i class="fas fa-info-circle"></i> Cole uma URL direta <b>OU</b> envie um arquivo (Max 20MB).<br>
+                        <span style="font-size: 12px;">Suporta Imagens, Vídeos e Documentos.</span>
+                    </div>
                 </div>
             </div>
             <div class="control-group">
@@ -1007,6 +1025,14 @@
             $('#edit_titulo').val(titulo);
             $('#edit_imagem_url').val(imagem);
             $('#edit_mensagem').trumbowyg('html', mensagem);
+
+            if (imagem) {
+                $('#current_media_link').attr('href', imagem);
+                $('#current_media_container').show();
+            } else {
+                $('#current_media_link').attr('href', '#');
+                $('#current_media_container').hide();
+            }
 
             $('#modalEditar').modal('show');
         });
