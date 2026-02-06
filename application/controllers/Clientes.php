@@ -31,15 +31,26 @@ class Clientes extends MY_Controller
             redirect(base_url());
         }
 
-        $pesquisa = $this->input->get('pesquisa');
-
         $this->load->library('pagination');
 
         $this->data['configuration']['base_url'] = site_url('clientes/gerenciar/');
-        $this->data['configuration']['total_rows'] = $this->clientes_model->count('clientes');
-        if ($pesquisa) {
-            $this->data['configuration']['suffix'] = "?pesquisa={$pesquisa}";
-            $this->data['configuration']['first_url'] = base_url("index.php/clientes") . "\?pesquisa={$pesquisa}";
+        $this->data['configuration']['reuse_query_string'] = TRUE;
+
+        $pesquisa = $this->input->get('pesquisa');
+
+        // Use system config for default per_page
+        $default_per_page = $this->mapos_model->get_ci_config('per_page') ?: 10;
+        $this->data['configuration']['per_page'] = $this->input->get_post('per_page') ? (int) $this->input->get_post('per_page') : $default_per_page;
+
+        $this->data['configuration']['total_rows'] = $this->clientes_model->count('clientes', $pesquisa);
+        
+        // Configura first_url para manter os parâmetros na primeira página
+        $queryParams = $this->input->get();
+        if ($this->data['configuration']['per_page'] != $default_per_page) {
+            $queryParams['per_page'] = $this->data['configuration']['per_page'];
+        }
+        if (!empty($queryParams)) {
+            $this->data['configuration']['first_url'] = site_url('clientes/gerenciar') . '?' . http_build_query($queryParams);
         }
 
         $this->pagination->initialize($this->data['configuration']);
@@ -463,4 +474,3 @@ class Clientes extends MY_Controller
         redirect(site_url('clientes/gerenciar/'));
     }
 }
-

@@ -911,10 +911,18 @@ class Evolution extends MY_Controller
 
         // Verifica se é uma URL válida ou Base64
         $isUrl = filter_var($mediaUrl, FILTER_VALIDATE_URL);
-        $isBase64 = preg_match('/^data:(\w+)\/(\w+);base64,/', $mediaUrl);
+        $isBase64 = preg_match('/^data:(\w+)\/([\w.+-]+);base64,/', $mediaUrl);
+        
+        $fileName = 'file'; // Nome padrão
 
         // FIX: Converter URL local para Base64 se necessário (evita erro 400 em localhost)
         if ($isUrl && !empty($mediaUrl)) {
+            // Tenta extrair o nome do arquivo da URL antes de converter
+            $path = parse_url($mediaUrl, PHP_URL_PATH);
+            if ($path) {
+                $fileName = basename($path);
+            }
+
             if (strpos($mediaUrl, 'localhost') !== false || strpos($mediaUrl, '127.0.0.1') !== false || strpos($mediaUrl, base_url()) === 0) {
                 $relativePath = str_replace(base_url(), '', $mediaUrl);
                 $localPath = FCPATH . $relativePath;
@@ -931,19 +939,35 @@ class Evolution extends MY_Controller
                     }
                 }
             }
+        } elseif ($isBase64) {
+             // Tenta deduzir extensão se for base64 puro e não tiver nome
+             if (preg_match('/^data:(\w+)\/([\w.+-]+);base64,/', $mediaUrl, $matches)) {
+                 $ext = $matches[2];
+                 if ($ext == 'plain') $ext = 'txt';
+                 if ($ext == 'vnd.openxmlformats-officedocument.wordprocessingml.document') $ext = 'docx';
+                 if ($ext == 'vnd.openxmlformats-officedocument.spreadsheetml.sheet') $ext = 'xlsx';
+                 if ($ext == 'vnd.ms-excel') $ext = 'xls';
+                 $fileName = 'file.' . $ext;
+             }
         }
 
         if (!empty($mediaUrl) && ($isUrl || $isBase64)) {
             $endpoint = "/message/sendMedia/{$instanceName}";
             $mediaInfo = $this->get_media_info($mediaUrl);
             
+            // Remove o prefixo data:mime/type;base64, para enviar apenas a string base64 pura
+            $mediaContent = $mediaUrl;
+            if ($isBase64) {
+                $mediaContent = preg_replace('/^data:([\w.-]+\/[\w.+-]+);base64,/', '', $mediaUrl);
+            }
+            
             $body = [
                 "number" => $phone,
-                "media" => $mediaUrl,
+                "media" => $mediaContent,
                 "mediatype" => $mediaInfo['type'],
                 "mimetype" => $mediaInfo['mime'],
                 "caption" => $message ? strip_tags(str_replace(['<br>', '<br/>', '<br />', '&nbsp;'], ["\n", "\n", "\n", " "], html_entity_decode($message))) : "",
-                "fileName" => $isUrl ? basename(parse_url($mediaUrl, PHP_URL_PATH)) : 'file'
+                "fileName" => $fileName
             ];
         } else {
             $endpoint = "/message/sendText/{$instanceName}";
@@ -982,7 +1006,7 @@ class Evolution extends MY_Controller
         
         $this->evolution_model->add('evolution_logs', [
             'phone_number' => $phone,
-            'message' => $message . ($mediaUrl ? " [Media: $mediaUrl]" : ""),
+            'message' => $message . ($mediaUrl ? " [Media: " . ($isUrl ? $mediaUrl : 'Base64 Data') . "]" : ""),
             'request_payload' => json_encode($body),
             'status' => $status,
             'response_code' => $httpcode,
@@ -996,11 +1020,16 @@ class Evolution extends MY_Controller
 
     private function get_media_info($url) {
         // Check for Base64
-        if (preg_match('/^data:(\w+)\/(\w+);base64,/', $url, $matches)) {
+        if (preg_match('/^data:(\w+)\/([\w.+-]+);base64,/', $url, $matches)) {
              $mime = $matches[1] . '/' . $matches[2];
              $type = $matches[1]; // image, video, audio
-             if ($type == 'application') $type = 'document';
-             return ['type' => $type, 'mime' => $mime];
+             
+             if ($type == 'image') return ['type' => 'image', 'mime' => $mime];
+             if ($type == 'video') return ['type' => 'video', 'mime' => $mime];
+             if ($type == 'audio') return ['type' => 'audio', 'mime' => $mime];
+             
+             // Default to document for everything else (application, text, etc)
+             return ['type' => 'document', 'mime' => $mime];
         }
 
         $path = parse_url($url, PHP_URL_PATH);

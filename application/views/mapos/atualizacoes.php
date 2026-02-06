@@ -24,6 +24,9 @@
                     <li><strong>Correção de Bugs:</strong> Ajustes no acesso a propriedades de clientes e instrutores que causavam erros ao disparar notificações de viagens e cursos (objetos nulos).</li>
                     <li><strong>Envio de Mídia Local:</strong> Implementada conversão automática de arquivos locais para Base64, corrigindo erro de envio de mídia em ambiente localhost.</li>
                     <li><strong>Formatação de Texto:</strong> Adicionado tratamento para remover tags HTML das mensagens e legendas, garantindo que o texto chegue limpo no WhatsApp.</li>
+                    <li><strong>Correção Base64:</strong> Ajuste no envio de mídia em Base64 para remover o prefixo 'data:image/...', atendendo aos requisitos da API Evolution.</li>
+                    <li><strong>Suporte a Arquivos:</strong> Aprimoramento na detecção de extensões e tipos de arquivo (MimeType) para envios via Base64, garantindo compatibilidade com documentos e mídias diversas.</li>
+                    <li><strong>Banco de Dados:</strong> <a href="<?= base_url() ?>index.php/migrate_evolution" class="btn btn-mini btn-success" target="_blank"><i class="fas fa-database"></i> Verificar/Atualizar Tabelas Evolution</a> - Clique aqui para garantir que as tabelas de fila e logs tenham todas as colunas necessárias.</li>
                 </ul>
                 <br>
 

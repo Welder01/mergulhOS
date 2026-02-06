@@ -14,10 +14,13 @@ class Clientes_model extends CI_Model
         $this->db->order_by('idClientes', 'desc');
         $this->db->limit($perpage, $start);
         if ($where) {
+            $this->db->group_start();
             $this->db->like('nomeCliente', $where);
             $this->db->or_like('documento', $where);
             $this->db->or_like('email', $where);
             $this->db->or_like('telefone', $where);
+            $this->db->or_like('celular', $where);
+            $this->db->group_end();
         }
 
         $query = $this->db->get();
@@ -68,9 +71,19 @@ class Clientes_model extends CI_Model
         return false;
     }
 
-    public function count($table)
+    public function count($table, $where = null)
     {
-        return $this->db->count_all($table);
+        $this->db->from($table);
+        if ($where) {
+            $this->db->group_start();
+            $this->db->like('nomeCliente', $where);
+            $this->db->or_like('documento', $where);
+            $this->db->or_like('email', $where);
+            $this->db->or_like('telefone', $where);
+            $this->db->or_like('celular', $where);
+            $this->db->group_end();
+        }
+        return $this->db->count_all_results();
     }
 
     public function getOsByCliente($id)
