@@ -164,15 +164,23 @@
                     
                     <p style="margin-top: 10px;"><strong>Comando para Execução:</strong></p>
                     <div style="background: #fff; padding: 12px; border: 1px dashed #ced4da; border-radius: 4px; font-family: 'Courier New', monospace; color: #333; margin-top: 5px; font-size: 13px;">
-                        curl -s "<?= base_url() ?>index.php/evolution/process_queue" >/dev/null 2>&1
+                        /usr/bin/php8.3 /home/mergulhar/web/bhdivers.com.br/public_html/index.php evolution_cron process
                     </div>
                     
                     <p style="margin-top: 12px; font-size: 0.9em; color: #555;">
                         <i class="fas fa-clock"></i> <strong>Frequência Recomendada:</strong> Executar a cada <strong>1 minuto</strong> (`* * * * *`).
                     </p>
-                    <p style="font-size: 0.9em; margin-bottom: 0; color: #555;">
+                    <p style="font-size: 0.9em; margin-bottom: 10px; color: #555;">
                         <i class="fas fa-info-circle"></i> O comando irá processar as mensagens pendentes em lotes para evitar sobrecarga.
                     </p>
+                    <p style="font-size: 0.9em; color: #555;"><strong>Configuração no Hestia CP:</strong></p>
+                    <ul style="font-size: 0.9em; color: #555; margin-bottom: 0;">
+                        <li>Minuto: *</li>
+                        <li>Hora: *</li>
+                        <li>Dia: *</li>
+                        <li>Mês: *</li>
+                        <li>Dia da Semana: *</li>
+                    </ul>
                 </div>
 
                 <div class="widget-box">

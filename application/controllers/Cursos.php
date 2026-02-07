@@ -337,7 +337,9 @@ class Cursos extends MY_Controller
                                 ]);
                                 $this->load->library('evolution_queue');
                                 $phone = $usuario->celular ?: $usuario->telefone;
-                                if ($phone)
+                                $phone = preg_replace('/[^0-9]/', '', $phone);
+                                if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                                if ($phone && strlen($phone) >= 10)
                                     $this->evolution_queue->add($phone, $msg_parsed);
                             }
                         }
@@ -382,7 +384,9 @@ class Cursos extends MY_Controller
                     ]);
                     $this->load->library('evolution_queue');
                     $phone = $usuario->celular ?: $usuario->telefone;
-                    if ($phone) {
+                    $phone = preg_replace('/[^0-9]/', '', $phone);
+                    if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                    if ($phone && strlen($phone) >= 10) {
                         $this->evolution_queue->add($phone, $msg_parsed);
                     }
                 }
@@ -448,7 +452,9 @@ class Cursos extends MY_Controller
                     ]);
                     $this->load->library('evolution_queue');
                     $phone = $cliente->celular ?: $cliente->telefone;
-                    if ($phone)
+                    $phone = preg_replace('/[^0-9]/', '', $phone);
+                    if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                    if ($phone && strlen($phone) >= 10)
                         $this->evolution_queue->add($phone, $msg_parsed);
                 }
             }
@@ -456,6 +462,8 @@ class Cursos extends MY_Controller
             // 2. Instructors Notification
             $triggerUser = $this->evolution_model->getEventTrigger('curso_cliente_adicionado_usuario');
             if ($triggerUser && $triggerUser->status == 1) {
+                $this->load->model('clientes_model');
+                $this->load->model('usuarios_model');
                 $curso = $this->cursos_model->getById($curso_id); // Ensure we have course
                 $cliente = $this->clientes_model->getById($cliente_id); // Ensure we have client
 
@@ -472,7 +480,9 @@ class Cursos extends MY_Controller
                                 'usuario' => $u
                             ]);
                             $phone = $u->celular ?: $u->telefone;
-                            if ($phone)
+                            $phone = preg_replace('/[^0-9]/', '', $phone);
+                            if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                            if ($phone && strlen($phone) >= 10)
                                 $this->evolution_queue->add($phone, $msg_parsed);
                         }
                     }
@@ -524,6 +534,7 @@ class Cursos extends MY_Controller
 
         // Fetch Data for Trigger
         if ($aluno) {
+            $this->load->model('clientes_model');
             $cliente = $this->clientes_model->getById($aluno->cliente_id);
             $curso = $this->cursos_model->getById($aluno->curso_id);
         }
@@ -543,7 +554,9 @@ class Cursos extends MY_Controller
                 ]);
                 $this->load->library('evolution_queue');
                 $phone = $cliente->celular ?: $cliente->telefone;
-                if ($phone) {
+                $phone = preg_replace('/[^0-9]/', '', $phone);
+                if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                if ($phone && strlen($phone) >= 10) {
                     $this->evolution_queue->add($phone, $msg_parsed);
                 }
             }
@@ -551,6 +564,7 @@ class Cursos extends MY_Controller
             // 2. Instructors Notification
             $triggerUser = $this->evolution_model->getEventTrigger('curso_cliente_removido_usuario');
             if ($triggerUser && $triggerUser->status == 1) {
+                $this->load->model('usuarios_model');
                 $this->load->model('curso_instrutores_model');
                 $instrutores = $this->curso_instrutores_model->getByCurso($curso->id);
                 if ($instrutores) {
@@ -564,7 +578,9 @@ class Cursos extends MY_Controller
                                 'usuario' => $u
                             ]);
                             $phone = $u->celular ?: $u->telefone;
-                            if ($phone)
+                            $phone = preg_replace('/[^0-9]/', '', $phone);
+                            if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                            if ($phone && strlen($phone) >= 10)
                                 $this->evolution_queue->add($phone, $msg_parsed);
                         }
                     }

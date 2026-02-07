@@ -15,6 +15,7 @@
             <p><strong>Comando para Execução:</strong><br>
             <code>/usr/bin/php8.3 /home/mergulhar/web/bhdivers.com.br/public_html/index.php evolution_cron process</code></p>
             <p><strong>Frequência:</strong> A cada minuto (<code>* * * * *</code>)</p>
+            <button id="btn-force-process" class="btn btn-inverse btn-small" style="margin-top: 10px;"><i class="fas fa-sync"></i> Forçar Envio Agora</button>
         </div>
 
         <div class="span12" style="margin-left: 0">
@@ -37,6 +38,31 @@
             <div id="loading" style="display:none; text-align: center;">
                 <img src="<?= base_url('assets/img/loading.gif') ?>" alt="Carregando...">
                 <p>Verificando...</p>
+            </div>
+        </div>
+
+        <div class="span12" style="margin-left: 0; margin-top: 20px;">
+            <div class="widget-box">
+                <div class="widget-title">
+                    <span class="icon"><i class="fas fa-list"></i></span>
+                    <h5>Fila de Envio</h5>
+                </div>
+                <div class="widget-content nopadding">
+                    <table class="table table-bordered" id="tabelaFila">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Número</th>
+                                <th>Mensagem</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php $this->load->view('evolution/fila_rows', ['fila' => $fila ?? []]); ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -91,5 +117,36 @@
                 }
             });
         });
+
+        $('#btn-force-process').click(function() {
+            var btn = $(this);
+            var originalText = btn.html();
+            btn.prop('disabled', true).html('<i class="fas fa-sync fa-spin"></i> Processando...');
+            
+            $.ajax({
+                url: '<?= base_url() ?>index.php/evolution/process_queue',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    Swal.fire('Sucesso', 'Processamento concluído.\nEnviados: ' + (data.processed || 0) + '\nFalhas: ' + (data.failed || 0), 'success');
+                    refreshQueueTable();
+                },
+                error: function() {
+                    Swal.fire('Erro', 'Erro ao processar fila.', 'error');
+                },
+                complete: function() {
+                    btn.prop('disabled', false).html(originalText);
+                }
+            });
+        });
+
+        function refreshQueueTable() {
+            $.ajax({
+                url: '<?= base_url() ?>index.php/evolution/refresh_queue',
+                success: function(response) {
+                    $('#tabelaFila tbody').html(response);
+                }
+            });
+        }
     });
 </script>

@@ -458,6 +458,24 @@ class Clientes extends MY_Controller
             $this->clientes_model->removeClientVendas($vendas);
         }
 
+        // Excluindo registros dependentes para evitar erro de chave estrangeira
+        // 1. Financeiro (deve ser excluído antes para liberar dependências)
+        $this->db->where('clientes_id', $id);
+        $this->db->delete('lancamentos');
+
+        $this->db->where('clientes_id', $id);
+        $this->db->delete('cobrancas');
+
+        // 2. Operacional
+        $this->db->where('cliente_id', $id);
+        $this->db->delete('treinos_agendados');
+
+        $this->db->where('cliente_id', $id);
+        $this->db->delete('viagem_clientes');
+
+        $this->db->where('cliente_id', $id);
+        $this->db->delete('curso_alunos');
+
         $this->clientes_model->delete('clientes', 'idClientes', $id);
         log_info('Removeu um cliente. ID' . $id);
 

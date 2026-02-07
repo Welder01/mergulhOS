@@ -1,3 +1,4 @@
+<script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
 <style>
     select {
         width: 70px;
@@ -89,7 +90,7 @@
                             echo '<a href="' . base_url() . 'index.php/clientes/editar/' . $r->idClientes . '" style="margin-right: 1%" class="btn-nwe3" title="Editar Cliente"><i class="bx bx-edit bx-xs"></i></a>';
                         }
                         if ($this->permission->checkPermission($this->session->userdata('permissao'), 'dCliente')) {
-                            echo '<a href="#modal-excluir" role="button" data-toggle="modal" cliente="' . $r->idClientes . '" style="margin-right: 1%" class="btn-nwe4" title="Excluir Cliente"><i class="bx bx-trash-alt bx-xs"></i></a>';
+                            echo '<a href="javascript:void(0)" role="button" cliente="' . $r->idClientes . '" style="margin-right: 1%" class="btn-nwe4" title="Excluir Cliente"><i class="bx bx-trash-alt bx-xs"></i></a>';
                         }
                         echo '</td>';
                         echo '</tr>';
@@ -102,33 +103,38 @@
 </div>
 <?php echo $this->pagination->create_links(); ?>
 
-<!-- Modal -->
-<div id="modal-excluir" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-    aria-hidden="true">
-    <form action="<?php echo base_url() ?>index.php/clientes/excluir" method="post">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h5 id="myModalLabel">Excluir Cliente</h5>
-        </div>
-        <div class="modal-body">
-            <input type="hidden" id="idCliente" name="id" value="" />
-            <h5 style="text-align: center">Deseja realmente excluir este cliente e os dados associados a ele (OS,
-                Vendas, Receitas)?</h5>
-        </div>
-        <div class="modal-footer" style="display:flex;justify-content: center">
-            <button class="button btn btn-warning" data-dismiss="modal" aria-hidden="true"><span class="button__icon"><i
-                        class="bx bx-x"></i></span><span class="button__text2">Cancelar</span></button>
-            <button class="button btn btn-danger"><span class="button__icon"><i class='bx bx-trash'></i></span> <span
-                    class="button__text2">Excluir</span></button>
-        </div>
-    </form>
-</div>
+<form action="<?php echo base_url() ?>index.php/clientes/excluir" method="post" id="formExcluir" style="display: none;">
+    <input type="hidden" id="idClienteExcluir" name="id" value="" />
+</form>
 
 <script type="text/javascript">
     $(document).ready(function () {
         $(document).on('click', 'a[title="Excluir Cliente"]', function (event) {
+            event.preventDefault();
             var cliente = $(this).attr('cliente');
-            $('#idCliente').val(cliente);
+            $('#idClienteExcluir').val(cliente);
+
+            Swal.fire({
+                title: 'ATENÇÃO! Exclusão Irreversível',
+                html: "Ao excluir este cliente, <b>TODOS</b> os dados vinculados serão apagados permanentemente:<br><br>" +
+                      "<ul style='text-align: left; list-style-position: inside; margin-left: 20px;'>" +
+                      "<li>Ordens de Serviço e Vendas</li>" +
+                      "<li>Lançamentos Financeiros e Cobranças</li>" +
+                      "<li>Agendamentos de Treinos</li>" +
+                      "<li>Inscrições em Viagens e Cursos</li>" +
+                      "</ul>" +
+                      "<br><b>Esta ação não pode ser desfeita!</b>",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sim, excluir tudo!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $('#formExcluir').submit();
+                }
+            });
         });
     });
 </script>

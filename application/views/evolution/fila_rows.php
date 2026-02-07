@@ -1,52 +1,29 @@
-<?php if (isset($fila) && count($fila)): ?>
-    <?php foreach ($fila as $item): ?>
+<?php if (isset($fila) && !empty($fila)) { ?>
+    <?php foreach ($fila as $item) { ?>
         <tr>
             <td><?= $item->id ?></td>
-            <td><?= htmlspecialchars($item->phone_number) ?></td>
+            <td><?= $item->phone_number ?></td>
+            <td><?= substr(strip_tags($item->message), 0, 50) ?>...</td>
             <td>
-                <small><?= mb_strimwidth(htmlspecialchars($item->message), 0, 80, "...") ?></small>
-                <a href="#modal-fila-details-<?= $item->id ?>" data-toggle="modal" class="btn btn-mini btn-link"><i class="fas fa-eye"></i></a>
-                
-                <!-- Modal Detalhes Item Fila -->
-                <div id="modal-fila-details-<?= $item->id ?>" class="modal hide fade" tabindex="-1" role="dialog">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">×</button>
-                        <h3>Detalhes da Mensagem #<?= $item->id ?></h3>
-                    </div>
-                    <div class="modal-body">
-                        <p><strong>Destinatário:</strong> <?= htmlspecialchars($item->phone_number) ?></p>
-                        <p><strong>Status:</strong> <?= ucfirst($item->status) ?></p>
-                        <p><strong>Erro:</strong> <?= $item->last_error ? htmlspecialchars($item->last_error) : 'Nenhum' ?></p>
-                        <hr>
-                        <pre><?= htmlspecialchars($item->message) ?></pre>
-                    </div>
-                </div>
-            </td>
-            <td style="text-align:center;">
                 <?php
-                $statusClass = 'label-info';
-                switch ($item->status) {
-                    case 'pending': $statusClass = 'label-warning'; break;
-                    case 'sending': $statusClass = 'label-info'; break;
-                    case 'sent': $statusClass = 'label-success'; break;
-                    case 'failed': $statusClass = 'label-important'; break;
-                }
+                $statusClass = 'badge';
+                if ($item->status == 'pending') $statusClass .= ' badge-warning';
+                elseif ($item->status == 'sent') $statusClass .= ' badge-success';
+                elseif ($item->status == 'error') $statusClass .= ' badge-important';
+                elseif ($item->status == 'falhou') $statusClass .= ' badge-inverse';
                 ?>
-                <span class="label <?= $statusClass ?>"><?= ucfirst($item->status) ?></span>
+                <span class="<?= $statusClass ?>"><?= ucfirst($item->status) ?></span>
             </td>
-            <td style="text-align:center;"><?= $item->attempts ?></td>
-            <td style="text-align:center;"><?= date('d/m/Y H:i', strtotime($item->created_at)) ?></td>
-            <td style="text-align: center;">
-                <button class="btn btn-mini btn-success btn-envio-manual" data-id="<?= $item->id ?>" title="Enviar Agora"><i class="fas fa-paper-plane"></i></button>
-                <a href="<?= base_url('index.php/evolution/excluir_item_fila/' . $item->id) ?>#tabFila"
-                    class="btn btn-danger btn-mini" title="Remover da Fila"
-                    onclick="return confirm('Remover este item da fila?');"><i
-                        class="fas fa-trash-alt"></i></a>
+            <td><?= $item->attempts ?? 0 ?></td>
+            <td><?= isset($item->created_at) ? date('d/m/Y H:i', strtotime($item->created_at)) : '-' ?></td>
+            <td>
+                <button type="button" class="btn btn-mini btn-success btn-envio-manual tip-top" data-id="<?= $item->id ?>" title="Forçar Envio"><i class="fas fa-paper-plane"></i></button>
+                <a href="<?= base_url('index.php/evolution/excluir_item_fila/' . $item->id) ?>" class="btn btn-mini btn-danger tip-top" title="Excluir"><i class="fas fa-trash"></i></a>
             </td>
         </tr>
-    <?php endforeach; ?>
-<?php else: ?>
+    <?php } ?>
+<?php } else { ?>
     <tr>
-        <td colspan="7" style="text-align: center;">A fila de envios está vazia.</td>
+        <td colspan="7">Nenhuma mensagem na fila.</td>
     </tr>
-<?php endif; ?>
+<?php } ?>

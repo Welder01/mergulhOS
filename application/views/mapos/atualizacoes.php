@@ -9,6 +9,17 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
+                    <strong>v4.53.5 - Segurança na Exclusão de Clientes</strong><br>
+                    Melhoria no alerta de exclusão para detalhar impacto da remoção de clientes.
+                </div>
+
+                <h3>Melhorias de Interface</h3>
+                <hr>
+                <h4>1. Alerta de Exclusão Detalhado</h4>
+                <p>O sistema agora exibe uma lista completa de todos os registros (Financeiro, OS, Vendas, Treinos, etc.) que serão excluídos permanentemente ao remover um cliente, garantindo que o usuário esteja ciente da irreversibilidade da ação.</p>
+                <br>
+
+                <div class="alert alert-success">
                     <strong>v4.53.4 - Correção no Cron Job da Evolution API</strong><br>
                     Ajuste no comando do Cron Job para processamento da fila de mensagens.
                 </div>

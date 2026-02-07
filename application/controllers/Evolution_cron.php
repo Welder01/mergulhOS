@@ -17,6 +17,11 @@ class Evolution_cron extends CI_Controller
      */
     public function process($limit = 10)
     {
+        // Marca como 'falhou' mensagens que excederam 3 tentativas para não serem processadas novamente
+        $this->db->where('attempts >=', 3);
+        $this->db->where_in('status', ['pending', 'error']);
+        $this->db->update('evolution_queue', ['status' => 'falhou']);
+
         $this->load->library('evolution_queue');
         $result = $this->evolution_queue->process($limit);
 
