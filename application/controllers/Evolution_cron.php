@@ -7,6 +7,7 @@ class Evolution_cron extends CI_Controller
     {
         parent::__construct();
         $this->load->database();
+        $this->load->model('mapos_model');
         $this->load->library('evolution_queue');
     }
 
@@ -22,16 +23,197 @@ class Evolution_cron extends CI_Controller
         $this->db->where_in('status', ['pending', 'error']);
         $this->db->update('evolution_queue', ['status' => 'falhou']);
 
-        $this->load->library('evolution_queue');
-        $result = $this->evolution_queue->process($limit);
+        // Configurações da API
+        $apiUrl = $this->mapos_model->get_ci_config('evolution_api_url');
+        $apiKey = $this->mapos_model->get_ci_config('evolution_api_key');
+        $instanceName = $this->mapos_model->get_ci_config('evolution_api_instance');
+
+        if (empty($apiUrl) || empty($apiKey) || empty($instanceName)) {
+            if ($this->input->is_cli_request()) echo "Configurações da API incompletas.\n";
+            return;
+        }
+
+        // Busca itens da fila
+        $this->db->where_in('status', ['pending', 'error']);
+        $this->db->order_by('id', 'ASC');
+        $this->db->limit($limit);
+        $queue = $this->db->get('evolution_queue')->result();
+
+        $processed = 0;
+        $failed = 0;
+
+        foreach ($queue as $item) {
+            // Verifica se há mídia (na coluna ou nas opções)
+            $mediaUrl = $item->media_url;
+            if (empty($mediaUrl) && !empty($item->options)) {
+                $opts = json_decode($item->options, true);
+                if (isset($opts['media_url'])) {
+                    $mediaUrl = $opts['media_url'];
+                }
+            }
+
+            $cleanMessage = $this->cleanMessage($item->message);
+            $body = [];
+            $url = '';
+
+            if (!empty($mediaUrl)) {
+                $url = rtrim($apiUrl, '/') . "/message/sendMedia/{$instanceName}";
+                
+                // Extrai o nome do arquivo original
+                $fileName = basename($mediaUrl);
+                if (strpos($fileName, '?') !== false) {
+                    $fileName = explode('?', $fileName)[0];
+                }
+
+                // Lógica para converter arquivos locais em Base64
+                $localPath = '';
+                
+                // 1. Se não for URL (caminho absoluto ou relativo do sistema)
+                if (strpos($mediaUrl, 'http') !== 0) {
+                    $localPath = $mediaUrl;
+                    $cleanPath = ltrim($mediaUrl, '/\\');
+                    if (!file_exists($localPath) && file_exists(FCPATH . $cleanPath)) {
+                        $localPath = FCPATH . $cleanPath;
+                    }
+                } 
+                // 2. Tenta identificar se é local pela URL
+                else {
+                    if (strpos($mediaUrl, base_url()) === 0) {
+                        $localPath = FCPATH . substr($mediaUrl, strlen(base_url()));
+                    } elseif (strpos($mediaUrl, '/assets/') !== false) {
+                        $pathParts = explode('/assets/', $mediaUrl, 2);
+                        if (isset($pathParts[1])) {
+                            $localPath = FCPATH . 'assets/' . $pathParts[1];
+                        }
+                    } elseif (strpos($mediaUrl, '/application/') !== false) {
+                        $pathParts = explode('/application/', $mediaUrl, 2);
+                        if (isset($pathParts[1])) {
+                            $localPath = FCPATH . 'application/' . $pathParts[1];
+                        }
+                    }
+                }
+
+                if ($localPath) {
+                    $localPath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $localPath);
+                    $localPath = explode('?', $localPath)[0]; 
+                    
+                    if (file_exists($localPath)) {
+                        $fileData = file_get_contents($localPath);
+                        $base64 = base64_encode($fileData);
+                        $mime = mime_content_type($localPath);
+                        if (!$mime) $mime = 'application/octet-stream';
+                        $mediaUrl = $base64;
+                    }
+                }
+
+                $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                $mediaType = 'document';
+                $mimeType = 'application/octet-stream';
+
+                $mimeTypes = [
+                    'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif', 'webp' => 'image/webp',
+                    'mp4' => 'video/mp4', 'avi' => 'video/x-msvideo', 'mov' => 'video/quicktime', 'mkv' => 'video/x-matroska',
+                    'mp3' => 'audio/mpeg', 'ogg' => 'audio/ogg', 'wav' => 'audio/wav',
+                    'pdf' => 'application/pdf', 'doc' => 'application/msword', 'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                ];
+
+                if (isset($mimeTypes[$extension])) {
+                    $mimeType = $mimeTypes[$extension];
+                }
+                
+                if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                    $mediaType = 'image';
+                } elseif (in_array($extension, ['mp4', 'avi', 'mov', 'mkv'])) {
+                    $mediaType = 'video';
+                } elseif (in_array($extension, ['mp3', 'ogg', 'wav'])) {
+                    $mediaType = 'audio';
+                }
+
+                $body = [
+                    "number" => $item->phone_number,
+                    "mediatype" => $mediaType,
+                    "mimetype" => $mimeType,
+                    "caption" => $cleanMessage,
+                    "media" => $mediaUrl,
+                    "fileName" => $fileName,
+                    "delay" => 1200
+                ];
+            } else {
+                $url = rtrim($apiUrl, '/') . "/message/sendText/{$instanceName}";
+                
+                $body = [
+                    "number" => $item->phone_number,
+                    "options" => [
+                        "delay" => 1200,
+                        "presence" => "composing",
+                        "linkPreview" => false
+                    ],
+                    "text" => $cleanMessage
+                ];
+            }
+
+            $curl = curl_init();
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => "",
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_POSTFIELDS => json_encode($body, JSON_UNESCAPED_SLASHES),
+                CURLOPT_HTTPHEADER => [
+                    "apikey: {$apiKey}",
+                    "Content-Type: application/json"
+                ],
+            ]);
+
+            $response = curl_exec($curl);
+            $err = curl_error($curl);
+            $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            curl_close($curl);
+
+            // Log
+            $this->db->insert('evolution_logs', [
+                'timestamp' => date('Y-m-d H:i:s'),
+                'phone_number' => $item->phone_number,
+                'request_payload' => json_encode($body),
+                'response_body' => $response,
+                'response_code' => $httpCode,
+                'curl_error' => $err
+            ]);
+
+            if ($err || ($httpCode < 200 || $httpCode >= 300)) {
+                $failed++;
+                $this->db->set('attempts', 'attempts+1', false);
+                $this->db->set('last_error', $err ? "cURL: $err" : "API: $response");
+                $this->db->where('id', $item->id);
+                $this->db->update('evolution_queue');
+            } else {
+                $processed++;
+                $this->db->delete('evolution_queue', ['id' => $item->id]);
+            }
+        }
 
         if ($this->input->is_cli_request()) {
-            echo "Processed: " . $result['processed'] . "\n";
-            echo "Failed: " . $result['failed'] . "\n";
+            echo "Processed: " . $processed . "\n";
+            echo "Failed: " . $failed . "\n";
         } else {
             header('Content-Type: application/json');
-            echo json_encode($result);
+            echo json_encode(['processed' => $processed, 'failed' => $failed]);
         }
+    }
+
+    private function cleanMessage($message)
+    {
+        $message = html_entity_decode($message);
+        $message = str_ireplace(['<br />', '<br>', '<br/>'], "\n", $message);
+        $message = str_ireplace(['<p>', '</p>'], ['', "\n"], $message);
+        $message = str_ireplace(['<b>', '</b>', '<strong>', '</strong>'], '*', $message);
+        $message = str_ireplace(['<i>', '</i>', '<em>', '</em>'], '_', $message);
+        $message = str_ireplace(['<s>', '</s>', '<strike>', '</strike>', '<del>', '</del>'], '~', $message);
+        $message = strip_tags($message);
+        return trim($message);
     }
 
     /**
@@ -68,7 +250,7 @@ class Evolution_cron extends CI_Controller
                         // Avoid duplicates if necessary, but for daily cron running once it's fine.
                         // Optimization: Check if msg already sent today?
                         // For now, assume cron runs once a day.
-                        $this->evolution_queue->add($phone, $msg_parsed);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
                         echo "Queued birthday msg for: {$cliente->nomeCliente}\n";
                     }
                 }
@@ -101,7 +283,7 @@ class Evolution_cron extends CI_Controller
                         ]);
                         $phone = $cliente->celular ?: $cliente->telefone;
                         if ($phone) {
-                            $this->evolution_queue->add($phone, $msg_parsed);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
                             echo "Queued payment due msg for ID: {$cob->idCobranca}\n";
                         }
                     }
@@ -150,7 +332,7 @@ class Evolution_cron extends CI_Controller
                         ]);
                         $phone = $cliente->celular ?: $cliente->telefone;
                         if ($phone) {
-                            $this->evolution_queue->add($phone, $msg_parsed);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
                             echo "Queued reminder for training ID: {$ag->id}\n";
                         }
                     }

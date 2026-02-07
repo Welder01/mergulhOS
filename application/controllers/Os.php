@@ -287,7 +287,7 @@ class Os extends MY_Controller
                     $this->load->library('evolution_queue');
                     $phone = $oldUser->celular ?: $oldUser->telefone;
                     if ($phone)
-                        $this->evolution_queue->add($phone, $msg_parsed);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerRem->imagem_url ?? null]);
                 }
 
                 // New User Added
@@ -303,7 +303,7 @@ class Os extends MY_Controller
                     $this->load->library('evolution_queue');
                     $phone = $newUser->celular ?: $newUser->telefone;
                     if ($phone)
-                        $this->evolution_queue->add($phone, $msg_parsed);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerAdd->imagem_url ?? null]);
                 }
             }
             // ---------------------------------------------------------------
@@ -339,7 +339,7 @@ class Os extends MY_Controller
                         $this->load->library('evolution_queue');
                         $phone = $clienteOs->celular ?: $clienteOs->telefone;
                         if ($phone) {
-                            $this->evolution_queue->add($phone, $msg_parsed);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerClient->imagem_url ?? null]);
                         }
                     }
 
@@ -354,7 +354,7 @@ class Os extends MY_Controller
                         $this->load->library('evolution_queue');
                         $phone = $tecnicoOs->celular ?: $tecnicoOs->telefone;
                         if ($phone) {
-                            $this->evolution_queue->add($phone, $msg_parsed);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerUser->imagem_url ?? null]);
                         }
                     }
                 }

@@ -265,7 +265,7 @@ class Treinos extends MY_Controller
                     $this->load->library('evolution_queue');
                     $phone = $cliente->celular ?: $cliente->telefone;
                     if ($phone) {
-                        $this->evolution_queue->add($phone, $msg_parsed);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerCliente->imagem_url ?? null]);
                     }
                 }
             }
@@ -285,7 +285,7 @@ class Treinos extends MY_Controller
                     $this->load->library('evolution_queue');
                     $phone = $instrutor->celular ?: $instrutor->telefone;
                     if ($phone) {
-                        $this->evolution_queue->add($phone, $msg_parsed);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerUsuario->imagem_url ?? null]);
                     }
                 }
             }
@@ -626,7 +626,7 @@ class Treinos extends MY_Controller
                     $msg_parsed = $this->evolution_model->parseMessage($triggerCliente->mensagem, ['cliente' => $cliente, 'treino' => $config]);
                     $this->load->library('evolution_queue');
                     $phone = $cliente->celular ?: $cliente->telefone;
-                    if ($phone) $this->evolution_queue->add($phone, $msg_parsed);
+                    if ($phone) $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerCliente->imagem_url ?? null]);
                 }
             }
 

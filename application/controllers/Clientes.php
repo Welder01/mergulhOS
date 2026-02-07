@@ -113,7 +113,7 @@ class Clientes extends MY_Controller
                         $this->load->library('evolution_queue');
                         $phone = !empty($data['celular']) ? $data['celular'] : (!empty($data['telefone']) ? $data['telefone'] : '');
                         if ($phone) {
-                            $this->evolution_queue->add($phone, $msg_parsed);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
                         }
                     }
 
@@ -296,7 +296,7 @@ class Clientes extends MY_Controller
                         $this->load->library('evolution_queue');
                         $phone = !empty($data['celular']) ? $data['celular'] : (!empty($data['telefone']) ? $data['telefone'] : '');
                         if ($phone) {
-                            $this->evolution_queue->add($phone, $msg_parsed);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
                         }
                     }
 
@@ -441,7 +441,7 @@ class Clientes extends MY_Controller
                 $this->load->library('evolution_queue');
                 $phone = !empty($cliente->celular) ? $cliente->celular : (!empty($cliente->telefone) ? $cliente->telefone : '');
                 if ($phone) {
-                    $this->evolution_queue->add($phone, $msg_parsed);
+                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
                 }
             }
         }

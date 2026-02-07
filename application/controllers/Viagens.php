@@ -197,7 +197,7 @@ class Viagens extends MY_Controller
                         $phone = !empty($celular) ? $celular : $telefone;
                         if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                         if ($phone && strlen($phone) >= 10)
-                            $this->evolution_queue->add($phone, $msg_parsed);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerC->imagem_url ?? null]);
                     }
                 }
             }
@@ -214,7 +214,7 @@ class Viagens extends MY_Controller
                         $phone = !empty($celular) ? $celular : $telefone;
                         if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                         if ($phone && strlen($phone) >= 10)
-                            $this->evolution_queue->add($phone, $msg_parsed);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerU->imagem_url ?? null]);
                     }
                 }
             }
@@ -420,7 +420,7 @@ class Viagens extends MY_Controller
                         $phone = !empty($celular) ? $celular : $telefone;
                         if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                         if ($phone && strlen($phone) >= 10)
-                            $this->evolution_queue->add($phone, $msg_parsed);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerC->imagem_url ?? null]);
                     }
                 }
             }
@@ -438,7 +438,7 @@ class Viagens extends MY_Controller
                         $phone = !empty($celular) ? $celular : $telefone;
                         if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                         if ($phone && strlen($phone) >= 10)
-                            $this->evolution_queue->add($phone, $msg_parsed);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerU->imagem_url ?? null]);
                     }
                 }
             }
@@ -502,7 +502,7 @@ class Viagens extends MY_Controller
                 $phone = !empty($celular) ? $celular : $telefone;
                 if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                 if ($phone && strlen($phone) >= 10) {
-                    $this->evolution_queue->add($phone, $msg_parsed);
+                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerClient->imagem_url ?? null]);
                 }
             }
 
@@ -528,7 +528,7 @@ class Viagens extends MY_Controller
                             $phone = !empty($celular) ? $celular : $telefone;
                             if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                             if ($phone && strlen($phone) >= 10)
-                                $this->evolution_queue->add($phone, $msg_parsed);
+                                $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerUser->imagem_url ?? null]);
                         }
                     }
                 }
@@ -679,7 +679,7 @@ class Viagens extends MY_Controller
                     $phone = !empty($celular) ? $celular : $telefone;
                     if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                     if ($phone && strlen($phone) >= 10) {
-                        $this->evolution_queue->add($phone, $msg_parsed);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerClient->imagem_url ?? null]);
                     }
                 }
 
@@ -705,7 +705,7 @@ class Viagens extends MY_Controller
                                 $phone = !empty($celular) ? $celular : $telefone;
                                 if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                                 if ($phone && strlen($phone) >= 10)
-                                    $this->evolution_queue->add($phone, $msg_parsed);
+                                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerUser->imagem_url ?? null]);
                             }
                         }
                     }
@@ -778,7 +778,7 @@ class Viagens extends MY_Controller
                         $phone = !empty($celular) ? $celular : $telefone;
                         if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                         if ($phone && strlen($phone) >= 10) {
-                            $this->evolution_queue->add($phone, $msg_parsed);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
                         }
                     }
                 }
@@ -816,7 +816,7 @@ class Viagens extends MY_Controller
                     $phone = !empty($celular) ? $celular : $telefone;
                     if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                     if ($phone && strlen($phone) >= 10) {
-                        $this->evolution_queue->add($phone, $msg_parsed);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
                     }
                 }
             }

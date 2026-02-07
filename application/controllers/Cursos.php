@@ -341,7 +341,7 @@ class Cursos extends MY_Controller
                                 $phone = !empty($celular) ? $celular : $telefone;
                                 if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                                 if ($phone && strlen($phone) >= 10)
-                                    $this->evolution_queue->add($phone, $msg_parsed);
+                                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
                             }
                         }
                         // --------------------------------------------------------
@@ -389,7 +389,7 @@ class Cursos extends MY_Controller
                     $phone = !empty($celular) ? $celular : $telefone;
                     if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                     if ($phone && strlen($phone) >= 10) {
-                        $this->evolution_queue->add($phone, $msg_parsed);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
                     }
                 }
             }

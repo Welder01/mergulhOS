@@ -83,7 +83,7 @@ class Cobrancas extends MY_Controller
                         $this->load->library('evolution_queue');
                         $phone = !empty($client->celular) ? $client->celular : (!empty($client->telefone) ? $client->telefone : '');
                         if ($phone) {
-                            $this->evolution_queue->add($phone, $msg_parsed);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
                         }
                     }
                 }
@@ -150,7 +150,7 @@ class Cobrancas extends MY_Controller
                         $this->load->library('evolution_queue');
                         $phone = !empty($client->celular) ? $client->celular : (!empty($client->telefone) ? $client->telefone : '');
                         if ($phone)
-                            $this->evolution_queue->add($phone, $msg_parsed);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
                     }
                 }
             }
@@ -210,7 +210,7 @@ class Cobrancas extends MY_Controller
                         $this->load->library('evolution_queue');
                         $phone = !empty($client->celular) ? $client->celular : (!empty($client->telefone) ? $client->telefone : '');
                         if ($phone)
-                            $this->evolution_queue->add($phone, $msg_parsed);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
                     }
                 }
             }
@@ -243,7 +243,7 @@ class Cobrancas extends MY_Controller
                         $this->load->library('evolution_queue');
                         $phone = !empty($client->celular) ? $client->celular : (!empty($client->telefone) ? $client->telefone : '');
                         if ($phone)
-                            $this->evolution_queue->add($phone, $msg_parsed);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
                     }
                 }
             }
