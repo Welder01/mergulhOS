@@ -16,6 +16,16 @@ class Evolution_cron extends CI_Controller
      */
     public function process($limit = 10)
     {
+        $this->load->library('evolution_queue');
+        $result = $this->evolution_queue->process($limit);
+
+        if ($this->input->is_cli_request()) {
+            echo "Processed: " . $result['processed'] . "\n";
+            echo "Failed: " . $result['failed'] . "\n";
+        } else {
+            header('Content-Type: application/json');
+            echo json_encode($result);
+        }
     }
 
     /**

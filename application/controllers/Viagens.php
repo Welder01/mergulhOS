@@ -257,6 +257,9 @@ class Viagens extends MY_Controller
         $this->data['custos'] = $this->viagem_custos_model->getByViagem($id);
         $this->data['cursos_associados'] = $this->viagem_cursos_model->getByViagem($id);
         $this->data['emitente'] = $this->mapos_model->getEmitente();
+        if ($this->data['emitente']) {
+            $this->data['emitente']->url_logo = FCPATH . 'assets/uploads/' . basename($this->data['emitente']->url_logo);
+        }
 
         $this->load->helper('mpdf');
         $html = $this->load->view('viagens/imprimirViagem', $this->data, true);
@@ -374,6 +377,9 @@ class Viagens extends MY_Controller
         $this->data['resumoMergulhadores'] = $resumoMergulhadores;
         $this->data['resumoInstrutores'] = $resumoInstrutores;
         $this->data['emitente'] = $this->mapos_model->getEmitente();
+        if ($this->data['emitente']) {
+            $this->data['emitente']->url_logo = FCPATH . 'assets/uploads/' . basename($this->data['emitente']->url_logo);
+        }
 
         $this->load->helper('mpdf');
         $html = $this->load->view('viagens/imprimirOperacao', $this->data, true);
@@ -480,7 +486,9 @@ class Viagens extends MY_Controller
                 ]);
                 $this->load->library('evolution_queue');
                 $phone = $cliente->celular ?: $cliente->telefone;
-                if ($phone) {
+                $phone = preg_replace('/[^0-9]/', '', $phone);
+                if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                if ($phone && strlen($phone) >= 10) {
                     $this->evolution_queue->add($phone, $msg_parsed);
                 }
             }
@@ -503,7 +511,9 @@ class Viagens extends MY_Controller
                                 'usuario' => $u // Context for the notified user
                             ]);
                             $phone = $u->celular ?: $u->telefone;
-                            if ($phone)
+                            $phone = preg_replace('/[^0-9]/', '', $phone);
+                            if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                            if ($phone && strlen($phone) >= 10)
                                 $this->evolution_queue->add($phone, $msg_parsed);
                         }
                     }
@@ -651,7 +661,9 @@ class Viagens extends MY_Controller
                     ]);
                     $this->load->library('evolution_queue');
                     $phone = $cliente->celular ?: $cliente->telefone;
-                    if ($phone) {
+                    $phone = preg_replace('/[^0-9]/', '', $phone);
+                    if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                    if ($phone && strlen($phone) >= 10) {
                         $this->evolution_queue->add($phone, $msg_parsed);
                     }
                 }
@@ -674,7 +686,9 @@ class Viagens extends MY_Controller
                                     'usuario' => $u // The recipient context
                                 ]);
                                 $phone = $u->celular ?: $u->telefone;
-                                if ($phone)
+                                $phone = preg_replace('/[^0-9]/', '', $phone);
+                                if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                                if ($phone && strlen($phone) >= 10)
                                     $this->evolution_queue->add($phone, $msg_parsed);
                             }
                         }

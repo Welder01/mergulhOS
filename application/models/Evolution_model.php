@@ -231,6 +231,16 @@ class Evolution_model extends CI_Model
         if (isset($data['treino']) && is_object($data['treino'])) {
             // If getAgendamentoById was used, it already has 'nome_instrutor'.
             // We ensure it's available as 'instrutor' for convenience if desired, but dynamic parser handles 'nome_instrutor'
+            if (isset($data['treino']->data_hora_inicio)) {
+                $data['treino']->data_agendamento = date('d/m/Y H:i', strtotime($data['treino']->data_hora_inicio));
+                $data['treino']->data_inicio_formatada = date('d/m/Y H:i', strtotime($data['treino']->data_hora_inicio));
+            }
+            
+            if (!isset($data['treino']->nome_instrutor) && !empty($data['treino']->instrutor_id)) {
+                if (!isset($this->usuarios_model)) $this->load->model('usuarios_model');
+                $u = $this->usuarios_model->getById($data['treino']->instrutor_id);
+                $data['treino']->nome_instrutor = $u ? $u->nome : 'Instrutor';
+            }
         }
 
         // Enrich PAYMENT (Lançamento)
