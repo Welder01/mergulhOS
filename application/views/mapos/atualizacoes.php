@@ -9,6 +9,23 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
+                    <strong>v4.53.7 - Melhorias de Interface e Usabilidade</strong><br>
+                    Ajustes no menu lateral e alertas na área do cliente.
+                </div>
+
+                <h3>Melhorias de Interface</h3>
+                <hr>
+                <h4>1. Menu Lateral (Sidebar)</h4>
+                <p>Correção na rolagem do menu lateral em todo o sistema (Painel Administrativo e Área do Cliente). O menu agora possui rolagem independente, permitindo visualizar todos os itens mesmo em telas menores sem necessidade de ajustar o zoom.</p>
+
+                <h4>2. Área do Cliente</h4>
+                <ul>
+                    <li><strong>Alerta de Perfil:</strong> Novo aviso visual destacado (piscante) quando o perfil está incompleto, listando pendências específicas (Dados Pessoais, Saúde, Atestado) com links diretos para correção.</li>
+                    <li><strong>Ícones:</strong> Padronização do tamanho dos ícones no cabeçalho.</li>
+                </ul>
+                <br>
+
+                <div class="alert alert-success">
                     <strong>v4.53.6 - Correção no Envio de Mídia via Cron e Gatilhos</strong><br>
                     Correções críticas para garantir o envio de imagens e arquivos nas notificações automáticas.
                 </div>

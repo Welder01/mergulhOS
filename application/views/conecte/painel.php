@@ -1,3 +1,13 @@
+<style>
+    @keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+    .alert-blink {
+        animation: pulse-red 2s infinite;
+    }
+</style>
 <!-- Action boxes -->
 <ul class="cardBox" style="margin-bottom: 20px;">
     <li class="card">
@@ -77,16 +87,8 @@
 <div class="span12" style="margin-left: 0">
 
 
-    <?php if ($alerta_perfil_incompleto): ?>
-        <div class="modern-alert alert-warning">
-            <i class="fas fa-exclamation-triangle alert-icon"></i>
-            <div>
-                <strong>Atenção!</strong> Seu perfil de saúde e equipamentos está incompleto. Para garantir que tudo esteja
-                pronto para sua próxima viagem, por favor,
-                <a href="<?= site_url('mine/conta?tab=saude') ?>"
-                    style="font-weight: bold; text-decoration: underline;">clique aqui para atualizar suas informações</a>.
-            </div>
-        </div>
+    <?php if (isset($html_alerta_perfil) && !empty($html_alerta_perfil)): ?>
+        <?= $html_alerta_perfil ?>
     <?php endif; ?>
 
     <div class="widget-box">

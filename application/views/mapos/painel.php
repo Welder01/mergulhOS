@@ -17,6 +17,30 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
 
+<style>
+    /* Correção para o menu lateral permitir rolagem em telas menores */
+    #sidebar {
+        position: fixed !important;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 220px !important; /* Garante a largura do menu */
+        overflow-y: auto !important;
+        padding-top: 60px !important;
+        padding-bottom: 150px !important;
+        z-index: 99; /* Garante que fique acima do conteúdo */
+        box-sizing: border-box !important; /* Garante que o padding não aumente a altura total além de 100% */
+    }
+    /* Estilização da barra de rolagem */
+    #sidebar::-webkit-scrollbar {
+        width: 5px;
+    }
+    #sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.2);
+        border-radius: 3px;
+    }
+</style>
+
 <!-- New Bem-vindos -->
 <div id="content-bemv">
     <div class="bemv">Dashboard</div>

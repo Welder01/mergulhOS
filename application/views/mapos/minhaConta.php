@@ -91,7 +91,27 @@
             padding: 0;
         }
     }
-    
+
+    /* Correção para o menu lateral permitir rolagem em telas menores */
+    #sidebar {
+        position: fixed !important;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 220px !important;
+        overflow-y: auto !important;
+        padding-top: 60px !important;
+        padding-bottom: 150px !important;
+        z-index: 99;
+        box-sizing: border-box !important;
+    }
+    #sidebar::-webkit-scrollbar {
+        width: 5px;
+    }
+    #sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.2);
+        border-radius: 3px;
+    }
 
 </style>
 <div class="span6" style="margin-left: 0">

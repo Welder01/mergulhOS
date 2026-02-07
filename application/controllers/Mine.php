@@ -306,6 +306,8 @@ class Mine extends MY_Controller
 
         // Verifica se o cliente está em alguma viagem futura e se o perfil está incompleto
         $this->data['alerta_perfil_incompleto'] = false;
+        $this->data['html_alerta_perfil'] = '';
+
         $viagensCliente = $this->viagens_model->getViagensByCliente($this->session->userdata('cliente_id'));
         $temViagemFutura = false;
         foreach ($viagensCliente as $viagem) {
@@ -317,18 +319,61 @@ class Mine extends MY_Controller
 
         if ($temViagemFutura) {
             $cliente = $this->Conecte_model->getDados();
+            
+            // Definição dos campos obrigatórios com rótulos e abas correspondentes
             $camposObrigatorios = [
-                'altura',
-                'peso',
-                'contato_emergencia_nome',
-                'contato_emergencia_telefone',
-                'atestado_medico_validade'
+                'altura' => ['label' => 'Altura', 'tab' => 'pessoal'],
+                'peso' => ['label' => 'Peso', 'tab' => 'pessoal'],
+                'contato_emergencia_nome' => ['label' => 'Nome do Contato de Emergência', 'tab' => 'saude'],
+                'contato_emergencia_telefone' => ['label' => 'Telefone do Contato de Emergência', 'tab' => 'saude'],
+                'atestado_medico_validade' => ['label' => 'Atestado Médico', 'tab' => 'saude']
             ];
-            foreach ($camposObrigatorios as $campo) {
+            
+            $pendencias = [];
+            foreach ($camposObrigatorios as $campo => $info) {
                 if (empty($cliente->$campo)) {
-                    $this->data['alerta_perfil_incompleto'] = true;
-                    break;
+                    $pendencias[] = $info;
+                } elseif ($campo == 'atestado_medico_validade') {
+                    // Verifica se o atestado está vencido
+                    if (strtotime($cliente->$campo) < strtotime(date('Y-m-d'))) {
+                        $info['label'] .= ' (Vencido)';
+                        $pendencias[] = $info;
+                    }
                 }
+            }
+
+            if (!empty($pendencias)) {
+                $this->data['alerta_perfil_incompleto'] = true;
+                
+                // Constrói a mensagem HTML detalhada e chamativa
+                $html = '<div class="alert alert-danger alert-blink" style="border: 1px solid #f5c6cb; background-color: #f8d7da; color: #721c24; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">';
+                $html .= '<button type="button" class="close" data-dismiss="alert" style="color: #721c24; opacity: 0.8;">&times;</button>';
+                $html .= '<h4 style="margin-top: 0; margin-bottom: 15px; font-weight: bold; font-size: 1.2em;"><i class="fas fa-exclamation-circle" style="font-size: 1.3em; margin-right: 5px;"></i> Atenção! Perfil Incompleto</h4>';
+                $html .= '<p style="margin-bottom: 15px; font-size: 1.05em;">Seu perfil de saúde e equipamentos precisa de atualização para garantir sua segurança na próxima viagem.</p>';
+                
+                $html .= '<div style="background: rgba(255,255,255,0.5); padding: 15px; border-radius: 5px; margin-bottom: 15px;">';
+                $html .= '<p style="font-weight: bold; margin-bottom: 5px;">Itens que precisam de sua atenção:</p>';
+                $html .= '<ul style="margin-bottom: 0; padding-left: 20px;">';
+                
+                $tabsToLink = [];
+                foreach ($pendencias as $p) {
+                    $html .= '<li>' . $p['label'] . '</li>';
+                    $tabsToLink[$p['tab']] = true;
+                }
+                $html .= '</ul>';
+                $html .= '</div>';
+                
+                $html .= '<div style="display: flex; gap: 10px; flex-wrap: wrap;">';
+                if (isset($tabsToLink['pessoal'])) {
+                    $html .= '<a href="'.base_url('index.php/mine/conta?tab=pessoal').'" class="btn btn-danger" style="text-decoration: none; font-weight: bold;"><i class="fas fa-user-edit"></i> Atualizar Dados Pessoais</a> ';
+                }
+                if (isset($tabsToLink['saude'])) {
+                    $html .= '<a href="'.base_url('index.php/mine/conta?tab=saude').'" class="btn btn-danger" style="text-decoration: none; font-weight: bold;"><i class="fas fa-notes-medical"></i> Atualizar Saúde e Segurança</a>';
+                }
+                $html .= '</div>';
+                $html .= '</div>';
+                
+                $this->data['html_alerta_perfil'] = $html;
             }
         }
 
