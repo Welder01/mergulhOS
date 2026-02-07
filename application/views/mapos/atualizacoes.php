@@ -9,6 +9,20 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
+                    <strong>v4.53.4 - Correção no Cron Job da Evolution API</strong><br>
+                    Ajuste no comando do Cron Job para processamento da fila de mensagens.
+                </div>
+
+                <h3>Correções e Melhorias</h3>
+                <hr>
+                <h4>1. Automação (Cron Job)</h4>
+                <ul>
+                    <li><strong>Comando Atualizado:</strong> O comando para execução via Cron Job foi atualizado para utilizar o controlador <code>evolution_cron</code> via CLI, garantindo estabilidade e evitando problemas de autenticação/sessão.</li>
+                    <li><strong>Instruções:</strong> As instruções de configuração foram atualizadas na tela de gerenciamento da Evolution API.</li>
+                </ul>
+                <br>
+
+                <div class="alert alert-success">
                     <strong>v4.53.3 - Melhorias na Integração Evolution API</strong><br>
                     Novas funcionalidades para envio de mídia, controle da fila e tratamento de mensagens.
                 </div>

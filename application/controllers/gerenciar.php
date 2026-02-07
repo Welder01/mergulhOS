@@ -9,6 +9,14 @@
             <p>Certifique-se de que a <strong>URL da API</strong> e a <strong>Chave (apikey)</strong> estejam salvas corretamente em <strong>Configurações -> Sistema</strong>.</p>
         </div>
 
+        <div class="span12 alert alert-info" style="margin-left: 0">
+            <h4>Automação da Fila de Mensagens (Cron Job)</h4>
+            <p>Para que as mensagens sejam enviadas automaticamente, configure uma tarefa agendada (Cron Job) no seu painel de hospedagem.</p>
+            <p><strong>Comando para Execução:</strong><br>
+            <code>/usr/bin/php8.3 /home/mergulhar/web/bhdivers.com.br/public_html/index.php evolution_cron process</code></p>
+            <p><strong>Frequência:</strong> A cada minuto (<code>* * * * *</code>)</p>
+        </div>
+
         <div class="span12" style="margin-left: 0">
             <form id="formVerificar" class="form-horizontal">
                 <div class="control-group">
