@@ -203,7 +203,7 @@ class Evolution_model extends CI_Model
             if ($instrutores) {
                 $names = [];
                 foreach ($instrutores as $inst) {
-                    $names[] = $inst->usuario_nome; // Assuming model returns joined name
+                    $names[] = isset($inst->nome_instrutor) ? $inst->nome_instrutor : (isset($inst->usuario_nome) ? $inst->usuario_nome : 'Instrutor');
                 }
                 $data['curso']->lista_instrutores = implode(', ', $names);
                 // Also attach first instructor generic
@@ -220,7 +220,7 @@ class Evolution_model extends CI_Model
             if ($instrutores) {
                 $names = [];
                 foreach ($instrutores as $inst) {
-                    $names[] = $inst->usuario_nome;
+                    $names[] = isset($inst->nome_instrutor) ? $inst->nome_instrutor : (isset($inst->usuario_nome) ? $inst->usuario_nome : 'Instrutor');
                 }
                 $data['viagem']->lista_instrutores = implode(', ', $names);
                 $data['viagem']->nome_instrutor = isset($names[0]) ? $names[0] : '';

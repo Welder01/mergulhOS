@@ -13,6 +13,7 @@ class Viagens extends MY_Controller
         $this->load->model('cursos_model');
         $this->load->model('mapos_model');
         $this->load->model('certificacao_mergulhador_model');
+        $this->load->model('usuarios_model');
         $this->data['menuViagens'] = 'viagens';
     }
 
@@ -634,7 +635,9 @@ class Viagens extends MY_Controller
 
             $resultado = $this->viagens_model->remover_cliente($id);
             if ($resultado['success']) {
-                $this->log_auditoria('Removeu o cliente "' . $cliente_viagem->nomeCliente . '" da viagem "' . $viagem->nome_viagem . '"');
+                $nomeCliente = $cliente ? $cliente->nomeCliente : 'Desconhecido';
+                $nomeViagem = $viagem ? $viagem->nome_viagem : 'Desconhecida';
+                $this->log_auditoria('Removeu o cliente "' . $nomeCliente . '" da viagem "' . $nomeViagem . '"');
 
                 // --- Evolution API Trigger (viagem_cliente_removido) ---
                 $this->load->model('evolution_model');
