@@ -9,6 +9,20 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
+                    <strong>v4.53.6 - Correção no Envio de Mídia via Cron e Gatilhos</strong><br>
+                    Correções críticas para garantir o envio de imagens e arquivos nas notificações automáticas.
+                </div>
+
+                <h3>Correções e Melhorias</h3>
+                <hr>
+                <h4>1. Envio de Mídia via Cron Job</h4>
+                <p>Corrigido o processamento da fila de mensagens via tarefa agendada (Cron). O sistema agora identifica corretamente arquivos locais e URLs de mídia mesmo quando executado via linha de comando, garantindo que anexos sejam enviados.</p>
+
+                <h4>2. Gatilhos de Eventos Automáticos</h4>
+                <p>Todos os gatilhos de notificação (Clientes, OS, Financeiro, Treinos, Viagens, Cursos, etc.) foram atualizados para carregar corretamente a URL da imagem/arquivo configurada no modelo de mensagem, resolvendo o problema onde apenas o texto era enviado.</p>
+                <br>
+
+                <div class="alert alert-success">
                     <strong>v4.53.5 - Segurança na Exclusão de Clientes</strong><br>
                     Melhoria no alerta de exclusão para detalhar impacto da remoção de clientes.
                 </div>

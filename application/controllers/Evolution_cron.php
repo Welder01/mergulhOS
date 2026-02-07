@@ -78,17 +78,20 @@ class Evolution_cron extends CI_Controller
                 } 
                 // 2. Tenta identificar se é local pela URL
                 else {
-                    if (strpos($mediaUrl, base_url()) === 0) {
-                        $localPath = FCPATH . substr($mediaUrl, strlen(base_url()));
-                    } elseif (strpos($mediaUrl, '/assets/') !== false) {
-                        $pathParts = explode('/assets/', $mediaUrl, 2);
-                        if (isset($pathParts[1])) {
-                            $localPath = FCPATH . 'assets/' . $pathParts[1];
-                        }
-                    } elseif (strpos($mediaUrl, '/application/') !== false) {
-                        $pathParts = explode('/application/', $mediaUrl, 2);
-                        if (isset($pathParts[1])) {
-                            $localPath = FCPATH . 'application/' . $pathParts[1];
+                    $parsedUrl = parse_url($mediaUrl);
+                    if (isset($parsedUrl['path'])) {
+                        $relativePath = ltrim($parsedUrl['path'], '/');
+                        
+                        // Tenta encontrar o arquivo direto no FCPATH
+                        if (file_exists(FCPATH . $relativePath)) {
+                            $localPath = FCPATH . $relativePath;
+                        } 
+                        // Tenta remover o primeiro segmento (ex: subpasta do site)
+                        else {
+                            $pathParts = explode('/', $relativePath, 2);
+                            if (count($pathParts) > 1 && file_exists(FCPATH . $pathParts[1])) {
+                                $localPath = FCPATH . $pathParts[1];
+                            }
                         }
                     }
                 }
@@ -243,6 +246,8 @@ class Evolution_cron extends CI_Controller
             if (!empty($aniversariantes)) {
                 $this->load->library('evolution_queue');
                 foreach ($aniversariantes as $cliente) {
+                    $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                    $mediaUrl = $mensagem->imagem_url ?? null;
                     $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, ['cliente' => $cliente]);
                     $phone = $cliente->celular ?: $cliente->telefone;
 
@@ -250,7 +255,7 @@ class Evolution_cron extends CI_Controller
                         // Avoid duplicates if necessary, but for daily cron running once it's fine.
                         // Optimization: Check if msg already sent today?
                         // For now, assume cron runs once a day.
-                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                         echo "Queued birthday msg for: {$cliente->nomeCliente}\n";
                     }
                 }
@@ -277,13 +282,15 @@ class Evolution_cron extends CI_Controller
                 foreach ($cobrancas as $cob) {
                     $cliente = $this->clientes_model->getById($cob->clientes_id);
                     if ($cliente) {
+                        $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
                             'cliente' => $cliente,
                             'cobranca' => $cob
                         ]);
                         $phone = $cliente->celular ?: $cliente->telefone;
                         if ($phone) {
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                             echo "Queued payment due msg for ID: {$cob->idCobranca}\n";
                         }
                     }
@@ -326,13 +333,15 @@ class Evolution_cron extends CI_Controller
                 foreach ($agendamentos as $ag) {
                     $cliente = $this->clientes_model->getById($ag->cliente_id);
                     if ($cliente) {
+                        $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
                             'cliente' => $cliente,
                             'treino' => $ag
                         ]);
                         $phone = $cliente->celular ?: $cliente->telefone;
                         if ($phone) {
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                             echo "Queued reminder for training ID: {$ag->id}\n";
                         }
                     }

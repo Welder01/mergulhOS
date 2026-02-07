@@ -258,6 +258,8 @@ class Treinos extends MY_Controller
                 $cliente = $this->clientes_model->getById($agendamento->cliente_id);
 
                 if ($cliente) {
+                    $mensagem = $this->evolution_model->getById($triggerCliente->mensagem_id);
+                    $mediaUrl = $mensagem->imagem_url ?? null;
                     $msg_parsed = $this->evolution_model->parseMessage($triggerCliente->mensagem, [
                         'cliente' => $cliente,
                         'treino' => $agendamento // $agendamento contains joined fields
@@ -265,7 +267,7 @@ class Treinos extends MY_Controller
                     $this->load->library('evolution_queue');
                     $phone = $cliente->celular ?: $cliente->telefone;
                     if ($phone) {
-                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerCliente->imagem_url ?? null]);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                     }
                 }
             }
@@ -277,6 +279,8 @@ class Treinos extends MY_Controller
                 $instrutor = $this->usuarios_model->getById($agendamento->instrutor_id);
 
                 if ($instrutor) {
+                    $mensagem = $this->evolution_model->getById($triggerUsuario->mensagem_id);
+                    $mediaUrl = $mensagem->imagem_url ?? null;
                     $msg_parsed = $this->evolution_model->parseMessage($triggerUsuario->mensagem, [
                         'usuario' => $instrutor,
                         'treino' => $agendamento,
@@ -285,7 +289,7 @@ class Treinos extends MY_Controller
                     $this->load->library('evolution_queue');
                     $phone = $instrutor->celular ?: $instrutor->telefone;
                     if ($phone) {
-                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerUsuario->imagem_url ?? null]);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                     }
                 }
             }

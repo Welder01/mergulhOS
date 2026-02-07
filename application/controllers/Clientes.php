@@ -109,11 +109,13 @@ class Clientes extends MY_Controller
                     if ($trigger && $trigger->status == 1 && $trigger->mensagem_id) {
                         $newId = $this->db->insert_id();
                         $msg_data = array_merge($data, ['id' => $newId]);
+                        $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, $msg_data);
                         $this->load->library('evolution_queue');
                         $phone = !empty($data['celular']) ? $data['celular'] : (!empty($data['telefone']) ? $data['telefone'] : '');
                         if ($phone) {
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                         }
                     }
 
@@ -292,11 +294,13 @@ class Clientes extends MY_Controller
                     $trigger = $this->evolution_model->getEventTrigger('cliente_editado');
                     if ($trigger && $trigger->status == 1 && $trigger->mensagem_id) {
                         $msg_data = array_merge($data, ['id' => $this->input->post('idClientes')]);
+                        $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, $msg_data);
                         $this->load->library('evolution_queue');
                         $phone = !empty($data['celular']) ? $data['celular'] : (!empty($data['telefone']) ? $data['telefone'] : '');
                         if ($phone) {
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                         }
                     }
 
@@ -437,11 +441,13 @@ class Clientes extends MY_Controller
             if ($cliente) {
                 // For 'excluido', we might want to notify the Admin or generic number,
                 // but if the user wants to notify the client BYE BYE, we do this:
+                $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                $mediaUrl = $mensagem->imagem_url ?? null;
                 $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, (array) $cliente);
                 $this->load->library('evolution_queue');
                 $phone = !empty($cliente->celular) ? $cliente->celular : (!empty($cliente->telefone) ? $cliente->telefone : '');
                 if ($phone) {
-                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                 }
             }
         }

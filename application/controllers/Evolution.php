@@ -958,11 +958,126 @@ class Evolution extends MY_Controller
     }
     public function process_queue()
     {
-        // This method is intended to be called by CRON job
-        // curl http://your-domain.com/index.php/evolution/process_queue
+        // Configurações da API
+        $apiUrl = $this->mapos_model->get_ci_config('evolution_api_url');
+        $apiKey = $this->mapos_model->get_ci_config('evolution_api_key');
+        $instanceName = $this->mapos_model->get_ci_config('evolution_api_instance');
 
-        $this->load->library('evolution_queue');
-        $result = $this->evolution_queue->process();
+        if (empty($apiUrl) || empty($apiKey) || empty($instanceName)) {
+            $result = ['processed' => 0, 'failed' => 0, 'error' => 'Configurações incompletas'];
+            if ($this->input->is_cli_request()) echo "Configurações da API incompletas.\n";
+            else echo json_encode($result);
+            return;
+        }
+
+        // Busca itens da fila
+        $this->db->where_in('status', ['pending', 'error']);
+        $this->db->order_by('id', 'ASC');
+        $this->db->limit(10);
+        $queue = $this->db->get('evolution_queue')->result();
+
+        $processed = 0;
+        $failed = 0;
+
+        foreach ($queue as $item) {
+            $mediaUrl = $item->media_url;
+            if (empty($mediaUrl) && !empty($item->options)) {
+                $opts = json_decode($item->options, true);
+                if (isset($opts['media_url'])) $mediaUrl = $opts['media_url'];
+            }
+
+            $cleanMessage = $this->cleanMessage($item->message);
+            $body = [];
+            $url = '';
+
+            if (!empty($mediaUrl)) {
+                $url = rtrim($apiUrl, '/') . "/message/sendMedia/{$instanceName}";
+                $fileName = basename($mediaUrl);
+                if (strpos($fileName, '?') !== false) $fileName = explode('?', $fileName)[0];
+
+                $localPath = '';
+                if (strpos($mediaUrl, 'http') !== 0) {
+                    $localPath = $mediaUrl;
+                    $cleanPath = ltrim($mediaUrl, '/\\');
+                    if (!file_exists($localPath) && file_exists(FCPATH . $cleanPath)) $localPath = FCPATH . $cleanPath;
+                } else {
+                    $parsedUrl = parse_url($mediaUrl);
+                    if (isset($parsedUrl['path'])) {
+                        $relativePath = ltrim($parsedUrl['path'], '/');
+                        if (file_exists(FCPATH . $relativePath)) {
+                            $localPath = FCPATH . $relativePath;
+                        } else {
+                            $pathParts = explode('/', $relativePath, 2);
+                            if (count($pathParts) > 1 && file_exists(FCPATH . $pathParts[1])) {
+                                $localPath = FCPATH . $pathParts[1];
+                            }
+                        }
+                    }
+                }
+
+                if ($localPath) {
+                    $localPath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $localPath);
+                    $localPath = explode('?', $localPath)[0];
+                    if (file_exists($localPath)) {
+                        $fileData = file_get_contents($localPath);
+                        $base64 = base64_encode($fileData);
+                        $mime = mime_content_type($localPath);
+                        if (!$mime) $mime = 'application/octet-stream';
+                        $mediaUrl = $base64;
+                    }
+                }
+
+                $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                $mediaType = 'document';
+                $mimeType = 'application/octet-stream';
+                $mimeTypes = [
+                    'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif', 'webp' => 'image/webp',
+                    'mp4' => 'video/mp4', 'avi' => 'video/x-msvideo', 'pdf' => 'application/pdf', 'doc' => 'application/msword', 
+                    'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                ];
+                if (isset($mimeTypes[$extension])) $mimeType = $mimeTypes[$extension];
+                if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) $mediaType = 'image';
+                elseif (in_array($extension, ['mp4', 'avi'])) $mediaType = 'video';
+
+                $body = [
+                    "number" => $item->phone_number,
+                    "mediatype" => $mediaType,
+                    "mimetype" => $mimeType,
+                    "caption" => $cleanMessage,
+                    "media" => $mediaUrl,
+                    "fileName" => $fileName,
+                    "delay" => 1200
+                ];
+            } else {
+                $url = rtrim($apiUrl, '/') . "/message/sendText/{$instanceName}";
+                $body = ["number" => $item->phone_number, "options" => ["delay" => 1200, "presence" => "composing"], "text" => $cleanMessage];
+            }
+
+            $curl = curl_init();
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_POSTFIELDS => json_encode($body, JSON_UNESCAPED_SLASHES),
+                CURLOPT_HTTPHEADER => ["apikey: {$apiKey}", "Content-Type: application/json"],
+            ]);
+            $response = curl_exec($curl);
+            $err = curl_error($curl);
+            $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            curl_close($curl);
+
+            $this->db->insert('evolution_logs', ['timestamp' => date('Y-m-d H:i:s'), 'phone_number' => $item->phone_number, 'request_payload' => json_encode($body), 'response_body' => $response, 'response_code' => $httpCode, 'curl_error' => $err]);
+
+            if ($err || ($httpCode < 200 || $httpCode >= 300)) {
+                $failed++;
+                $this->db->set('attempts', 'attempts+1', false)->set('last_error', $err ? "cURL: $err" : "API: $response")->where('id', $item->id)->update('evolution_queue');
+            } else {
+                $processed++;
+                $this->db->delete('evolution_queue', ['id' => $item->id]);
+            }
+        }
+        
+        $result = ['processed' => $processed, 'failed' => $failed];
 
         if ($this->input->is_cli_request()) {
             echo "Processed: " . $result['processed'] . "\n";

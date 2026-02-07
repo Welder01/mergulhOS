@@ -280,6 +280,8 @@ class Os extends MY_Controller
                 $oldUser = $this->usuarios_model->getById($osAtual->usuarios_id);
                 $triggerRem = $this->evolution_model->getEventTrigger('os_usuario_removido');
                 if ($triggerRem && $triggerRem->status == 1 && $oldUser) {
+                    $mensagem = $this->evolution_model->getById($triggerRem->mensagem_id);
+                    $mediaUrl = $mensagem->imagem_url ?? null;
                     $msg_parsed = $this->evolution_model->parseMessage($triggerRem->mensagem, [
                         'os' => $osAtual,
                         'usuario' => $oldUser
@@ -287,7 +289,7 @@ class Os extends MY_Controller
                     $this->load->library('evolution_queue');
                     $phone = $oldUser->celular ?: $oldUser->telefone;
                     if ($phone)
-                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerRem->imagem_url ?? null]);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                 }
 
                 // New User Added
@@ -296,6 +298,8 @@ class Os extends MY_Controller
                 if ($triggerAdd && $triggerAdd->status == 1 && $newUser) {
                     // Update OS object to reflect new user for parsing context if needed
                     $osAtual->usuarios_id = $data['usuarios_id'];
+                    $mensagem = $this->evolution_model->getById($triggerAdd->mensagem_id);
+                    $mediaUrl = $mensagem->imagem_url ?? null;
                     $msg_parsed = $this->evolution_model->parseMessage($triggerAdd->mensagem, [
                         'os' => $osAtual,
                         'usuario' => $newUser
@@ -303,7 +307,7 @@ class Os extends MY_Controller
                     $this->load->library('evolution_queue');
                     $phone = $newUser->celular ?: $newUser->telefone;
                     if ($phone)
-                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerAdd->imagem_url ?? null]);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                 }
             }
             // ---------------------------------------------------------------
@@ -331,6 +335,8 @@ class Os extends MY_Controller
                     // 1. Client Notification
                     $triggerClient = $this->evolution_model->getEventTrigger('os_status_alterado_cliente');
                     if ($triggerClient && $triggerClient->status == 1 && $clienteOs) {
+                        $mensagem = $this->evolution_model->getById($triggerClient->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($triggerClient->mensagem, [
                             'os' => $osNovo,
                             'cliente' => $clienteOs,
@@ -339,13 +345,15 @@ class Os extends MY_Controller
                         $this->load->library('evolution_queue');
                         $phone = $clienteOs->celular ?: $clienteOs->telefone;
                         if ($phone) {
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerClient->imagem_url ?? null]);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                         }
                     }
 
                     // 2. User Notification (Tech)
                     $triggerUser = $this->evolution_model->getEventTrigger('os_status_alterado_usuario');
                     if ($triggerUser && $triggerUser->status == 1 && $tecnicoOs) {
+                        $mensagem = $this->evolution_model->getById($triggerUser->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($triggerUser->mensagem, [
                             'os' => $osNovo,
                             'cliente' => $clienteOs,
@@ -354,7 +362,7 @@ class Os extends MY_Controller
                         $this->load->library('evolution_queue');
                         $phone = $tecnicoOs->celular ?: $tecnicoOs->telefone;
                         if ($phone) {
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerUser->imagem_url ?? null]);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                         }
                     }
                 }

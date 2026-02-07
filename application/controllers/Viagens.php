@@ -191,13 +191,15 @@ class Viagens extends MY_Controller
                 foreach ($clientesViagem as $cv) {
                     $cliData = $this->clientes_model->getById($cv->cliente_id);
                     if ($cliData) {
+                        $mensagem = $this->evolution_model->getById($triggerC->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($triggerC->mensagem, ['viagem' => $viagem, 'cliente' => $cliData]);
                         $celular = preg_replace('/[^0-9]/', '', $cliData->celular);
                         $telefone = preg_replace('/[^0-9]/', '', $cliData->telefone);
                         $phone = !empty($celular) ? $celular : $telefone;
                         if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                         if ($phone && strlen($phone) >= 10)
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerC->imagem_url ?? null]);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                     }
                 }
             }
@@ -208,13 +210,15 @@ class Viagens extends MY_Controller
                 foreach ($instrutores as $inst) {
                     $usrData = $this->usuarios_model->getById($inst->usuario_id);
                     if ($usrData) {
+                        $mensagem = $this->evolution_model->getById($triggerU->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($triggerU->mensagem, ['viagem' => $viagem, 'usuario' => $usrData]);
                         $celular = preg_replace('/[^0-9]/', '', $usrData->celular);
                         $telefone = preg_replace('/[^0-9]/', '', $usrData->telefone);
                         $phone = !empty($celular) ? $celular : $telefone;
                         if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                         if ($phone && strlen($phone) >= 10)
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerU->imagem_url ?? null]);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                     }
                 }
             }
@@ -414,13 +418,15 @@ class Viagens extends MY_Controller
                 foreach ($clientesViagem as $cv) {
                     $cliData = $this->clientes_model->getById($cv->cliente_id);
                     if ($cliData) {
+                        $mensagem = $this->evolution_model->getById($triggerC->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($triggerC->mensagem, ['viagem' => $viagem, 'cliente' => $cliData]);
                         $celular = preg_replace('/[^0-9]/', '', $cliData->celular);
                         $telefone = preg_replace('/[^0-9]/', '', $cliData->telefone);
                         $phone = !empty($celular) ? $celular : $telefone;
                         if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                         if ($phone && strlen($phone) >= 10)
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerC->imagem_url ?? null]);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                     }
                 }
             }
@@ -432,13 +438,15 @@ class Viagens extends MY_Controller
                 foreach ($instrutores as $inst) {
                     $usrData = $this->usuarios_model->getById($inst->usuario_id);
                     if ($usrData) {
+                        $mensagem = $this->evolution_model->getById($triggerU->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($triggerU->mensagem, ['viagem' => $viagem, 'usuario' => $usrData]);
                         $celular = preg_replace('/[^0-9]/', '', $usrData->celular);
                         $telefone = preg_replace('/[^0-9]/', '', $usrData->telefone);
                         $phone = !empty($celular) ? $celular : $telefone;
                         if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                         if ($phone && strlen($phone) >= 10)
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerU->imagem_url ?? null]);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                     }
                 }
             }
@@ -492,6 +500,8 @@ class Viagens extends MY_Controller
             // 1. Client Notification
             $triggerClient = $this->evolution_model->getEventTrigger('viagem_cliente_adicionado_cliente');
             if ($triggerClient && $triggerClient->status == 1) {
+                $mensagem = $this->evolution_model->getById($triggerClient->mensagem_id);
+                $mediaUrl = $mensagem->imagem_url ?? null;
                 $msg_parsed = $this->evolution_model->parseMessage($triggerClient->mensagem, [
                     'cliente' => $cliente,
                     'viagem' => $viagem
@@ -502,7 +512,7 @@ class Viagens extends MY_Controller
                 $phone = !empty($celular) ? $celular : $telefone;
                 if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                 if ($phone && strlen($phone) >= 10) {
-                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerClient->imagem_url ?? null]);
+                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                 }
             }
 
@@ -518,6 +528,8 @@ class Viagens extends MY_Controller
                     foreach ($instrutores as $inst) {
                         $u = $this->usuarios_model->getById($inst->usuario_id);
                         if ($u) {
+                            $mensagem = $this->evolution_model->getById($triggerUser->mensagem_id);
+                            $mediaUrl = $mensagem->imagem_url ?? null;
                             $msg_parsed = $this->evolution_model->parseMessage($triggerUser->mensagem, [
                                 'cliente' => $cliente, // The client added
                                 'viagem' => $viagem,
@@ -528,7 +540,7 @@ class Viagens extends MY_Controller
                             $phone = !empty($celular) ? $celular : $telefone;
                             if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                             if ($phone && strlen($phone) >= 10)
-                                $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerUser->imagem_url ?? null]);
+                                $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                         }
                     }
                 }
@@ -669,6 +681,8 @@ class Viagens extends MY_Controller
                 // 1. Client Notification
                 $triggerClient = $this->evolution_model->getEventTrigger('viagem_cliente_removido_cliente');
                 if ($triggerClient && $triggerClient->status == 1 && $cliente) {
+                    $mensagem = $this->evolution_model->getById($triggerClient->mensagem_id);
+                    $mediaUrl = $mensagem->imagem_url ?? null;
                     $msg_parsed = $this->evolution_model->parseMessage($triggerClient->mensagem, [
                         'cliente' => $cliente,
                         'viagem' => $viagem
@@ -679,7 +693,7 @@ class Viagens extends MY_Controller
                     $phone = !empty($celular) ? $celular : $telefone;
                     if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                     if ($phone && strlen($phone) >= 10) {
-                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerClient->imagem_url ?? null]);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                     }
                 }
 
@@ -694,6 +708,8 @@ class Viagens extends MY_Controller
                         foreach ($instrutores as $inst) {
                             $u = $this->usuarios_model->getById($inst->usuario_id);
                             if ($u) {
+                                $mensagem = $this->evolution_model->getById($triggerUser->mensagem_id);
+                                $mediaUrl = $mensagem->imagem_url ?? null;
                                 // Notify this instructor
                                 $msg_parsed = $this->evolution_model->parseMessage($triggerUser->mensagem, [
                                     'cliente' => $cliente, // Who was removed
@@ -705,7 +721,7 @@ class Viagens extends MY_Controller
                                 $phone = !empty($celular) ? $celular : $telefone;
                                 if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                                 if ($phone && strlen($phone) >= 10)
-                                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerUser->imagem_url ?? null]);
+                                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                             }
                         }
                     }
@@ -768,6 +784,8 @@ class Viagens extends MY_Controller
                     $viagem = $this->viagens_model->getById($viagem_id);
                     $usuario = $this->viagens_model->getUsuarioData($usuario_id);
                     if ($usuario) {
+                        $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
                             'usuario' => $usuario,
                             'viagem' => $viagem
@@ -778,7 +796,7 @@ class Viagens extends MY_Controller
                         $phone = !empty($celular) ? $celular : $telefone;
                         if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                         if ($phone && strlen($phone) >= 10) {
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                         }
                     }
                 }
@@ -806,6 +824,8 @@ class Viagens extends MY_Controller
                 $viagem = $this->viagens_model->getById($instrutor_viagem->viagem_id);
                 $usuario = $this->usuarios_model->getById($instrutor_viagem->usuario_id);
                 if ($viagem && $usuario) {
+                    $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                    $mediaUrl = $mensagem->imagem_url ?? null;
                     $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
                         'usuario' => $usuario,
                         'viagem' => $viagem
@@ -816,7 +836,7 @@ class Viagens extends MY_Controller
                     $phone = !empty($celular) ? $celular : $telefone;
                     if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                     if ($phone && strlen($phone) >= 10) {
-                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                     }
                 }
             }

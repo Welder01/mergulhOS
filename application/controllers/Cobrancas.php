@@ -79,11 +79,13 @@ class Cobrancas extends MY_Controller
                     }
 
                     if ($client) {
+                        $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, array_merge((array) $cobranca, (array) $client));
                         $this->load->library('evolution_queue');
                         $phone = !empty($client->celular) ? $client->celular : (!empty($client->telefone) ? $client->telefone : '');
                         if ($phone) {
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                         }
                     }
                 }
@@ -146,11 +148,13 @@ class Cobrancas extends MY_Controller
                     $this->load->model('clientes_model');
                     $client = $this->clientes_model->getById($cob->clientes_id);
                     if ($client) {
+                        $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, array_merge((array) $cob, (array) $client));
                         $this->load->library('evolution_queue');
                         $phone = !empty($client->celular) ? $client->celular : (!empty($client->telefone) ? $client->telefone : '');
                         if ($phone)
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                     }
                 }
             }
@@ -206,11 +210,13 @@ class Cobrancas extends MY_Controller
                     $this->load->model('clientes_model');
                     $client = $this->clientes_model->getById($cob->clientes_id);
                     if ($client) {
+                        $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, array_merge((array) $cob, (array) $client));
                         $this->load->library('evolution_queue');
                         $phone = !empty($client->celular) ? $client->celular : (!empty($client->telefone) ? $client->telefone : '');
                         if ($phone)
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                     }
                 }
             }
@@ -239,11 +245,13 @@ class Cobrancas extends MY_Controller
                     $this->load->model('clientes_model');
                     $client = $this->clientes_model->getById($cob->clientes_id);
                     if ($client) {
+                        $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, array_merge((array) $cob, (array) $client));
                         $this->load->library('evolution_queue');
                         $phone = !empty($client->celular) ? $client->celular : (!empty($client->telefone) ? $client->telefone : '');
                         if ($phone)
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                     }
                 }
             }

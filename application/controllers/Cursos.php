@@ -331,6 +331,8 @@ class Cursos extends MY_Controller
                             $curso = $this->cursos_model->getById($curso_id);
                             $usuario = $this->db->where('idUsuarios', $usuario_id)->get('usuarios')->row();
                             if ($usuario) {
+                                $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                                $mediaUrl = $mensagem->imagem_url ?? null;
                                 $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
                                     'usuario' => $usuario,
                                     'curso' => $curso
@@ -341,7 +343,7 @@ class Cursos extends MY_Controller
                                 $phone = !empty($celular) ? $celular : $telefone;
                                 if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                                 if ($phone && strlen($phone) >= 10)
-                                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                             }
                         }
                         // --------------------------------------------------------
@@ -379,6 +381,8 @@ class Cursos extends MY_Controller
                 $curso = $this->cursos_model->getById($instrutor->curso_id);
                 $usuario = $this->db->where('idUsuarios', $instrutor->usuario_id)->get('usuarios')->row();
                 if ($curso && $usuario) {
+                    $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                    $mediaUrl = $mensagem->imagem_url ?? null;
                     $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
                         'usuario' => $usuario,
                         'curso' => $curso
@@ -389,7 +393,7 @@ class Cursos extends MY_Controller
                     $phone = !empty($celular) ? $celular : $telefone;
                     if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                     if ($phone && strlen($phone) >= 10) {
-                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                     }
                 }
             }
@@ -448,6 +452,8 @@ class Cursos extends MY_Controller
                 $this->load->model('clientes_model');
                 $cliente = $this->clientes_model->getById($cliente_id);
                 if ($cliente) {
+                    $mensagem = $this->evolution_model->getById($triggerClient->mensagem_id);
+                    $mediaUrl = $mensagem->imagem_url ?? null;
                     $msg_parsed = $this->evolution_model->parseMessage($triggerClient->mensagem, [
                         'cliente' => $cliente,
                         'curso' => $curso
@@ -458,7 +464,7 @@ class Cursos extends MY_Controller
                     $phone = !empty($celular) ? $celular : $telefone;
                     if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                     if ($phone && strlen($phone) >= 10)
-                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerClient->imagem_url ?? null]);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                 }
             }
 
@@ -477,6 +483,8 @@ class Cursos extends MY_Controller
                     foreach ($instrutores as $inst) {
                         $u = $this->usuarios_model->getById($inst->usuario_id);
                         if ($u) {
+                            $mensagem = $this->evolution_model->getById($triggerUser->mensagem_id);
+                            $mediaUrl = $mensagem->imagem_url ?? null;
                             $msg_parsed = $this->evolution_model->parseMessage($triggerUser->mensagem, [
                                 'cliente' => $cliente,
                                 'curso' => $curso,
@@ -487,7 +495,7 @@ class Cursos extends MY_Controller
                             $phone = !empty($celular) ? $celular : $telefone;
                             if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                             if ($phone && strlen($phone) >= 10)
-                                $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerUser->imagem_url ?? null]);
+                                $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                         }
                     }
                 }
@@ -552,6 +560,8 @@ class Cursos extends MY_Controller
             // 1. Client Notification
             $triggerClient = $this->evolution_model->getEventTrigger('curso_cliente_removido_cliente');
             if ($triggerClient && $triggerClient->status == 1) {
+                $mensagem = $this->evolution_model->getById($triggerClient->mensagem_id);
+                $mediaUrl = $mensagem->imagem_url ?? null;
                 $msg_parsed = $this->evolution_model->parseMessage($triggerClient->mensagem, [
                     'cliente' => $cliente,
                     'curso' => $curso
@@ -562,7 +572,7 @@ class Cursos extends MY_Controller
                 $phone = !empty($celular) ? $celular : $telefone;
                 if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                 if ($phone && strlen($phone) >= 10) {
-                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerClient->imagem_url ?? null]);
+                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                 }
             }
 
@@ -577,6 +587,8 @@ class Cursos extends MY_Controller
                     foreach ($instrutores as $inst) {
                         $u = $this->usuarios_model->getById($inst->usuario_id);
                         if ($u) {
+                            $mensagem = $this->evolution_model->getById($triggerUser->mensagem_id);
+                            $mediaUrl = $mensagem->imagem_url ?? null;
                             $msg_parsed = $this->evolution_model->parseMessage($triggerUser->mensagem, [
                                 'cliente' => $cliente,
                                 'curso' => $curso,
@@ -587,7 +599,7 @@ class Cursos extends MY_Controller
                             $phone = !empty($celular) ? $celular : $telefone;
                             if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                             if ($phone && strlen($phone) >= 10)
-                                $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerUser->imagem_url ?? null]);
+                                $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
                         }
                     }
                 }

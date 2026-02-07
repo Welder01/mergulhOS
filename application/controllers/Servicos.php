@@ -77,9 +77,11 @@ class Servicos extends MY_Controller
                     $this->load->model('mapos_model');
                     $emitente = $this->mapos_model->getEmitente();
                     if ($emitente && !empty($emitente->telefone)) {
+                        $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, $data);
                         $this->load->library('evolution_queue');
-                        $this->evolution_queue->add($emitente->telefone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                        $this->evolution_queue->add($emitente->telefone, $msg_parsed, ['media_url' => $mediaUrl]);
                     }
                 }
 
@@ -128,9 +130,11 @@ class Servicos extends MY_Controller
                     $this->load->model('mapos_model');
                     $emitente = $this->mapos_model->getEmitente();
                     if ($emitente && !empty($emitente->telefone)) {
+                        $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                        $mediaUrl = $mensagem->imagem_url ?? null;
                         $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, $data);
                         $this->load->library('evolution_queue');
-                        $this->evolution_queue->add($emitente->telefone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                        $this->evolution_queue->add($emitente->telefone, $msg_parsed, ['media_url' => $mediaUrl]);
                     }
                 }
 
@@ -172,9 +176,11 @@ class Servicos extends MY_Controller
             $this->load->model('mapos_model');
             $emitente = $this->mapos_model->getEmitente();
             if ($emitente && !empty($emitente->telefone)) {
+                $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                $mediaUrl = $mensagem->imagem_url ?? null;
                 $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, ['id' => $id]);
                 $this->load->library('evolution_queue');
-                $this->evolution_queue->add($emitente->telefone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                $this->evolution_queue->add($emitente->telefone, $msg_parsed, ['media_url' => $mediaUrl]);
             }
         }
 

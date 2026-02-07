@@ -211,6 +211,8 @@ class Atividades extends MY_Controller
             }
 
             if ($trigger && $trigger->status == 1 && $usuarioPagamento && $lancamentoObj) {
+                $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                $mediaUrl = $mensagem->imagem_url ?? null;
                 $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, [
                     'lancamento' => $lancamentoObj,
                     'usuario' => $usuarioPagamento
@@ -218,7 +220,7 @@ class Atividades extends MY_Controller
                 $this->load->library('evolution_queue');
                 $phone = $usuarioPagamento->celular ?: $usuarioPagamento->telefone;
                 if ($phone)
-                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
             }
             // ---------------------------------------------------------
 
@@ -402,6 +404,8 @@ class Atividades extends MY_Controller
             }
 
             if ($trigger && $trigger->status == 1 && $usuarioEstorno) {
+                $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                $mediaUrl = $mensagem->imagem_url ?? null;
                 // Construct a dummy 'lancamento' object for basic info since the real one might be deleted
                 $dummyLancamento = (object) [
                     'descricao' => $search_desc ?? 'Pagamento Estornado',
@@ -415,7 +419,7 @@ class Atividades extends MY_Controller
                 $this->load->library('evolution_queue');
                 $phone = $usuarioEstorno->celular ?: $usuarioEstorno->telefone;
                 if ($phone)
-                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $trigger->imagem_url ?? null]);
+                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
             }
             // ---------------------------------------------------------
 
