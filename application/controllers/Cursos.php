@@ -336,8 +336,9 @@ class Cursos extends MY_Controller
                                     'curso' => $curso
                                 ]);
                                 $this->load->library('evolution_queue');
-                                $phone = $usuario->celular ?: $usuario->telefone;
-                                $phone = preg_replace('/[^0-9]/', '', $phone);
+                                $celular = preg_replace('/[^0-9]/', '', $usuario->celular);
+                                $telefone = preg_replace('/[^0-9]/', '', $usuario->telefone);
+                                $phone = !empty($celular) ? $celular : $telefone;
                                 if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                                 if ($phone && strlen($phone) >= 10)
                                     $this->evolution_queue->add($phone, $msg_parsed);
@@ -383,8 +384,9 @@ class Cursos extends MY_Controller
                         'curso' => $curso
                     ]);
                     $this->load->library('evolution_queue');
-                    $phone = $usuario->celular ?: $usuario->telefone;
-                    $phone = preg_replace('/[^0-9]/', '', $phone);
+                    $celular = preg_replace('/[^0-9]/', '', $usuario->celular);
+                    $telefone = preg_replace('/[^0-9]/', '', $usuario->telefone);
+                    $phone = !empty($celular) ? $celular : $telefone;
                     if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                     if ($phone && strlen($phone) >= 10) {
                         $this->evolution_queue->add($phone, $msg_parsed);
@@ -451,11 +453,12 @@ class Cursos extends MY_Controller
                         'curso' => $curso
                     ]);
                     $this->load->library('evolution_queue');
-                    $phone = $cliente->celular ?: $cliente->telefone;
-                    $phone = preg_replace('/[^0-9]/', '', $phone);
+                    $celular = preg_replace('/[^0-9]/', '', $cliente->celular);
+                    $telefone = preg_replace('/[^0-9]/', '', $cliente->telefone);
+                    $phone = !empty($celular) ? $celular : $telefone;
                     if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                     if ($phone && strlen($phone) >= 10)
-                        $this->evolution_queue->add($phone, $msg_parsed);
+                        $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerClient->imagem_url ?? null]);
                 }
             }
 
@@ -479,11 +482,12 @@ class Cursos extends MY_Controller
                                 'curso' => $curso,
                                 'usuario' => $u
                             ]);
-                            $phone = $u->celular ?: $u->telefone;
-                            $phone = preg_replace('/[^0-9]/', '', $phone);
+                            $celular = preg_replace('/[^0-9]/', '', $u->celular);
+                            $telefone = preg_replace('/[^0-9]/', '', $u->telefone);
+                            $phone = !empty($celular) ? $celular : $telefone;
                             if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                             if ($phone && strlen($phone) >= 10)
-                                $this->evolution_queue->add($phone, $msg_parsed);
+                                $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerUser->imagem_url ?? null]);
                         }
                     }
                 }
@@ -553,11 +557,12 @@ class Cursos extends MY_Controller
                     'curso' => $curso
                 ]);
                 $this->load->library('evolution_queue');
-                $phone = $cliente->celular ?: $cliente->telefone;
-                $phone = preg_replace('/[^0-9]/', '', $phone);
+                $celular = preg_replace('/[^0-9]/', '', $cliente->celular);
+                $telefone = preg_replace('/[^0-9]/', '', $cliente->telefone);
+                $phone = !empty($celular) ? $celular : $telefone;
                 if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                 if ($phone && strlen($phone) >= 10) {
-                    $this->evolution_queue->add($phone, $msg_parsed);
+                    $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerClient->imagem_url ?? null]);
                 }
             }
 
@@ -577,11 +582,12 @@ class Cursos extends MY_Controller
                                 'curso' => $curso,
                                 'usuario' => $u
                             ]);
-                            $phone = $u->celular ?: $u->telefone;
-                            $phone = preg_replace('/[^0-9]/', '', $phone);
+                            $celular = preg_replace('/[^0-9]/', '', $u->celular);
+                            $telefone = preg_replace('/[^0-9]/', '', $u->telefone);
+                            $phone = !empty($celular) ? $celular : $telefone;
                             if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                             if ($phone && strlen($phone) >= 10)
-                                $this->evolution_queue->add($phone, $msg_parsed);
+                                $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $triggerUser->imagem_url ?? null]);
                         }
                     }
                 }

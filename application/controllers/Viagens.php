@@ -192,8 +192,11 @@ class Viagens extends MY_Controller
                     $cliData = $this->clientes_model->getById($cv->cliente_id);
                     if ($cliData) {
                         $msg_parsed = $this->evolution_model->parseMessage($triggerC->mensagem, ['viagem' => $viagem, 'cliente' => $cliData]);
-                        $phone = $cliData->celular ?: $cliData->telefone;
-                        if ($phone)
+                        $celular = preg_replace('/[^0-9]/', '', $cliData->celular);
+                        $telefone = preg_replace('/[^0-9]/', '', $cliData->telefone);
+                        $phone = !empty($celular) ? $celular : $telefone;
+                        if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                        if ($phone && strlen($phone) >= 10)
                             $this->evolution_queue->add($phone, $msg_parsed);
                     }
                 }
@@ -206,8 +209,11 @@ class Viagens extends MY_Controller
                     $usrData = $this->usuarios_model->getById($inst->usuario_id);
                     if ($usrData) {
                         $msg_parsed = $this->evolution_model->parseMessage($triggerU->mensagem, ['viagem' => $viagem, 'usuario' => $usrData]);
-                        $phone = $usrData->celular ?: $usrData->telefone;
-                        if ($phone)
+                        $celular = preg_replace('/[^0-9]/', '', $usrData->celular);
+                        $telefone = preg_replace('/[^0-9]/', '', $usrData->telefone);
+                        $phone = !empty($celular) ? $celular : $telefone;
+                        if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                        if ($phone && strlen($phone) >= 10)
                             $this->evolution_queue->add($phone, $msg_parsed);
                     }
                 }
@@ -409,8 +415,11 @@ class Viagens extends MY_Controller
                     $cliData = $this->clientes_model->getById($cv->cliente_id);
                     if ($cliData) {
                         $msg_parsed = $this->evolution_model->parseMessage($triggerC->mensagem, ['viagem' => $viagem, 'cliente' => $cliData]);
-                        $phone = $cliData->celular ?: $cliData->telefone;
-                        if ($phone)
+                        $celular = preg_replace('/[^0-9]/', '', $cliData->celular);
+                        $telefone = preg_replace('/[^0-9]/', '', $cliData->telefone);
+                        $phone = !empty($celular) ? $celular : $telefone;
+                        if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                        if ($phone && strlen($phone) >= 10)
                             $this->evolution_queue->add($phone, $msg_parsed);
                     }
                 }
@@ -424,8 +433,11 @@ class Viagens extends MY_Controller
                     $usrData = $this->usuarios_model->getById($inst->usuario_id);
                     if ($usrData) {
                         $msg_parsed = $this->evolution_model->parseMessage($triggerU->mensagem, ['viagem' => $viagem, 'usuario' => $usrData]);
-                        $phone = $usrData->celular ?: $usrData->telefone; // Assuming Usuario has phone
-                        if ($phone)
+                        $celular = preg_replace('/[^0-9]/', '', $usrData->celular);
+                        $telefone = preg_replace('/[^0-9]/', '', $usrData->telefone);
+                        $phone = !empty($celular) ? $celular : $telefone;
+                        if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                        if ($phone && strlen($phone) >= 10)
                             $this->evolution_queue->add($phone, $msg_parsed);
                     }
                 }
@@ -485,8 +497,9 @@ class Viagens extends MY_Controller
                     'viagem' => $viagem
                 ]);
                 $this->load->library('evolution_queue');
-                $phone = $cliente->celular ?: $cliente->telefone;
-                $phone = preg_replace('/[^0-9]/', '', $phone);
+                $celular = preg_replace('/[^0-9]/', '', $cliente->celular);
+                $telefone = preg_replace('/[^0-9]/', '', $cliente->telefone);
+                $phone = !empty($celular) ? $celular : $telefone;
                 if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                 if ($phone && strlen($phone) >= 10) {
                     $this->evolution_queue->add($phone, $msg_parsed);
@@ -510,8 +523,9 @@ class Viagens extends MY_Controller
                                 'viagem' => $viagem,
                                 'usuario' => $u // Context for the notified user
                             ]);
-                            $phone = $u->celular ?: $u->telefone;
-                            $phone = preg_replace('/[^0-9]/', '', $phone);
+                            $celular = preg_replace('/[^0-9]/', '', $u->celular);
+                            $telefone = preg_replace('/[^0-9]/', '', $u->telefone);
+                            $phone = !empty($celular) ? $celular : $telefone;
                             if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                             if ($phone && strlen($phone) >= 10)
                                 $this->evolution_queue->add($phone, $msg_parsed);
@@ -660,8 +674,9 @@ class Viagens extends MY_Controller
                         'viagem' => $viagem
                     ]);
                     $this->load->library('evolution_queue');
-                    $phone = $cliente->celular ?: $cliente->telefone;
-                    $phone = preg_replace('/[^0-9]/', '', $phone);
+                    $celular = preg_replace('/[^0-9]/', '', $cliente->celular);
+                    $telefone = preg_replace('/[^0-9]/', '', $cliente->telefone);
+                    $phone = !empty($celular) ? $celular : $telefone;
                     if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                     if ($phone && strlen($phone) >= 10) {
                         $this->evolution_queue->add($phone, $msg_parsed);
@@ -685,8 +700,9 @@ class Viagens extends MY_Controller
                                     'viagem' => $viagem,
                                     'usuario' => $u // The recipient context
                                 ]);
-                                $phone = $u->celular ?: $u->telefone;
-                                $phone = preg_replace('/[^0-9]/', '', $phone);
+                                $celular = preg_replace('/[^0-9]/', '', $u->celular);
+                                $telefone = preg_replace('/[^0-9]/', '', $u->telefone);
+                                $phone = !empty($celular) ? $celular : $telefone;
                                 if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
                                 if ($phone && strlen($phone) >= 10)
                                     $this->evolution_queue->add($phone, $msg_parsed);
@@ -757,8 +773,11 @@ class Viagens extends MY_Controller
                             'viagem' => $viagem
                         ]);
                         $this->load->library('evolution_queue');
-                        $phone = $usuario->celular ?: $usuario->telefone;
-                        if ($phone) {
+                        $celular = preg_replace('/[^0-9]/', '', $usuario->celular);
+                        $telefone = preg_replace('/[^0-9]/', '', $usuario->telefone);
+                        $phone = !empty($celular) ? $celular : $telefone;
+                        if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                        if ($phone && strlen($phone) >= 10) {
                             $this->evolution_queue->add($phone, $msg_parsed);
                         }
                     }
@@ -792,8 +811,11 @@ class Viagens extends MY_Controller
                         'viagem' => $viagem
                     ]);
                     $this->load->library('evolution_queue');
-                    $phone = $usuario->celular ?: $usuario->telefone;
-                    if ($phone) {
+                    $celular = preg_replace('/[^0-9]/', '', $usuario->celular);
+                    $telefone = preg_replace('/[^0-9]/', '', $usuario->telefone);
+                    $phone = !empty($celular) ? $celular : $telefone;
+                    if (strlen($phone) >= 10 && strlen($phone) <= 11) $phone = '55' . $phone;
+                    if ($phone && strlen($phone) >= 10) {
                         $this->evolution_queue->add($phone, $msg_parsed);
                     }
                 }
