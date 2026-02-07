@@ -285,5 +285,12 @@
                 $(element).parents('.control-group').addClass('success');
             }
         });
+
+        $(".datepicker").datepicker({
+            dateFormat: 'dd/mm/yy',
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '1920:2030'
+        });
     });
 </script>

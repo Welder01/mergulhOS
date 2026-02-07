@@ -82,7 +82,7 @@ class Clientes extends MY_Controller
                     'nomeCliente' => set_value('nomeCliente'),
                     'contato' => set_value('contato'),
                     'sexo' => set_value('sexo'),
-                    'data_nascimento' => set_value('data_nascimento') ? date('Y-m-d', strtotime(str_replace('/', '-', set_value('data_nascimento')))) : null,
+                    'data_nascimento' => !empty(set_value('data_nascimento')) ? DateTime::createFromFormat('d/m/Y', set_value('data_nascimento'))->format('Y-m-d') : null,
                     'pessoa_fisica' => $pessoa_fisica,
                     'altura' => str_replace(',', '.', set_value('altura')),
                     'peso' => str_replace(',', '.', set_value('peso')),
@@ -158,10 +158,12 @@ class Clientes extends MY_Controller
                 $this->load->library('upload');
 
                 $atestado_emissao = $this->input->post('atestado_medico_emissao');
+                $atestado_emissao_db = null;
                 $atestado_validade = null;
                 if ($atestado_emissao) {
                     $date = DateTime::createFromFormat('d/m/Y', $atestado_emissao);
                     if ($date !== false) {
+                        $atestado_emissao_db = $date->format('Y-m-d');
                         $date->add(new DateInterval('P1Y')); // Adiciona 1 ano
                         $atestado_validade = $date->format('Y-m-d');
                     } else {
@@ -173,7 +175,7 @@ class Clientes extends MY_Controller
                     'nomeCliente' => $this->input->post('nomeCliente'),
                     'contato' => $this->input->post('contato'),
                     'sexo' => $this->input->post('sexo'),
-                    'data_nascimento' => $this->input->post('data_nascimento') ? date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('data_nascimento')))) : null,
+                    'data_nascimento' => !empty($this->input->post('data_nascimento')) ? DateTime::createFromFormat('d/m/Y', $this->input->post('data_nascimento'))->format('Y-m-d') : null,
                     'altura' => str_replace(',', '.', $this->input->post('altura')),
                     'peso' => str_replace(',', '.', $this->input->post('peso')),
                     'documento' => $this->input->post('documento'),
@@ -205,7 +207,7 @@ class Clientes extends MY_Controller
                     'qtd_reguladores' => $this->input->post('qtd_reguladores') ?: 0,
                     'qtd_lanterna' => $this->input->post('qtd_lanterna') ?: 0,
                     'qtd_computador' => $this->input->post('qtd_computador') ?: 0,
-                    'atestado_medico_emissao' => $atestado_emissao ?: null,
+                    'atestado_medico_emissao' => $atestado_emissao_db,
                     'atestado_medico_validade' => $atestado_validade,
                     'nome_medico' => $this->input->post('nome_medico'),
                     'crm_medico' => $this->input->post('crm_medico'),
@@ -463,4 +465,3 @@ class Clientes extends MY_Controller
         redirect(site_url('clientes/gerenciar/'));
     }
 }
-
