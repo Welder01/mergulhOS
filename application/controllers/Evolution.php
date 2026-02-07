@@ -8,6 +8,7 @@ class Evolution extends MY_Controller
     public function __construct()
     {
         parent::__construct();
+
         $this->load->model('mapos_model');
         $this->load->model('evolution_model');
         $this->load->library('evolution_queue');
