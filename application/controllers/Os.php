@@ -1458,11 +1458,20 @@ class Os extends MY_Controller
         $html = $this->load->view('os/emails/os', $dados, true);
 
         $this->load->model('email_model');
+        $this->load->library('email');
+
+        $smtpUser = getenv('EMAIL_SMTP_USER') ?: ($_ENV['EMAIL_SMTP_USER'] ?? null);
+        $emailRemetente = $smtpUser ?: $emitente->email;
 
         $remetentes = array_unique($remetentes);
         foreach ($remetentes as $remetente) {
             if ($remetente) {
-                $headers = ['From' => $emitente->email, 'Subject' => $assunto, 'Return-Path' => ''];
+                $headers = [
+                    'From' => "\"$emitente->nome\" <$emailRemetente>",
+                    'Subject' => $assunto,
+                    'Return-Path' => '',
+                    'Reply-To' => $emitente->email,
+                ];
                 $email = [
                     'to' => $remetente,
                     'message' => $html,

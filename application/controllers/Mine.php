@@ -1724,6 +1724,7 @@ class Mine extends MY_Controller
         $html = $this->load->view('conecte/emails/clientenovasenha', $dados, true);
 
         $this->load->model('email_model');
+        $this->load->library('email');
 
         if ($emitente == null) {
             $this->session->set_flashdata(['error' => 'Cadastrar Emitente.\n\n Por favor contate o administrador do sistema.']);
@@ -1731,10 +1732,13 @@ class Mine extends MY_Controller
             return redirect(base_url() . 'index.php/mine/resetarSenha');
         }
 
+        $emailRemetente = !empty($_ENV['EMAIL_SMTP_USER']) ? $_ENV['EMAIL_SMTP_USER'] : $emitente->email;
+
         $headers = [
-            'From' => "\"$emitente->nome\" <$emitente->email>",
+            'From' => "\"$emitente->nome\" <$emailRemetente>",
             'Subject' => $assunto,
             'Return-Path' => '',
+            'Reply-To' => $emitente->email,
         ];
         $email = [
             'to' => $remetente,
@@ -1770,13 +1774,17 @@ class Mine extends MY_Controller
         $html = $this->load->view('os/emails/os', $dados, true);
 
         $this->load->model('email_model');
+        $this->load->library('email');
+
+        $emailRemetente = !empty($_ENV['EMAIL_SMTP_USER']) ? $_ENV['EMAIL_SMTP_USER'] : $emitente->email;
 
         $remetentes = array_unique($remetentes);
         foreach ($remetentes as $remetente) {
             $headers = [
-                'From' => $emitente->email,
+                'From' => $emailRemetente,
                 'Subject' => $assunto,
                 'Return-Path' => '',
+                'Reply-To' => $emitente->email,
             ];
             $email = [
                 'to' => $remetente,
@@ -1807,11 +1815,15 @@ class Mine extends MY_Controller
         $html = $this->load->view('os/emails/clientenovo', $dados, true);
 
         $this->load->model('email_model');
+        $this->load->library('email');
+
+        $emailRemetente = !empty($_ENV['EMAIL_SMTP_USER']) ? $_ENV['EMAIL_SMTP_USER'] : $emitente->email;
 
         $headers = [
-            'From' => "\"$emitente->nome\" <$emitente->email>",
+            'From' => "\"$emitente->nome\" <$emailRemetente>",
             'Subject' => $assunto,
             'Return-Path' => '',
+            'Reply-To' => $emitente->email,
         ];
         $email = [
             'to' => $remetente->email,
@@ -1841,12 +1853,16 @@ class Mine extends MY_Controller
         $usuarios = $this->usuarios_model->getAll();
 
         foreach ($usuarios as $usuario) {
+            $this->load->library('email');
             $dados['usuario'] = $usuario;
+            $emailRemetente = !empty($_ENV['EMAIL_SMTP_USER']) ? $_ENV['EMAIL_SMTP_USER'] : $emitente->email;
+
             $html = $this->load->view('os/emails/clientenovonotifica', $dados, true);
             $headers = [
-                'From' => "\"$emitente->nome\" <$emitente->email>",
+                'From' => "\"$emitente->nome\" <$emailRemetente>",
                 'Subject' => $assunto,
                 'Return-Path' => '',
+                'Reply-To' => $emitente->email,
             ];
             $email = [
                 'to' => $usuario->email,

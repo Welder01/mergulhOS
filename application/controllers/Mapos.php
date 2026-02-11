@@ -713,24 +713,38 @@ class Mapos extends MY_Controller
 
     private function editDontEnv(array $data)
     {
-        $env_file_path = dirname(__FILE__, 2) . DIRECTORY_SEPARATOR . '.env';
+        // Tenta encontrar o .env na raiz (FCPATH) primeiro
+        $env_file_path = FCPATH . '.env';
+        if (!file_exists($env_file_path) && file_exists(dirname(__FILE__, 2) . DIRECTORY_SEPARATOR . '.env')) {
+            $env_file_path = dirname(__FILE__, 2) . DIRECTORY_SEPARATOR . '.env';
+        }
+
+        // Se o arquivo não existir, cria um vazio
+        if (!file_exists($env_file_path)) {
+            file_put_contents($env_file_path, "");
+        }
+
         $env_file = file_get_contents($env_file_path);
 
         foreach ($data as $constante => $valor) {
             if ($constante == 'API_JWT_KEY' && $valor == 'sim') {
                 $base64 = base64_encode(openssl_random_pseudo_bytes(32));
                 $valor = '"' . $base64 . '"';
-                $env_file = str_replace("$constante=" . '"' . $_ENV[$constante] . '"', "$constante={$valor}", $env_file);
-            } else {
-                if (isset($_ENV[$constante])) {
-                    if ($constante === 'APP_URL_FOOTER') {
-                        $env_file = preg_replace("/^$constante=.*/m", "$constante=$valor", $env_file);
-                    } else {
-                        $env_file = str_replace("$constante={$_ENV[$constante]}", "$constante={$valor}", $env_file);
-                    }
+                // Substitui ou adiciona a chave JWT
+                if (preg_match("/^{$constante}=.*/m", $env_file)) {
+                    $env_file = preg_replace("/^{$constante}=.*/m", "{$constante}={$valor}", $env_file);
                 } else {
-                    file_put_contents($env_file_path, $env_file . "\n{$constante}={$valor}\n");
-                    $env_file = file_get_contents($env_file_path);
+                    $env_file .= "\n{$constante}={$valor}";
+                }
+            } else {
+                // Adiciona aspas e escapa caracteres para salvar corretamente no .env
+                $valor = '"' . str_replace('"', '\"', $valor) . '"';
+                $valor_replacement = str_replace('$', '\$', $valor);
+                // Verifica se a chave já existe no arquivo usando Regex
+                if (preg_match("/^{$constante}=.*/m", $env_file)) {
+                    $env_file = preg_replace("/^{$constante}=.*/m", "{$constante}={$valor_replacement}", $env_file);
+                } else {
+                    $env_file .= "\n{$constante}={$valor}";
                 }
             }
         }

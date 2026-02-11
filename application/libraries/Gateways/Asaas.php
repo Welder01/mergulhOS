@@ -75,12 +75,15 @@ class Asaas extends BasePaymentGateway
             $assunto .= ' - Venda #' . $cobranca->vendas_id;
         }
 
+        $emailRemetente = !empty($_ENV['EMAIL_SMTP_USER']) ? $_ENV['EMAIL_SMTP_USER'] : $emitente->email;
+
         $remetentes = [$cobranca->email];
         foreach ($remetentes as $remetente) {
             $headers = [
-                'From' => $emitente->email,
+                'From' => $emailRemetente,
                 'Subject' => $assunto,
                 'Return-Path' => '',
+                'Reply-To' => $emitente->email,
             ];
             $email = [
                 'to' => $remetente,

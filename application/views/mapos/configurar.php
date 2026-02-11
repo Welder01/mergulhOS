@@ -618,14 +618,14 @@
                         <div class="control-group">
                             <label for="EMAIL_PROTOCOL" class="control-label">Protocolo de E-mail</label>
                             <div class="controls">
-                                <input type="text" name="EMAIL_PROTOCOL" value="<?= $_ENV['EMAIL_PROTOCOL'] ?>" id="EMAIL_PROTOCOL">
+                                <input type="text" name="EMAIL_PROTOCOL" value="<?= htmlspecialchars(getenv('EMAIL_PROTOCOL') ?: ($_ENV['EMAIL_PROTOCOL'] ?? '')) ?>" id="EMAIL_PROTOCOL">
                                 <span class="help-inline">Informe o protocolo que será utilizado</span>
                             </div>
                         </div>
                         <div class="control-group">
                             <label for="EMAIL_SMTP_HOST" class="control-label">Endereço do Host</label>
                             <div class="controls">
-                                <input type="text" name="EMAIL_SMTP_HOST" value="<?= $_ENV['EMAIL_SMTP_HOST'] ?>" id="EMAIL_SMTP_HOST">
+                                <input type="text" name="EMAIL_SMTP_HOST" value="<?= htmlspecialchars(getenv('EMAIL_SMTP_HOST') ?: ($_ENV['EMAIL_SMTP_HOST'] ?? '')) ?>" id="EMAIL_SMTP_HOST">
                                 <span class="help-inline">Informe o endereço do host</span>
                             </div>
                         </div>
@@ -633,8 +633,9 @@
                             <label for="EMAIL_SMTP_CRYPTO" class="control-label">Tipo de criptografia</label>
                             <div class="controls">
                                 <select name="EMAIL_SMTP_CRYPTO" id="EMAIL_SMTP_CRYPTO">
-                                    <option value="tls" <?= $_ENV['EMAIL_SMTP_CRYPTO'] == 'tls' ? 'selected' : ''; ?>>tls</option>
-                                    <option value="ssl" <?= $_ENV['EMAIL_SMTP_CRYPTO'] == 'ssl' ? 'selected' : ''; ?>>ssl</option>
+                                    <?php $crypto = getenv('EMAIL_SMTP_CRYPTO') ?: ($_ENV['EMAIL_SMTP_CRYPTO'] ?? ''); ?>
+                                    <option value="tls" <?= $crypto == 'tls' ? 'selected' : ''; ?>>tls</option>
+                                    <option value="ssl" <?= $crypto == 'ssl' ? 'selected' : ''; ?>>ssl</option>
                                 </select>
                                 <span class="help-inline">Tipo de criptografia que será utilizada.</span>
                             </div>
@@ -642,21 +643,21 @@
                         <div class="control-group">
                             <label for="EMAIL_SMTP_PORT" class="control-label">Porta</label>
                             <div class="controls">
-                                <input type="text" name="EMAIL_SMTP_PORT" value="<?= $_ENV['EMAIL_SMTP_PORT'] ?>" id="EMAIL_SMTP_PORT">
+                                <input type="text" name="EMAIL_SMTP_PORT" value="<?= htmlspecialchars(getenv('EMAIL_SMTP_PORT') ?: ($_ENV['EMAIL_SMTP_PORT'] ?? '')) ?>" id="EMAIL_SMTP_PORT">
                                 <span class="help-inline">Informe a porta que será utilizada.</span>
                             </div>
                         </div>
                         <div class="control-group">
                             <label for="EMAIL_SMTP_USER" class="control-label">Usuário</label>
                             <div class="controls">
-                                <input type="text" name="EMAIL_SMTP_USER" value="<?= $_ENV['EMAIL_SMTP_USER'] ?>" id="EMAIL_SMTP_USER">
+                                <input type="text" name="EMAIL_SMTP_USER" value="<?= htmlspecialchars(getenv('EMAIL_SMTP_USER') ?: ($_ENV['EMAIL_SMTP_USER'] ?? '')) ?>" id="EMAIL_SMTP_USER">
                                 <span class="help-inline">Informe nome de usuáriodo e-mail.</span>
                             </div>
                         </div>
                         <div class="control-group">
                             <label for="EMAIL_SMTP_PASS" class="control-label">Senha</label>
                             <div class="controls">
-                                <input type="password" name="EMAIL_SMTP_PASS" value="<?= $_ENV['EMAIL_SMTP_PASS'] ?>" id="EMAIL_SMTP_PASS">
+                                <input type="password" name="EMAIL_SMTP_PASS" value="<?= htmlspecialchars(getenv('EMAIL_SMTP_PASS') ?: ($_ENV['EMAIL_SMTP_PASS'] ?? '')) ?>" id="EMAIL_SMTP_PASS">
                                 <span class="help-inline">Informe a senha do e-mail.</span>
                             </div>
                         </div>
