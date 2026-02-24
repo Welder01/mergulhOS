@@ -239,6 +239,18 @@ class Viagens extends MY_Controller
             redirect(base_url());
         }
         $this->data['result'] = $this->viagens_model->getById($id);
+        $this->data['listaPropositos'] = [
+            'Turismo opw',
+            'Turismo Adv',
+            'Prova Opw',
+            'Prova Adv',
+            'Prova Resgate',
+            'Prova Wrek',
+            'Prova DM',
+            'Acompanhante',
+            'Batismo',
+            'Prova Side'
+        ];
         $this->data['clientes'] = $this->viagem_clientes_model->getByViagem($id);
         $this->data['instrutores'] = $this->viagem_instrutores_model->getByViagem($id);
         log_message('debug', 'Viagens/visualizar: Instructors data for viagem_id ' . $id . ': ' . json_encode($this->data['instrutores']));
@@ -452,7 +464,6 @@ class Viagens extends MY_Controller
             }
             // ------------------------------------------------
 
-            $this->viagens_model->add('logs', ['log' => 'A viagem com ID ' . $id . ' foi excluída do sistema.']);
             $this->session->set_flashdata('success', 'Viagem excluída com sucesso!');
             $this->log_auditoria('Excluiu a viagem: ' . $viagem->nome_viagem . ' (ID: ' . $id . ')');
         } else {

@@ -33,6 +33,12 @@ e [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [4.52.1] - 2026-02-24
 ### Fixed
 - Correção de erro ao alterar status da OS (carregamento de models clientes_model e usuarios_model).
+- Adicionado campo 'propósito' ao vincular viagem na OS (Suporte a Turismo, Provas, Batismo, etc).
+- Adicionado lista de propósitos na visualização de viagens (Aba Cliente).
+- Correção de erro 500 ao adicionar viagem na OS (parâmetros insuficientes no model).
+- Correção de erro de coluna inexistente 'proposito' em viagens_os (verificação de existência do campo).
+- Correção de cálculo incorreto de preço em viagens e cursos na OS quando o valor não possui formatação brasileira.
+- Removido log redundante e incorreto ao excluir viagem, corrigindo erro de coluna inexistente na tabela logs.
 
 ## [4.52.0] - 2025-02-01
 ### Added

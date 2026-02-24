@@ -100,6 +100,10 @@ class Viagens_model extends MY_Model
             ];
             $insert_data = array_merge($default_data, $data);
 
+            if (isset($insert_data['proposito']) && !$this->db->field_exists('proposito', 'viagem_clientes')) {
+                unset($insert_data['proposito']);
+            }
+
             if ($this->viagem_clientes_model->add('viagem_clientes', $insert_data)) {
                 // Decrementa o número de vagas
                 $this->db->set('vagas', 'vagas - 1', false);

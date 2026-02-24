@@ -415,6 +415,18 @@ class Os extends MY_Controller
         }
 
         $this->data['result'] = $this->os_model->getById($this->uri->segment(3));
+        $this->data['listaPropositos'] = [
+            'Turismo opw',
+            'Turismo Adv',
+            'Prova Opw',
+            'Prova Adv',
+            'Prova Resgate',
+            'Prova Wrek',
+            'Prova DM',
+            'Acompanhante',
+            'Batismo',
+            'Prova Side'
+        ];
 
         $this->data['produtos'] = $this->os_model->getProdutos($this->uri->segment(3));
         $this->data['servicos'] = $this->os_model->getServicos($this->uri->segment(3));
@@ -988,7 +1000,9 @@ class Os extends MY_Controller
         }
 
         $preco = $this->input->post('preco');
-        $preco = str_replace(',', '.', str_replace('.', '', $preco));
+        if (strpos($preco, ',') !== false) {
+            $preco = str_replace(',', '.', str_replace('.', '', $preco));
+        }
 
         $data = [
             'cursos_id' => $cursoId,
@@ -1079,14 +1093,20 @@ class Os extends MY_Controller
 
         // Adiciona o cliente à viagem e debita a vaga
         $this->load->model('viagens_model');
-        $clienteAdicionado = $this->viagens_model->adicionar_cliente($viagemId, $clienteId);
+        $dadosViagemCliente = [
+            'proposito' => $this->input->post('proposito'),
+            'status_pagamento' => 'Pendente'
+        ];
+        $clienteAdicionado = $this->viagens_model->adicionar_cliente($viagemId, $clienteId, $dadosViagemCliente);
 
         if (!$clienteAdicionado['success']) {
             return $this->output->set_content_type('application/json')->set_status_header(400)->set_output(json_encode(['result' => false, 'message' => $clienteAdicionado['message']]));
         }
 
         $preco = $this->input->post('preco');
-        $preco = str_replace(',', '.', str_replace('.', '', $preco));
+        if (strpos($preco, ',') !== false) {
+            $preco = str_replace(',', '.', str_replace('.', '', $preco));
+        }
 
         $data = [
             'viagens_id' => $viagemId,
@@ -1095,6 +1115,10 @@ class Os extends MY_Controller
             'quantidade' => $this->input->post('quantidade'),
             'data_vinculo' => date('Y-m-d'),
         ];
+
+        if ($this->db->field_exists('proposito', 'viagens_os')) {
+            $data['proposito'] = $this->input->post('proposito');
+        }
 
         if ($this->os_model->add('viagens_os', $data) == true) {
             $this->load->model('viagens_model');

@@ -423,13 +423,22 @@
                         <div class="tab-pane" id="tab6">
                             <div class="span12 well" style="padding: 1%; margin-left: 0">
                                 <form id="formViagens" action="<?php echo base_url() ?>index.php/os/adicionarViagem" method="post">
-                                    <div class="span6">
+                                    <div class="span4">
                                         <input type="hidden" name="idViagem" id="idViagem" />
                                         <input type="hidden" name="idOsViagem" id="idOsViagem" value="<?php echo $result->idOs; ?>" />
                                         <label for="">Viagem</label>
                                         <input type="text" class="span12" name="viagem" id="viagem" placeholder="Digite o nome da viagem" />
                                     </div>
-                                    <div class="span2">
+                                    <div class="span3">
+                                        <label for="">Propósito</label>
+                                        <select name="proposito" id="proposito_viagem" class="span12">
+                                            <option value="">Selecione</option>
+                                            <?php if (isset($listaPropositos)) { foreach ($listaPropositos as $proposito) { ?>
+                                                <option value="<?= $proposito ?>"><?= $proposito ?></option>
+                                            <?php } } ?>
+                                        </select>
+                                    </div>
+                                    <div class="span1">
                                         <label for="">Quantidade</label>
                                         <input type="text" placeholder="Quantidade" id="quantidade_viagem" name="quantidade" class="span12" value="1" />
                                     </div>
@@ -449,6 +458,7 @@
                                         <thead>
                                             <tr>
                                                 <th>Viagem</th>
+                                                <th>Propósito</th>
                                                 <th>Preço</th>
                                                 <th width="6%">Ações</th>
                                             </tr>
@@ -460,6 +470,7 @@
                                                 $totalViagens += $v->preco;
                                                 echo '<tr>';
                                                 echo '<td>' . $v->nome . '</td>';
+                                                echo '<td>' . ($v->proposito ?? '') . '</td>';
                                                 echo '<td>R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
                                                 echo '<td><div align="center"><a href="" idAcao="' . $v->idViagens_os . '" title="Excluir Viagem" class="btn-nwe4 viagem"><i class="bx bx-trash-alt"></i></a></div></td>';
                                                 echo '</tr>';
@@ -467,7 +478,7 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <td colspan="2" style="text-align: right"><strong>Total:</strong></td>
+                                                <td colspan="3" style="text-align: right"><strong>Total:</strong></td>
                                                 <td><strong>R$ <?php echo number_format($totalViagens, 2, ',', '.'); ?></strong></td>
                                             </tr>
                                         </tfoot>

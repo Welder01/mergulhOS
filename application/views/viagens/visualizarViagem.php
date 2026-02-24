@@ -114,10 +114,9 @@
                             <div class="controls">
                                 <select name="proposito" class="span6">
                                     <option value=""></option>
-                                    <option value="Checkout">Checkout</option>
-                                    <option value="Acompanhante">Acompanhante</option>
-                                    <option value="Turismo">Turismo</option>
-                                    <option value="Batismo">Batismo</option>
+                                    <?php if (isset($listaPropositos)) { foreach ($listaPropositos as $proposito) { ?>
+                                        <option value="<?= $proposito ?>"><?= $proposito ?></option>
+                                    <?php } } ?>
                                 </select>
                             </div>
                         </div>
@@ -764,10 +763,9 @@
                         <div class="controls">
                             <select name="proposito" id="edit_proposito" class="span6">
                                 <option value=""></option>
-                                <option value="Checkout">Checkout</option>
-                                <option value="Acompanhante">Acompanhante</option>
-                                <option value="Turismo">Turismo</option>
-                                <option value="Batismo">Batismo</option>
+                                <?php if (isset($listaPropositos)) { foreach ($listaPropositos as $proposito) { ?>
+                                    <option value="<?= $proposito ?>"><?= $proposito ?></option>
+                                <?php } } ?>
                             </select>
                         </div>
                     </div>
