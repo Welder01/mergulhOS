@@ -30,6 +30,10 @@ e [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Backup**: Ferramenta de backup do banco de dados.
 - **Atualização**: Sistema de atualização automática via GitHub.
 
+## [4.52.1] - 2026-02-24
+### Fixed
+- Correção de erro ao alterar status da OS (carregamento de models clientes_model e usuarios_model).
+
 ## [4.52.0] - 2025-02-01
 ### Added
 - Action de release no GitHub. [@Pr3d4dor](https://github.com/Pr3d4dor)
