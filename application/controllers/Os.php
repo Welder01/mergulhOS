@@ -275,6 +275,7 @@ class Os extends MY_Controller
             // --- Evolution API Trigger (os_usuario_adicionado / removido) ---
             if ($osAtual->usuarios_id != $data['usuarios_id']) {
                 $this->load->model('evolution_model');
+                $this->load->model('usuarios_model');
 
                 // Old User Removed
                 $oldUser = $this->usuarios_model->getById($osAtual->usuarios_id);
@@ -326,6 +327,8 @@ class Os extends MY_Controller
                 // --- Evolution API Trigger (os_status_alterado) ---
                 if ($osAtual->status != $data['status']) {
                     $this->load->model('evolution_model');
+                    $this->load->model('clientes_model');
+                    $this->load->model('usuarios_model');
 
                     // Reload fresh OS data for parsing
                     $osNovo = $this->os_model->getById($this->input->post('idOs'));
