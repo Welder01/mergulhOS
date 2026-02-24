@@ -1,7 +1,35 @@
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery.validate.js"></script>
-<script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
+<script>
+    // Polyfill robusto para interceptar e corrigir chamadas antigas do SweetAlert (Swal)
+    (function() {
+        var patch = function(prop) {
+            var _val = window[prop];
+            var patchVal = function(value) {
+                if (typeof value === 'function' && value.fire && !value.isPolyfilled) {
+                    var Original = value;
+                    var Wrapper = function(...args) {
+                        return Original.fire(...args);
+                    };
+                    Object.assign(Wrapper, Original);
+                    Wrapper.prototype = Original.prototype;
+                    Wrapper.isPolyfilled = true;
+                    return Wrapper;
+                }
+                return value;
+            };
+            if (_val) { _val = patchVal(_val); }
+            Object.defineProperty(window, prop, {
+                get: function() { return _val; },
+                set: function(value) { _val = patchVal(value); },
+                configurable: true, enumerable: true
+            });
+        };
+        patch('Swal');
+        patch('swal');
+    })();
+</script>
 <link rel="stylesheet" href="<?php echo base_url() ?>assets/trumbowyg/ui/trumbowyg.css">
 <script type="text/javascript" src="<?php echo base_url() ?>assets/trumbowyg/trumbowyg.js"></script>
 <script type="text/javascript" src="<?php echo base_url() ?>assets/trumbowyg/langs/pt_br.js"></script>
@@ -839,7 +867,7 @@
 
                 if (qtdTotalProdutosServicos <= 0) {
                     Swal.fire({
-                        type: "error",
+                        icon: "error",
                         title: "Atenção",
                         text: "Não é possível faturar uma OS sem serviços e/ou produtos"
                     });
@@ -854,7 +882,7 @@
                                 window.location.reload(true);
                             } else {
                                 Swal.fire({
-                                    type: "error",
+                                    icon: "error",
                                     title: "Atenção",
                                     text: "Ocorreu um erro ao tentar faturar OS."
                                 });
@@ -888,7 +916,7 @@
                 success: function (response) {
                     if (response.result) {
                         Swal.fire({
-                            type: "success",
+                            icon: "success",
                             title: "Sucesso",
                             text: response.messages
                         });
@@ -897,7 +925,7 @@
                         }, 2000);
                     } else {
                         Swal.fire({
-                            type: "error",
+                            icon: "error",
                             title: "Atenção",
                             text: response.messages
                         });
@@ -906,7 +934,7 @@
                 },
                 error: function (response) {
                     Swal.fire({
-                        type: "error",
+                        icon: "error",
                         title: "Atenção",
                         text: response.responseJSON.messages
                     });
@@ -958,7 +986,7 @@
                             window.location.reload(true);
                         } else {
                             Swal.fire({
-                                type: "error",
+                                icon: "error",
                                 title: "Atenção",
                                 text: "Ocorreu um erro ao tentar  OS."
                             });
@@ -1027,7 +1055,7 @@
             if (!$(this).val() && $("#garantias_id").val()) {
                 $("#garantias_id").val('');
                 Swal.fire({
-                    type: "success",
+                    icon: "success",
                     title: "Sucesso",
                     text: "Termo de garantia removido"
                 });
@@ -1143,7 +1171,7 @@
 
                 if (estoque < quantidade) {
                     Swal.fire({
-                        type: "error",
+                        icon: "error",
                         title: "Atenção",
                         text: "Você não possui estoque suficiente."
                     });
@@ -1166,7 +1194,7 @@
                                 $("#produto").val('').focus();
                             } else {
                                 Swal.fire({
-                                    type: "error",
+                                    icon: "error",
                                     title: "Atenção",
                                     text: "Ocorreu um erro ao tentar adicionar produto."
                                 });
@@ -1224,7 +1252,7 @@
                             $("#servico").val('').focus();
                         } else {
                             Swal.fire({
-                                type: "error",
+                                icon: "error",
                                 title: "Atenção",
                                 text: "Ocorreu um erro ao tentar adicionar serviço."
                             });
@@ -1276,7 +1304,7 @@
                             $("#curso").focus();
                         } else {
                             Swal.fire({
-                                type: "error",
+                                icon: "error",
                                 title: "Atenção",
                                 text: "Ocorreu um erro ao tentar adicionar curso."
                             });
@@ -1322,7 +1350,7 @@
                             $("#viagem").focus();
                         } else {
                             Swal.fire({
-                                type: "error",
+                                icon: "error",
                                 title: "Atenção",
                                 text: "Ocorreu um erro ao tentar adicionar viagem."
                             });
@@ -1361,7 +1389,7 @@
                             $("#divFormAnotacoes").html('');
                         } else {
                             Swal.fire({
-                                type: "error",
+                                icon: "error",
                                 title: "Atenção",
                                 text: "Ocorreu um erro ao tentar adicionar anotação."
                             });
@@ -1426,7 +1454,7 @@
 
                         } else {
                             Swal.fire({
-                                type: "error",
+                                icon: "error",
                                 title: "Atenção",
                                 text: "Ocorreu um erro ao tentar excluir produto."
                             });
@@ -1457,7 +1485,7 @@
 
                         } else {
                             Swal.fire({
-                                type: "error",
+                                icon: "error",
                                 title: "Atenção",
                                 text: "Ocorreu um erro ao tentar excluir serviço."
                             });
@@ -1537,7 +1565,7 @@
                         $("#divAnexos").load("<?php echo current_url(); ?> #divAnexos");
                     } else {
                         Swal.fire({
-                            type: "error",
+                            icon: "error",
                             title: "Atenção",
                             text: data.mensagem
                         });
@@ -1562,7 +1590,7 @@
 
                         } else {
                             Swal.fire({
-                                type: "error",
+                                icon: "error",
                                 title: "Atenção",
                                 text: "Ocorreu um erro ao tentar excluir Anotação."
                             });

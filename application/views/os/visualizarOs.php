@@ -504,8 +504,8 @@
                     if (data.result == true) {
                         $("#divAnexos").load("<?php echo current_url(); ?> #divAnexos");
                     } else {
-                        swal({
-                            type: "error",
+                        Swal.fire({
+                            icon: "error",
                             title: "Atenção",
                             text: data.mensagem
                         });
@@ -527,26 +527,25 @@
         if (code) {
             navigator.clipboard.writeText(code.data).then(function() {
                 $('#modal-pix').modal('hide');
-                swal({
-                    type: "success",
+                Swal.fire({
+                    icon: "success",
                     title: "Sucesso!",
                     text: "QR Code copiado com sucesso: " + code.data,
-                    icon: "success",
                     timer: 3000,
                     showConfirmButton: false,
                 });
 
             }).catch(function(err) {
-                swal({
-                    type: "error",
+                Swal.fire({
+                    icon: "error",
                     title: "Atenção",
                     text: "Erro ao copiar QR Code: ",
                     err
                 });
             });
         } else {
-            swal({
-                type: "error",
+            Swal.fire({
+                icon: "error",
                 title: "Atenção",
                 text: "Não foi possível decodificar o QR Code.",
             });
@@ -566,8 +565,8 @@
             var whatsappLink = 'https://api.whatsapp.com/send?phone=55' + <?= isset($zapnumber) ? $zapnumber : "" ?> + '&text=' + code.data;
             window.open(whatsappLink, '_blank');
         } else {
-            swal({
-                type: "error",
+            Swal.fire({
+                icon: "error",
                 title: "Atenção",
                 text: "Não foi possível decodificar o QR Code.",
             });

@@ -1,3 +1,32 @@
+<script type="text/javascript">
+    // Polyfill robusto para interceptar e corrigir chamadas antigas do SweetAlert (Swal)
+    (function() {
+        var patch = function(prop) {
+            var _val = window[prop];
+            var patchVal = function(value) {
+                if (typeof value === 'function' && value.fire && !value.isPolyfilled) {
+                    var Original = value;
+                    var Wrapper = function(...args) {
+                        return Original.fire(...args);
+                    };
+                    Object.assign(Wrapper, Original);
+                    Wrapper.prototype = Original.prototype;
+                    Wrapper.isPolyfilled = true;
+                    return Wrapper;
+                }
+                return value;
+            };
+            if (_val) { _val = patchVal(_val); }
+            Object.defineProperty(window, prop, {
+                get: function() { return _val; },
+                set: function(value) { _val = patchVal(value); },
+                configurable: true, enumerable: true
+            });
+        };
+        patch('Swal');
+        patch('swal');
+    })();
+</script>
 <div class="new122">
     <div class="widget-title" style="margin: -20px 0 0">
         <span class="icon">
@@ -98,7 +127,7 @@
 
 <script type="text/javascript">
     $(document).ready(function() {
-        $(document).on('click', 'a', function(event) {
+        $(document).on('click', 'a[data-toggle="modal"]', function(event) {
             var curso = $(this).attr('curso');
             $('#idCurso').val(curso);
         });

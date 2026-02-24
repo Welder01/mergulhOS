@@ -5,7 +5,35 @@
 <script type="text/javascript" src="<?php echo base_url() ?>assets/trumbowyg/langs/pt_br.min.js"></script>
 <script src="<?= base_url() ?>assets/js/maskmoney.js"></script>
 <script src="<?php echo base_url() ?>assets/js/jquery.mask.min.js"></script>
-<script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
+<script>
+    // Polyfill robusto para interceptar e corrigir chamadas antigas do SweetAlert (Swal)
+    (function() {
+        var patch = function(prop) {
+            var _val = window[prop];
+            var patchVal = function(value) {
+                if (typeof value === 'function' && value.fire && !value.isPolyfilled) {
+                    var Original = value;
+                    var Wrapper = function(...args) {
+                        return Original.fire(...args);
+                    };
+                    Object.assign(Wrapper, Original);
+                    Wrapper.prototype = Original.prototype;
+                    Wrapper.isPolyfilled = true;
+                    return Wrapper;
+                }
+                return value;
+            };
+            if (_val) { _val = patchVal(_val); }
+            Object.defineProperty(window, prop, {
+                get: function() { return _val; },
+                set: function(value) { _val = patchVal(value); },
+                configurable: true, enumerable: true
+            });
+        };
+        patch('Swal');
+        patch('swal');
+    })();
+</script>
 <script src="<?php echo base_url() ?>assets/js/funcoes.js"></script>
 
 <div class="row-fluid" style="margin-top:0">
