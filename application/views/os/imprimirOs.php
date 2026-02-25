@@ -224,7 +224,7 @@
                                         $subtotal = $c->preco * ($c->quantidade ?: 1);
                                         $totalCursos += $subtotal;
                                         echo '<tr>';
-                                        echo '<td>' . $c->nome_curso . '</td>';
+                                        echo '<td>' . $c->nome . '</td>';
                                         echo '<td class="text-center">' . ($c->data_inicio ? date('d/m/Y', strtotime($c->data_inicio)) : '') . '</td>';
                                         echo '<td class="text-center">' . ($c->data_fim ? date('d/m/Y', strtotime($c->data_fim)) : '') . '</td>';
                                         echo '<td class="text-center">' . ($c->quantidade ?: 1) . '</td>';
@@ -553,7 +553,7 @@
                                             $subtotal = $c->preco * ($c->quantidade ?: 1);
                                             $totalCursos += $subtotal;
                                             echo '<tr>';
-                                            echo '<td>' . $c->nome_curso . '</td>';
+                                            echo '<td>' . $c->nome . '</td>';
                                             echo '<td class="text-center">' . ($c->data_inicio ? date('d/m/Y', strtotime($c->data_inicio)) : '') . '</td>';
                                             echo '<td class="text-center">' . ($c->data_fim ? date('d/m/Y', strtotime($c->data_fim)) : '') . '</td>';
                                             echo '<td class="text-center">' . ($c->quantidade ?: 1) . '</td>';
