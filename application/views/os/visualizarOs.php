@@ -1,9 +1,27 @@
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
+<script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <link href="<?= base_url('assets/css/custom.css'); ?>" rel="stylesheet">
+<style>
+    .ui-datepicker {
+        z-index: 99999 !important;
+    }
+</style>
 <div class="row-fluid" style="margin-top: 0">
     <div class="span12">
         <div class="widget-box">
             <div class="widget-title" style="margin: 10px 0 0">
                 <div class="buttons">
+                    <?php if ($result->faturado == 0) { ?>
+                        <a href="#modal-faturar" id="btn-faturar" role="button" data-toggle="modal" class="button btn btn-mini btn-danger">
+                            <span class="button__icon"><i class='bx bx-dollar'></i></span> <span class="button__text">Faturar</span>
+                        </a>
+                    <?php } else { ?>
+                        <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'dLancamento')) { ?>
+                            <a href="#modal-cancelar-faturamento" id="btn-cancelar-faturamento" role="button" data-toggle="modal" class="button btn btn-mini btn-danger">
+                                <span class="button__icon"><i class='bx bx-x'></i></span> <span class="button__text">Cancelar Faturamento</span>
+                            </a>
+                        <?php } ?>
+                    <?php } ?>
                     <?php if ($editavel) {
                         echo '<a title="Editar OS" class="button btn btn-mini btn-success" href="' . base_url() . 'index.php/os/editar/' . $result->idOs . '">
                             <span class="button__icon"><i class="bx bx-edit"></i> </span> <span class="button__text">Editar</span>
@@ -30,7 +48,13 @@
                     <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vOs')) {
                         $this->load->model('os_model');
                         $zapnumber = preg_replace("/[^0-9]/", "", $result->celular_cliente);
-                        $troca = [$result->nomeCliente, $result->idOs, $result->status, 'R$ ' . ($result->desconto != 0 && $result->valor_desconto != 0 ? number_format($result->valor_desconto, 2, ',', '.') : number_format($totalProdutos + $totalServico + ($cursos ? array_sum(array_column($cursos, 'preco')) : 0) + ($viagens ? array_sum(array_column($viagens, 'preco')) : 0), 2, ',', '.')), strip_tags($result->descricaoProduto), ($emitente ? $emitente->nome : ''), ($emitente ? $emitente->telefone : ''), strip_tags($result->observacoes), strip_tags($result->defeito), strip_tags($result->laudoTecnico), date('d/m/Y', strtotime($result->dataFinal)), date('d/m/Y', strtotime($result->dataInicial)), $result->garantia . ' dias'];
+                        
+                        $totalCursos = 0;
+                        if ($cursos) { foreach ($cursos as $c) { $totalCursos += $c->preco * ($c->quantidade ?: 1); } }
+                        $totalViagens = 0;
+                        if ($viagens) { foreach ($viagens as $v) { $totalViagens += $v->preco * ($v->quantidade ?: 1); } }
+
+                        $troca = [$result->nomeCliente, $result->idOs, $result->status, 'R$ ' . ($result->desconto != 0 && $result->valor_desconto != 0 ? number_format($result->valor_desconto, 2, ',', '.') : number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, ',', '.')), strip_tags($result->descricaoProduto), ($emitente ? $emitente->nome : ''), ($emitente ? $emitente->telefone : ''), strip_tags($result->observacoes), strip_tags($result->defeito), strip_tags($result->laudoTecnico), date('d/m/Y', strtotime($result->dataFinal)), date('d/m/Y', strtotime($result->dataInicial)), $result->garantia . ' dias'];
                         $texto_de_notificacao = $this->os_model->criarTextoWhats($texto_de_notificacao, $troca);
                         if (!empty($zapnumber)) {
                             echo '<a title="Enviar Por WhatsApp" class="button btn btn-mini btn-success" id="enviarWhatsApp" target="_blank" href="https://api.whatsapp.com/send?phone=55' . $zapnumber . '&text=' . $texto_de_notificacao . '">
@@ -386,13 +410,13 @@
                             $totalCursos = 0;
                             if ($cursos) {
                                 foreach ($cursos as $c) {
-                                    $totalCursos += $c->preco;
+                                    $totalCursos += $c->preco * ($c->quantidade ?: 1);
                                 }
                             }
                             $totalViagens = 0;
                             if ($viagens) {
                                 foreach ($viagens as $v) {
-                                    $totalViagens += $v->preco;
+                                    $totalViagens += $v->preco * ($v->quantidade ?: 1);
                                 }
                             }
                             if ($totalProdutos != 0 || $totalServico != 0 || $totalCursos != 0 || $totalViagens != 0) {
@@ -417,6 +441,105 @@
 </div>
 
 <?= $modalGerarPagamento ?>
+
+<!-- Modal Faturar-->
+<div id="modal-faturar" class="modal hide fade " tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <form id="formFaturar" action="<?php echo base_url() ?>index.php/os/faturar" method="post">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="myModalLabel">Faturar OS</h3>
+        </div>
+        <div class="modal-body">
+            <div class="span12 alert alert-info" style="margin-left: 0"> Obrigatório o preenchimento dos campos com asterisco.</div>
+            <div class="span12" style="margin-left: 0">
+                <label for="descricao">Descrição</label>
+                <input class="span12" id="descricao" type="text" name="descricao" value="Fatura de OS Nº: <?php echo $result->idOs; ?> " />
+            </div>
+            <div class="span12" style="margin-left: 0">
+                <div class="span12" style="margin-left: 0">
+                    <label for="cliente">Cliente*</label>
+                    <input class="span12" id="cliente" type="text" name="cliente" value="<?php echo $result->nomeCliente ?>" />
+                    <input type="hidden" name="clientes_id" id="clientes_id" value="<?php echo $result->clientes_id ?>">
+                    <input type="hidden" name="os_id" id="os_id" value="<?php echo $result->idOs; ?>">
+                    <input type="hidden" name="tipoDesconto" id="tipoDesconto" value="<?php echo $result->tipo_desconto; ?>">
+                </div>
+            </div>
+            <div class="span12" style="margin-left: 0">
+                <div class="span6" style="margin-left: 0">
+                    <label for="valor">Valor*</label>
+                    <input type="hidden" id="tipo" name="tipo" value="receita" />
+                    <input class="span12 money" id="valor" type="text" data-affixes-stay="true" data-thousands="" data-decimal="." name="valor" value="<?php echo number_format($totalProdutos + $totalServico + $totalCursos + $totalViagens, 2, '.', ''); ?>" />
+                </div>
+                <div class="span6" style="margin-left: 2;">
+                    <label for="valor">Valor Com Desconto*</label>
+                    <input class="span12 money" id="faturar-desconto" type="text" name="faturar-desconto" value="<?php echo number_format($result->valor_desconto, 2, '.', ''); ?> " />
+                    <strong><span style="color: red" id="resultado"></span></strong>
+                </div>
+            </div>
+            <div class="span12" style="margin-left: 0">
+                <div class="span4" style="margin-left: 0">
+                    <label for="vencimento">Data Entrada*</label>
+                    <input class="span12 datepicker" autocomplete="off" id="vencimento" type="text" name="vencimento" />
+                </div>
+                <div class="span4">
+                    <label for="qtd_parcelas">Qtd Parcelas</label>
+                    <input class="span12" id="qtd_parcelas" type="number" name="qtd_parcelas" value="1" />
+                </div>
+                <div class="span4">
+                    <label for="entrada">Entrada</label>
+                    <input class="span12 money" id="entrada" type="text" name="entrada" value="0,00" />
+                </div>
+            </div>
+            <div class="span12" style="margin-left: 0">
+                <div class="span4" style="margin-left: 0">
+                    <label for="recebido">Recebido?</label>
+                    &nbsp &nbsp &nbsp &nbsp <input id="recebido" type="checkbox" name="recebido" value="1" />
+                </div>
+                <div id="divRecebimento" class="span8" style=" display: none">
+                    <div class="span6">
+                        <label for="recebimento">Data Recebimento</label>
+                        <input class="span12 datepicker" autocomplete="off" id="recebimento" type="text" name="recebimento" />
+                    </div>
+                    <div class="span6">
+                        <label for="formaPgto">Forma Pgto</label>
+                        <select name="formaPgto" id="formaPgto" class="span12">
+                            <option value="Dinheiro">Dinheiro</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            <option value="Cartão de Débito">Cartão de Débito</option>
+                            <option value="Boleto">Boleto</option>
+                            <option value="Depósito">Depósito</option>
+                            <option value="Pix">Pix</option>
+                            <option value="Cheque">Cheque</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" style="display:flex;justify-content: center">
+            <button class="button btn btn-warning" data-dismiss="modal" aria-hidden="true" id="btn-cancelar-faturar"><span class="button__icon"><i class="bx bx-x"></i></span><span class="button__text2">Cancelar</span></button>
+            <button class="button btn btn-danger"><span class="button__icon"><i class='bx bx-dollar'></i></span> <span class="button__text2">Faturar</span></button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal Cancelar Faturamento -->
+<div id="modal-cancelar-faturamento" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <form action="<?php echo base_url() ?>index.php/os/cancelar_faturamento" method="post">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="myModalLabel">Cancelar Faturamento</h3>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" name="idOs" value="<?php echo $result->idOs; ?>" />
+            <h5 style="text-align: center">Deseja realmente cancelar o faturamento desta OS?</h5>
+            <p style="text-align: center">Isso excluirá os lançamentos financeiros associados e reabrirá a OS.</p>
+        </div>
+        <div class="modal-footer" style="display:flex;justify-content: center">
+            <button class="button btn btn-warning" data-dismiss="modal" aria-hidden="true"><span class="button__icon"><i class="bx bx-x"></i></span><span class="button__text2">Cancelar</span></button>
+            <button class="button btn btn-danger"><span class="button__icon"><i class='bx bx-trash'></i></span> <span class="button__text2">Confirmar</span></button>
+        </div>
+    </form>
+</div>
 
 <!-- Modal visualizar anexo -->
 <div id="modal-anexo" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
@@ -453,7 +576,11 @@
                 <img id="qrCodeImage" width="50%" src="<?= $qrCode ?>" alt="QR Code de Pagamento" /></br>
                 <?php echo '<span>Chave PIX: ' . $chaveFormatada . '</span>'; ?></br>
                 <?php
-                $totalGeral = $totalProdutos + $totalServico + ($totalCursos ?? 0) + ($totalViagens ?? 0);
+                $totalCursos = 0;
+                if ($cursos) { foreach ($cursos as $c) { $totalCursos += $c->preco * ($c->quantidade ?: 1); } }
+                $totalViagens = 0;
+                if ($viagens) { foreach ($viagens as $v) { $totalViagens += $v->preco * ($v->quantidade ?: 1); } }
+                $totalGeral = $totalProdutos + $totalServico + $totalCursos + $totalViagens;
                 if ($totalGeral != 0) {
                     if ($result->valor_desconto != 0) {
                         echo "Valor Total: R$ " . number_format($result->valor_desconto, 2, ',', '.');
@@ -473,6 +600,8 @@
     </div>
 </div>
 <script src="https://cdn.rawgit.com/cozmo/jsQR/master/dist/jsQR.js"></script>
+<script src="<?php echo base_url(); ?>assets/js/maskmoney.js"></script>
+<script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery.validate.js"></script>
 <script type="text/javascript">
     $(document).ready(function() {
         $(document).on('click', '.anexo', function(event) {
@@ -513,6 +642,66 @@
                 }
             });
         });
+
+        $(".money").maskMoney();
+
+        $('#recebido').click(function(event) {
+            var flag = $(this).is(':checked');
+            if (flag == true) {
+                $('#divRecebimento').show();
+            } else {
+                $('#divRecebimento').hide();
+            }
+        });
+
+        $("#formFaturar").validate({
+            rules: {
+                descricao: { required: true },
+                cliente: { required: true },
+                valor: { required: true },
+                vencimento: { required: true }
+            },
+            messages: {
+                descricao: { required: 'Campo Requerido.' },
+                cliente: { required: 'Campo Requerido.' },
+                valor: { required: 'Campo Requerido.' },
+                vencimento: { required: 'Campo Requerido.' }
+            },
+            submitHandler: function(form) {
+                var dados = $(form).serialize();
+                var qtdProdutos = <?= count($produtos) ?>;
+                var qtdServicos = <?= count($servicos) ?>;
+                var qtdCursos = <?= count($cursos) ?>;
+                var qtdViagens = <?= count($viagens) ?>;
+                var qtdTotal = qtdProdutos + qtdServicos + qtdCursos + qtdViagens;
+
+                $('#btn-cancelar-faturar').trigger('click');
+
+                if (qtdTotal <= 0) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Atenção",
+                        text: "Não é possível faturar uma OS sem serviços, produtos, cursos ou viagens"
+                    });
+                } else {
+                    $.ajax({
+                        type: "POST",
+                        url: "<?php echo base_url(); ?>index.php/os/faturar",
+                        data: dados,
+                        dataType: 'json',
+                        success: function(data) {
+                            if (data.result == true) {
+                                window.location.reload(true);
+                            } else {
+                                Swal.fire({ icon: "error", title: "Atenção", text: "Ocorreu um erro ao tentar faturar OS." });
+                            }
+                        }
+                    });
+                    return false;
+                }
+            }
+        });
+        $(".datepicker").datepicker({ dateFormat: 'dd/mm/yy' });
     });
 
     $('#copyButton').on('click', function() {

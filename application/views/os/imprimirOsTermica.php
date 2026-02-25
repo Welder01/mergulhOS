@@ -257,9 +257,9 @@ $totalViagens = 0; ?>
                             <tbody>
                                 <?php
                                 foreach ($cursos as $c) {
-                                    $totalCursos += $c->preco;
+                                    $totalCursos += $c->preco * ($c->quantidade ?: 1);
                                     echo '<tr>';
-                                    echo '<td>1</td>';
+                                    echo '<td>' . ($c->quantidade ?: 1) . '</td>';
                                     echo '<td>' . $c->nome_curso . '</td>';
                                     echo '<td>R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
                                     echo '<td>R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
@@ -285,9 +285,9 @@ $totalViagens = 0; ?>
                             <tbody>
                                 <?php
                                 foreach ($viagens as $v) {
-                                    $totalViagens += $v->preco;
+                                    $totalViagens += $v->preco * ($v->quantidade ?: 1);
                                     echo '<tr>';
-                                    echo '<td>1</td>';
+                                    echo '<td>' . ($v->quantidade ?: 1) . '</td>';
                                     echo '<td>' . $v->nome_viagem . '</td>';
                                     echo '<td>R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
                                     echo '<td>R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';

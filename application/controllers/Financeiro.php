@@ -137,20 +137,19 @@ class Financeiro extends MY_Controller
                 $vencimento = date('Y/m/d');
             }
             // Formatação correta dos valores
-            $valor = str_replace(',', '.', $this->input->post('valor'));
-            $valor_desconto = floatval(str_replace(',', '.', $this->input->post('valor_desconto')));
+            $valor = $this->input->post('valor');
+            $valor = str_replace('.', '', $valor);
+            $valor = str_replace(',', '.', $valor);
+
+            $valor_desconto = $this->input->post('valor_desconto');
+            $valor_desconto = str_replace('.', '', $valor_desconto);
+            $valor_desconto = str_replace(',', '.', $valor_desconto);
+
             $desconto = $valor_desconto;
             $total_sem_desconto = $valor + $valor_desconto;
             $valor = $total_sem_desconto;
             $total_com_desconto = $valor - $valor_desconto;
             $valor_desconto = $total_com_desconto;
-            // Verifica se o valor está em formato monetário
-            if (!is_numeric($valor_desconto)) {
-                $valor_desconto = str_replace([',', '.'], ['', ''], $valor_desconto);
-            }
-            if (!is_numeric($valor)) {
-                $valor = str_replace([',', '.'], ['', ''], $valor);
-            }
             // Criação do array de dados
             $data = [
                 'descricao' => set_value('descricao'),
@@ -205,12 +204,19 @@ class Financeiro extends MY_Controller
             redirect(base_url());
         } else {
 
-            $valor_desconto = $this->input->post('desconto_parc') ?: 0;
-            $entrada = $this->input->post('entrada') ?: 0;
+            $valor_desconto = $this->input->post('desconto_parc');
+            $valor_desconto = str_replace('.', '', $valor_desconto);
             $valor_desconto = str_replace(',', '.', $valor_desconto);
+
+            $entrada = $this->input->post('entrada');
+            $entrada = str_replace('.', '', $entrada);
+            $entrada = str_replace(',', '.', $entrada);
 
             $qtdparcelas_parc = $this->input->post('qtdparcelas_parc') ?: 1; //4x
             $valor_parc = $this->input->post('valor_parc'); //450
+            $valor_parc = str_replace('.', '', $valor_parc);
+            $valor_parc = str_replace(',', '.', $valor_parc);
+
             $valorparcelas = ($valor_parc - $entrada) / $qtdparcelas_parc;
 
             $desconto_por_parcela = $valor_desconto > 0 ? ($valor_desconto / $qtdparcelas_parc) : 0;
@@ -426,10 +432,8 @@ class Financeiro extends MY_Controller
             }
 
             $valor = $this->input->post('valor');
-
-            if (!validate_money($valor)) {
-                $valor = str_replace([',', '.'], ['', ''], $valor);
-            }
+            $valor = str_replace('.', '', $valor);
+            $valor = str_replace(',', '.', $valor);
 
             $data = [
                 'descricao' => set_value('descricao'),
@@ -499,9 +503,14 @@ class Financeiro extends MY_Controller
                 $vencimento = date('Y/m/d');
             }
 
-            $valor = floatval($this->input->post('valor'));
+            $valor = $this->input->post('valor');
+            $valor = str_replace('.', '', $valor);
+            $valor = str_replace(',', '.', $valor);
+
             //Se o valor_desconto for vázio, seta a variavel com valor 0, se não for vazio recebe o valor de desconto
-            $valor_desconto = floatval($this->input->post('valor_desconto_editar')); // valor do total + desconto
+            $valor_desconto = $this->input->post('valor_desconto_editar'); // valor do total + desconto
+            $valor_desconto = str_replace('.', '', $valor_desconto);
+            $valor_desconto = str_replace(',', '.', $valor_desconto);
 
             $valor_total = $valor + $valor_desconto; //90 + 10=100
             $valor_com_desconto = $valor_total - $valor_desconto;

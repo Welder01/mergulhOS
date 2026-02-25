@@ -64,8 +64,8 @@ class Os extends MY_Controller
             'os.*,
             COALESCE((SELECT SUM(produtos_os.preco * produtos_os.quantidade ) FROM produtos_os WHERE produtos_os.os_id = os.idOs), 0) totalProdutos,
             COALESCE((SELECT SUM(servicos_os.preco * servicos_os.quantidade ) FROM servicos_os WHERE servicos_os.os_id = os.idOs), 0) totalServicos,
-            COALESCE((SELECT SUM(cursos_os.preco) FROM cursos_os WHERE cursos_os.os_id = os.idOs), 0) totalCursos,
-            COALESCE((SELECT SUM(viagens_os.preco) FROM viagens_os WHERE viagens_os.os_id = os.idOs), 0) totalViagens',
+            COALESCE((SELECT SUM(cursos_os.preco * cursos_os.quantidade) FROM cursos_os WHERE cursos_os.os_id = os.idOs), 0) totalCursos,
+            COALESCE((SELECT SUM(viagens_os.preco * viagens_os.quantidade) FROM viagens_os WHERE viagens_os.os_id = os.idOs), 0) totalViagens',
             $where_array,
             $this->data['configuration']['per_page'],
             $this->uri->segment(3)
@@ -1401,22 +1401,14 @@ class Os extends MY_Controller
             $desconto = $this->os_model->getById($os_id)->desconto ?: 0;
             $valorFinal = $totalBruto - $desconto;
 
-            $data = [
-                'descricao' => $this->input->post('descricao'),
-                'valor' => $totalBruto,
-                'tipo_desconto' => 'real',
-                'desconto' => $desconto,
-                'valor_desconto' => $valorFinal,
-                'clientes_id' => $this->input->post('clientes_id'),
-                'data_vencimento' => $vencimento,
-                'data_pagamento' => $recebimento,
-                'baixado' => $this->input->post('recebido') ?: 0,
-                'cliente_fornecedor' => set_value('cliente'),
-                'forma_pgto' => $this->input->post('formaPgto'),
-                'tipo' => $this->input->post('tipo'),
-                'observacoes' => set_value('observacoes'),
-                'usuarios_id' => $this->session->userdata('id_admin'),
-            ];
+            $qtd_parcelas = $this->input->post('qtd_parcelas') ?: 1;
+            $entrada = $this->input->post('entrada');
+            if ($entrada) {
+                $entrada = str_replace('.', '', $entrada);
+                $entrada = str_replace(',', '.', $entrada);
+            } else {
+                $entrada = 0;
+            }
 
             $this->db->trans_start();
 
@@ -1429,7 +1421,74 @@ class Os extends MY_Controller
                     ->set_output(json_encode(['result' => false]));
             }
 
-            if ($this->os_model->add('lancamentos', $data)) {
+            $success = true;
+
+            if ($qtd_parcelas > 1) {
+                $valor_parcelar = $valorFinal - $entrada;
+                $valor_parcela = $valor_parcelar / $qtd_parcelas;
+
+                if ($entrada > 0) {
+                    $data = [
+                        'descricao' => $this->input->post('descricao') . ' - Entrada',
+                        'valor' => $entrada,
+                        'tipo_desconto' => 'real',
+                        'desconto' => 0,
+                        'valor_desconto' => $entrada,
+                        'clientes_id' => $this->input->post('clientes_id'),
+                        'data_vencimento' => $vencimento,
+                        'data_pagamento' => $recebimento ?: date('Y-m-d'),
+                        'baixado' => 1,
+                        'cliente_fornecedor' => set_value('cliente'),
+                        'forma_pgto' => $this->input->post('formaPgto'),
+                        'tipo' => $this->input->post('tipo'),
+                        'observacoes' => set_value('observacoes'),
+                        'usuarios_id' => $this->session->userdata('id_admin'),
+                    ];
+                    if (!$this->os_model->add('lancamentos', $data)) $success = false;
+                }
+
+                $data_vencimento_parcela = $vencimento;
+                for ($i = 1; $i <= $qtd_parcelas; $i++) {
+                    $data = [
+                        'descricao' => $this->input->post('descricao') . ' - Parcela ' . $i . '/' . $qtd_parcelas,
+                        'valor' => $valor_parcela,
+                        'tipo_desconto' => 'real',
+                        'desconto' => 0,
+                        'valor_desconto' => $valor_parcela,
+                        'clientes_id' => $this->input->post('clientes_id'),
+                        'data_vencimento' => $data_vencimento_parcela,
+                        'data_pagamento' => null,
+                        'baixado' => 0,
+                        'cliente_fornecedor' => set_value('cliente'),
+                        'forma_pgto' => $this->input->post('formaPgto'),
+                        'tipo' => $this->input->post('tipo'),
+                        'observacoes' => set_value('observacoes'),
+                        'usuarios_id' => $this->session->userdata('id_admin'),
+                    ];
+                    if (!$this->os_model->add('lancamentos', $data)) $success = false;
+                    $data_vencimento_parcela = date('Y-m-d', strtotime('+1 month', strtotime($data_vencimento_parcela)));
+                }
+            } else {
+                $data = [
+                    'descricao' => $this->input->post('descricao'),
+                    'valor' => $totalBruto,
+                    'tipo_desconto' => 'real',
+                    'desconto' => $desconto,
+                    'valor_desconto' => $valorFinal,
+                    'clientes_id' => $this->input->post('clientes_id'),
+                    'data_vencimento' => $vencimento,
+                    'data_pagamento' => $recebimento,
+                    'baixado' => $this->input->post('recebido') ?: 0,
+                    'cliente_fornecedor' => set_value('cliente'),
+                    'forma_pgto' => $this->input->post('formaPgto'),
+                    'tipo' => $this->input->post('tipo'),
+                    'observacoes' => set_value('observacoes'),
+                    'usuarios_id' => $this->session->userdata('id_admin'),
+                ];
+                if (!$this->os_model->add('lancamentos', $data)) $success = false;
+            }
+
+            if ($success) {
                 $this->db->set('faturado', 1);
                 $this->db->set('valorTotal', $totalBruto);
                 $this->db->set('desconto', $desconto);
@@ -1462,6 +1521,49 @@ class Os extends MY_Controller
         $this->session->set_flashdata('error', 'Ocorreu um erro ao tentar faturar OS.');
         $json = ['result' => false];
         echo json_encode($json);
+    }
+
+    public function cancelar_faturamento()
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dLancamento')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para cancelar o faturamento.');
+            redirect(base_url());
+        }
+
+        $idOs = $this->input->post('idOs');
+
+        if ($idOs == null || !is_numeric($idOs)) {
+            $this->session->set_flashdata('error', 'Erro ao tentar cancelar faturamento.');
+            redirect(site_url('os/gerenciar/'));
+        }
+
+        $this->db->trans_start();
+
+        // Remove lançamentos financeiros associados (padrão de descrição)
+        $this->db->like('descricao', "Fatura de OS Nº: $idOs");
+        $this->db->or_like('descricao', "Fatura de OS - #$idOs"); // Compatibilidade com versões anteriores/outros padrões
+        $this->db->delete('lancamentos');
+
+        // Reseta o status e valores da OS
+        $data = [
+            'faturado' => 0,
+            'valorTotal' => null,
+            'desconto' => null,
+            'valor_desconto' => null,
+            'tipo_desconto' => null,
+            'status' => 'Em Andamento'
+        ];
+        $this->os_model->edit('os', $data, 'idOs', $idOs);
+
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === FALSE) {
+            $this->session->set_flashdata('error', 'Ocorreu um erro ao tentar cancelar o faturamento.');
+        } else {
+            log_info('Cancelou o faturamento da OS. ID: ' . $idOs);
+            $this->session->set_flashdata('success', 'Faturamento cancelado com sucesso!');
+        }
+        redirect(site_url('os/visualizar/' . $idOs));
     }
 
     private function enviarOsPorEmail($idOs, $remetentes, $assunto)

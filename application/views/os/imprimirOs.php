@@ -221,13 +221,13 @@
                             <tbody>
                                 <?php
                                     foreach ($cursos as $c) {
-                                        $totalCursos += $c->preco;
-                                        $subtotal = $c->preco * 1;
+                                        $subtotal = $c->preco * ($c->quantidade ?: 1);
+                                        $totalCursos += $subtotal;
                                         echo '<tr>';
                                         echo '<td>' . $c->nome_curso . '</td>';
                                         echo '<td class="text-center">' . ($c->data_inicio ? date('d/m/Y', strtotime($c->data_inicio)) : '') . '</td>';
                                         echo '<td class="text-center">' . ($c->data_fim ? date('d/m/Y', strtotime($c->data_fim)) : '') . '</td>';
-                                        echo '<td class="text-center">1</td>';
+                                        echo '<td class="text-center">' . ($c->quantidade ?: 1) . '</td>';
                                         echo '<td class="text-center">R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
                                         echo '<td class="text-end">R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
                                         echo '</tr>';
@@ -258,13 +258,13 @@
                             <tbody>
                                 <?php
                                     foreach ($viagens as $v) {
-                                        $totalViagens += $v->preco;
-                                        $subtotal = $v->preco * 1;
+                                        $subtotal = $v->preco * ($v->quantidade ?: 1);
+                                        $totalViagens += $subtotal;
                                         echo '<tr>';
                                         echo '<td>' . $v->nome_viagem . '</td>';
                                         echo '<td class="text-center">' . ($v->data_partida ? date('d/m/Y', strtotime($v->data_partida)) : '') . '</td>';
                                         echo '<td class="text-center">' . ($v->data_retorno ? date('d/m/Y', strtotime($v->data_retorno)) : '') . '</td>';
-                                        echo '<td class="text-center">1</td>';
+                                        echo '<td class="text-center">' . ($v->quantidade ?: 1) . '</td>';
                                         echo '<td class="text-center">R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
                                         echo '<td class="text-end">R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
                                         echo '</tr>';
@@ -548,13 +548,13 @@
                                     <?php
                                         $totalCursos = 0;
                                         foreach ($cursos as $c) {
-                                            $totalCursos += $c->preco;
-                                            $subtotal = $c->preco * 1;
+                                            $subtotal = $c->preco * ($c->quantidade ?: 1);
+                                            $totalCursos += $subtotal;
                                             echo '<tr>';
                                             echo '<td>' . $c->nome_curso . '</td>';
                                             echo '<td class="text-center">' . ($c->data_inicio ? date('d/m/Y', strtotime($c->data_inicio)) : '') . '</td>';
                                             echo '<td class="text-center">' . ($c->data_fim ? date('d/m/Y', strtotime($c->data_fim)) : '') . '</td>';
-                                            echo '<td class="text-center">1</td>';
+                                            echo '<td class="text-center">' . ($c->quantidade ?: 1) . '</td>';
                                             echo '<td class="text-center">R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
                                             echo '<td class="text-end">R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
                                             echo '</tr>';
@@ -582,13 +582,13 @@
                                     <?php
                                         $totalViagens = 0;
                                         foreach ($viagens as $v) {
-                                            $totalViagens += $v->preco;
-                                            $subtotal = $v->preco * 1;
+                                            $subtotal = $v->preco * ($v->quantidade ?: 1);
+                                            $totalViagens += $subtotal;
                                             echo '<tr>';
                                             echo '<td>' . $v->nome_viagem . '</td>';
                                             echo '<td class="text-center">' . ($v->data_partida ? date('d/m/Y', strtotime($v->data_partida)) : '') . '</td>';
                                             echo '<td class="text-center">' . ($v->data_retorno ? date('d/m/Y', strtotime($v->data_retorno)) : '') . '</td>';
-                                            echo '<td class="text-center">1</td>';
+                                            echo '<td class="text-center">' . ($v->quantidade ?: 1) . '</td>';
                                             echo '<td class="text-center">R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
                                             echo '<td class="text-end">R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
                                             echo '</tr>';

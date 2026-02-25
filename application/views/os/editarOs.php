@@ -51,6 +51,9 @@
     .ui-autocomplete.ui-menu {
         width: 400px; /* Você pode ajustar este valor conforme necessário */
     }
+    .ui-datepicker {
+        z-index: 99999 !important;
+    }
 </style>
 
 <div class="row-fluid" style="margin-top:0">
@@ -203,8 +206,14 @@
                                 $subtotals = $preco * ($s->quantidade ?: 1);
                                 $totalServicos += $subtotals;
                             }
-                            $totalCursos = $cursos ? array_sum(array_column($cursos, 'preco')) : 0;
-                            $totalViagens = $viagens ? array_sum(array_column($viagens, 'preco')) : 0;
+                            $totalCursos = 0;
+                            if ($cursos) {
+                                foreach ($cursos as $c) { $totalCursos += $c->preco * ($c->quantidade ?: 1); }
+                            }
+                            $totalViagens = 0;
+                            if ($viagens) {
+                                foreach ($viagens as $v) { $totalViagens += $v->preco * ($v->quantidade ?: 1); }
+                            }
                             $valorTotalOs = $totalProdutos + $totalServicos + $totalCursos + $totalViagens;
                         ?>
                         <div class="tab-pane" id="tab2">
@@ -426,6 +435,7 @@
                                         <thead>
                                             <tr>
                                                 <th>Curso</th>
+                                                <th>Quantidade</th>
                                                 <th>Preço</th>
                                                 <th width="6%">Ações</th>
                                             </tr>
@@ -434,9 +444,10 @@
                                             <?php
                                             $totalCursos = 0;
                                             foreach ($cursos as $c) {
-                                                $totalCursos += $c->preco;
+                                                $totalCursos += $c->preco * ($c->quantidade ?: 1);
                                                 echo '<tr>';
                                                 echo '<td>' . $c->nome . '</td>';
+                                                echo '<td>' . ($c->quantidade ?: 1) . '</td>';
                                                 echo '<td>R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
                                                 echo '<td><div align="center"><a href="" idAcao="' . $c->idCursos_os . '" title="Excluir Curso" class="btn-nwe4 curso"><i class="bx bx-trash-alt"></i></a></div></td>';
                                                 echo '</tr>';
@@ -492,6 +503,7 @@
                                         <thead>
                                             <tr>
                                                 <th>Viagem</th>
+                                                <th>Quantidade</th>
                                                 <th>Propósito</th>
                                                 <th>Preço</th>
                                                 <th width="6%">Ações</th>
@@ -501,9 +513,10 @@
                                             <?php
                                             $totalViagens = 0;
                                             foreach ($viagens as $v) {
-                                                $totalViagens += $v->preco;
+                                                $totalViagens += $v->preco * ($v->quantidade ?: 1);
                                                 echo '<tr>';
                                                 echo '<td>' . $v->nome . '</td>';
+                                                echo '<td>' . ($v->quantidade ?: 1) . '</td>';
                                                 echo '<td>' . ($v->proposito ?? '') . '</td>';
                                                 echo '<td>R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
                                                 echo '<td><div align="center"><a href="" idAcao="' . $v->idViagens_os . '" title="Excluir Viagem" class="btn-nwe4 viagem"><i class="bx bx-trash-alt"></i></a></div></td>';
@@ -688,8 +701,12 @@
                     <input type="hidden" id="tipo" name="tipo" value="receita" />
                     <input class="span12 money" id="valor" type="text" data-affixes-stay="true" data-thousands=""
                         data-decimal="." name="valor" value="<?php
-                        $totalCursos = $cursos ? array_sum(array_column($cursos, 'preco')) : 0;
-                        $totalViagens = $viagens ? array_sum(array_column($viagens, 'preco')) : 0;
+                        $totalCursos = 0;
+                        if ($cursos) { foreach ($cursos as $c) { $totalCursos += $c->preco * ($c->quantidade ?: 1); } }
+                        
+                        $totalViagens = 0;
+                        if ($viagens) { foreach ($viagens as $v) { $totalViagens += $v->preco * ($v->quantidade ?: 1); } }
+                        
                         echo number_format($totals + $total + $totalCursos + $totalViagens, 2, '.', ''); ?>" />
                 </div>
                 <div class="span6" style="margin-left: 2;">
@@ -703,6 +720,14 @@
                 <div class="span4" style="margin-left: 0">
                     <label for="vencimento">Data Entrada*</label>
                     <input class="span12 datepicker" autocomplete="off" id="vencimento" type="text" name="vencimento" />
+                </div>
+                <div class="span4">
+                    <label for="qtd_parcelas">Qtd Parcelas</label>
+                    <input class="span12" id="qtd_parcelas" type="number" name="qtd_parcelas" value="1" />
+                </div>
+                <div class="span4">
+                    <label for="entrada">Entrada</label>
+                    <input class="span12 money" id="entrada" type="text" name="entrada" value="0,00" />
                 </div>
             </div>
             <div class="span12" style="margin-left: 0">
