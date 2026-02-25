@@ -1,19 +1,12 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Ficha de Operação</title>
-    <meta charset="UTF-8" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="<?php echo base_url(); ?>assets/css/bootstrap.min.css" />
-    <link href="<?php echo base_url(); ?>assets/font-awesome/css/font-awesome.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,800' rel='stylesheet' type='text/css'>
-    <style>
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/css/bootstrap.min.css" />
+<link href="<?php echo base_url(); ?>assets/font-awesome/css/font-awesome.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,800' rel='stylesheet' type='text/css'>
+<style>
         body {
             font-family: 'Open Sans', sans-serif;
             color: #333;
-            font-size: 9px;
+            font-size: 8px;
             background-color: #f9f9f9;
         }
         .document-title {
@@ -32,8 +25,8 @@
             border-collapse: collapse;
         }
         .table th, .table td {
-            padding: 5px;
-            line-height: 1.4;
+            padding: 2px;
+            line-height: 1.2;
             text-align: left;
             vertical-align: middle !important;
             border-top: 1px solid #e9e9e9;
@@ -83,12 +76,12 @@
         }
         .equip-box {
             text-align: center;
-            width: 40px;
+            width: 28px;
         }
         .badge {
             display: inline-block;
             padding: 2px 6px;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: bold;
             line-height: 14px;
             color: #ffffff;
@@ -113,10 +106,8 @@
             margin: 0 auto;
             padding-top: 40px;
         }
-    </style>
-</head>
+</style>
 
-<body>
     <div class="container-fluid">
         <div class="invoice-content">
             <div class="invoice-head">
@@ -140,7 +131,8 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td colspan="3" style="text-align: center; padding-top: 0px; padding-bottom: 0px;"><h2 class="document-title" style="margin:0; border:0;"><?= html_escape(strtoupper($result->nome_viagem)) ?></h2></td>
+                                <td colspan="3" style="text-align: center; padding-top: 0px; padding-bottom: 0px;"><h2 class="document-title" style="margin:0; border:0;"><?= html_escape(strtoupper($result->nome_viagem)) ?></h2>
+                                <div style="font-size: 10px; font-weight: bold; margin-top: 2px;"><?= date('d/m/Y', strtotime($result->data_partida)) ?></div></td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -152,9 +144,10 @@
                 <thead>
                     <tr>
                         <th style="width: 2%;">#</th>
-                        <th>Nome do Mergulhador</th>
-                        <th class="text-center" style="width: 10%;">Atestado</th>
-                        <th>Certificações</th>
+                        <th style="width: 22%;">Nome do Mergulhador</th>
+                        <th style="width: 10%;">CPF</th>
+                        <th class="text-center" style="width: 8%;">Atestado</th>
+                        <th style="width: 12%;">Propósito</th>
                         <th class="equip-box">CI</th>
                         <th class="equip-box">RGR</th>
                         <th class="equip-box">CLT</th>
@@ -163,8 +156,7 @@
                         <th class="equip-box">LSO</th>
                         <th class="equip-box">LTN</th>
                         <th class="equip-box">CMP</th>
-                        <th style="width: 8%;">Bolsa</th>
-                        <th style="width: 12%;">Obs.</th>
+                        <th style="width: 6%;">Bolsa</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -173,10 +165,11 @@
                         <?php foreach ($clientes as $c) : ?>
                             <tr>
                                 <td class="text-center" style="vertical-align: top;"><?= $count++ ?></td>
-                                <td style="vertical-align: top;"><?= html_escape($c->nomeCliente) ?><br><small><?= html_escape($c->cpf) ?></small></td>
+                                <td style="vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px; font-size: 9px;"><?= html_escape($c->nomeCliente) ?></td>
+                                <td style="vertical-align: middle;"><?= html_escape($c->documento) ?></td>
                                 <td style="vertical-align: top; text-align: center;">
                                     <?php
-                                        $statusAtestado = 'Não informado';
+                                        $statusAtestado = 'N/I';
                                         $corAtestado = '';
                                         if ($c->atestado_medico_validade) {
                                             $validade = new DateTime($c->atestado_medico_validade);
@@ -192,13 +185,13 @@
                                         echo "<span $corAtestado>$statusAtestado</span>";
                                     ?>
                                 </td>
-                                <td style="vertical-align: top; font-size: 5.5px;">
+                                <td style="vertical-align: middle; white-space: nowrap;">
                                     <?php if (!empty($c->certificacoes)) : ?>
                                         <?php foreach ($c->certificacoes as $cert) : ?>
-                                            - <?= html_escape($cert->nome_certificacao) ?><br>
+                                            <?= html_escape($cert->nome_certificacao) ?>
                                         <?php endforeach; ?>
                                     <?php else : ?>
-                                        Nenhuma
+                                        -
                                     <?php endif; ?>
                                 </td>
                                 <td class="equip-box"><?= $c->locar_cilindro > 0 ? $c->locar_cilindro : '<i class="fas fa-lock"></i>' ?></td>
@@ -218,21 +211,6 @@
                                 <td class="equip-box"><?= $c->locar_lanterna > 0 ? $c->locar_lanterna : '<i class="fas fa-lock"></i>' ?></td>
                                 <td class="equip-box"><?= $c->locar_computador > 0 ? $c->locar_computador : '<i class="fas fa-lock"></i>' ?></td>
                                 <td><?= html_escape($c->numero_bolsa) ?></td>
-                                <td class="text-center">
-                                    <?php
-                                        $proposito = html_escape($c->proposito);
-                                        $badgeClass = '';
-                                        switch ($proposito) {
-                                            case 'Checkout': $badgeClass = 'badge-info'; break;
-                                            case 'Acompanhante': $badgeClass = 'badge-inverse'; break;
-                                            case 'Turismo': $badgeClass = 'badge-success'; break;
-                                            case 'Batismo': $badgeClass = 'badge-warning'; break;
-                                        }
-                                        if ($proposito) {
-                                            echo '<span class="badge ' . $badgeClass . '">' . $proposito . '</span>';
-                                        }
-                                    ?>
-                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else : ?>
@@ -242,12 +220,13 @@
             </table>
 
             <div class="section-title">Equipe de Instrutores</div>
-            <table class="table table-bordered" style="font-size: 9px;">
+            <table class="table table-bordered" style="font-size: 8px;">
                 <thead>
                     <tr>
                         <th style="width: 2%;">#</th>
-                        <th>Nome do Instrutor</th>
-                        <th class="text-center" style="width: 10%;">Atestado</th>
+                        <th style="width: 22%;">Nome do Instrutor</th>
+                        <th style="width: 12%;">CPF</th>
+                        <th class="text-center" style="width: 8%;">Atestado</th>
                         <th>Certificações</th>
                         <th class="equip-box">CI</th>
                         <th class="equip-box">RGR</th>
@@ -257,8 +236,7 @@
                         <th class="equip-box">LSO</th>
                         <th class="equip-box">LTN</th>
                         <th class="equip-box">CMP</th>
-                        <th style="width: 10%;">Bolsa</th>
-                        <th style="width: 10%;">Obs.</th>
+                        <th style="width: 6%;">Bolsa</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -267,10 +245,11 @@
                         <?php foreach ($instrutores as $i) : ?>
                             <tr>
                                 <td class="text-center"><?= $count_instrutor++ ?></td>
-                                <td style="vertical-align: top;"><?= html_escape($i->nome_instrutor) ?><br><small><?= html_escape($i->cpf_instrutor) ?></small></td>
+                                <td style="vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px; font-size: 9px;"><?= html_escape($i->nome_instrutor) ?></td>
+                                <td style="vertical-align: middle; white-space: nowrap;"><?= html_escape($i->cpf_instrutor) ?></td>
                                 <td style="vertical-align: top; text-align: center;">
                                     <?php
-                                        $statusAtestadoInstrutor = 'Não informado';
+                                        $statusAtestadoInstrutor = 'N/I';
                                         $corAtestadoInstrutor = '';
                                         if ($i->atestado_medico_validade) {
                                             $validade = new DateTime($i->atestado_medico_validade);
@@ -286,8 +265,15 @@
                                         echo "<span $corAtestadoInstrutor>$statusAtestadoInstrutor</span>";
                                     ?>
                                 </td>
-                                <td style="vertical-align: top; font-size: 5.5px;">
-                                    <?php if (!empty($i->certificacoes)) : foreach ($i->certificacoes as $cert) : ?> - <?= html_escape($cert->nome_certificacao) ?><br> <?php endforeach; else : ?> Nenhuma <?php endif; ?>
+                                <td style="vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
+                                    <?php 
+                                    if (!empty($i->certificacoes)) {
+                                        $certs = array_map(function($c) { return $c->nome_certificacao; }, $i->certificacoes);
+                                        echo html_escape(implode(', ', $certs));
+                                    } else {
+                                        echo '-';
+                                    }
+                                    ?>
                                 </td>
                                 <td class="equip-box"><?= $i->locar_cilindro > 0 ? $i->locar_cilindro : '<i class="fas fa-lock"></i>' ?></td>
                                 <td class="equip-box"><?= $i->locar_regulador > 0 ? $i->locar_regulador : '<i class="fas fa-lock"></i>' ?></td>
@@ -306,7 +292,6 @@
                                 <td class="equip-box"><?= $i->locar_lanterna > 0 ? $i->locar_lanterna : '<i class="fas fa-lock"></i>' ?></td>
                                 <td class="equip-box"><?= $i->locar_computador > 0 ? $i->locar_computador : '<i class="fas fa-lock"></i>' ?></td>
                                 <td><?= html_escape($i->numero_bolsa) ?></td>
-                                <td></td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else : ?>
@@ -316,7 +301,7 @@
             </table>
 
             <div class="section-title">Resumo de Equipamentos para Locação</div>
-            <table class="table table-bordered" style="width: 100%; font-size: 9px;">
+            <table class="table table-bordered" style="width: 100%; font-size: 8px;">
                 <thead>
                     <tr style="background-color: #f2f2f2;">
                         <th class="text-center" style="width: 15%;">Grupo</th>
@@ -388,5 +373,3 @@
             </div>
         </div>
     </div>
-</body>
-</html>

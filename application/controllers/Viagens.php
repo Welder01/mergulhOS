@@ -311,7 +311,11 @@ class Viagens extends MY_Controller
             if ($dados_cliente) {
                 // Mescla os dados da viagem com os dados completos do cliente
                 $cliente_final = (object) array_merge((array) $dados_cliente, (array) $cliente_participante);
-                $cliente_final->certificacoes = $this->certificacao_mergulhador_model->getByCliente($cliente_participante->cliente_id);
+                
+                // Substitui Certificações pelo Propósito da Viagem para exibição na ficha
+                $propositoObj = new stdClass();
+                $propositoObj->nome_certificacao = $cliente_participante->proposito;
+                $cliente_final->certificacoes = [$propositoObj];
                 $clientes_completos[] = $cliente_final;
             }
         }
@@ -404,7 +408,41 @@ class Viagens extends MY_Controller
         }
 
         $this->load->helper('mpdf');
-        $html = $this->load->view('viagens/imprimirOperacao', $this->data, true);
+
+        $data_partida = $this->data['result']->data_partida;
+        $data_retorno = $this->data['result']->data_retorno;
+
+        if ($data_partida) {
+            if (!$data_retorno || $data_retorno == '0000-00-00') {
+                $data_retorno = $data_partida;
+            }
+
+            $current = new DateTime($data_partida);
+            $end = new DateTime($data_retorno);
+            $current->setTime(0, 0, 0);
+            $end->setTime(0, 0, 0);
+
+            $html = "";
+            $first = true;
+            $original_result = clone $this->data['result'];
+
+            while ($current <= $end) {
+                if (!$first) {
+                    $html .= "<pagebreak />";
+                }
+                $this->data['result']->data_partida = $current->format('Y-m-d');
+                $html .= $this->load->view('viagens/imprimirOperacao', $this->data, true);
+                $first = false;
+                $current->modify('+1 day');
+            }
+            $this->data['result'] = $original_result;
+        } else {
+            $html = $this->load->view('viagens/imprimirOperacao', $this->data, true);
+        }
+
+        // Envolve o conteúdo em uma estrutura HTML básica para o mPDF
+        $html = '<!DOCTYPE html><html><head><title>Ficha de Operação</title></head><body>' . $html . '</body></html>';
+
         pdf_create($html, 'ficha_operacao_' . $id, true);
     }
 
