@@ -9,7 +9,7 @@ $('#form-gerar-cobranca').submit(function(e) {
         type: form.attr('method'),
         data: form.serialize(),
         beforeSend: function() {
-            swal({
+            Swal.fire({
                 title: 'Processando',
                 text: 'Criando cobrança...',
                 icon: 'info',
@@ -20,14 +20,14 @@ $('#form-gerar-cobranca').submit(function(e) {
             });
         },
         success: function(response) {
-            swal("Sucesso!", "Cobrança criada com sucesso!", "success");
+            Swal.fire("Sucesso!", "Cobrança criada com sucesso!", "success");
             setTimeout(function() {
                 window.location.href = window.BaseUrl + 'index.php/cobrancas/visualizar/' + response.idCobranca;
             }, 5000);
         },
         error: function (response) {
             var message = response.responseJSON.message || "Erro ao criar cobrança!";
-            swal("Erro!", message, "error");
+            Swal.fire("Erro!", message, "error");
         }
     });
 });
