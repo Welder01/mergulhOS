@@ -435,6 +435,27 @@ class Os extends MY_Controller
         $this->data['cursos'] = $this->os_model->getCursos($this->uri->segment(3));
         $this->data['anotacoes'] = $this->os_model->getAnotacoes($this->uri->segment(3));
 
+        // Patch para garantir que o propósito seja carregado caso o model não o traga
+        if (!empty($this->data['viagens'])) {
+            foreach ($this->data['viagens'] as &$v) {
+                // Busca dados reais na tabela de ligação para garantir ID correto da viagem e propósito
+                $query = $this->db->where('idViagens_os', $v->idViagens_os)->get('viagens_os');
+                $viagemOs = ($query) ? $query->row() : null;
+                if ($viagemOs) {
+                    $v->proposito = isset($viagemOs->proposito) ? $viagemOs->proposito : '';
+                    // Busca dados da viagem original para corrigir nome e datas caso estejam errados no join
+                    $query = $this->db->where('id', $viagemOs->viagens_id)->get('viagens');
+                    $dadosViagem = ($query) ? $query->row() : null;
+                    if ($dadosViagem) {
+                        $v->nome = $dadosViagem->nome_viagem;
+                        $v->data_partida = $dadosViagem->data_partida;
+                        $v->data_retorno = $dadosViagem->data_retorno;
+                    }
+                }
+            }
+            unset($v);
+        }
+
         if ($return = $this->os_model->valorTotalOS($this->uri->segment(3))) {
             $this->data['totalServico'] = $return['totalServico'];
             $this->data['totalProdutos'] = $return['totalProdutos'];
@@ -488,6 +509,43 @@ class Os extends MY_Controller
         );
         $this->data['view'] = 'os/visualizarOs';
         $this->data['chaveFormatada'] = $this->formatarChave($this->data['configuration']['pix_key']);
+
+        $this->db->select('*');
+        $this->db->from('lancamentos');
+        $this->db->like('descricao', "Fatura de OS - #" . $this->uri->segment(3));
+        $this->db->or_like('descricao', "Fatura de OS Nº: " . $this->uri->segment(3));
+        $this->data['parcelas'] = $this->db->get()->result();
+
+        // Patch para garantir que o propósito seja carregado caso o model não o traga
+        if (!empty($this->data['viagens'])) {
+            foreach ($this->data['viagens'] as &$v) {
+                // Busca dados reais na tabela de ligação para garantir ID correto da viagem e propósito
+                $query = $this->db->where('idViagens_os', $v->idViagens_os)->get('viagens_os');
+                $viagemOs = ($query) ? $query->row() : null;
+                if ($viagemOs) {
+                    $v->proposito = isset($viagemOs->proposito) ? $viagemOs->proposito : '';
+                    // Busca dados da viagem original para corrigir nome e datas caso estejam errados no join
+                    $query = $this->db->where('id', $viagemOs->viagens_id)->get('viagens');
+                    $dadosViagem = ($query) ? $query->row() : null;
+                    if ($dadosViagem) {
+                        $v->nome = $dadosViagem->nome_viagem;
+                        $v->data_partida = $dadosViagem->data_partida;
+                        $v->data_retorno = $dadosViagem->data_retorno;
+                    }
+                }
+            }
+            unset($v);
+        }
+
+        // Calcula totais de Cursos e Viagens para a view
+        $this->data['totalCursos'] = 0;
+        foreach ($this->data['cursos'] as $c) {
+            $this->data['totalCursos'] += $c->preco * $c->quantidade;
+        }
+        $this->data['totalViagens'] = 0;
+        foreach ($this->data['viagens'] as $v) {
+            $this->data['totalViagens'] += $v->preco * $v->quantidade;
+        }
 
         if ($return = $this->os_model->valorTotalOS($this->uri->segment(3))) {
             $this->data['totalServico'] = $return['totalServico'];
@@ -592,6 +650,43 @@ class Os extends MY_Controller
 
         $this->data['imprimirAnexo'] = isset($_ENV['IMPRIMIR_ANEXOS']) ? (filter_var($_ENV['IMPRIMIR_ANEXOS'] ?? false, FILTER_VALIDATE_BOOLEAN)) : false;
 
+        $this->db->select('*');
+        $this->db->from('lancamentos');
+        $this->db->like('descricao', "Fatura de OS - #" . $this->uri->segment(3));
+        $this->db->or_like('descricao', "Fatura de OS Nº: " . $this->uri->segment(3));
+        $this->data['parcelas'] = $this->db->get()->result();
+
+        // Patch para garantir que o propósito seja carregado caso o model não o traga
+        if (!empty($this->data['viagens'])) {
+            foreach ($this->data['viagens'] as &$v) {
+                // Busca dados reais na tabela de ligação para garantir ID correto da viagem e propósito
+                $query = $this->db->where('idViagens_os', $v->idViagens_os)->get('viagens_os');
+                $viagemOs = ($query) ? $query->row() : null;
+                if ($viagemOs) {
+                    $v->proposito = isset($viagemOs->proposito) ? $viagemOs->proposito : '';
+                    // Busca dados da viagem original para corrigir nome e datas caso estejam errados no join
+                    $query = $this->db->where('id', $viagemOs->viagens_id)->get('viagens');
+                    $dadosViagem = ($query) ? $query->row() : null;
+                    if ($dadosViagem) {
+                        $v->nome = $dadosViagem->nome_viagem;
+                        $v->data_partida = $dadosViagem->data_partida;
+                        $v->data_retorno = $dadosViagem->data_retorno;
+                    }
+                }
+            }
+            unset($v);
+        }
+
+        // Calcula totais de Cursos e Viagens para a impressão
+        $this->data['totalCursos'] = 0;
+        foreach ($this->data['cursos'] as $c) {
+            $this->data['totalCursos'] += $c->preco * $c->quantidade;
+        }
+        $this->data['totalViagens'] = 0;
+        foreach ($this->data['viagens'] as $v) {
+            $this->data['totalViagens'] += $v->preco * $v->quantidade;
+        }
+
         $this->load->view('os/imprimirOs', $this->data);
     }
 
@@ -622,6 +717,43 @@ class Os extends MY_Controller
                 $this->data['emitente']
             );
             $this->data['chaveFormatada'] = $this->formatarChave($this->data['configuration']['pix_key']);
+        }
+
+        $this->db->select('*');
+        $this->db->from('lancamentos');
+        $this->db->like('descricao', "Fatura de OS - #" . $this->uri->segment(3));
+        $this->db->or_like('descricao', "Fatura de OS Nº: " . $this->uri->segment(3));
+        $this->data['parcelas'] = $this->db->get()->result();
+
+        // Patch para garantir que o propósito seja carregado caso o model não o traga
+        if (!empty($this->data['viagens'])) {
+            foreach ($this->data['viagens'] as &$v) {
+                // Busca dados reais na tabela de ligação para garantir ID correto da viagem e propósito
+                $query = $this->db->where('idViagens_os', $v->idViagens_os)->get('viagens_os');
+                $viagemOs = ($query) ? $query->row() : null;
+                if ($viagemOs) {
+                    $v->proposito = isset($viagemOs->proposito) ? $viagemOs->proposito : '';
+                    // Busca dados da viagem original para corrigir nome e datas caso estejam errados no join
+                    $query = $this->db->where('id', $viagemOs->viagens_id)->get('viagens');
+                    $dadosViagem = ($query) ? $query->row() : null;
+                    if ($dadosViagem) {
+                        $v->nome = $dadosViagem->nome_viagem;
+                        $v->data_partida = $dadosViagem->data_partida;
+                        $v->data_retorno = $dadosViagem->data_retorno;
+                    }
+                }
+            }
+            unset($v);
+        }
+
+        // Calcula totais de Cursos e Viagens para a impressão térmica
+        $this->data['totalCursos'] = 0;
+        foreach ($this->data['cursos'] as $c) {
+            $this->data['totalCursos'] += $c->preco * $c->quantidade;
+        }
+        $this->data['totalViagens'] = 0;
+        foreach ($this->data['viagens'] as $v) {
+            $this->data['totalViagens'] += $v->preco * $v->quantidade;
         }
 
         $this->load->view('os/imprimirOsTermica', $this->data);
@@ -1016,8 +1148,14 @@ class Os extends MY_Controller
             $curso = $this->cursos_model->getById($cursoId);
             $this->log_auditoria('Vinculou o curso "' . $curso->nome_curso . '" à OS #' . $osId . ' para o cliente "' . $os->nomeCliente . '"');
 
+            $this->db->set('desconto', 0.00);
+            $this->db->set('valor_desconto', 0.00);
+            $this->db->set('tipo_desconto', null);
+            $this->db->where('idOs', $osId);
+            $this->db->update('os');
+
             log_info('Adicionou curso a uma OS. ID (OS): ' . $this->input->post('idOsCurso'));
-            return $this->output->set_content_type('application/json')->set_status_header(200)->set_output(json_encode(['result' => true, 'message' => 'Curso adicionado e aluno inscrito com sucesso!']));
+            return $this->output->set_content_type('application/json')->set_status_header(200)->set_output(json_encode(['result' => true, 'message' => 'Curso adicionado. O desconto foi removido, favor recalcular.']));
         } else {
             // Se falhou em adicionar na OS, reverte a inscrição do aluno
             $this->load->model('curso_alunos_model');
@@ -1038,8 +1176,10 @@ class Os extends MY_Controller
         // Pega o cliente da OS e o ID do curso antes de excluir o vínculo
         $cursoOs = $this->os_model->get('cursos_os', '*', "idCursos_os = {$id}", 1, 0, true);
         if (!$cursoOs) {
-            echo json_encode(['result' => false, 'message' => 'Vínculo do curso com a OS não encontrado.']);
-            return;
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(400)
+                ->set_output(json_encode(['result' => false, 'message' => 'Vínculo do curso com a OS não encontrado.']));
         }
         $cursoId = $cursoOs->cursos_id;
         $os = $this->os_model->getById($idOs);
@@ -1059,10 +1199,22 @@ class Os extends MY_Controller
             $os = $this->os_model->getById($idOs);
             $this->log_auditoria('Desvinculou o curso "' . ($curso->nome_curso ?? 'ID: ' . $cursoId) . '" da OS #' . $idOs . ' para o cliente "' . $os->nomeCliente . '"');
 
+            $this->db->set('desconto', 0.00);
+            $this->db->set('valor_desconto', 0.00);
+            $this->db->set('tipo_desconto', null);
+            $this->db->where('idOs', $idOs);
+            $this->db->update('os');
+
             log_info('Removeu curso de uma OS. ID (OS): ' . $idOs);
-            echo json_encode(['result' => true, 'message' => 'Curso removido da OS e inscrição do aluno cancelada.']);
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(200)
+                ->set_output(json_encode(['result' => true, 'message' => 'Curso removido. O desconto foi zerado devido à alteração de preço, favor recalcular.']));
         } else {
-            echo json_encode(['result' => false, 'message' => 'Falha ao remover o curso da OS.']);
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(200)
+                ->set_output(json_encode(['result' => false, 'message' => 'Falha ao remover o curso da OS.']));
         }
     }
 
@@ -1126,8 +1278,14 @@ class Os extends MY_Controller
             $os = $this->os_model->getById($osId);
             $this->log_auditoria('Vinculou a viagem "' . $viagem->nome_viagem . '" à OS #' . $osId . ' para o cliente "' . $os->nomeCliente . '"');
 
+            $this->db->set('desconto', 0.00);
+            $this->db->set('valor_desconto', 0.00);
+            $this->db->set('tipo_desconto', null);
+            $this->db->where('idOs', $osId);
+            $this->db->update('os');
+
             log_info('Adicionou viagem a uma OS. ID (OS): ' . $this->input->post('idOsViagem'));
-            return $this->output->set_content_type('application/json')->set_status_header(200)->set_output(json_encode(['result' => true, 'message' => 'Viagem adicionada e cliente inscrito com sucesso!']));
+            return $this->output->set_content_type('application/json')->set_status_header(200)->set_output(json_encode(['result' => true, 'message' => 'Viagem adicionada. O desconto foi removido, favor recalcular.']));
         } else {
             // Se falhou em adicionar na OS, reverte a inscrição do cliente
             $this->load->model('viagem_clientes_model');
@@ -1148,8 +1306,10 @@ class Os extends MY_Controller
         // Pega o cliente da OS e o ID da viagem antes de excluir o vínculo
         $viagemOs = $this->os_model->get('viagens_os', '*', "idViagens_os = {$id}", 1, 0, true);
         if (!$viagemOs) {
-            echo json_encode(['result' => false, 'message' => 'Vínculo da viagem com a OS não encontrado.']);
-            return;
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(400)
+                ->set_output(json_encode(['result' => false, 'message' => 'Vínculo da viagem com a OS não encontrado.']));
         }
         $viagemId = $viagemOs->viagens_id;
         $os = $this->os_model->getById($idOs);
@@ -1170,10 +1330,22 @@ class Os extends MY_Controller
             $os = $this->os_model->getById($idOs);
             $this->log_auditoria('Desvinculou a viagem "' . ($viagem->nome_viagem ?? 'ID: ' . $viagemId) . '" da OS #' . $idOs . ' para o cliente "' . $os->nomeCliente . '"');
 
+            $this->db->set('desconto', 0.00);
+            $this->db->set('valor_desconto', 0.00);
+            $this->db->set('tipo_desconto', null);
+            $this->db->where('idOs', $idOs);
+            $this->db->update('os');
+
             log_info('Removeu viagem de uma OS. ID (OS): ' . $idOs);
-            echo json_encode(['result' => true, 'message' => 'Viagem removida da OS e inscrição do cliente cancelada.']);
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(200)
+                ->set_output(json_encode(['result' => true, 'message' => 'Viagem removida. O desconto foi zerado devido à alteração de preço, favor recalcular.']));
         } else {
-            echo json_encode(['result' => false, 'message' => 'Falha ao remover a viagem da OS.']);
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(200)
+                ->set_output(json_encode(['result' => false, 'message' => 'Falha ao remover a viagem da OS.']));
         }
     }
 

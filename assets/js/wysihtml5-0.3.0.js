@@ -9407,7 +9407,7 @@ wysihtml5.views.Textarea = wysihtml5.views.View.extend(
   wysihtml5.Editor = wysihtml5.lang.Dispatcher.extend(
     /** @scope wysihtml5.Editor.prototype */ {
     constructor: function(textareaElement, config) {
-      this.textareaElement  = typeof(textareaElement) === "string" ? document.getElementById(textareaElement) : textareaElement;
+      this.textareaElement  = typeof(textareaElement) === "string" && textareaElement ? document.getElementById(textareaElement) : textareaElement;
       this.config           = wysihtml5.lang.object({}).merge(defaultConfig).merge(config).get();
       this.textarea         = new wysihtml5.views.Textarea(this, this.textareaElement, this.config);
       this.currentView      = this.textarea;

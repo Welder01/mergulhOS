@@ -1,4 +1,27 @@
-<                   <?php echo $custom_error; ?>
+<div class="row-fluid" style="margin-top:0">
+    <div class="span12">
+        <div class="widget-box">
+            <div class="widget-title">
+                <span class="icon">
+                    <i class="fas fa-wrench"></i>
+                </span>
+                <h5>Configurações do Sistema</h5>
+            </div>
+            <ul class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#home">Gerais</a></li>
+                <li><a data-toggle="tab" href="#menu1">Financeiro</a></li>
+                <li><a data-toggle="tab" href="#menu2">Produtos</a></li>
+                <li><a data-toggle="tab" href="#menu3">Notificações</a></li>
+                <li><a data-toggle="tab" href="#menu4">Atualizações</a></li>
+                <li><a data-toggle="tab" href="#menu5">OS</a></li>
+                <li><a data-toggle="tab" href="#menu6">API</a></li>
+                <li><a data-toggle="tab" href="#menu7">E-mail</a></li>
+            </ul>
+            <div class="widget-content nopadding">
+                <?php echo $custom_error; ?>
+                <form action="<?php echo current_url(); ?>" id="formConfigurar" method="post" class="form-horizontal">
+                    <div class="tab-content">
+                        <input type="hidden" name="active_tab" id="active_tab" value="#home">
                     <!-- Menu Gerais -->
                     <div id="home" class="tab-pane fade in active">
                         <div class="control-group">
@@ -698,20 +721,20 @@
                 document.getElementById("notifica_whats").value += $(this).val();
             $(this).prop('selectedIndex', 0);
         });
-    });
 
-    // Lógica para manter a aba ativa após salvar
-    var activeTabFromUrl = '<?php echo $this->input->get('tab') ?? ''; ?>';
-    if (activeTabFromUrl) {
-        // Garante que o valor não tenha o # para o seletor
-        var tabId = activeTabFromUrl.replace('#', '');
-        $('a[href="#' + tabId + '"]').tab('show');
-        $('#active_tab').val('#' + tabId);
-    }
+        // Lógica para manter a aba ativa após salvar
+        var activeTabFromUrl = '<?php echo $this->input->get('tab') ?? ''; ?>';
+        if (activeTabFromUrl) {
+            // Garante que o valor não tenha o # para o seletor
+            var tabId = activeTabFromUrl.replace('#', '');
+            $('a[href="#' + tabId + '"]').tab('show');
+            $('#active_tab').val('#' + tabId);
+        }
 
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
-        var currentTab = $(e.target).attr('href');
-        $('#active_tab').val(currentTab);
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+            var currentTab = $(e.target).attr('href');
+            $('#active_tab').val(currentTab);
+        });
     });
 
     function htmlspecialchars_decode(str) {

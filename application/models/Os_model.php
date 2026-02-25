@@ -361,12 +361,12 @@ class Os_model extends CI_Model
         }
         if ($cursos = $this->getCursos($id)) {
             foreach ($cursos as $c) {
-                $totalCursos = $totalCursos + $c->preco;
+                $totalCursos = $totalCursos + ($c->preco * ($c->quantidade ?: 1));
             }
         }
         if ($viagens = $this->getViagens($id)) {
             foreach ($viagens as $v) {
-                $totalViagens = $totalViagens + $v->preco;
+                $totalViagens = $totalViagens + ($v->preco * ($v->quantidade ?: 1));
             }
         }
         if ($valorDescontoBD = $this->getById($id)) {

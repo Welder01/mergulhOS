@@ -282,18 +282,18 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 55%">PRODUTO</th>
-                                        <th style="width: 10%">QTD</th>
-                                        <th style="width: 15%">UNT</th>
-                                        <th style="width: 20%">SUBTOTAL</th>
+                                        <th style="width: 10%; text-align: center">QTD</th>
+                                        <th style="width: 15%; text-align: center">UNT</th>
+                                        <th style="width: 20%; text-align: center">SUBTOTAL</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($produtos as $p) {
                                         echo '<tr>';
                                         echo '<td>' . $p->descricao . '</td>';
-                                        echo '<td>' . $p->quantidade . '</td>';
-                                        echo '<td>R$ ' . $p->preco ?: $p->precoVenda . '</td>';
-                                        echo '<td>R$ ' . number_format($p->subTotal, 2, ',', '.') . '</td>';
+                                        echo '<td style="text-align: center">' . $p->quantidade . '</td>';
+                                        echo '<td style="text-align: center">R$ ' . ($p->preco ?: $p->precoVenda) . '</td>';
+                                        echo '<td style="text-align: center">R$ ' . number_format($p->subTotal, 2, ',', '.') . '</td>';
                                         echo '</tr>';
                                     } ?>
                                     <tr>
@@ -310,9 +310,9 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 55%">SERVIÇO</th>
-                                        <th style="width: 10%">QTD</th>
-                                        <th style="width: 15%">UNT</th>
-                                        <th style="width: 20%">SUBTOTAL</th>
+                                        <th style="width: 10%; text-align: center">QTD</th>
+                                        <th style="width: 15%; text-align: center">UNT</th>
+                                        <th style="width: 20%; text-align: center">SUBTOTAL</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -322,9 +322,9 @@
                                         $subtotal = $preco * ($s->quantidade ?: 1);
                                         echo '<tr>';
                                         echo '<td>' . $s->nome . '</td>';
-                                        echo '<td>' . ($s->quantidade ?: 1) . '</td>';
-                                        echo '<td>R$ ' . $preco . '</td>';
-                                        echo '<td>R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
+                                        echo '<td style="text-align: center">' . ($s->quantidade ?: 1) . '</td>';
+                                        echo '<td style="text-align: center">R$ ' . $preco . '</td>';
+                                        echo '<td style="text-align: center">R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
                                         echo '</tr>';
                                     } ?>
                                     <tr>
@@ -339,27 +339,27 @@
                             <table class="table table-bordered table-condensed">
                                 <thead>
                                 <tr>
-                                    <th style="width: 35%">CURSO</th>
-                                    <th style="width: 15%">DATA INÍCIO</th>
-                                    <th style="width: 15%">DATA FIM</th>
-                                    <th style="width: 5%">QTD</th>
-                                    <th style="width: 15%">UNT</th>
-                                    <th style="width: 15%">SUBTOTAL</th>
+                                    <th style="width: 25%">CURSO</th>
+                                    <th style="width: 15%; text-align: center">DATA INÍCIO</th>
+                                    <th style="width: 15%; text-align: center">DATA FIM</th>
+                                    <th style="width: 10%; text-align: center">QTD</th>
+                                    <th style="width: 15%; text-align: center">UNT</th>
+                                    <th style="width: 20%; text-align: center">SUBTOTAL</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                     <?php
                                     $totalCursos = 0;
                                     foreach ($cursos as $c) {
-                                        $totalCursos += $c->preco;
-                                        $subtotal = $c->preco * 1;
+                                        $subtotal = $c->preco * ($c->quantidade ?: 1);
+                                        $totalCursos += $subtotal;
                                         echo '<tr>';
                                         echo '<td>' . $c->nome . '</td>';
-                                        echo '<td>' . ($c->data_inicio ? date('d/m/Y', strtotime($c->data_inicio)) : '') . '</td>';
-                                        echo '<td>' . ($c->data_fim ? date('d/m/Y', strtotime($c->data_fim)) : '') . '</td>';
-                                        echo '<td>1</td>';
-                                        echo '<td>R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
-                                        echo '<td>R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
+                                        echo '<td style="text-align: center">' . ($c->data_inicio ? date('d/m/Y', strtotime($c->data_inicio)) : '') . '</td>';
+                                        echo '<td style="text-align: center">' . ($c->data_fim ? date('d/m/Y', strtotime($c->data_fim)) : '') . '</td>';
+                                        echo '<td style="text-align: center">' . ($c->quantidade ?: 1) . '</td>';
+                                        echo '<td style="text-align: center">R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
+                                        echo '<td style="text-align: center">R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
                                         echo '</tr>';
                                     }
                                     ?>
@@ -374,32 +374,34 @@
                             <table class="table table-bordered table-condensed">
                                 <thead>
                                 <tr>
-                                    <th style="width: 35%">VIAGEM</th>
-                                    <th style="width: 15%">DATA PARTIDA</th>
-                                    <th style="width: 15%">DATA RETORNO</th>
-                                    <th style="width: 5%">QTD</th>
-                                    <th style="width: 15%">UNT</th>
-                                    <th style="width: 15%">SUBTOTAL</th>
+                                    <th style="width: 20%">VIAGEM</th>
+                                    <th style="width: 10%; text-align: center">DATA PARTIDA</th>
+                                    <th style="width: 10%; text-align: center">DATA RETORNO</th>
+                                    <th style="width: 15%; text-align: center">PROPÓSITO</th>
+                                    <th style="width: 10%; text-align: center">QTD</th>
+                                    <th style="width: 15%; text-align: center">UNT</th>
+                                    <th style="width: 20%; text-align: center">SUBTOTAL</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                     <?php
                                     $totalViagens = 0;
                                     foreach ($viagens as $v) {
-                                        $totalViagens += $v->preco;
-                                        $subtotal = $v->preco * 1;
+                                        $totalViagens += $v->preco * ($v->quantidade ?: 1);
+                                        $subtotal = $v->preco * ($v->quantidade ?: 1);
                                         echo '<tr>';
                                         echo '<td>' . $v->nome . '</td>';
-                                        echo '<td>' . ($v->data_partida ? date('d/m/Y', strtotime($v->data_partida)) : '') . '</td>';
-                                        echo '<td>' . ($v->data_retorno ? date('d/m/Y', strtotime($v->data_retorno)) : '') . '</td>';
-                                        echo '<td>1</td>';
-                                        echo '<td>R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
-                                        echo '<td>R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
+                                        echo '<td style="text-align: center">' . ($v->data_partida ? date('d/m/Y', strtotime($v->data_partida)) : '') . '</td>';
+                                        echo '<td style="text-align: center">' . ($v->data_retorno ? date('d/m/Y', strtotime($v->data_retorno)) : '') . '</td>';
+                                        echo '<td style="text-align: center">' . ($v->proposito ?? '') . '</td>';
+                                        echo '<td style="text-align: center">' . ($v->quantidade ?: 1) . '</td>';
+                                        echo '<td style="text-align: center">R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
+                                        echo '<td style="text-align: center">R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
                                         echo '</tr>';
                                     }
                                     ?>
                                     <tr>
-                                        <td colspan="5" style="text-align: right"><strong>TOTAL:</strong></td>
+                                        <td colspan="6" style="text-align: right"><strong>TOTAL:</strong></td>
                                         <td><strong>R$ <?php echo number_format($totalViagens, 2, ',', '.'); ?></strong></td>
                                     </tr>
                                 </tbody>

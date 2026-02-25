@@ -260,9 +260,9 @@ $totalViagens = 0; ?>
                                     $totalCursos += $c->preco * ($c->quantidade ?: 1);
                                     echo '<tr>';
                                     echo '<td>' . ($c->quantidade ?: 1) . '</td>';
-                                    echo '<td>' . $c->nome_curso . '</td>';
+                                    echo '<td>' . $c->nome . '</td>';
                                     echo '<td>R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
-                                    echo '<td>R$ ' . number_format($c->preco, 2, ',', '.') . '</td>';
+                                    echo '<td>R$ ' . number_format($c->preco * ($c->quantidade ?: 1), 2, ',', '.') . '</td>';
                                     echo '</tr>';
                                 } ?>
                                 <tr>
@@ -288,9 +288,9 @@ $totalViagens = 0; ?>
                                     $totalViagens += $v->preco * ($v->quantidade ?: 1);
                                     echo '<tr>';
                                     echo '<td>' . ($v->quantidade ?: 1) . '</td>';
-                                    echo '<td>' . $v->nome_viagem . '</td>';
+                                    echo '<td>' . $v->nome . '</td>';
                                     echo '<td>R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
-                                    echo '<td>R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
+                                    echo '<td>R$ ' . number_format($v->preco * ($v->quantidade ?: 1), 2, ',', '.') . '</td>';
                                     echo '</tr>';
                                 } ?>
                                 <tr>
