@@ -9,6 +9,22 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
+                    <strong>v4.53.10 - Melhorias Financeiras e Correções em OS</strong><br>
+                    Faturamento parcelado, cancelamento de faturamento e ajustes de cálculo.
+                </div>
+
+                <h3>Novidades e Correções</h3>
+                <hr>
+                <h4>1. Financeiro em OS</h4>
+                <ul>
+                    <li><strong>Faturamento Parcelado:</strong> Agora é possível informar entrada e número de parcelas ao faturar uma OS. O sistema gera os lançamentos financeiros automaticamente.</li>
+                    <li><strong>Cancelar Faturamento:</strong> Nova opção para reverter o faturamento de uma OS, excluindo os lançamentos gerados e voltando o status para "Em Andamento".</li>
+                </ul>
+                <h4>2. Cálculos e Quantidades</h4>
+                <p>Corrigido o cálculo de valores totais para Cursos e Viagens inseridos na OS, que agora respeitam a quantidade informada. As telas de edição e impressão foram atualizadas para exibir a coluna de quantidade.</p>
+                <br>
+
+                <div class="alert alert-success">
                     <strong>v4.53.9 - Correções de Lógica e Validação</strong><br>
                     Ajustes no consumo de vagas em viagens, validação de clientes, requisitos de cursos e layout de impressão.
                 </div>

@@ -316,6 +316,11 @@ function validarCNPJ(cnpj) {
     //Quando o campo cep perde o foco.
     $("#cep").blur(function () {
 
+        // Evita loop infinito (too much recursion) se o SweetAlert já estiver aberto
+        if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+            return;
+        }
+
         //Nova variável "cep" somente com dígitos.
         var cep = $(this).val().replace(/\D/g, '');
 

@@ -30,6 +30,14 @@ e [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Backup**: Ferramenta de backup do banco de dados.
 - **Atualização**: Sistema de atualização automática via GitHub.
 
+## [4.53.10] - 2026-02-25
+### Added
+- **OS**: Funcionalidade de Faturamento Parcelado (Entrada + Parcelas) com geração automática de lançamentos.
+- **OS**: Botão para Cancelar Faturamento (reverte status e remove lançamentos financeiros).
+### Fixed
+- **OS**: Correção no cálculo do valor total de Cursos e Viagens (considerando a quantidade).
+- **OS**: Adição da coluna Quantidade na edição e impressão de OS para Cursos e Viagens.
+
 ## [4.53.9] - 2026-02-25
 ### Fixed
 - **Clientes**: Corrigido erro de validação "e-mail já cadastrado" ao editar o próprio cliente.

@@ -7,9 +7,10 @@
         function patch(name) {
             var val = window[name];
             if (val && typeof val === 'function' && val.fire && !val.isPolyfilled) {
-                var wrapper = function() { return val.fire.apply(val, arguments); };
-                for (var key in val) { wrapper[key] = val[key]; }
-                wrapper.prototype = val.prototype;
+                var original = val;
+                var wrapper = function() { return original.fire.apply(original, arguments); };
+                for (var key in original) { wrapper[key] = original[key]; }
+                wrapper.prototype = original.prototype;
                 wrapper.isPolyfilled = true;
                 try { window[name] = wrapper; } catch(e) {}
                 val = wrapper;
