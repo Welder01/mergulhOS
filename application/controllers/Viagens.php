@@ -871,7 +871,9 @@ class Viagens extends MY_Controller
             ];
             if ($this->viagem_instrutores_model->add($data)) {
                 $this->session->set_flashdata('success', 'Instrutor adicionado à viagem com sucesso!');
-                $this->viagens_model->edit('viagens', ['vagas' => $viagem->vagas - 1], 'id', $viagem_id);
+                $this->db->set('vagas', 'vagas - 1', false);
+                $this->db->where('id', $viagem_id);
+                $this->db->update('viagens');
                 log_info('Adicionou instrutor ID: ' . $usuario_id . ' à viagem ID: ' . $viagem_id);
 
                 // --- Evolution API Trigger (viagem_usuario_adicionado) ---
@@ -941,7 +943,9 @@ class Viagens extends MY_Controller
 
             if ($this->viagem_instrutores_model->delete($id)) {
                 $viagem = $this->viagens_model->getById($instrutor_viagem->viagem_id);
-                $this->viagens_model->edit('viagens', ['vagas' => $viagem->vagas + 1], 'id', $viagem->id);
+                $this->db->set('vagas', 'vagas + 1', false);
+                $this->db->where('id', $viagem->id);
+                $this->db->update('viagens');
             }
 
             redirect('viagens/visualizar/' . $instrutor_viagem->viagem_id . '?tab=tabInstrutores');

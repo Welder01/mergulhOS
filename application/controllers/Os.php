@@ -437,12 +437,23 @@ class Os extends MY_Controller
 
         // Patch para garantir que o propósito seja carregado caso o model não o traga
         if (!empty($this->data['viagens'])) {
+            $clienteId = isset($this->data['result']->clientes_id) ? $this->data['result']->clientes_id : 0;
             foreach ($this->data['viagens'] as &$v) {
                 // Busca dados reais na tabela de ligação para garantir ID correto da viagem e propósito
                 $query = $this->db->where('idViagens_os', $v->idViagens_os)->get('viagens_os');
                 $viagemOs = ($query) ? $query->row() : null;
                 if ($viagemOs) {
-                    $v->proposito = isset($viagemOs->proposito) ? $viagemOs->proposito : '';
+                    $v->proposito = '';
+                    
+                    // Busca o propósito exclusivamente na tabela viagem_clientes para evitar duplicidade
+                    if ($clienteId) {
+                        $queryVC = $this->db->where('viagem_id', $viagemOs->viagens_id)->where('cliente_id', $clienteId)->get('viagem_clientes');
+                        $viagemCliente = ($queryVC) ? $queryVC->row() : null;
+                        if ($viagemCliente && isset($viagemCliente->proposito)) {
+                            $v->proposito = $viagemCliente->proposito;
+                        }
+                    }
+
                     // Busca dados da viagem original para corrigir nome e datas caso estejam errados no join
                     $query = $this->db->where('id', $viagemOs->viagens_id)->get('viagens');
                     $dadosViagem = ($query) ? $query->row() : null;
@@ -518,12 +529,23 @@ class Os extends MY_Controller
 
         // Patch para garantir que o propósito seja carregado caso o model não o traga
         if (!empty($this->data['viagens'])) {
+            $clienteId = isset($this->data['result']->clientes_id) ? $this->data['result']->clientes_id : 0;
             foreach ($this->data['viagens'] as &$v) {
                 // Busca dados reais na tabela de ligação para garantir ID correto da viagem e propósito
                 $query = $this->db->where('idViagens_os', $v->idViagens_os)->get('viagens_os');
                 $viagemOs = ($query) ? $query->row() : null;
                 if ($viagemOs) {
-                    $v->proposito = isset($viagemOs->proposito) ? $viagemOs->proposito : '';
+                    $v->proposito = '';
+                    
+                    // Busca o propósito exclusivamente na tabela viagem_clientes para evitar duplicidade
+                    if ($clienteId) {
+                        $queryVC = $this->db->where('viagem_id', $viagemOs->viagens_id)->where('cliente_id', $clienteId)->get('viagem_clientes');
+                        $viagemCliente = ($queryVC) ? $queryVC->row() : null;
+                        if ($viagemCliente && isset($viagemCliente->proposito)) {
+                            $v->proposito = $viagemCliente->proposito;
+                        }
+                    }
+
                     // Busca dados da viagem original para corrigir nome e datas caso estejam errados no join
                     $query = $this->db->where('id', $viagemOs->viagens_id)->get('viagens');
                     $dadosViagem = ($query) ? $query->row() : null;
@@ -658,12 +680,23 @@ class Os extends MY_Controller
 
         // Patch para garantir que o propósito seja carregado caso o model não o traga
         if (!empty($this->data['viagens'])) {
+            $clienteId = isset($this->data['result']->clientes_id) ? $this->data['result']->clientes_id : 0;
             foreach ($this->data['viagens'] as &$v) {
                 // Busca dados reais na tabela de ligação para garantir ID correto da viagem e propósito
                 $query = $this->db->where('idViagens_os', $v->idViagens_os)->get('viagens_os');
                 $viagemOs = ($query) ? $query->row() : null;
                 if ($viagemOs) {
-                    $v->proposito = isset($viagemOs->proposito) ? $viagemOs->proposito : '';
+                    $v->proposito = '';
+                    
+                    // Busca o propósito exclusivamente na tabela viagem_clientes para evitar duplicidade
+                    if ($clienteId) {
+                        $queryVC = $this->db->where('viagem_id', $viagemOs->viagens_id)->where('cliente_id', $clienteId)->get('viagem_clientes');
+                        $viagemCliente = ($queryVC) ? $queryVC->row() : null;
+                        if ($viagemCliente && isset($viagemCliente->proposito)) {
+                            $v->proposito = $viagemCliente->proposito;
+                        }
+                    }
+
                     // Busca dados da viagem original para corrigir nome e datas caso estejam errados no join
                     $query = $this->db->where('id', $viagemOs->viagens_id)->get('viagens');
                     $dadosViagem = ($query) ? $query->row() : null;
@@ -727,12 +760,23 @@ class Os extends MY_Controller
 
         // Patch para garantir que o propósito seja carregado caso o model não o traga
         if (!empty($this->data['viagens'])) {
+            $clienteId = isset($this->data['result']->clientes_id) ? $this->data['result']->clientes_id : 0;
             foreach ($this->data['viagens'] as &$v) {
                 // Busca dados reais na tabela de ligação para garantir ID correto da viagem e propósito
                 $query = $this->db->where('idViagens_os', $v->idViagens_os)->get('viagens_os');
                 $viagemOs = ($query) ? $query->row() : null;
                 if ($viagemOs) {
-                    $v->proposito = isset($viagemOs->proposito) ? $viagemOs->proposito : '';
+                    $v->proposito = '';
+                    
+                    // Busca o propósito exclusivamente na tabela viagem_clientes para evitar duplicidade
+                    if ($clienteId) {
+                        $queryVC = $this->db->where('viagem_id', $viagemOs->viagens_id)->where('cliente_id', $clienteId)->get('viagem_clientes');
+                        $viagemCliente = ($queryVC) ? $queryVC->row() : null;
+                        if ($viagemCliente && isset($viagemCliente->proposito)) {
+                            $v->proposito = $viagemCliente->proposito;
+                        }
+                    }
+
                     // Busca dados da viagem original para corrigir nome e datas caso estejam errados no join
                     $query = $this->db->where('id', $viagemOs->viagens_id)->get('viagens');
                     $dadosViagem = ($query) ? $query->row() : null;
@@ -1255,6 +1299,15 @@ class Os extends MY_Controller
             return $this->output->set_content_type('application/json')->set_status_header(400)->set_output(json_encode(['result' => false, 'message' => $clienteAdicionado['message']]));
         }
 
+        // Garante que o propósito seja salvo/atualizado na tabela viagem_clientes, mesmo se o cliente já estiver inscrito
+        if ($this->input->post('proposito')) {
+            $this->load->model('viagem_clientes_model');
+            $inscricao = $this->viagem_clientes_model->getInscricao($viagemId, $clienteId);
+            if ($inscricao) {
+                $this->viagem_clientes_model->edit('viagem_clientes', ['proposito' => $this->input->post('proposito')], 'id', $inscricao->id);
+            }
+        }
+
         $preco = $this->input->post('preco');
         if (strpos($preco, ',') !== false) {
             $preco = str_replace(',', '.', str_replace('.', '', $preco));
@@ -1268,10 +1321,6 @@ class Os extends MY_Controller
             'data_vinculo' => date('Y-m-d'),
         ];
 
-        if ($this->db->field_exists('proposito', 'viagens_os')) {
-            $data['proposito'] = $this->input->post('proposito');
-        }
-
         if ($this->os_model->add('viagens_os', $data) == true) {
             $this->load->model('viagens_model');
             $viagem = $this->viagens_model->getById($viagemId);
@@ -1284,7 +1333,7 @@ class Os extends MY_Controller
             $this->db->where('idOs', $osId);
             $this->db->update('os');
 
-            log_info('Adicionou viagem a uma OS. ID (OS): ' . $this->input->post('idOsViagem'));
+            log_info('Adicionou viagem a uma OS. ID (OS): ' . $this->input->post('idOsViagem') . '. Propósito: ' . $this->input->post('proposito'));
             return $this->output->set_content_type('application/json')->set_status_header(200)->set_output(json_encode(['result' => true, 'message' => 'Viagem adicionada. O desconto foi removido, favor recalcular.']));
         } else {
             // Se falhou em adicionar na OS, reverte a inscrição do cliente

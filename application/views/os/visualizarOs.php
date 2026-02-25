@@ -393,7 +393,7 @@
                                         echo '<td>' . $v->nome . '</td>';
                                         echo '<td style="text-align: center">' . ($v->data_partida ? date('d/m/Y', strtotime($v->data_partida)) : '') . '</td>';
                                         echo '<td style="text-align: center">' . ($v->data_retorno ? date('d/m/Y', strtotime($v->data_retorno)) : '') . '</td>';
-                                        echo '<td style="text-align: center">' . ($v->proposito ?? '') . '</td>';
+                                        echo '<td style="text-align: center">' . ($v->proposito ?? '-') . '</td>';
                                         echo '<td style="text-align: center">' . ($v->quantidade ?: 1) . '</td>';
                                         echo '<td style="text-align: center">R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
                                         echo '<td style="text-align: center">R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';

@@ -1379,6 +1379,7 @@
                             $("#quantidade_viagem").val('1');
                             $("#preco_viagem").val('');
                             $("#idViagem").val('');
+                            $("#proposito_viagem").val('');
                             $("#viagem").focus();
                         } else {
                             Swal.fire({

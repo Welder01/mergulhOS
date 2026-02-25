@@ -89,6 +89,13 @@ class Viagens_model extends MY_Model
         $viagem = $this->getById($viagem_id);
 
         if ($this->viagem_clientes_model->isClienteInViagem($viagem_id, $cliente_id)) {
+            // Atualiza o propósito se fornecido, mesmo se já inscrito
+            if (isset($data['proposito'])) {
+                $inscricao = $this->viagem_clientes_model->getInscricao($viagem_id, $cliente_id);
+                if ($inscricao) {
+                    $this->viagem_clientes_model->edit('viagem_clientes', ['proposito' => $data['proposito']], 'id', $inscricao->id);
+                }
+            }
             log_info("Tentativa de adicionar cliente duplicado à viagem. Cliente ID: {$cliente_id}, Viagem ID: {$viagem_id}");
             return ['success' => true, 'message' => 'Este cliente já está inscrito nesta viagem.'];
         }
@@ -98,11 +105,8 @@ class Viagens_model extends MY_Model
                 'viagem_id' => $viagem_id,
                 'cliente_id' => $cliente_id,
             ];
+            // Garante que o propósito e outros dados extras sejam incluídos
             $insert_data = array_merge($default_data, $data);
-
-            if (isset($insert_data['proposito']) && !$this->db->field_exists('proposito', 'viagem_clientes')) {
-                unset($insert_data['proposito']);
-            }
 
             if ($this->viagem_clientes_model->add('viagem_clientes', $insert_data)) {
                 // Decrementa o número de vagas

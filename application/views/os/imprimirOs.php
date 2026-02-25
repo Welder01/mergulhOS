@@ -250,6 +250,7 @@
                                     <th>VIAGEM(NS)</th>
                                     <th class="text-center" width="15%">DATA PARTIDA</th>
                                     <th class="text-center" width="15%">DATA RETORNO</th>
+                                    <th class="text-center" width="10%">PROPÓSITO</th>
                                     <th class="text-center" width="10%">QTD</th>
                                     <th class="text-center" width="10%">UNT</th>
                                     <th class="text-end" width="15%" >SUBTOTAL</th>
@@ -261,9 +262,10 @@
                                         $subtotal = $v->preco * ($v->quantidade ?: 1);
                                         $totalViagens += $subtotal;
                                         echo '<tr>';
-                                        echo '<td>' . $v->nome_viagem . '</td>';
+                                        echo '<td>' . $v->nome . '</td>';
                                         echo '<td class="text-center">' . ($v->data_partida ? date('d/m/Y', strtotime($v->data_partida)) : '') . '</td>';
                                         echo '<td class="text-center">' . ($v->data_retorno ? date('d/m/Y', strtotime($v->data_retorno)) : '') . '</td>';
+                                        echo '<td class="text-center">' . ($v->proposito ?? '') . '</td>';
                                         echo '<td class="text-center">' . ($v->quantidade ?: 1) . '</td>';
                                         echo '<td class="text-center">R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
                                         echo '<td class="text-end">R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';
@@ -271,7 +273,7 @@
                                     }
                                 ?>
                                 <tr>
-                                    <td colspan="5" class="text-end"><b>TOTAL VIAGENS:</b></td>
+                                    <td colspan="6" class="text-end"><b>TOTAL VIAGENS:</b></td>
                                     <td class="text-end"><b>R$ <?= number_format($totalViagens, 2, ',', '.') ?></b></td>
                                 </tr>
                             </tbody>
@@ -573,6 +575,7 @@
                                         <th>VIAGEM(NS)</th>
                                         <th class="text-center" width="15%">DATA PARTIDA</th>
                                         <th class="text-center" width="15%">DATA RETORNO</th>
+                                        <th class="text-center" width="10%">PROPÓSITO</th>
                                         <th class="text-center" width="10%">QTD</th>
                                         <th class="text-center" width="10%">UNT</th>
                                         <th class="text-end" width="15%" >SUBTOTAL</th>
@@ -585,9 +588,10 @@
                                             $subtotal = $v->preco * ($v->quantidade ?: 1);
                                             $totalViagens += $subtotal;
                                             echo '<tr>';
-                                            echo '<td>' . $v->nome_viagem . '</td>';
+                                        echo '<td>' . $v->nome . '</td>';
                                             echo '<td class="text-center">' . ($v->data_partida ? date('d/m/Y', strtotime($v->data_partida)) : '') . '</td>';
                                             echo '<td class="text-center">' . ($v->data_retorno ? date('d/m/Y', strtotime($v->data_retorno)) : '') . '</td>';
+                                        echo '<td class="text-center">' . ($v->proposito ?? '') . '</td>';
                                             echo '<td class="text-center">' . ($v->quantidade ?: 1) . '</td>';
                                             echo '<td class="text-center">R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
                                             echo '<td class="text-end">R$ ' . number_format($subtotal, 2, ',', '.') . '</td>';

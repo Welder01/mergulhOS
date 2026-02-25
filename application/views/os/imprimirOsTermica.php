@@ -288,7 +288,7 @@ $totalViagens = 0; ?>
                                     $totalViagens += $v->preco * ($v->quantidade ?: 1);
                                     echo '<tr>';
                                     echo '<td>' . ($v->quantidade ?: 1) . '</td>';
-                                    echo '<td>' . $v->nome . '</td>';
+                                    echo '<td>' . $v->nome . ($v->proposito ? ' (' . $v->proposito . ')' : '') . '</td>';
                                     echo '<td>R$ ' . number_format($v->preco, 2, ',', '.') . '</td>';
                                     echo '<td>R$ ' . number_format($v->preco * ($v->quantidade ?: 1), 2, ',', '.') . '</td>';
                                     echo '</tr>';
