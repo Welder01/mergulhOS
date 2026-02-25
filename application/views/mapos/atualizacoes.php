@@ -9,6 +9,23 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
+                    <strong>v4.53.9 - Correções de Lógica e Validação</strong><br>
+                    Ajustes no consumo de vagas em viagens, validação de clientes e requisitos de cursos.
+                </div>
+
+                <h3>Correções e Melhorias</h3>
+                <hr>
+                <h4>1. Viagens</h4>
+                <p>Corrigido o comportamento ao adicionar/remover instrutores: agora eles consomem vagas na viagem, garantindo que o limite total de participantes (clientes + instrutores) seja respeitado.</p>
+
+                <h4>2. Clientes</h4>
+                <p>Corrigida a validação de e-mail na edição de clientes, que impedia salvar o cadastro mesmo mantendo o e-mail original.</p>
+
+                <h4>3. Cursos</h4>
+                <p>Adicionada a opção "Instrutor" na lista de requisitos e corrigida a exibição de linhas vazias no dropdown.</p>
+                <br>
+
+                <div class="alert alert-success">
                     <strong>v4.53.8 - Correções de Interface e Parâmetros</strong><br>
                     Padronização de cabeçalhos, ajustes no menu lateral e correção na edição de cursos.
                 </div>

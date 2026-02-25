@@ -30,6 +30,12 @@ e [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Backup**: Ferramenta de backup do banco de dados.
 - **Atualização**: Sistema de atualização automática via GitHub.
 
+## [4.53.9] - 2026-02-25
+### Fixed
+- **Clientes**: Corrigido erro de validação "e-mail já cadastrado" ao editar o próprio cliente.
+- **Viagens**: Instrutores adicionados à viagem agora consomem vagas corretamente (decrementa ao adicionar, incrementa ao remover).
+- **Cursos**: Adicionado "Instrutor" aos requisitos, removido itens vazios da lista e corrigido erro de sintaxe.
+
 ## [4.52.1] - 2026-02-24
 ### Fixed
 - Correção de erro ao alterar status da OS (carregamento de models clientes_model e usuarios_model).

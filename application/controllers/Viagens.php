@@ -767,6 +767,13 @@ class Viagens extends MY_Controller
         } elseif ($this->viagem_instrutores_model->isInstrutorInViagem($viagem_id, $usuario_id)) {
             $this->session->set_flashdata('error', 'Este instrutor já está atribuído a esta viagem.');
         } else {
+            $viagem = $this->viagens_model->getById($viagem_id);
+            if ($viagem->vagas <= 0) {
+                $this->session->set_flashdata('error', 'Não há vagas disponíveis para adicionar instrutor.');
+                redirect('viagens/visualizar/' . $viagem_id . '?tab=' . $activeTab);
+                return;
+            }
+
             $data = [
                 'viagem_id' => $viagem_id,
                 'usuario_id' => $usuario_id,
@@ -786,6 +793,7 @@ class Viagens extends MY_Controller
             ];
             if ($this->viagem_instrutores_model->add($data)) {
                 $this->session->set_flashdata('success', 'Instrutor adicionado à viagem com sucesso!');
+                $this->viagens_model->edit('viagens', ['vagas' => $viagem->vagas - 1], 'id', $viagem_id);
                 log_info('Adicionou instrutor ID: ' . $usuario_id . ' à viagem ID: ' . $viagem_id);
 
                 // --- Evolution API Trigger (viagem_usuario_adicionado) ---
@@ -853,7 +861,11 @@ class Viagens extends MY_Controller
             }
             // ---------------------------------------------------------
 
-            $this->viagem_instrutores_model->delete($id);
+            if ($this->viagem_instrutores_model->delete($id)) {
+                $viagem = $this->viagens_model->getById($instrutor_viagem->viagem_id);
+                $this->viagens_model->edit('viagens', ['vagas' => $viagem->vagas + 1], 'id', $viagem->id);
+            }
+
             redirect('viagens/visualizar/' . $instrutor_viagem->viagem_id . '?tab=tabInstrutores');
         } else {
             redirect('viagens');
