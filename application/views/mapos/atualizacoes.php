@@ -9,6 +9,29 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
+                    <strong>v4.53.11 - Melhorias em Impressão e Pagamentos</strong><br>
+                    QR Code PIX na térmica, correções em gateways e ajustes visuais na OS.
+                </div>
+
+                <h3>Novidades e Correções</h3>
+                <hr>
+                <h4>1. Impressão Térmica</h4>
+                <p>Adicionado o <strong>QR Code PIX</strong> na impressão de cupom (80mm) da Ordem de Serviço, facilitando o recebimento no balcão.</p>
+
+                <h4>2. Correções em Pagamentos</h4>
+                <ul>
+                    <li><strong>Validação de Contato:</strong> Gateways de pagamento agora aceitam o número de celular caso o telefone fixo não esteja preenchido.</li>
+                    <li><strong>Cálculo de Total:</strong> Corrigido erro que impedia gerar cobrança para OS contendo apenas Cursos ou Viagens.</li>
+                </ul>
+
+                <h4>3. Ordem de Serviço</h4>
+                <ul>
+                    <li><strong>Propósito da Viagem:</strong> Corrigido problema onde o propósito da viagem não era salvo ou exibido corretamente.</li>
+                    <li><strong>Visualização:</strong> Alinhamento padronizado das colunas de valores (Quantidade, Unitário, Subtotal) em todas as tabelas da OS.</li>
+                </ul>
+                <br>
+
+                <div class="alert alert-success">
                     <strong>v4.53.10 - Melhorias Financeiras e Correções em OS</strong><br>
                     Faturamento parcelado, cancelamento de faturamento e ajustes de cálculo.
                 </div>

@@ -30,6 +30,16 @@ e [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Backup**: Ferramenta de backup do banco de dados.
 - **Atualização**: Sistema de atualização automática via GitHub.
 
+## [4.53.11] - 2026-02-25
+### Added
+- **OS**: Adicionado QR Code PIX na impressão térmica (Cupom 80mm).
+### Fixed
+- **OS**: Correção na exibição e persistência do campo "Propósito" em viagens vinculadas.
+- **OS**: Ajuste no alinhamento das colunas de valores na visualização da OS.
+- **OS**: Correção de erro ao remover itens (Cursos/Viagens) que não recalculava o desconto corretamente.
+- **Pagamentos**: Correção na validação de dados do cliente (aceita celular se telefone fixo estiver vazio) e inclusão de Cursos/Viagens no cálculo do total enviado aos gateways.
+- **Sistema**: Correções diversas de sintaxe e JavaScript nas telas de configuração e edição.
+
 ## [4.53.10] - 2026-02-25
 ### Added
 - **OS**: Funcionalidade de Faturamento Parcelado (Entrada + Parcelas) com geração automática de lançamentos.
