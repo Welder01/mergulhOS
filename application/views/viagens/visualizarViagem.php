@@ -612,7 +612,7 @@
         <a title="Imprimir Ficha de Viagem" class="button btn btn-mini btn-inverse" href="<?= base_url() ?>index.php/viagens/imprimir/<?= $result->id ?>">
             <span class="button__icon"><i class="bx bx-printer"></i></span> <span class="button__text2"> Ficha Viagem</span>
         </a>
-        <a title="Imprimir Ficha de Operação" class="button btn btn-mini btn-primary" href="<?= base_url() ?>index.php/viagens/imprimirOperacao/<?= $result->id ?>" target="_blank">
+        <a title="Imprimir Ficha de Operação" class="button btn btn-mini btn-primary" href="#modalFichaOperacao" data-toggle="modal">
             <span class="button__icon"><i class="fas fa-ship"></i></span> <span class="button__text2"> Ficha Operação</span>
         </a>
     <?php endif; ?>
@@ -1003,6 +1003,35 @@
         <div class="modal-footer">
             <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
             <button class="btn btn-primary">Salvar Alterações</button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal Ficha Operacao -->
+<div id="modalFichaOperacao" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <form action="<?= base_url() ?>index.php/viagens/imprimirOperacao/<?= $result->id ?>" method="get" target="_blank">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h5 id="myModalLabel">Imprimir Ficha de Operação</h5>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-info">Selecione o período que deseja imprimir.</div>
+            <div class="control-group">
+                <label for="data_operacao_inicio" class="control-label">Data Inicial</label>
+                <div class="controls">
+                    <input id="data_operacao_inicio" type="date" name="data_inicial" value="<?= $result->data_partida ?>" class="span12" min="<?= $result->data_partida ?>" max="<?= $result->data_retorno ?: $result->data_partida ?>" required onclick="try{this.showPicker()}catch(e){}" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="data_operacao_fim" class="control-label">Data Final</label>
+                <div class="controls">
+                    <input id="data_operacao_fim" type="date" name="data_final" value="<?= $result->data_retorno ?: $result->data_partida ?>" class="span12" min="<?= $result->data_partida ?>" max="<?= $result->data_retorno ?: $result->data_partida ?>" required onclick="try{this.showPicker()}catch(e){}" />
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+            <button class="btn btn-primary">Imprimir</button>
         </div>
     </form>
 </div>

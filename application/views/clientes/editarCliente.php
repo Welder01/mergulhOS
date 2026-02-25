@@ -655,7 +655,7 @@
                             <div class="control-group">
                                 <label for="data_emissao" class="control-label">Data de Emissão</label>
                                 <div class="controls">
-                                    <input id="data_emissao" type="date" name="data_emissao" class="span12" value="" />
+                                    <input id="data_emissao" type="date" name="data_emissao" class="span12" value="" onclick="try{this.showPicker()}catch(e){}" />
                                 </div>
                             </div>
                             <div class="control-group">

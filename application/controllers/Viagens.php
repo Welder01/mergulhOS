@@ -412,6 +412,14 @@ class Viagens extends MY_Controller
         $data_partida = $this->data['result']->data_partida;
         $data_retorno = $this->data['result']->data_retorno;
 
+        // Verifica se foram passadas datas específicas via GET (do modal)
+        if ($this->input->get('data_inicial')) {
+            $data_partida = $this->input->get('data_inicial');
+        }
+        if ($this->input->get('data_final')) {
+            $data_retorno = $this->input->get('data_final');
+        }
+
         if ($data_partida) {
             if (!$data_retorno || $data_retorno == '0000-00-00') {
                 $data_retorno = $data_partida;
