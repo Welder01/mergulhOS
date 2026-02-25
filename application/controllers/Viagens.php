@@ -319,6 +319,22 @@ class Viagens extends MY_Controller
                 $clientes_completos[] = $cliente_final;
             }
         }
+
+        // Ordena clientes por Propósito (Agrupamento) e depois por Nome (Ordem Alfabética)
+        usort($clientes_completos, function ($a, $b) {
+            $propA = isset($a->proposito) ? $a->proposito : '';
+            $propB = isset($b->proposito) ? $b->proposito : '';
+            
+            // Compara propósito primeiro
+            $res = strcasecmp($propA, $propB);
+            if ($res !== 0) {
+                return $res;
+            }
+            
+            // Se propósito for igual, compara nome
+            return strcasecmp($a->nomeCliente, $b->nomeCliente);
+        });
+
         $this->data['clientes'] = $clientes_completos;
 
         // Template para resumo de equipamentos
@@ -369,6 +385,22 @@ class Viagens extends MY_Controller
         }
 
         $this->data['instrutores'] = $this->viagem_instrutores_model->getByViagem($id);
+
+        // Ordena instrutores por Propósito e depois por Nome
+        usort($this->data['instrutores'], function ($a, $b) {
+            $propA = isset($a->proposito) ? $a->proposito : '';
+            $propB = isset($b->proposito) ? $b->proposito : '';
+            
+            $res = strcasecmp($propA, $propB);
+            if ($res !== 0) {
+                return $res;
+            }
+            
+            $nomeA = isset($a->nome_instrutor) ? $a->nome_instrutor : '';
+            $nomeB = isset($b->nome_instrutor) ? $b->nome_instrutor : '';
+            
+            return strcasecmp($nomeA, $nomeB);
+        });
 
         // Adiciona equipamentos dos instrutores ao resumo
         $this->load->model('certificacao_usuario_model');
