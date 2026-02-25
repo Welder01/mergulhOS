@@ -946,9 +946,11 @@ class Viagens extends MY_Controller
             $this->db->select('idClientes, nomeCliente, documento, telefone');
             $this->db->group_start();
             $this->db->like('LOWER(nomeCliente)', $q);
+            $this->db->like('nomeCliente', $q);
             $this->db->or_like('documento', $q);
             $this->db->group_end();
             $this->db->limit(5);
+            $this->db->limit(20);
             $query = $this->db->get('clientes');
             $result = array_map(function ($cliente) {
                 $label = $cliente->nomeCliente . ' (CPF: ' . $cliente->documento . ' | Tel: ' . $cliente->telefone . ')';
@@ -1022,6 +1024,7 @@ class Viagens extends MY_Controller
             $q = strtolower($this->input->get('term'));
             $this->db->select("id, preco_pessoa as preco, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as label, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as text", false);
             $this->db->like('LOWER(nome_viagem)', $q);
+            $this->db->like('nome_viagem', $q);
         } elseif (isset($_GET['ids'])) {
             $ids = explode(',', $_GET['ids']);
             $this->db->select("id, preco_pessoa as preco, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as label, CONCAT('ID: ', id, ' | ', nome_viagem, ' | Partida: ', DATE_FORMAT(data_partida, '%d/%m/%Y')) as text", false);
