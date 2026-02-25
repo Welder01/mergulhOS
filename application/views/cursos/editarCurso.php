@@ -1,3 +1,20 @@
+<script>
+    window.onerror = function(message, source, lineno, colno, error) {
+        if (message && message.indexOf("class constructors must be invoked with 'new'") !== -1) {
+            console.error("ERRO CRÍTICO SWAL DETECTADO: " + message);
+            console.error("Fonte: " + source + ":" + lineno + ":" + colno);
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "<?= base_url() ?>index.php/os/log_client_error", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            var params = "error_message=" + encodeURIComponent(message) +
+                         "&source=" + encodeURIComponent(source + ":" + lineno + ":" + colno) +
+                         "&stack=" + encodeURIComponent(error ? error.stack : 'N/A') +
+                         "&<?= $this->security->get_csrf_token_name(); ?>=" + "<?= $this->security->get_csrf_hash(); ?>";
+            xhr.send(params);
+        }
+    };
+</script>
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/trumbowyg/ui/trumbowyg.min.css">
@@ -6,32 +23,38 @@
 <script src="<?= base_url() ?>assets/js/maskmoney.js"></script>
 <script src="<?php echo base_url() ?>assets/js/jquery.mask.min.js"></script>
 <script>
-    // Polyfill robusto para interceptar e corrigir chamadas antigas do SweetAlert (Swal)
+    // Polyfill robusto (ES5) para interceptar e corrigir chamadas antigas do SweetAlert (Swal)
     (function() {
-        var patch = function(prop) {
-            var _val = window[prop];
-            var patchVal = function(value) {
-                if (typeof value === 'function' && value.fire && !value.isPolyfilled) {
-                    var Original = value;
-                    var Wrapper = function(...args) {
-                        return Original.fire(...args);
-                    };
-                    Object.assign(Wrapper, Original);
-                    Wrapper.prototype = Original.prototype;
-                    Wrapper.isPolyfilled = true;
-                    return Wrapper;
-                }
-                return value;
-            };
-            if (_val) { _val = patchVal(_val); }
-            Object.defineProperty(window, prop, {
-                get: function() { return _val; },
-                set: function(value) { _val = patchVal(value); },
-                configurable: true, enumerable: true
-            });
-        };
+        function patch(name) {
+            var val = window[name];
+            if (val && typeof val === 'function' && val.fire && !val.isPolyfilled) {
+                var wrapper = function() { return val.fire.apply(val, arguments); };
+                for (var key in val) { wrapper[key] = val[key]; }
+                // wrapper.prototype = val.prototype; // CAUSA O ERRO
+                wrapper.isPolyfilled = true;
+                try { window[name] = wrapper; } catch(e) {}
+                val = wrapper;
+            }
+            var _val = val;
+            try {
+                Object.defineProperty(window, name, {
+                    get: function() { return _val; },
+                    set: function(v) {
+                        if (v && typeof v === 'function' && v.fire && !v.isPolyfilled) {
+                            var wrapper = function() { return v.fire.apply(v, arguments); };
+                            for (var key in v) { wrapper[key] = v[key]; }
+                            // wrapper.prototype = v.prototype; // CAUSA O ERRO
+                            wrapper.isPolyfilled = true;
+                            _val = wrapper;
+                        } else { _val = v; }
+                    },
+                    configurable: true, enumerable: true
+                });
+            } catch(e) {}
+        }
         patch('Swal');
         patch('swal');
+        patch('sweetAlert');
     })();
 </script>
 <script src="<?php echo base_url() ?>assets/js/funcoes.js"></script>
@@ -51,7 +74,7 @@
             <form action="<?= current_url(); ?>" id="formCurso" method="post" class="form-horizontal">
                 <div class="widget-content nopadding tab-content">
                     <div class="span12">
-                        <?= form_hidden('id', $result->id) ?>
+                        <?= form_hidden('id_curso', $result->id) ?>
                         <div class="control-group">
                             <label for="nome_curso" class="control-label">Nome do Curso<span class="required">*</span></label>
                             <div class="controls">

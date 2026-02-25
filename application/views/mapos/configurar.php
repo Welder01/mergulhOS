@@ -1,48 +1,4 @@
-<style>
-    /* Correção para o menu lateral permitir rolagem em telas menores */
-    #sidebar {
-        position: fixed !important;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 220px !important;
-        overflow-y: auto !important;
-        padding-top: 60px !important;
-        padding-bottom: 150px !important;
-        z-index: 99;
-        box-sizing: border-box !important;
-    }
-    #sidebar::-webkit-scrollbar {
-        width: 5px;
-    }
-    #sidebar::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.2);
-        border-radius: 3px;
-    }
-</style>
-<div class="row-fluid" style="margin-top:0">
-    <div class="span12">
-        <div class="widget-box">
-            <div class="widget-title" style="margin: -20px 0 0">
-                <span class="icon">
-                    <i class="fas fa-wrench"></i>
-                </span>
-                <h5>Configurações do Sistema</h5>
-            </div>
-            <ul class="nav nav-tabs">
-                <li class="active"><a data-toggle="tab" href="#home">Gerais</a></li>
-                <li><a data-toggle="tab" href="#menu1">Financeiro</a></li>
-                <li><a data-toggle="tab" href="#menu2">Produtos</a></li>
-                <li><a data-toggle="tab" href="#menu3">Notificações</a></li>
-                <li><a data-toggle="tab" href="#menu4">Atualizações</a></li>
-                <li><a data-toggle="tab" href="#menu5">OS</a></li>
-                <li><a data-toggle="tab" href="#menu6">API</a></li>
-                <li><a data-toggle="tab" href="#menu7">E-mail</a></li>
-            </ul>
-            <form action="<?php echo current_url(); ?>" id="formConfigurar" method="post" class="form-horizontal">
-                <input type="hidden" name="active_tab" id="active_tab" value="#home">
-                <div class="widget-content nopadding tab-content">
-                    <?php echo $custom_error; ?>
+<                   <?php echo $custom_error; ?>
                     <!-- Menu Gerais -->
                     <div id="home" class="tab-pane fade in active">
                         <div class="control-group">

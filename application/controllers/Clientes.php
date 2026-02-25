@@ -148,7 +148,11 @@ class Clientes extends MY_Controller
         $this->load->library('form_validation');
         $this->data['custom_error'] = '';
 
-        if ($this->form_validation->run('clientes') == false) {
+        $this->form_validation->set_rules('nomeCliente', 'Nome', 'trim|required');
+        $this->form_validation->set_rules('documento', 'CPF/CNPJ', 'trim');
+        $this->form_validation->set_rules('email', 'Email', 'trim|valid_email');
+
+        if ($this->form_validation->run() == false) {
             $this->data['custom_error'] = (validation_errors() ? '<div class="form_error">' . validation_errors() . '</div>' : false);
         } else {
 

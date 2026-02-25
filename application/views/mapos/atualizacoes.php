@@ -9,6 +9,23 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
+                    <strong>v4.53.8 - Correções de Interface e Parâmetros</strong><br>
+                    Padronização de cabeçalhos, ajustes no menu lateral e correção na edição de cursos.
+                </div>
+
+                <h3>Melhorias e Correções</h3>
+                <hr>
+                <h4>1. Menu Lateral (Sidebar)</h4>
+                <p>Ajuste na rolagem do menu lateral para garantir que todos os itens (como "Sair") sejam acessíveis em diferentes resoluções e níveis de zoom, mantendo a estética sem barra de rolagem visível.</p>
+
+                <h4>2. Padronização de Telas</h4>
+                <p>Atualização do cabeçalho das telas "Dashboard" e "Clientes" para seguir o padrão visual do restante do sistema.</p>
+
+                <h4>3. Correções de Bugs</h4>
+                <p>Correção no formulário de edição de cursos que impedia o salvamento devido a um erro de parâmetro inválido.</p>
+                <br>
+
+                <div class="alert alert-success">
                     <strong>v4.53.7 - Melhorias de Interface e Usabilidade</strong><br>
                     Ajustes no menu lateral e alertas na área do cliente.
                 </div>

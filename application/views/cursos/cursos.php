@@ -1,32 +1,21 @@
-<script type="text/javascript">
-    // Polyfill robusto para interceptar e corrigir chamadas antigas do SweetAlert (Swal)
-    (function() {
-        var patch = function(prop) {
-            var _val = window[prop];
-            var patchVal = function(value) {
-                if (typeof value === 'function' && value.fire && !value.isPolyfilled) {
-                    var Original = value;
-                    var Wrapper = function(...args) {
-                        return Original.fire(...args);
-                    };
-                    Object.assign(Wrapper, Original);
-                    Wrapper.prototype = Original.prototype;
-                    Wrapper.isPolyfilled = true;
-                    return Wrapper;
-                }
-                return value;
-            };
-            if (_val) { _val = patchVal(_val); }
-            Object.defineProperty(window, prop, {
-                get: function() { return _val; },
-                set: function(value) { _val = patchVal(value); },
-                configurable: true, enumerable: true
-            });
-        };
-        patch('Swal');
-        patch('swal');
-    })();
+<script>
+    window.onerror = function(message, source, lineno, colno, error) {
+        if (message && message.indexOf("class constructors must be invoked with 'new'") !== -1) {
+            console.error("ERRO CRÍTICO SWAL DETECTADO: " + message);
+            console.error("Fonte: " + source + ":" + lineno + ":" + colno);
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "<?= base_url() ?>index.php/os/log_client_error", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            var params = "error_message=" + encodeURIComponent(message) +
+                         "&source=" + encodeURIComponent(source + ":" + lineno + ":" + colno) +
+                         "&stack=" + encodeURIComponent(error ? error.stack : 'N/A') +
+                         "&<?= $this->security->get_csrf_token_name(); ?>=" + "<?= $this->security->get_csrf_hash(); ?>";
+            xhr.send(params);
+        }
+    };
 </script>
+
 <div class="new122">
     <div class="widget-title" style="margin: -20px 0 0">
         <span class="icon">

@@ -1548,4 +1548,13 @@ class Os extends MY_Controller
             echo json_encode(['result' => false]);
         }
     }
+
+    public function log_client_error()
+    {
+        $error = $this->input->post('error_message');
+        $source = $this->input->post('source');
+        $stack = $this->input->post('stack');
+        log_message('error', "[CLIENT JS ERROR] $error | Source: $source | Stack: $stack");
+        echo json_encode(['status' => 'logged']);
+    }
 }

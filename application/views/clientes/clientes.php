@@ -3,25 +3,24 @@
     select {
         width: 70px;
     }
-    /* Correção para o menu lateral permitir rolagem em telas menores */
+    /* Correção para o menu lateral permitir rolagem sem barra visível */
     #sidebar {
         position: fixed !important;
         top: 0;
         bottom: 0;
         left: 0;
-        width: 220px !important; /* Garante a largura do menu */
+        width: 220px !important;
         overflow-y: auto !important;
         padding-top: 60px !important;
-        padding-bottom: 150px !important;
-        z-index: 99; /* Garante que fique acima do conteúdo */
-        box-sizing: border-box !important; /* Garante que o padding não aumente a altura total além de 100% */
+        padding-bottom: 100px !important;
+        z-index: 99;
+        box-sizing: border-box !important;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;  /* IE 10+ */
     }
     #sidebar::-webkit-scrollbar {
-        width: 5px;
-    }
-    #sidebar::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.2);
-        border-radius: 3px;
+        width: 0px;
+        background: transparent;
     }
 </style>
 <div class="new122">

@@ -91,8 +91,7 @@
             padding: 0;
         }
     }
-
-    /* Correção para o menu lateral permitir rolagem em telas menores */
+    /* Correção para o menu lateral permitir rolagem sem barra visível */
     #sidebar {
         position: fixed !important;
         top: 0;
@@ -101,18 +100,16 @@
         width: 220px !important;
         overflow-y: auto !important;
         padding-top: 60px !important;
-        padding-bottom: 150px !important;
+        padding-bottom: 100px !important;
         z-index: 99;
         box-sizing: border-box !important;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;  /* IE 10+ */
     }
     #sidebar::-webkit-scrollbar {
-        width: 5px;
+        width: 0px;
+        background: transparent;
     }
-    #sidebar::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.2);
-        border-radius: 3px;
-    }
-
 </style>
 <div class="span6" style="margin-left: 0">
     <div class="widget-box">
