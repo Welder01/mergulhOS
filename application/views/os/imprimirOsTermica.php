@@ -314,18 +314,18 @@ $totalViagens = 0; ?>
                                 </td>
                             </tr>
                         </tbody>
-                        <?php if ($result->status == 'Finalizado' || $result->status == 'Orçamento') { ?>
-                            <?php if ($qrCode) : ?>
-                                <tr>
-                                    <td colspan="5" style="text-align:center;">
-                                        <img style="margin:12px 0px 0px 0px" src="<?php echo base_url(); ?>assets/img/logo_pix.png" width="64px" alt="QR Code de Pagamento" />
-                                        <div id="qr-code-pix" style="display: flex; justify-content: center; margin-top: 10px;"></div>
-                                        <p style="margin-top: 5px; font-size: 11px;">Leia o QR Code para pagar via PIX</p>
-                                        <p style="font-size: 10px; word-break: break-all;"><strong>Chave PIX:</strong> <?= $chaveFormatada; ?></p>
-                                    </td>
-                                </tr>
-                            <?php endif ?>
-                        <?php } ?>
+                        <?php if ($qrCode) : ?>
+                            <tr>
+                                <td colspan="5" style="text-align:center;">
+                                    <img style="margin:12px 0px 0px 0px" src="<?php echo base_url(); ?>assets/img/logo_pix.png" width="64px" alt="QR Code de Pagamento" />
+                                    <div style="display: flex; justify-content: center; margin-top: 10px;">
+                                        <img src="<?= $qrCode ?>" alt="QR Code de Pagamento" width="128px" />
+                                    </div>
+                                    <p style="margin-top: 5px; font-size: 11px;">Leia o QR Code para pagar via PIX</p>
+                                    <p style="font-size: 10px; word-break: break-all;"><strong>Chave PIX:</strong> <?= $chaveFormatada; ?></p>
+                                </td>
+                            </tr>
+                        <?php endif ?>
                     </table>
                     <table class="table table-bordered table-condensed" style="font-size: 15px">
                         <tbody>
@@ -534,18 +534,18 @@ $totalViagens = 0; ?>
                                     </td>
                                 </tr>
                             </tbody>
-                            <?php if ($result->status == 'Finalizado' || $result->status == 'Orçamento') { ?>
-                                <?php if ($qrCode) : ?>
-                                <tr>
-                                    <td colspan="5" style="text-align:center; padding-top: 10px;">
-                                        <img src="<?php echo base_url(); ?>assets/img/logo_pix.png" width="64px" alt="Logo Pix" />
-                                        <div id="qr-code-pix" style="display: flex; justify-content: center; margin-top: 10px;"></div>
-                                        <p style="margin-top: 5px; font-size: 11px; font-weight: bold;">Pague com PIX</p>
-                                        <p style="font-size: 10px; word-break: break-all; margin: 0;"><strong>Chave:</strong> <?= $chaveFormatada; ?></p>
-                                    </td>
-                                </tr>
-                                <?php endif ?>
-                            <?php } ?>
+                            <?php if ($qrCode) : ?>
+                            <tr>
+                                <td colspan="5" style="text-align:center; padding-top: 10px;">
+                                    <img src="<?php echo base_url(); ?>assets/img/logo_pix.png" width="64px" alt="Logo Pix" />
+                                    <div style="display: flex; justify-content: center; margin-top: 10px;">
+                                        <img src="<?= $qrCode ?>" alt="QR Code de Pagamento" width="128px" />
+                                    </div>
+                                    <p style="margin-top: 5px; font-size: 11px; font-weight: bold;">Pague com PIX</p>
+                                    <p style="font-size: 10px; word-break: break-all; margin: 0;"><strong>Chave:</strong> <?= $chaveFormatada; ?></p>
+                                </td>
+                            </tr>
+                            <?php endif ?>
                         </table>
                         <table class="table table-bordered table-condensed" style="font-size: 15px">
                             <tbody>
@@ -570,17 +570,6 @@ $totalViagens = 0; ?>
   window.print(); 
 </script>
 
-<script type="text/javascript" src="<?php echo base_url(); ?>assets/js/qrcode.min.js"></script>
-<script>
-    <?php if (isset($qrCode)) : ?>
-        var qrcode = new QRCode(document.getElementById("qr-code-pix"), {
-            text: "<?= $qrCode ?>",
-            width: 128,
-            height: 128,
-            correctLevel: QRCode.CorrectLevel.H
-        });
-    <?php endif; ?>
-</script>
 </body>
     <script src="<?php echo base_url(); ?>assets/js/bootstrap.min.js"></script>
     <script src="<?php echo base_url(); ?>assets/js/matrix.js"></script>
