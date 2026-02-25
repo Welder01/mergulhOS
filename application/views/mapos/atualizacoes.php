@@ -10,13 +10,14 @@
             <div class="widget-content">
                 <div class="alert alert-success">
                     <strong>v4.53.9 - Correções de Lógica e Validação</strong><br>
-                    Ajustes no consumo de vagas em viagens, validação de clientes e requisitos de cursos.
+                    Ajustes no consumo de vagas em viagens, validação de clientes, requisitos de cursos e layout de impressão.
                 </div>
 
                 <h3>Correções e Melhorias</h3>
                 <hr>
                 <h4>1. Viagens</h4>
                 <p>Corrigido o comportamento ao adicionar/remover instrutores: agora eles consomem vagas na viagem, garantindo que o limite total de participantes (clientes + instrutores) seja respeitado.</p>
+                <p>Otimização do layout da <strong>Ficha de Operação</strong>: Redução do tamanho da fonte e espaçamentos para permitir que mais registros (Mergulhadores e Instrutores) caibam em uma única página.</p>
 
                 <h4>2. Clientes</h4>
                 <p>Corrigida a validação de e-mail na edição de clientes, que impedia salvar o cadastro mesmo mantendo o e-mail original.</p>

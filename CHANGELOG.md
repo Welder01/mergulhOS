@@ -35,6 +35,7 @@ e [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Clientes**: Corrigido erro de validação "e-mail já cadastrado" ao editar o próprio cliente.
 - **Viagens**: Instrutores adicionados à viagem agora consomem vagas corretamente (decrementa ao adicionar, incrementa ao remover).
 - **Cursos**: Adicionado "Instrutor" aos requisitos, removido itens vazios da lista e corrigido erro de sintaxe.
+- **Viagens**: Otimização do layout da Ficha de Operação (redução de fonte e espaçamento) para melhor aproveitamento de página.
 
 ## [4.52.1] - 2026-02-24
 ### Fixed
