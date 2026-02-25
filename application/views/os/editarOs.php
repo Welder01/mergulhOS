@@ -1542,6 +1542,18 @@
                     success: function(data) {
                         if (data.result == true) {
                             $("#divViagens-OS").load("<?php echo current_url(); ?> #divViagens-OS");
+                            $("#divValorTotal").load("<?php echo current_url(); ?> #divValorTotal");
+                            $("#resultado").val('');
+                            $("#desconto").val('');
+                            if (data.message) {
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Sucesso",
+                                    text: data.message
+                                });
+                            }
+                        } else {
+                            Swal.fire({ icon: "error", title: "Atenção", text: data.message || "Ocorreu um erro ao tentar excluir viagem." });
                         }
                     }
                 });
@@ -1574,6 +1586,18 @@
                     success: function(data) {
                         if (data.result == true) {
                             $("#divCursos-OS").load("<?php echo current_url(); ?> #divCursos-OS");
+                            $("#divValorTotal").load("<?php echo current_url(); ?> #divValorTotal");
+                            $("#resultado").val('');
+                            $("#desconto").val('');
+                            if (data.message) {
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Sucesso",
+                                    text: data.message
+                                });
+                            }
+                        } else {
+                            Swal.fire({ icon: "error", title: "Atenção", text: data.message || "Ocorreu um erro ao tentar excluir curso." });
                         }
                     }
                 });
