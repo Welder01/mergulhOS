@@ -42,7 +42,7 @@ abstract class BasePaymentGateway implements PaymentGateway
         }
         $error_list = "Por favor preencher os seguintes dados do(a) seu(ua) cliente!\n\n";
         $check = false;
-        $list = ['rua', 'numero', 'bairro', 'cep', 'cidade', 'estado', 'documento', 'telefone', 'nomeCliente', 'email'];
+        $list = ['rua', 'numero', 'bairro', 'cep', 'cidade', 'estado', 'documento', 'nomeCliente', 'email'];
         foreach ($entity as $key => $value) {
             if (in_array($key, $list)) {
                 if ((empty($value) || strlen($value) < 2) && ! is_numeric($value)) {
@@ -51,6 +51,15 @@ abstract class BasePaymentGateway implements PaymentGateway
                 }
             }
         }
+
+        $telefone = isset($entity->telefone) ? $entity->telefone : '';
+        $celular = isset($entity->celular) ? $entity->celular : '';
+
+        if ((empty($telefone) || strlen($telefone) < 2) && (empty($celular) || strlen($celular) < 2)) {
+            $error_list .= '-telefone ou celular' . "\n";
+            $check = true;
+        }
+
         if (! $check) {
             return null;
         }

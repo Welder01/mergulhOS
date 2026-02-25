@@ -178,6 +178,12 @@ class Asaas extends BasePaymentGateway
         $servicos = $tipo === PaymentGateway::PAYMENT_TYPE_OS
             ? $this->ci->Os_model->getServicos($id)
             : [];
+        $cursos = $tipo === PaymentGateway::PAYMENT_TYPE_OS
+            ? $this->ci->Os_model->getCursos($id)
+            : [];
+        $viagens = $tipo === PaymentGateway::PAYMENT_TYPE_OS
+            ? $this->ci->Os_model->getViagens($id)
+            : [];
 
         $desconto = [$tipo === PaymentGateway::PAYMENT_TYPE_OS
             ? $this->ci->Os_model->getById($id)
@@ -196,6 +202,20 @@ class Asaas extends BasePaymentGateway
         );
         $totalServicos = array_reduce(
             $servicos,
+            function ($total, $item) {
+                return $total + (floatval($item->preco) * intval($item->quantidade));
+            },
+            0
+        );
+        $totalCursos = array_reduce(
+            $cursos,
+            function ($total, $item) {
+                return $total + (floatval($item->preco) * intval($item->quantidade));
+            },
+            0
+        );
+        $totalViagens = array_reduce(
+            $viagens,
             function ($total, $item) {
                 return $total + (floatval($item->preco) * intval($item->quantidade));
             },
@@ -220,7 +240,7 @@ class Asaas extends BasePaymentGateway
             throw new \Exception('OS ou venda não existe!');
         }
 
-        if (($totalProdutos + $totalServicos) <= 0) {
+        if (($totalProdutos + $totalServicos + $totalCursos + $totalViagens) <= 0) {
             throw new \Exception('OS ou venda com valor negativo ou zero!');
         }
 
@@ -234,7 +254,7 @@ class Asaas extends BasePaymentGateway
             'customer' => $this->criarOuRetornarClienteAsaasId($entity->clientes_id),
             'billingType' => 'BOLETO',
             'dueDate' => $expirationDate,
-            'value' => $this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto),
+            'value' => $this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens),
             'description' => $tipo === PaymentGateway::PAYMENT_TYPE_OS ? "OS #$id" : "Venda #$id",
             'externalReference' => $id,
             'postalService' => false,
@@ -261,7 +281,7 @@ class Asaas extends BasePaymentGateway
             'expire_at' => $result->dueDate,
             'charge_id' => $result->id,
             'status' => $result->status,
-            'total' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto)),
+            'total' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens)),
             'payment' => $result->billingType,
             'clientes_id' => $entity->idClientes,
             'payment_method' => 'boleto',
@@ -294,6 +314,12 @@ class Asaas extends BasePaymentGateway
         $servicos = $tipo === PaymentGateway::PAYMENT_TYPE_OS
             ? $this->ci->Os_model->getServicos($id)
             : [];
+        $cursos = $tipo === PaymentGateway::PAYMENT_TYPE_OS
+            ? $this->ci->Os_model->getCursos($id)
+            : [];
+        $viagens = $tipo === PaymentGateway::PAYMENT_TYPE_OS
+            ? $this->ci->Os_model->getViagens($id)
+            : [];
         $tipo_desconto = [$tipo === PaymentGateway::PAYMENT_TYPE_OS
             ? $this->ci->Os_model->getById($id)
             : $this->ci->vendas_model->getById($id)];
@@ -311,6 +337,20 @@ class Asaas extends BasePaymentGateway
         );
         $totalServicos = array_reduce(
             $servicos,
+            function ($total, $item) {
+                return $total + (floatval($item->preco) * intval($item->quantidade));
+            },
+            0
+        );
+        $totalCursos = array_reduce(
+            $cursos,
+            function ($total, $item) {
+                return $total + (floatval($item->preco) * intval($item->quantidade));
+            },
+            0
+        );
+        $totalViagens = array_reduce(
+            $viagens,
             function ($total, $item) {
                 return $total + (floatval($item->preco) * intval($item->quantidade));
             },
@@ -335,7 +375,7 @@ class Asaas extends BasePaymentGateway
             throw new \Exception('OS ou venda não existe!');
         }
 
-        if (($totalProdutos + $totalServicos) <= 0) {
+        if (($totalProdutos + $totalServicos + $totalCursos + $totalViagens) <= 0) {
             throw new \Exception('OS ou venda com valor negativo ou zero!');
         }
 
@@ -349,7 +389,7 @@ class Asaas extends BasePaymentGateway
             'name' => $tipo === PaymentGateway::PAYMENT_TYPE_OS ? "OS #$id" : "Venda #$id",
             'description' => $tipo === PaymentGateway::PAYMENT_TYPE_OS ? "OS #$id" : "Venda #$id",
             'endDate' => $expirationDate,
-            'value' => $this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto),
+            'value' => $this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens),
             'billingType' => 'UNDEFINED',
             'chargeType' => 'DETACHED',
             'dueDateLimitDays' => preg_replace('/[^0-9]/', '', $this->asaasConfig['boleto_expiration']),
@@ -373,7 +413,7 @@ class Asaas extends BasePaymentGateway
             'expire_at' => $result->endDate,
             'charge_id' => $result->id,
             'status' => 'PENDING',
-            'total' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto)),
+            'total' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens)),
             'clientes_id' => $entity->idClientes,
             'payment_method' => 'link',
             'payment_gateway' => 'Asaas',
@@ -399,17 +439,19 @@ class Asaas extends BasePaymentGateway
         return $data;
     }
 
-    private function valorTotal($produtosValor, $servicosValor, $desconto, $tipo_desconto)
+    private function valorTotal($produtosValor, $servicosValor, $desconto, $tipo_desconto, $cursosValor = 0, $viagensValor = 0)
     {
+        $totalItens = $produtosValor + $servicosValor + $cursosValor + $viagensValor;
+
         if ($tipo_desconto == 'porcento') {
-            $def_desconto = $desconto * ($produtosValor + $servicosValor) / 100;
+            $def_desconto = $desconto * $totalItens / 100;
         } elseif ($tipo_desconto == 'real') {
             $def_desconto = $desconto;
         } else {
             $def_desconto = 0;
         }
 
-        return ($produtosValor + $servicosValor) - $def_desconto;
+        return $totalItens - $def_desconto;
     }
 
     private function criarOuRetornarClienteAsaasId($clienteId)

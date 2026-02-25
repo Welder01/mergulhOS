@@ -143,17 +143,19 @@ class GerencianetSdk extends BasePaymentGateway
         return $this->atualizarDados($id);
     }
 
-    private function valorTotal($produtosValor, $servicosValor, $desconto, $tipo_desconto)
+    private function valorTotal($produtosValor, $servicosValor, $desconto, $tipo_desconto, $cursosValor = 0, $viagensValor = 0)
     {
+        $totalItens = $produtosValor + $servicosValor + $cursosValor + $viagensValor;
+
         if ($tipo_desconto == 'porcento') {
-            $def_desconto = $desconto * ($produtosValor + $servicosValor) / 100;
+            $def_desconto = $desconto * $totalItens / 100;
         } elseif ($tipo_desconto == 'real') {
             $def_desconto = $desconto;
         } else {
             $def_desconto = 0;
         }
 
-        return ($produtosValor + $servicosValor) - $def_desconto;
+        return $totalItens - $def_desconto;
     }
 
     protected function gerarCobrancaBoleto($id, $tipo)
@@ -164,6 +166,12 @@ class GerencianetSdk extends BasePaymentGateway
             : $this->ci->vendas_model->getProdutos($id);
         $servicos = $tipo === PaymentGateway::PAYMENT_TYPE_OS
             ? $this->ci->Os_model->getServicos($id)
+            : [];
+        $cursos = $tipo === PaymentGateway::PAYMENT_TYPE_OS
+            ? $this->ci->Os_model->getCursos($id)
+            : [];
+        $viagens = $tipo === PaymentGateway::PAYMENT_TYPE_OS
+            ? $this->ci->Os_model->getViagens($id)
             : [];
 
         $desconto = [$tipo === PaymentGateway::PAYMENT_TYPE_OS
@@ -183,6 +191,20 @@ class GerencianetSdk extends BasePaymentGateway
         );
         $totalServicos = array_reduce(
             $servicos,
+            function ($total, $item) {
+                return $total + (floatval($item->preco) * intval($item->quantidade));
+            },
+            0
+        );
+        $totalCursos = array_reduce(
+            $cursos,
+            function ($total, $item) {
+                return $total + (floatval($item->preco) * intval($item->quantidade));
+            },
+            0
+        );
+        $totalViagens = array_reduce(
+            $viagens,
             function ($total, $item) {
                 return $total + (floatval($item->preco) * intval($item->quantidade));
             },
@@ -208,7 +230,7 @@ class GerencianetSdk extends BasePaymentGateway
             throw new \Exception('OS ou venda não existe!');
         }
 
-        if (($totalProdutos + $totalServicos) <= 0) {
+        if (($totalProdutos + $totalServicos + $totalCursos + $totalViagens) <= 0) {
             throw new \Exception('OS ou venda com valor negativo ou zero!');
         }
 
@@ -228,11 +250,13 @@ class GerencianetSdk extends BasePaymentGateway
 
         $documento = preg_replace('/[^0-9]/', '', $entity->documento);
         $telefone = preg_replace('/[^0-9]/', '', $entity->telefone);
+        $celular = preg_replace('/[^0-9]/', '', $entity->celular);
+        $phone_number = !empty($telefone) ? $telefone : $celular;
         if (strlen($documento) == 11) {
             $customer = [
                 'name' => $entity->nomeCliente,
                 'cpf' => $documento,
-                'phone_number' => $telefone,
+                'phone_number' => $phone_number,
                 'email' => $entity->email,
                 'address' => $address,
             ];
@@ -242,7 +266,7 @@ class GerencianetSdk extends BasePaymentGateway
                     'corporate_name' => $entity->nomeCliente,
                     'cnpj' => $documento,
                 ],
-                'phone_number' => $telefone,
+                'phone_number' => $phone_number,
                 'email' => $entity->email,
                 'address' => $address,
             ];
@@ -254,7 +278,7 @@ class GerencianetSdk extends BasePaymentGateway
                 [
                     'name' => $tipo === PaymentGateway::PAYMENT_TYPE_OS ? "OS #$id" : "Venda #$id",
                     'amount' => 1,
-                    'value' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto)),
+                    'value' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens)),
                 ],
             ],
             'metadata' => [
@@ -281,7 +305,7 @@ class GerencianetSdk extends BasePaymentGateway
             'expire_at' => $result['data']['expire_at'],
             'charge_id' => $result['data']['charge_id'],
             'status' => $result['data']['status'],
-            'total' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto)),
+            'total' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens)),
             'payment' => $result['data']['payment'],
             'clientes_id' => $entity->idClientes,
             'payment_method' => 'boleto',
@@ -313,6 +337,12 @@ class GerencianetSdk extends BasePaymentGateway
         $servicos = $tipo === PaymentGateway::PAYMENT_TYPE_OS
             ? $this->ci->Os_model->getServicos($id)
             : [];
+        $cursos = $tipo === PaymentGateway::PAYMENT_TYPE_OS
+            ? $this->ci->Os_model->getCursos($id)
+            : [];
+        $viagens = $tipo === PaymentGateway::PAYMENT_TYPE_OS
+            ? $this->ci->Os_model->getViagens($id)
+            : [];
         $desconto = [$tipo === PaymentGateway::PAYMENT_TYPE_OS
             ? $this->ci->Os_model->getById($id)
             : $this->ci->vendas_model->getById($id)];
@@ -330,6 +360,20 @@ class GerencianetSdk extends BasePaymentGateway
         );
         $totalServicos = array_reduce(
             $servicos,
+            function ($total, $item) {
+                return $total + (floatval($item->preco) * intval($item->quantidade));
+            },
+            0
+        );
+        $totalCursos = array_reduce(
+            $cursos,
+            function ($total, $item) {
+                return $total + (floatval($item->preco) * intval($item->quantidade));
+            },
+            0
+        );
+        $totalViagens = array_reduce(
+            $viagens,
             function ($total, $item) {
                 return $total + (floatval($item->preco) * intval($item->quantidade));
             },
@@ -356,7 +400,7 @@ class GerencianetSdk extends BasePaymentGateway
             throw new \Exception('OS ou venda não existe!');
         }
 
-        if (($totalProdutos + $totalServicos) <= 0) {
+        if (($totalProdutos + $totalServicos + $totalCursos + $totalViagens) <= 0) {
             throw new \Exception('OS ou venda com valor negativo ou zero!');
         }
 
@@ -372,7 +416,7 @@ class GerencianetSdk extends BasePaymentGateway
             [
                 'name' => $tipo === PaymentGateway::PAYMENT_TYPE_OS ? "OS #$id" : "Venda #$id",
                 'amount' => 1,
-                'value' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto)),
+                'value' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens)),
             ],
         ];
 
@@ -403,7 +447,7 @@ class GerencianetSdk extends BasePaymentGateway
             'expire_at' => $result['data']['expire_at'],
             'charge_id' => $result['data']['charge_id'],
             'status' => $result['data']['status'],
-            'total' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto)),
+            'total' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens)),
             'clientes_id' => $entity->idClientes,
             'payment_method' => 'link',
             'payment_gateway' => 'GerencianetSdk',

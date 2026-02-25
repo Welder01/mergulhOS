@@ -174,6 +174,12 @@ class MercadoPago extends BasePaymentGateway
         $servicos = $tipo === PaymentGateway::PAYMENT_TYPE_OS
             ? $this->ci->Os_model->getServicos($id)
             : [];
+        $cursos = $tipo === PaymentGateway::PAYMENT_TYPE_OS
+            ? $this->ci->Os_model->getCursos($id)
+            : [];
+        $viagens = $tipo === PaymentGateway::PAYMENT_TYPE_OS
+            ? $this->ci->Os_model->getViagens($id)
+            : [];
         $desconto = [$tipo === PaymentGateway::PAYMENT_TYPE_OS
             ? $this->ci->Os_model->getById($id)
             : $this->ci->vendas_model->getById($id)];
@@ -190,6 +196,20 @@ class MercadoPago extends BasePaymentGateway
         );
         $totalServicos = array_reduce(
             $servicos,
+            function ($total, $item) {
+                return $total + (floatval($item->preco) * intval($item->quantidade));
+            },
+            0
+        );
+        $totalCursos = array_reduce(
+            $cursos,
+            function ($total, $item) {
+                return $total + (floatval($item->preco) * intval($item->quantidade));
+            },
+            0
+        );
+        $totalViagens = array_reduce(
+            $viagens,
             function ($total, $item) {
                 return $total + (floatval($item->preco) * intval($item->quantidade));
             },
@@ -214,7 +234,7 @@ class MercadoPago extends BasePaymentGateway
             throw new \Exception('OS ou venda não existe!');
         }
 
-        if (($totalProdutos + $totalServicos) <= 0) {
+        if (($totalProdutos + $totalServicos + $totalCursos + $totalViagens) <= 0) {
             throw new \Exception('OS ou venda com valor negativo ou zero!');
         }
 
@@ -228,7 +248,7 @@ class MercadoPago extends BasePaymentGateway
         $expirationDate = ($expirationDate->format(DateTime::RFC3339_EXTENDED));
 
         $payment = new Payment();
-        $payment->transaction_amount = floatval($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto));
+        $payment->transaction_amount = floatval($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens));
         $payment->description = PaymentGateway::PAYMENT_TYPE_OS ? "OS #$id" : "Venda #$id";
         $payment->payment_method_id = 'bolbradesco';
         $payment->notification_url = 'http://mapos.com.br/';
@@ -263,7 +283,7 @@ class MercadoPago extends BasePaymentGateway
             'expire_at' => $payment->date_of_expiration,
             'charge_id' => $payment->id,
             'status' => $payment->status,
-            'total' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto)),
+            'total' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens)),
             'clientes_id' => $entity->idClientes,
             'payment_method' => 'boleto',
             'payment_gateway' => 'MercadoPago',
@@ -290,16 +310,18 @@ class MercadoPago extends BasePaymentGateway
         throw new Exception('MercadoPago não suporta gerar link pela API, somente pelo painel!');
     }
 
-    private function valorTotal($produtosValor, $servicosValor, $desconto, $tipo_desconto)
+    private function valorTotal($produtosValor, $servicosValor, $desconto, $tipo_desconto, $cursosValor = 0, $viagensValor = 0)
     {
+        $totalItens = $produtosValor + $servicosValor + $cursosValor + $viagensValor;
+
         if ($tipo_desconto == 'porcento') {
-            $def_desconto = $desconto * ($produtosValor + $servicosValor) / 100;
+            $def_desconto = $desconto * $totalItens / 100;
         } elseif ($tipo_desconto == 'real') {
             $def_desconto = $desconto;
         } else {
             $def_desconto = 0;
         }
 
-        return ($produtosValor + $servicosValor) - $def_desconto;
+        return $totalItens - $def_desconto;
     }
 }
