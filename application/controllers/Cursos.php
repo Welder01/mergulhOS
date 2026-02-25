@@ -222,7 +222,13 @@ class Cursos extends MY_Controller
         // Carregar tipos de certificação da configuração
         $this->load->model('mapos_model');
         $tipos_certificacao_str = $this->mapos_model->get_ci_config('certificacao_tipos');
-        $this->data['tipos_certificacao'] = !empty($tipos_certificacao_str) ? explode(',', $tipos_certificacao_str) : [];
+        $tipos_certificacao = !empty($tipos_certificacao_str) ? explode(',', $tipos_certificacao_str) : [];
+        $tipos_certificacao = array_filter(array_map('trim', $tipos_certificacao));
+
+        if (!in_array('Instrutor', $tipos_certificacao)) {
+            $tipos_certificacao[] = 'Instrutor';
+        }
+        $this->data['tipos_certificacao'] = $tipos_certificacao;
 
         $this->data['view'] = 'cursos/visualizarCurso';
         return $this->layout();
