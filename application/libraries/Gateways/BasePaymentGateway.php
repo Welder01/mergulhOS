@@ -10,10 +10,10 @@ abstract class BasePaymentGateway implements PaymentGateway
     {
         switch ($metodoPagamento) {
             case PaymentGateway::PAYMENT_METHOD_BILLET:
-                return $this->gerarCobrancaBoleto($id, $tipo);
+                return $this->gerarCobrancaBoleto($id, $tipo, $data);
                 break;
             case PaymentGateway::PAYMENT_METHOD_LINK:
-                return $this->gerarCobrancaLink($id, $tipo);
+                return $this->gerarCobrancaLink($id, $tipo, $data);
                 break;
             default:
                 throw new \Exception('Método de pagamento inválido!');
@@ -87,7 +87,7 @@ abstract class BasePaymentGateway implements PaymentGateway
         throw new \Exception('Não implementado');
     }
 
-    abstract protected function gerarCobrancaBoleto($id, $tipo);
+    abstract protected function gerarCobrancaBoleto($id, $tipo, $data = null);
 
-    abstract protected function gerarCobrancaLink($id, $tipo);
+    abstract protected function gerarCobrancaLink($id, $tipo, $data = null);
 }

@@ -510,22 +510,30 @@ class Os extends MY_Controller
             $this->data['configuration']['pix_key'],
             $this->data['emitente']
         );
+
+        $this->db->select('*');
+        $this->db->from('lancamentos');
+        $this->db->group_start();
+        if ($this->db->field_exists('os_id', 'lancamentos')) {
+            $this->db->where('os_id', $this->uri->segment(3));
+        }
+        $this->db->or_like('descricao', "Fatura de OS - #" . $this->uri->segment(3));
+        $this->db->or_like('descricao', "Fatura de OS Nº: " . $this->uri->segment(3));
+        $this->db->group_end();
+        $this->data['parcelas'] = $this->db->get()->result();
+
         $this->data['modalGerarPagamento'] = $this->load->view(
             'cobrancas/modalGerarPagamento',
             [
                 'id' => $this->uri->segment(3),
                 'tipo' => 'os',
+                'os' => $this->data['result'],
+                'parcelas' => $this->data['parcelas'],
             ],
             true
         );
         $this->data['view'] = 'os/visualizarOs';
         $this->data['chaveFormatada'] = $this->formatarChave($this->data['configuration']['pix_key']);
-
-        $this->db->select('*');
-        $this->db->from('lancamentos');
-        $this->db->like('descricao', "Fatura de OS - #" . $this->uri->segment(3));
-        $this->db->or_like('descricao', "Fatura de OS Nº: " . $this->uri->segment(3));
-        $this->data['parcelas'] = $this->db->get()->result();
 
         // Patch para garantir que o propósito seja carregado caso o model não o traga
         if (!empty($this->data['viagens'])) {
@@ -754,8 +762,13 @@ class Os extends MY_Controller
 
         $this->db->select('*');
         $this->db->from('lancamentos');
-        $this->db->like('descricao', "Fatura de OS - #" . $this->uri->segment(3));
+        $this->db->group_start();
+        if ($this->db->field_exists('os_id', 'lancamentos')) {
+            $this->db->where('os_id', $this->uri->segment(3));
+        }
+        $this->db->or_like('descricao', "Fatura de OS - #" . $this->uri->segment(3));
         $this->db->or_like('descricao', "Fatura de OS Nº: " . $this->uri->segment(3));
+        $this->db->group_end();
         $this->data['parcelas'] = $this->db->get()->result();
 
         // Patch para garantir que o propósito seja carregado caso o model não o traga
@@ -1612,7 +1625,7 @@ class Os extends MY_Controller
             $os_id = $this->input->post('os_id');
             $valorTotalData = $this->os_model->valorTotalOS($os_id);
 
-            if (empty($valorTotalData) || ($valorTotalData['totalServico'] == 0 && $valorTotalData['totalProdutos'] == 0 && $valorTotalData['totalCursos'] == 0 && $valorTotalData['totalViagens'] == 0)) {
+            if (empty($valorTotalData)) {
                 $this->session->set_flashdata('error', 'Não foi possível calcular o valor da OS.');
                 redirect(site_url('os/editar/') . $os_id);
                 return;
@@ -1630,6 +1643,12 @@ class Os extends MY_Controller
             } else {
                 $entrada = 0;
             }
+
+            if ($this->input->post('gerar_cobranca')) {
+                $this->load->model('cobrancas_model');
+            }
+
+            $osIdExists = $this->db->field_exists('os_id', 'lancamentos');
 
             $this->db->trans_start();
 
@@ -1656,20 +1675,46 @@ class Os extends MY_Controller
                         'desconto' => 0,
                         'valor_desconto' => $entrada,
                         'clientes_id' => $this->input->post('clientes_id'),
-                        'data_vencimento' => $vencimento,
+                        'data_vencimento' => $recebimento ?: date('Y-m-d'),
                         'data_pagamento' => $recebimento ?: date('Y-m-d'),
-                        'baixado' => 1,
+                        'baixado' => $this->input->post('gerar_cobranca') ? 0 : 1,
                         'cliente_fornecedor' => set_value('cliente'),
                         'forma_pgto' => $this->input->post('formaPgto'),
                         'tipo' => $this->input->post('tipo'),
                         'observacoes' => set_value('observacoes'),
                         'usuarios_id' => $this->session->userdata('id_admin'),
                     ];
+                    if ($osIdExists) {
+                        $data['os_id'] = $os_id;
+                    }
                     if (!$this->os_model->add('lancamentos', $data)) $success = false;
+
+                    if ($success && $this->input->post('gerar_cobranca')) {
+                        $dataCobranca = [
+                            'os_id' => $os_id,
+                            'clientes_id' => $this->input->post('clientes_id'),
+                            'valor' => $entrada,
+                            'vencimento' => $recebimento ?: date('Y-m-d'),
+                            'status' => 'pending',
+                            'registrado_em' => date('Y-m-d H:i:s'),
+                            'gateway' => $this->input->post('gateway'),
+                            'payment_method' => $this->input->post('formaPgto'),
+                        ];
+                        $this->cobrancas_model->add('cobrancas', $dataCobranca);
+                    }
                 }
 
-                $data_vencimento_parcela = $vencimento;
                 for ($i = 1; $i <= $qtd_parcelas; $i++) {
+                    $dateObj = new DateTime($vencimento);
+                    $day = $dateObj->format('j');
+                    $dateObj->modify('+' . ($i - 1) . ' months');
+                    $newDay = $dateObj->format('j');
+                    if ($day > 28 && $newDay < 4) {
+                        $dateObj->modify('-' . $newDay . ' days');
+                    }
+                    // Garante que a data calculada seja usada explicitamente
+                    $data_vencimento_parcela = $dateObj->format('Y-m-d');
+
                     $data = [
                         'descricao' => $this->input->post('descricao') . ' - Parcela ' . $i . '/' . $qtd_parcelas,
                         'valor' => $valor_parcela,
@@ -1686,8 +1731,24 @@ class Os extends MY_Controller
                         'observacoes' => set_value('observacoes'),
                         'usuarios_id' => $this->session->userdata('id_admin'),
                     ];
+                    if ($osIdExists) {
+                        $data['os_id'] = $os_id;
+                    }
                     if (!$this->os_model->add('lancamentos', $data)) $success = false;
-                    $data_vencimento_parcela = date('Y-m-d', strtotime('+1 month', strtotime($data_vencimento_parcela)));
+
+                    if ($success && $this->input->post('gerar_cobranca')) {
+                        $dataCobranca = [
+                            'os_id' => $os_id,
+                            'clientes_id' => $this->input->post('clientes_id'),
+                            'valor' => $valor_parcela,
+                            'vencimento' => $data_vencimento_parcela,
+                            'status' => 'pending',
+                            'registrado_em' => date('Y-m-d H:i:s'),
+                            'gateway' => $this->input->post('gateway'),
+                            'payment_method' => $this->input->post('formaPgto'),
+                        ];
+                        $this->cobrancas_model->add('cobrancas', $dataCobranca);
+                    }
                 }
             } else {
                 $data = [
@@ -1699,14 +1760,31 @@ class Os extends MY_Controller
                     'clientes_id' => $this->input->post('clientes_id'),
                     'data_vencimento' => $vencimento,
                     'data_pagamento' => $recebimento,
-                    'baixado' => $this->input->post('recebido') ?: 0,
+                    'baixado' => $this->input->post('gerar_cobranca') ? 0 : ($this->input->post('recebido') ?: 0),
                     'cliente_fornecedor' => set_value('cliente'),
                     'forma_pgto' => $this->input->post('formaPgto'),
                     'tipo' => $this->input->post('tipo'),
                     'observacoes' => set_value('observacoes'),
                     'usuarios_id' => $this->session->userdata('id_admin'),
                 ];
+                if ($osIdExists) {
+                    $data['os_id'] = $os_id;
+                }
                 if (!$this->os_model->add('lancamentos', $data)) $success = false;
+
+                if ($success && $this->input->post('gerar_cobranca')) {
+                    $dataCobranca = [
+                        'os_id' => $os_id,
+                        'clientes_id' => $this->input->post('clientes_id'),
+                        'valor' => $totalBruto,
+                        'vencimento' => $vencimento,
+                        'status' => 'pending',
+                        'registrado_em' => date('Y-m-d H:i:s'),
+                        'gateway' => $this->input->post('gateway'),
+                        'payment_method' => $this->input->post('formaPgto'),
+                    ];
+                    $this->cobrancas_model->add('cobrancas', $dataCobranca);
+                }
             }
 
             if ($success) {

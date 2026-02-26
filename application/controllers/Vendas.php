@@ -211,6 +211,12 @@ class Vendas extends MY_Controller
             true
         );
 
+        $this->db->select('*');
+        $this->db->from('lancamentos');
+        $this->db->like('descricao', "Fatura de Venda - #" . $this->uri->segment(3));
+        $this->db->or_like('descricao', "Fatura de Venda Nº: " . $this->uri->segment(3));
+        $this->data['parcelas'] = $this->db->get()->result();
+
         $clienteId = $this->data['result']->clientes_id;
         $this->load->model('clientes_model');
         $cliente = $this->clientes_model->getById($clienteId);
@@ -342,7 +348,9 @@ class Vendas extends MY_Controller
         $this->vendas_model->delete('itens_de_vendas', 'vendas_id', $id);
         $this->vendas_model->delete('vendas', 'idVendas', $id);
         if ((int) $venda->faturado === 1) {
-            $this->vendas_model->delete('lancamentos', 'descricao', "Fatura de Venda - #${id}");
+            $this->db->like('descricao', "Fatura de Venda - #" . $id);
+            $this->db->or_like('descricao', "Fatura de Venda Nº: " . $id);
+            $this->db->delete('lancamentos');
         }
 
         log_info('Removeu uma venda. ID: ' . $id);
@@ -581,6 +589,15 @@ class Vendas extends MY_Controller
             $valorDesconto = min($valorTotal, $valorDesconto);
             $valorComDesconto = $valorTotal - $valorDesconto;
 
+            $qtd_parcelas = $this->input->post('qtd_parcelas') ?: 1;
+            $entrada = $this->input->post('entrada');
+            if ($entrada) {
+                $entrada = str_replace('.', '', $entrada);
+                $entrada = str_replace(',', '.', $entrada);
+            } else {
+                $entrada = 0;
+            }
+
             $data = [
                 'vendas_id' => $venda_id,
                 'descricao' => set_value('descricao'),
@@ -600,15 +617,69 @@ class Vendas extends MY_Controller
 
             $this->db->trans_start();
 
-            $this->db->insert('lancamentos', $data);
-            $idLancamentos = $this->db->insert_id();
+            if ($qtd_parcelas > 1) {
+                $valor_parcelar = $valorComDesconto - $entrada;
+                $valor_parcela = $valor_parcelar / $qtd_parcelas;
 
-            if ($idLancamentos) {
+                // Lançamento da Entrada
+                if ($entrada > 0) {
+                    $data_entrada = $data;
+                    $data_entrada['descricao'] .= ' - Entrada';
+                    $data_entrada['valor'] = $entrada;
+                    $data_entrada['valor_desconto'] = $entrada;
+                    $data_entrada['desconto'] = 0;
+                    $data_entrada['baixado'] = 1;
+                    $data_entrada['data_vencimento'] = $recebimento ?: date('Y-m-d');
+                    $data_entrada['data_pagamento'] = $recebimento ?: date('Y-m-d');
+                    
+                    $this->db->insert('lancamentos', $data_entrada);
+                }
+
+                // Lançamento das Parcelas
+                for ($i = 1; $i <= $qtd_parcelas; $i++) {
+                    $dateObj = new DateTime($vencimento);
+                    $day = $dateObj->format('j');
+                    $dateObj->modify('+' . ($i - 1) . ' months');
+                    $newDay = $dateObj->format('j');
+                    if ($day > 28 && $newDay < 4) {
+                        $dateObj->modify('-' . $newDay . ' days');
+                    }
+                    // Garante que a data calculada seja usada explicitamente
+                    $data_vencimento_parcela = $dateObj->format('Y-m-d');
+
+                    $data_parcela = $data;
+                    $data_parcela['descricao'] .= ' - Parcela ' . $i . '/' . $qtd_parcelas;
+                    $data_parcela['valor'] = $valor_parcela;
+                    $data_parcela['valor_desconto'] = $valor_parcela;
+                    $data_parcela['desconto'] = 0;
+                    $data_parcela['baixado'] = 0;
+                    $data_parcela['data_vencimento'] = $data_vencimento_parcela;
+                    $data_parcela['data_pagamento'] = null;
+
+                    $this->db->insert('lancamentos', $data_parcela);
+                    
+                    // Salva o ID da primeira parcela para vincular à venda (compatibilidade)
+                    if ($i == 1) {
+                        $idLancamentos = $this->db->insert_id();
+                    }
+                }
+            } else {
+                $this->db->insert('lancamentos', $data);
+                $idLancamentos = $this->db->insert_id();
+            }
+
+            if ($this->db->trans_status() === TRUE) {
                 $this->db->set('faturado', 1);
                 $this->db->set('valorTotal', $valorTotal);
                 $this->db->set('desconto', $vendas->desconto);
                 $this->db->set('valor_desconto', $valorComDesconto);
-                $this->db->set('lancamentos_id', $idLancamentos);
+                
+                // Se houve parcelamento, $idLancamentos será o ID da primeira parcela
+                // Se não, será o ID do lançamento único
+                if (isset($idLancamentos)) {
+                    $this->db->set('lancamentos_id', $idLancamentos);
+                }
+                
                 $this->db->set('status', 'Faturado');
                 $this->db->where('idVendas', $venda_id);
                 $this->db->update('vendas');

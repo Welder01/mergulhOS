@@ -55,9 +55,15 @@ class MercadoPago extends BasePaymentGateway
         }
 
         $payment->status = 'cancelled';
-        $payment->update();
+        @$payment->update();
         if ($payment->Error()) {
-            throw new \Exception($payment->Error());
+            $error = $payment->Error();
+            $errorMsg = is_string($error) ? $error : json_encode($error);
+
+            if (strpos($errorMsg, 'The action requested is not valid for the current payment state') !== false) {
+                return $this->atualizarDados($id);
+            }
+            throw new \Exception($errorMsg);
         }
 
         return $this->atualizarDados($id);
@@ -165,7 +171,7 @@ class MercadoPago extends BasePaymentGateway
         return $this->atualizarDados($id);
     }
 
-    protected function gerarCobrancaBoleto($id, $tipo)
+    public function gerarCobrancaBoleto($id, $tipo, $dadosParcela = null)
     {
         $entity = $this->findEntity($id, $tipo);
         $produtos = $tipo === PaymentGateway::PAYMENT_TYPE_OS
@@ -244,12 +250,42 @@ class MercadoPago extends BasePaymentGateway
 
         $clientNameParts = explode(' ', $entity->nomeCliente);
         $documento = preg_replace('/[^0-9]/', '', $entity->documento);
-        $expirationDate = (new DateTime())->add(new DateInterval($this->mercadoPagoConfig['boleto_expiration']));
-        $expirationDate = ($expirationDate->format(DateTime::RFC3339_EXTENDED));
+
+        if ($dadosParcela) {
+            $valor = $dadosParcela['valor'];
+            try {
+                $expirationDate = new \DateTime($dadosParcela['vencimento']);
+            } catch (\Exception $e) {
+                $expirationDate = new \DateTime();
+            }
+
+            $expirationDate->setTime(23, 59, 59);
+            
+            $today = new \DateTime();
+            $today->setTime(0, 0, 0);
+            
+            // Se a data calculada for anterior a hoje (passado), ajusta para hoje + dias de expiração
+            if ($expirationDate < $today) {
+                $expirationDate = new \DateTime();
+                if (isset($this->mercadoPagoConfig['boleto_expiration'])) {
+                    try {
+                        $expirationDate->add(new \DateInterval($this->mercadoPagoConfig['boleto_expiration']));
+                    } catch (\Exception $e) {}
+                }
+                $expirationDate->setTime(23, 59, 59);
+            }
+            $expirationDate = $expirationDate->format('Y-m-d\TH:i:s.000P');
+            $description = $dadosParcela['descricao'];
+        } else {
+            $valor = $this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens);
+            $expirationDate = (new \DateTime())->add(new \DateInterval($this->mercadoPagoConfig['boleto_expiration']));
+            $expirationDate = $expirationDate->format('Y-m-d\TH:i:s.000P');
+            $description = $tipo === PaymentGateway::PAYMENT_TYPE_OS ? "OS #$id" : "Venda #$id";
+        }
 
         $payment = new Payment();
-        $payment->transaction_amount = floatval($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens));
-        $payment->description = PaymentGateway::PAYMENT_TYPE_OS ? "OS #$id" : "Venda #$id";
+        $payment->transaction_amount = floatval($valor);
+        $payment->description = $description;
         $payment->payment_method_id = 'bolbradesco';
         $payment->notification_url = 'http://mapos.com.br/';
         $payment->date_of_expiration = $expirationDate;
@@ -277,13 +313,13 @@ class MercadoPago extends BasePaymentGateway
         }
 
         $data = [
-            'barcode' => $payment->barcode->content,
-            'link' => $payment->transaction_details->external_resource_url,
-            'pdf' => $payment->transaction_details->external_resource_url,
+            'barcode' => isset($payment->barcode) ? (is_array($payment->barcode) ? ($payment->barcode['content'] ?? '') : ($payment->barcode->content ?? '')) : '',
+            'link' => isset($payment->transaction_details) ? (is_array($payment->transaction_details) ? ($payment->transaction_details['external_resource_url'] ?? '') : ($payment->transaction_details->external_resource_url ?? '')) : '',
+            'pdf' => isset($payment->transaction_details) ? (is_array($payment->transaction_details) ? ($payment->transaction_details['external_resource_url'] ?? '') : ($payment->transaction_details->external_resource_url ?? '')) : '',
             'expire_at' => $payment->date_of_expiration,
             'charge_id' => $payment->id,
             'status' => $payment->status,
-            'total' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens)),
+            'total' => getMoneyAsCents($valor),
             'clientes_id' => $entity->idClientes,
             'payment_method' => 'boleto',
             'payment_gateway' => 'MercadoPago',
@@ -305,7 +341,7 @@ class MercadoPago extends BasePaymentGateway
         return $data;
     }
 
-    protected function gerarCobrancaLink($id, $tipo)
+    public function gerarCobrancaLink($id, $tipo, $dadosParcela = null)
     {
         throw new Exception('MercadoPago não suporta gerar link pela API, somente pelo painel!');
     }

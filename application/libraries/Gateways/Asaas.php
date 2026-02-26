@@ -169,7 +169,7 @@ class Asaas extends BasePaymentGateway
         return $this->atualizarDados($id);
     }
 
-    protected function gerarCobrancaBoleto($id, $tipo)
+    public function gerarCobrancaBoleto($id, $tipo, $dadosParcela = null)
     {
         $entity = $this->findEntity($id, $tipo);
         $produtos = $tipo === PaymentGateway::PAYMENT_TYPE_OS
@@ -248,14 +248,22 @@ class Asaas extends BasePaymentGateway
             throw new \Exception($err);
         }
 
-        $expirationDate = (new DateTime())->add(new DateInterval($this->asaasConfig['boleto_expiration']));
-        $expirationDate = ($expirationDate->format('Y-m-d'));
+        if ($dadosParcela) {
+            $valor = $dadosParcela['valor'];
+            $expirationDate = $dadosParcela['vencimento'];
+            $description = $dadosParcela['descricao'];
+        } else {
+            $valor = $this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens);
+            $expirationDate = (new DateTime())->add(new DateInterval($this->asaasConfig['boleto_expiration']))->format('Y-m-d');
+            $description = $tipo === PaymentGateway::PAYMENT_TYPE_OS ? "OS #$id" : "Venda #$id";
+        }
+
         $body = [
             'customer' => $this->criarOuRetornarClienteAsaasId($entity->clientes_id),
             'billingType' => 'BOLETO',
             'dueDate' => $expirationDate,
-            'value' => $this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens),
-            'description' => $tipo === PaymentGateway::PAYMENT_TYPE_OS ? "OS #$id" : "Venda #$id",
+            'value' => $valor,
+            'description' => $description,
             'externalReference' => $id,
             'postalService' => false,
         ];
@@ -272,7 +280,6 @@ class Asaas extends BasePaymentGateway
             throw new \Exception('Falha na chamada para a API Asaas');
         }
 
-        $title = $tipo === PaymentGateway::PAYMENT_TYPE_OS ? "OS #$id" : "Venda #$id";
         $data = [
             'barcode' => '',
             'link' => $result->invoiceUrl,
@@ -281,12 +288,12 @@ class Asaas extends BasePaymentGateway
             'expire_at' => $result->dueDate,
             'charge_id' => $result->id,
             'status' => $result->status,
-            'total' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens)),
+            'total' => getMoneyAsCents($valor),
             'payment' => $result->billingType,
             'clientes_id' => $entity->idClientes,
             'payment_method' => 'boleto',
             'payment_gateway' => 'Asaas',
-            'message' => 'Pagamento referente a ' . $title,
+            'message' => 'Pagamento referente a ' . $description,
         ];
 
         if ($tipo === PaymentGateway::PAYMENT_TYPE_OS) {
@@ -305,7 +312,7 @@ class Asaas extends BasePaymentGateway
         return $data;
     }
 
-    protected function gerarCobrancaLink($id, $tipo)
+    public function gerarCobrancaLink($id, $tipo, $dadosParcela = null)
     {
         $entity = $this->findEntity($id, $tipo);
         $produtos = $tipo === PaymentGateway::PAYMENT_TYPE_OS
@@ -383,13 +390,21 @@ class Asaas extends BasePaymentGateway
             throw new \Exception($err);
         }
 
-        $expirationDate = (new DateTime())->add(new DateInterval($this->asaasConfig['boleto_expiration']));
-        $expirationDate = ($expirationDate->format('Y-m-d'));
+        if ($dadosParcela) {
+            $valor = $dadosParcela['valor'];
+            $expirationDate = $dadosParcela['vencimento'];
+            $description = $dadosParcela['descricao'];
+        } else {
+            $valor = $this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens);
+            $expirationDate = (new DateTime())->add(new DateInterval($this->asaasConfig['boleto_expiration']))->format('Y-m-d');
+            $description = $tipo === PaymentGateway::PAYMENT_TYPE_OS ? "OS #$id" : "Venda #$id";
+        }
+
         $body = [
-            'name' => $tipo === PaymentGateway::PAYMENT_TYPE_OS ? "OS #$id" : "Venda #$id",
-            'description' => $tipo === PaymentGateway::PAYMENT_TYPE_OS ? "OS #$id" : "Venda #$id",
+            'name' => $description,
+            'description' => $description,
             'endDate' => $expirationDate,
-            'value' => $this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens),
+            'value' => $valor,
             'billingType' => 'UNDEFINED',
             'chargeType' => 'DETACHED',
             'dueDateLimitDays' => preg_replace('/[^0-9]/', '', $this->asaasConfig['boleto_expiration']),
@@ -408,19 +423,17 @@ class Asaas extends BasePaymentGateway
             throw new \Exception('Falha na chamada para a API Asaas');
         }
 
-        $title = $tipo === PaymentGateway::PAYMENT_TYPE_OS ? "OS #$id" : "Venda #$id";
         $data = [
             'expire_at' => $result->endDate,
             'charge_id' => $result->id,
             'status' => 'PENDING',
-            'total' => getMoneyAsCents($this->valorTotal($totalProdutos, $totalServicos, $totalDesconto, $tipoDesconto, $totalCursos, $totalViagens)),
+            'total' => getMoneyAsCents($valor),
             'clientes_id' => $entity->idClientes,
             'payment_method' => 'link',
             'payment_gateway' => 'Asaas',
             'payment_url' => $result->url,
             'link' => $result->url,
-            'message' => $result->description,
-            'message' => 'Pagamento referente a ' . $title,
+            'message' => 'Pagamento referente a ' . $description,
         ];
 
         if ($tipo === PaymentGateway::PAYMENT_TYPE_OS) {
