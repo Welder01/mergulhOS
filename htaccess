@@ -1,0 +1,41 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Se sua aplicação estiver em uma subpasta, você pode precisar ajustar o RewriteBase
+    # Exemplo: RewriteBase /minha-pasta/    
+
+    # Security: Block access to sensitive directories
+    RewriteRule ^(application|vendor|system|tests|install)/ - [F,L]
+
+    # Security: Block access to sensitive files
+    RewriteRule ^(banco\.sql|composer\.json|composer\.lock|CHANGELOG\.md|\.env)$ - [F,L]
+    RewriteRule \.(sql|md|json|lock|log)$ - [F,L]
+
+    # Security Headers
+    <IfModule mod_headers.c>
+        Header set X-Content-Type-Options "nosniff"
+        Header set X-Frame-Options "SAMEORIGIN"
+        Header set X-XSS-Protection "1; mode=block"
+        Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        Header set Referrer-Policy "strict-origin-when-cross-origin"
+        Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    </IfModule>
+
+    # Authorization Header for API
+    RewriteCond %{HTTP:Authorization} ^(.+)$
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # CodeIgniter Rewrite Rules
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+# Block access to dot files (like .git, .env)
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Prevent directory listing
+Options -Indexes
