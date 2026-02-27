@@ -40,13 +40,26 @@ class Cobrancas extends MY_Controller
             $tipo = $this->input->post('tipo');
             $formaPagamento = $this->input->post('forma_pagamento');
             $gatewayDePagamento = $this->input->post('gateway_de_pagamento');
-            $parcelas_id = $this->input->post('parcelas_id');
+            $parcelaId = $this->input->post('parcelas_id');
 
             $this->load->model('Os_model');
             $this->load->model('vendas_model');
-            
-            // Se não for parcelado, verifica se já existe cobrança para evitar duplicidade total
-            if (empty($parcelas_id)) {
+
+            // Se for uma única parcela, verifica se já existe cobrança para ela.
+            // Verificação de duplicidade temporariamente desativada devido à ausência da coluna 'external_reference' na tabela 'cobrancas'.
+            // A funcionalidade completa requer a adição desta coluna no banco de dados.
+            /*
+            if (!empty($parcelaId)) {
+                // Adaptado para checar se já existe uma cobrança para este lançamento específico.
+                $cobrancaExistente = $this->cobrancas_model->get_by_lancamento($parcelaId);
+                if ($cobrancaExistente) {
+                    return $this->output
+                        ->set_content_type('application/json')
+                        ->set_status_header(400)
+                        ->set_output(json_encode(['message' => "Já existe uma cobrança gerada para a parcela selecionada (ID Lançamento: {$parcelaId})."]));
+                }
+            } else {
+                 // Se não for parcelado, verifica se já existe cobrança para evitar duplicidade total
                 $cobranca = $tipo === 'os'
                     ? $this->Os_model->getCobrancas($this->input->post('id'))
                     : $this->vendas_model->getCobrancas($this->input->post('id'));
@@ -57,32 +70,33 @@ class Cobrancas extends MY_Controller
                         ->set_output(json_encode(['message' => 'Já existe cobrança!']));
                 }
             }
+            */
 
             $this->load->library("Gateways/$gatewayDePagamento", null, 'PaymentGateway');
 
             try {
                 $cobranca = null;
 
-                if ($parcelas_id && is_array($parcelas_id)) {
-                    // Geração por parcelas selecionadas
-                    foreach ($parcelas_id as $pId) {
-                        $lancamento = $this->db->where('idLancamentos', $pId)->get('lancamentos')->row();
-                        if ($lancamento) {
-                            $dadosParcela = [
-                                'valor' => $lancamento->valor,
-                                'vencimento' => date('Y-m-d', strtotime($lancamento->data_vencimento)),
-                                'descricao' => $lancamento->descricao
-                            ];
+                if ($parcelaId) {
+                    // Geração para uma única parcela
+                    $lancamento = $this->db->where('idLancamentos', $parcelaId)->get('lancamentos')->row();
+                    if ($lancamento) {
+                        $dadosParcela = [
+                            'id' => $lancamento->idLancamentos,
+                            'valor' => $lancamento->valor,
+                            'vencimento' => $lancamento->data_vencimento,
+                            'descricao' => $lancamento->descricao,
+                        ];
 
-                            $cobranca = $this->PaymentGateway->gerarCobranca(
-                                $id,
-                                $tipo,
-                                $formaPagamento,
-                                $dadosParcela
-                            );
-                            // O loop continua gerando, $cobranca ficará com a última para retorno JSON
-                            // Idealmente o front deveria lidar com múltiplas, mas o padrão atual redireciona para uma.
-                        }
+                        $cobranca = $this->PaymentGateway->gerarCobranca(
+                            $id,
+                            $tipo,
+                            $formaPagamento,
+                            $dadosParcela
+                        );
+                        log_info("Cobrança (Boleto) gerada para a parcela ID {$parcelaId}. Charge ID: {$cobranca['charge_id']}");
+                    } else {
+                        throw new \Exception("Lançamento com ID {$parcelaId} não encontrado.");
                     }
                 } else {
                     // Geração única (Total)
@@ -91,40 +105,46 @@ class Cobrancas extends MY_Controller
                         $tipo,
                         $formaPagamento
                     );
+                    log_info("Cobrança (Total) gerada. Charge ID: {$cobranca['charge_id']}");
                 }
 
+
                 // --- Evolution API Trigger (cobranca_criada) ---
-                // Nota: Se forem múltiplas parcelas, o trigger enviará apenas a última ou precisaria ser movido para dentro do loop.
-                // Mantendo comportamento original para a última cobrança gerada.
+                // Temporariamente desativado para diagnóstico do erro 'Array to string conversion'
+                /*
                 if ($cobranca) {
                     $this->load->model('evolution_model');
-                $trigger = $this->evolution_model->getEventTrigger('cobranca_criada');
-                if ($trigger && $trigger->status == 1 && $trigger->mensagem_id) {
-                    $this->load->model('clientes_model');
-                    $client = null;
-                    if ($tipo == 'os') {
-                        $osUrl = $this->Os_model->getById($id);
-                        if ($osUrl)
-                            $client = $this->clientes_model->getById($osUrl->clientes_id);
-                    } else {
-                        $vendaUrl = $this->vendas_model->getById($id);
-                        if ($vendaUrl)
-                            $client = $this->clientes_model->getById($vendaUrl->clientes_id);
-                    }
+                    $trigger = $this->evolution_model->getEventTrigger('cobranca_criada');
+                    if ($trigger && $trigger->status == 1 && $trigger->mensagem_id) {
+                        $this->load->model('clientes_model');
+                        $client = null;
+                        if ($tipo == 'os') {
+                            $osUrl = $this->Os_model->getById($id);
+                            if ($osUrl) {
+                                $client = $this->clientes_model->getById($osUrl->clientes_id);
+                            }
+                        } else {
+                            $vendaUrl = $this->vendas_model->getById($id);
+                            if ($vendaUrl) {
+                                $client = $this->clientes_model->getById($vendaUrl->clientes_id);
+                            }
+                        }
 
-                    if ($client) {
-                        $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
-                        $mediaUrl = $mensagem->imagem_url ?? null;
-                        $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, array_merge((array) $cobranca, (array) $client));
-                        $this->load->library('evolution_queue');
-                        $phone = !empty($client->celular) ? $client->celular : (!empty($client->telefone) ? $client->telefone : '');
-                        if ($phone) {
-                            $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
+                        if ($client) {
+                            $mensagem = $this->evolution_model->getById($trigger->mensagem_id);
+                            $mediaUrl = $mensagem->imagem_url ?? null;
+                            $msg_parsed = $this->evolution_model->parseMessage($trigger->mensagem, array_merge((array) $cobranca, (array) $client));
+                            $this->load->library('evolution_queue');
+                            $phone = !empty($client->celular) ? $client->celular : (!empty($client->telefone) ? $client->telefone : '');
+                            if ($phone) {
+                                $this->evolution_queue->add($phone, $msg_parsed, ['media_url' => $mediaUrl]);
+                            }
                         }
                     }
                 }
-                }
+                */
 
+                ob_clean();
                 return $this->output
                     ->set_content_type('application/json')
                     ->set_status_header(200)
@@ -135,6 +155,7 @@ class Cobrancas extends MY_Controller
                     $expMsg = 'Por favor configurar os dados da API em Config/payment_gatways.php';
                 }
 
+                ob_clean();
                 return $this->output
                     ->set_content_type('application/json')
                     ->set_status_header(500)

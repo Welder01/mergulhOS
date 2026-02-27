@@ -69,32 +69,140 @@ $this->load->config('payment_gateways');
 </div>
 
 <script>
-    (function() {
-        try {
-            function initPaymentModal() {
-                if (typeof jQuery === 'undefined') {
-                    setTimeout(initPaymentModal, 100);
-                    return;
-                }
-                
-                var $ = jQuery;
-                window.paymentGatewaysConfig = <?php echo json_encode($this->config->item('payment_gateways') ?: []); ?>;
+    (function($) {
+        // Garantir que o jQuery está carregado
+        if (typeof $ === 'undefined') {
+            console.error('jQuery não está carregado. O script não pode ser executado.');
+            return;
+        }
 
-                $("#forma_pagamento").hide();
-                $("#label_forma_pagamento").hide();
+        window.paymentGatewaysConfig = <?php echo json_encode($this->config->item('payment_gateways') ?: []); ?>;
 
-                $('#select_all_parcelas').off('click').on('click', function(event) {   
-                    var isChecked = this.checked;
-                    $('.parcela_checkbox:not(:disabled)').each(function() {
-                        this.checked = isChecked;                        
-                    });
-                });
-
+        function initPaymentGatewayScripts() {
+            if ($("#gateway_de_pagamento").length) {
                 $.getScript("<?= base_url('assets/js/script-payments.js'); ?>");
             }
-            initPaymentModal();
-        } catch (e) {
-            console.error("Erro ao iniciar modal de pagamento:", e);
         }
-    })();
+
+        // Delegação de evento para o checkbox de selecionar todas as parcelas
+        $(document).on('click', '#select_all_parcelas', function() {
+            var isChecked = this.checked;
+            $('.parcela_checkbox:not(:disabled)').prop('checked', isChecked);
+        });
+
+        // Delegação de evento para o formulário de geração de cobrança
+        $(document).on('submit', '#form-gerar-cobranca', function(e) {
+            e.preventDefault();
+
+            const form = $(this);
+            const parcelasSelecionadas = $('.parcela_checkbox:checked:not(:disabled)');
+            const totalParcelas = parcelasSelecionadas.length;
+
+            if (totalParcelas === 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Nenhuma Parcela Selecionada',
+                    text: 'Por favor, selecione ao menos uma parcela para gerar a cobrança.'
+                });
+                return;
+            }
+
+            const formData = form.serializeArray().reduce((obj, item) => {
+                // Exclui o campo 'parcelas_id[]' original para não ser enviado
+                if (item.name !== 'parcelas_id[]') {
+                    obj[item.name] = item.value;
+                }
+                return obj;
+            }, {});
+
+            const parcelasIds = parcelasSelecionadas.map(function() {
+                return $(this).val();
+            }).get();
+
+            let logHtml = `
+                <div id="swal-log-container" style="margin-top: 20px; text-align: left; max-height: 150px; overflow-y: auto; background-color: #f5f5f5; border: 1px solid #ddd; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px;">
+                    <p>Iniciando processo...</p>
+                </div>
+            `;
+            
+            Swal.fire({
+                title: 'Gerando Boletos...',
+                html: `Por favor, aguarde.<div id="swal-progress-text"></div>${logHtml}`,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            const logContainer = $('#swal-log-container');
+            const progressText = $('#swal-progress-text');
+
+            function appendLog(message, isError = false) {
+                const color = isError ? 'red' : 'green';
+                logContainer.append(`<p style="color: ${color}; margin: 2px 0;">${message}</p>`);
+                logContainer.scrollTop(logContainer[0].scrollHeight); // Auto-scroll
+            }
+
+            function processarParcela(index) {
+                if (index >= totalParcelas) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Processo Concluído!',
+                        text: 'Todos os boletos foram gerados com sucesso.',
+                        timer: 2000
+                    }).then(() => {
+                        // Pode redirecionar ou recarregar a página aqui
+                        location.reload();
+                    });
+                    return;
+                }
+
+                const parcelaId = parcelasIds[index];
+                const parcelaDesc = parcelasSelecionadas.eq(index).closest('label').text().trim();
+                
+                progressText.text(`Processando ${index + 1} de ${totalParcelas}...`);
+                
+                const dataToSend = { ...formData, 'parcelas_id': parcelaId };
+
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: dataToSend,
+                    dataType: 'json',
+                    success: function(response) {
+                        appendLog(`[SUCESSO] ${parcelaDesc}`);
+                        // Chama a próxima iteração
+                        processarParcela(index + 1);
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        let errorMessage = 'Ocorreu um erro desconhecido.';
+                        if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                            errorMessage = jqXHR.responseJSON.message;
+                        } else if (typeof errorThrown === 'string') {
+                            errorMessage = errorThrown;
+                        }
+                        
+                        appendLog(`[ERRO] ${parcelaDesc}: ${errorMessage}`, true);
+
+                        Swal.update({
+                           icon: 'error',
+                           title: 'Erro na Geração',
+                           html: `Ocorreu um erro ao gerar o boleto para a parcela:<br><strong>${parcelaDesc}</strong><br><small>${errorMessage}</small><br><br>O processo foi interrompido.${logHtml}`,
+                           showConfirmButton: true,
+                        });
+                        // Interrompe o processo
+                    }
+                });
+            }
+
+            // Inicia o processo com a primeira parcela
+            processarParcela(0);
+        });
+
+        // Inicializa os scripts de pagamento quando o modal é aberto
+        $('#modal-gerar-pagamento').on('shown', function() {
+            initPaymentGatewayScripts();
+        });
+
+    })(jQuery);
 </script>
