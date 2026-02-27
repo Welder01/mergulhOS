@@ -291,7 +291,7 @@ class GerencianetSdk extends BasePaymentGateway
                 ],
             ],
             'metadata' => [
-                'notification_url' => 'http://mapos.com.br/',
+                'notification_url' => base_url(),
             ],
             'payment' => [
                 'banking_billet' => [
@@ -436,7 +436,7 @@ class GerencianetSdk extends BasePaymentGateway
         ];
 
         $metadata = [
-            "notification_url" => "http://mapos.com.br/"
+            "notification_url" => base_url()
         ];
 
         $settings = [

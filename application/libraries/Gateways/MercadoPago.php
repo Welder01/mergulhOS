@@ -85,7 +85,7 @@ class MercadoPago extends BasePaymentGateway
         }
 
         $payment->status = 'cancelled';
-        @$payment->update();
+        $payment->update();
         if ($payment->Error()) {
             $error = $payment->Error();
             $errorMsg = is_string($error) ? $error : json_encode($error);
@@ -355,7 +355,7 @@ class MercadoPago extends BasePaymentGateway
 
         $payment = new Payment();
         $payment->transaction_amount = floatval($valor);
-        $payment->description = $description;
+        $payment->description = substr($description, 0, 255);
         $payment->payment_method_id = 'bolbradesco';
         $payment->date_of_expiration = $expirationDate;
         $payerData = [
@@ -395,6 +395,21 @@ class MercadoPago extends BasePaymentGateway
             'payer' => $payerData,
             'external_reference' => $payment->external_reference ?? 'N/A'
         ];
+
+        // Redact PII from logs
+        if (isset($debugPayload['payer']['identification']['number'])) {
+            $debugPayload['payer']['identification']['number'] = '***' . substr($debugPayload['payer']['identification']['number'], -4);
+        }
+        if (isset($debugPayload['payer']['email'])) {
+            $debugPayload['payer']['email'] = '***@***';
+        }
+        if (isset($debugPayload['payer']['first_name'])) {
+            $debugPayload['payer']['first_name'] = '***';
+        }
+        if (isset($debugPayload['payer']['last_name'])) {
+            $debugPayload['payer']['last_name'] = '***';
+        }
+
         // Força log como ERROR para garantir gravação mesmo com threshold baixo
         log_message('error', '[MercadoPago] Payload Enviado: ' . json_encode($debugPayload, JSON_PRETTY_PRINT));
 
