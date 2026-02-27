@@ -1023,6 +1023,13 @@ class Os extends MY_Controller
     {
         $this->load->library('form_validation');
 
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eOs')) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(403)
+                ->set_output(json_encode(['result' => false, 'message' => 'Você não tem permissão para editar OS.']));
+        }
+
         if ($this->form_validation->run('adicionar_produto_os') === false) {
             $errors = validation_errors();
 
@@ -1080,6 +1087,10 @@ class Os extends MY_Controller
 
     public function excluirProduto()
     {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eOs')) {
+            echo json_encode(['result' => false, 'message' => 'Você não tem permissão para editar OS.']);
+            return;
+        }
         $id = $this->input->post('idProduto');
         $idOs = $this->input->post('idOs');
 
@@ -1116,6 +1127,13 @@ class Os extends MY_Controller
     public function adicionarServico()
     {
         $this->load->library('form_validation');
+
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eOs')) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(403)
+                ->set_output(json_encode(['result' => false, 'message' => 'Você não tem permissão para editar OS.']));
+        }
 
         if ($this->form_validation->run('adicionar_servico_os') === false) {
             $errors = validation_errors();
@@ -1158,6 +1176,13 @@ class Os extends MY_Controller
     public function adicionarCurso()
     {
         $this->load->library('form_validation');
+
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eOs')) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(403)
+                ->set_output(json_encode(['result' => false, 'message' => 'Você não tem permissão para editar OS.']));
+        }
         $this->form_validation->set_rules('idCurso', 'Curso', 'trim|required');
         $this->form_validation->set_rules('preco', 'Preço', 'trim|required');
         $this->form_validation->set_rules('quantidade', 'Quantidade', 'trim|required|is_natural_no_zero');
@@ -1227,6 +1252,12 @@ class Os extends MY_Controller
 
     public function excluirCurso()
     {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eOs')) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(403)
+                ->set_output(json_encode(['result' => false, 'message' => 'Você não tem permissão para editar OS.']));
+        }
         $id = $this->input->post('idCurso');
         $idOs = $this->input->post('idOs');
 
@@ -1278,6 +1309,12 @@ class Os extends MY_Controller
     public function adicionarViagem()
     {
         $this->load->library('form_validation');
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eOs')) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(403)
+                ->set_output(json_encode(['result' => false, 'message' => 'Você não tem permissão para editar OS.']));
+        }
         $this->form_validation->set_rules('idViagem', 'Viagem', 'trim|required');
         $this->form_validation->set_rules('preco', 'Preço', 'trim|required');
         $this->form_validation->set_rules('quantidade', 'Quantidade', 'trim|required|is_natural_no_zero');
@@ -1362,6 +1399,12 @@ class Os extends MY_Controller
 
     public function excluirViagem()
     {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eOs')) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(403)
+                ->set_output(json_encode(['result' => false, 'message' => 'Você não tem permissão para editar OS.']));
+        }
         $id = $this->input->post('idViagem');
         $idOs = $this->input->post('idOs');
 
@@ -1413,6 +1456,10 @@ class Os extends MY_Controller
 
     public function excluirServico()
     {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eOs')) {
+            echo json_encode(['result' => false, 'message' => 'Você não tem permissão para editar OS.']);
+            return;
+        }
         $ID = $this->input->post('idServico');
         $idOs = $this->input->post('idOs');
 
@@ -1431,10 +1478,22 @@ class Os extends MY_Controller
 
     public function anexar()
     {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eOs')) {
+            echo json_encode(['result' => false, 'mensagem' => 'Você não tem permissão para anexar arquivos.']);
+            exit();
+        }
+
         $this->load->library('upload');
         $this->load->library('image_lib');
 
-        $directory = FCPATH . 'assets' . DIRECTORY_SEPARATOR . 'anexos' . DIRECTORY_SEPARATOR . date('m-Y') . DIRECTORY_SEPARATOR . 'OS-' . $this->input->post('idOsServico');
+        // Segurança: Forçar ID como inteiro para evitar Path Traversal
+        $idOs = (int) $this->input->post('idOsServico');
+        if ($idOs <= 0) {
+            echo json_encode(['result' => false, 'mensagem' => 'ID da OS inválido.']);
+            exit();
+        }
+
+        $directory = FCPATH . 'assets' . DIRECTORY_SEPARATOR . 'anexos' . DIRECTORY_SEPARATOR . date('m-Y') . DIRECTORY_SEPARATOR . 'OS-' . $idOs;
 
         // If it exist, check if it's a directory
         if (!is_dir($directory . DIRECTORY_SEPARATOR . 'thumbs')) {
@@ -1495,7 +1554,7 @@ class Os extends MY_Controller
                     } else {
                         $success[] = $upload_data;
                         $this->load->model('Os_model');
-                        $result = $this->Os_model->anexar($this->input->post('idOsServico'), $new_file_name, base_url('assets' . DIRECTORY_SEPARATOR . 'anexos' . DIRECTORY_SEPARATOR . date('m-Y') . DIRECTORY_SEPARATOR . 'OS-' . $this->input->post('idOsServico')), 'thumb_' . $new_file_name, $directory);
+                        $result = $this->Os_model->anexar($idOs, $new_file_name, base_url('assets' . DIRECTORY_SEPARATOR . 'anexos' . DIRECTORY_SEPARATOR . date('m-Y') . DIRECTORY_SEPARATOR . 'OS-' . $idOs), 'thumb_' . $new_file_name, $directory);
                         if (!$result) {
                             $error['db'][] = 'Erro ao inserir no banco de dados.';
                         }
@@ -1505,7 +1564,7 @@ class Os extends MY_Controller
 
                     $this->load->model('Os_model');
 
-                    $result = $this->Os_model->anexar($this->input->post('idOsServico'), $new_file_name, base_url('assets' . DIRECTORY_SEPARATOR . 'anexos' . DIRECTORY_SEPARATOR . date('m-Y') . DIRECTORY_SEPARATOR . 'OS-' . $this->input->post('idOsServico')), '', $directory);
+                    $result = $this->Os_model->anexar($idOs, $new_file_name, base_url('assets' . DIRECTORY_SEPARATOR . 'anexos' . DIRECTORY_SEPARATOR . date('m-Y') . DIRECTORY_SEPARATOR . 'OS-' . $idOs), '', $directory);
                     if (!$result) {
                         $error['db'][] = 'Erro ao inserir no banco de dados.';
                     }
@@ -1516,13 +1575,18 @@ class Os extends MY_Controller
         if (count($error) > 0) {
             echo json_encode(['result' => false, 'mensagem' => 'Ocorreu um erro ao processar os arquivos.', 'errors' => $error]);
         } else {
-            log_info('Adicionou anexo(s) a uma OS. ID (OS): ' . $this->input->post('idOsServico'));
+            log_info('Adicionou anexo(s) a uma OS. ID (OS): ' . $idOs);
             echo json_encode(['result' => true, 'mensagem' => 'Arquivo(s) anexado(s) com sucesso.']);
         }
     }
 
     public function excluirAnexo($id = null)
     {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eOs')) {
+            echo json_encode(['result' => false, 'mensagem' => 'Você não tem permissão para excluir anexos.']);
+            return;
+        }
+
         if ($id == null || !is_numeric($id)) {
             echo json_encode(['result' => false, 'mensagem' => 'Erro ao tentar excluir anexo.']);
         } else {
@@ -1547,6 +1611,11 @@ class Os extends MY_Controller
 
     public function downloadanexo($id = null)
     {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vOs')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para visualizar anexos.');
+            redirect(base_url());
+        }
+
         if ($id != null && is_numeric($id)) {
             $this->db->where('idAnexos', $id);
             $file = $this->db->get('anexos', 1)->row();
@@ -1560,6 +1629,13 @@ class Os extends MY_Controller
 
     public function adicionarDesconto()
     {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eOs')) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(403)
+                ->set_output(json_encode(['result' => false, 'messages' => 'Você não tem permissão para editar OS.']));
+        }
+
         if ($this->input->post('desconto') == '') {
             return $this->output
                 ->set_content_type('application/json')
@@ -1918,12 +1994,19 @@ class Os extends MY_Controller
 
     public function adicionarAnotacao()
     {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eOs')) {
+            echo json_encode(['result' => false, 'messages' => 'Sem permissão.']);
+            return;
+        }
+
         $this->load->library('form_validation');
         if ($this->form_validation->run('anotacoes_os') == false) {
             echo json_encode(validation_errors());
         } else {
+            // Sanitização básica para evitar XSS armazenado
+            $anotacao = htmlspecialchars($this->input->post('anotacao'), ENT_QUOTES, 'UTF-8');
             $data = [
-                'anotacao' => '[' . $this->session->userdata('nome_admin') . '] ' . $this->input->post('anotacao'),
+                'anotacao' => '[' . $this->session->userdata('nome_admin') . '] ' . $anotacao,
                 'data_hora' => date('Y-m-d H:i:s'),
                 'os_id' => $this->input->post('os_id'),
             ];
@@ -1939,6 +2022,11 @@ class Os extends MY_Controller
 
     public function excluirAnotacao()
     {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eOs')) {
+            echo json_encode(['result' => false, 'messages' => 'Sem permissão.']);
+            return;
+        }
+
         $id = $this->input->post('idAnotacao');
         $idOs = $this->input->post('idOs');
 
