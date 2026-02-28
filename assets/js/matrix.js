@@ -52,6 +52,7 @@ $(document).ready(function(){
 	});
 	
 	// === Resize window related === //
+	/*
 	$(window).resize(function()
 	{
 		if($(window).width() > 479)
@@ -70,6 +71,7 @@ $(document).ready(function(){
             $('#content-header .btn-group').css({width:'auto'});
 		}
 	});
+	*/
 	
 	if($(window).width() < 468)
 	{

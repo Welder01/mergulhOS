@@ -107,6 +107,7 @@ class Permissoes extends MY_Controller
                 'vLancamento' => $this->input->post('vLancamento'),
 
                 'faturarAtribuicao' => $this->input->post('faturarAtribuicao'),
+                'dFaturamento' => $this->input->post('dFaturamento'),
 
                 'aCurso' => $this->input->post('aCurso'),
                 'eCurso' => $this->input->post('eCurso'),
@@ -230,6 +231,7 @@ class Permissoes extends MY_Controller
                 'vLancamento' => $this->input->post('vLancamento'),
 
                 'faturarAtribuicao' => $this->input->post('faturarAtribuicao'),
+                'dFaturamento' => $this->input->post('dFaturamento'),
 
                 'aCurso' => $this->input->post('aCurso'),
                 'eCurso' => $this->input->post('eCurso'),
