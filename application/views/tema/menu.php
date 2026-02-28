@@ -133,6 +133,32 @@
         #sidebar.visible-on-mobile #newlog .title1 {
             display: block !important;
         }
+
+        /* Correção para abas responsivas (Clientes, etc) */
+        .widget-title {
+            height: auto !important;
+        }
+        .nav-tabs {
+            display: flex !important;
+            flex-direction: column !important;
+            border-bottom: 0 !important;
+        }
+        .nav-tabs li {
+            width: 100% !important;
+            margin-bottom: 2px !important;
+            float: none !important;
+        }
+
+        /* Ajuste para barra de progresso em mobile */
+        .progress {
+            height: 10px !important;
+            margin-bottom: 10px !important;
+        }
+        .progress .bar {
+            height: 100% !important;
+            line-height: 10px !important;
+            font-size: 9px !important;
+        }
     }
     /* Fix para Tablet/Zoom: Forçar recolhimento visualmente via CSS para evitar delay do JS */
     @media (min-width: 768px) and (max-width: 1280px) {
