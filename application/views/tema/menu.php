@@ -151,7 +151,8 @@
 
         #sidebar.visible-on-mobile .menu-bar {
             flex: 1 !important;
-            height: 0 !important; /* Ajuda o Flex a calcular a sobra de altura corretamente no iOS/Chrome */
+            height: 0 !important;
+            /* Ajuda o Flex a calcular a sobra de altura corretamente no iOS/Chrome */
             overflow-y: hidden !important;
             display: flex !important;
             flex-direction: column !important;
@@ -161,7 +162,7 @@
             margin-left: 0 !important;
             padding-top: 0 !important;
         }
-        
+
         #sidebar.visible-on-mobile .menu-bar .menu {
             flex: 1 !important;
             overflow-y: auto !important;
@@ -266,10 +267,20 @@
             position: relative !important;
             display: flex !important;
             align-items: center !important;
-            padding: 15px 15px 5px 15px !important;
+            padding: 0 15px 5px 15px !important;
             margin-top: 0 !important;
             background-color: inherit !important;
             z-index: 100002 !important;
+        }
+
+        #sidebar.visible-on-mobile #newlog img {
+            margin-top: 0 !important;
+        }
+        
+        #sidebar.visible-on-mobile #newlog .icon2,
+        #sidebar.visible-on-mobile #newlog .title1 {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
         }
 
         #sidebar.visible-on-mobile .search-box {
