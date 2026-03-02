@@ -304,29 +304,55 @@ class Mine extends MY_Controller
         $this->data['os'] = $this->Conecte_model->getLastOs($this->session->userdata('cliente_id'));
         $this->data['output'] = 'conecte/painel';
 
-        // Verifica se o cliente está em alguma viagem futura e se o perfil está incompleto
+        // Verifica se o cliente está em alguma viagem ou curso futuro e se o perfil está incompleto
         $this->data['alerta_perfil_incompleto'] = false;
         $this->data['html_alerta_perfil'] = '';
 
-        $viagensCliente = $this->viagens_model->getViagensByCliente($this->session->userdata('cliente_id'));
-        $temViagemFutura = false;
+        $clienteId = $this->session->userdata('cliente_id');
+        $temEventoFuturo = false;
+
+        // Verifica Viagens
+        $viagensCliente = $this->viagens_model->getViagensByCliente($clienteId);
         foreach ($viagensCliente as $viagem) {
             if (strtotime($viagem->data_partida) >= strtotime(date('Y-m-d'))) {
-                $temViagemFutura = true;
+                $temEventoFuturo = true;
                 break;
             }
         }
 
-        if ($temViagemFutura) {
+        // Verifica Cursos (se não achou viagem)
+        if (!$temEventoFuturo) {
+            $cursosCliente = $this->cursos_model->getCursosByCliente($clienteId);
+            foreach ($cursosCliente as $curso) {
+                if (isset($curso->data_inicio) && strtotime($curso->data_inicio) >= strtotime(date('Y-m-d'))) {
+                    $temEventoFuturo = true;
+                    break;
+                }
+            }
+        }
+
+        if ($temEventoFuturo) {
             $cliente = $this->Conecte_model->getDados();
             
             // Definição dos campos obrigatórios com rótulos e abas correspondentes
             $camposObrigatorios = [
+                // Dados Pessoais
+                'documento' => ['label' => 'CPF/Documento', 'tab' => 'pessoal'],
                 'altura' => ['label' => 'Altura', 'tab' => 'pessoal'],
                 'peso' => ['label' => 'Peso', 'tab' => 'pessoal'],
+                
+                // Contato
+                'celular' => ['label' => 'Celular/WhatsApp', 'tab' => 'contato'],
+
+                // Saúde e Emergência
                 'contato_emergencia_nome' => ['label' => 'Nome do Contato de Emergência', 'tab' => 'saude'],
                 'contato_emergencia_telefone' => ['label' => 'Telefone do Contato de Emergência', 'tab' => 'saude'],
-                'atestado_medico_validade' => ['label' => 'Atestado Médico', 'tab' => 'saude']
+                'atestado_medico_validade' => ['label' => 'Atestado Médico', 'tab' => 'saude'],
+
+                // Equipamentos
+                'tamanho_colete' => ['label' => 'Tamanho de Colete', 'tab' => 'equipamentos'],
+                'tamanho_neoprene' => ['label' => 'Tamanho de Roupa (Neoprene)', 'tab' => 'equipamentos'],
+                'tamanho_nadadeira' => ['label' => 'Tamanho de Nadadeira', 'tab' => 'equipamentos'],
             ];
             
             $pendencias = [];
@@ -345,30 +371,51 @@ class Mine extends MY_Controller
             if (!empty($pendencias)) {
                 $this->data['alerta_perfil_incompleto'] = true;
                 
-                // Constrói a mensagem HTML detalhada e chamativa
-                $html = '<div class="alert alert-danger alert-blink" style="border: 1px solid #f5c6cb; background-color: #f8d7da; color: #721c24; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">';
-                $html .= '<button type="button" class="close" data-dismiss="alert" style="color: #721c24; opacity: 0.8;">&times;</button>';
-                $html .= '<h4 style="margin-top: 0; margin-bottom: 15px; font-weight: bold; font-size: 1.2em;"><i class="fas fa-exclamation-circle" style="font-size: 1.3em; margin-right: 5px;"></i> Atenção! Perfil Incompleto</h4>';
-                $html .= '<p style="margin-bottom: 15px; font-size: 1.05em;">Seu perfil de saúde e equipamentos precisa de atualização para garantir sua segurança na próxima viagem.</p>';
+                // CSS para animação de pulso (piscar suavemente) e estilos de legibilidade
+                $html = '<style>
+                    @keyframes pulse-border {
+                        0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); border-color: #ffc107; }
+                        70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); border-color: #ffc107; }
+                        100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); border-color: #ffc107; }
+                    }
+                    .alert-pulse { animation: pulse-border 2s infinite; }
+                </style>';
                 
-                $html .= '<div style="background: rgba(255,255,255,0.5); padding: 15px; border-radius: 5px; margin-bottom: 15px;">';
-                $html .= '<p style="font-weight: bold; margin-bottom: 5px;">Itens que precisam de sua atenção:</p>';
-                $html .= '<ul style="margin-bottom: 0; padding-left: 20px;">';
+                // Constrói a mensagem HTML com foco em legibilidade e atenção
+                $html .= '<div class="alert alert-block alert-pulse" style="background-color: #fff3cd; color: #856404; border: 2px solid #ffeeba; padding: 25px; border-radius: 8px; margin-bottom: 25px;">';
+                $html .= '<button type="button" class="close" data-dismiss="alert" style="color: #856404; opacity: 0.8; font-size: 1.5em;">&times;</button>';
+                $html .= '<h4 style="margin-top: 0; margin-bottom: 15px; font-weight: bold; font-size: 1.5em; color: #856404;"><i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i> Atenção: Cadastro Incompleto!</h4>';
+                $html .= '<p style="margin-bottom: 20px; font-size: 1.2em; line-height: 1.6; color: #555;">Você possui atividades agendadas, mas seu perfil precisa de atualização. Para garantir sua segurança e a melhor experiência, por favor complete os itens abaixo:</p>';
+                
+                $html .= '<div style="background: #fff; padding: 20px; border-radius: 6px; margin-bottom: 20px; border-left: 6px solid #ffc107; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">';
+                $html .= '<ul style="margin-bottom: 0; padding-left: 20px; list-style-type: none;">';
                 
                 $tabsToLink = [];
                 foreach ($pendencias as $p) {
-                    $html .= '<li>' . $p['label'] . '</li>';
+                    $html .= '<li style="margin-bottom: 10px; font-size: 1.15em; color: #333;"><i class="fas fa-arrow-right" style="color: #d39e00; margin-right: 10px;"></i>' . $p['label'] . '</li>';
                     $tabsToLink[$p['tab']] = true;
                 }
+                // Adiciona lembrete de certificações
+                $html .= '<li style="margin-bottom: 10px; font-size: 1.15em; color: #333;"><i class="fas fa-info-circle" style="color: #17a2b8; margin-right: 10px;"></i>Verifique suas <strong>Certificações</strong></li>';
+                
                 $html .= '</ul>';
                 $html .= '</div>';
                 
-                $html .= '<div style="display: flex; gap: 10px; flex-wrap: wrap;">';
+                $html .= '<div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px;">';
+                
+                $btnStyle = 'text-decoration: none; font-weight: bold; padding: 12px 25px; border-radius: 5px; color: white; background-color: #2d4373; border: 1px solid #2d4373; transition: all 0.3s; font-size: 1.1em;';
+                
                 if (isset($tabsToLink['pessoal'])) {
-                    $html .= '<a href="'.base_url('index.php/mine/conta?tab=pessoal').'" class="btn btn-danger" style="text-decoration: none; font-weight: bold;"><i class="fas fa-user-edit"></i> Atualizar Dados Pessoais</a> ';
+                    $html .= '<a href="'.base_url('index.php/mine/conta?tab=pessoal').'" class="btn" style="'.$btnStyle.'"><i class="fas fa-user"></i> Dados Pessoais</a> ';
+                }
+                if (isset($tabsToLink['contato'])) {
+                    $html .= '<a href="'.base_url('index.php/mine/conta?tab=contato').'" class="btn" style="'.$btnStyle.'"><i class="fas fa-phone"></i> Contato</a> ';
                 }
                 if (isset($tabsToLink['saude'])) {
-                    $html .= '<a href="'.base_url('index.php/mine/conta?tab=saude').'" class="btn btn-danger" style="text-decoration: none; font-weight: bold;"><i class="fas fa-notes-medical"></i> Atualizar Saúde e Segurança</a>';
+                    $html .= '<a href="'.base_url('index.php/mine/conta?tab=saude').'" class="btn" style="'.$btnStyle.'"><i class="fas fa-heartbeat"></i> Saúde</a> ';
+                }
+                if (isset($tabsToLink['equipamentos'])) {
+                    $html .= '<a href="'.base_url('index.php/mine/conta?tab=equipamentos').'" class="btn" style="'.$btnStyle.'"><i class="fas fa-swimmer"></i> Equipamentos</a> ';
                 }
                 $html .= '</div>';
                 $html .= '</div>';

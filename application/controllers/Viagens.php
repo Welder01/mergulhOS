@@ -275,7 +275,41 @@ class Viagens extends MY_Controller
         }
 
         $this->data['clientes'] = $this->viagem_clientes_model->getByViagem($id);
+
+        // Ordenação por Quarto e Nome para agrupamento na impressão
+        if (!empty($this->data['clientes'])) {
+            usort($this->data['clientes'], function ($a, $b) {
+                $quartoA = isset($a->hospedagem_quarto_numero) ? trim($a->hospedagem_quarto_numero) : '';
+                $quartoB = isset($b->hospedagem_quarto_numero) ? trim($b->hospedagem_quarto_numero) : '';
+
+                $res = strnatcasecmp($quartoA, $quartoB);
+                if ($res === 0) {
+                    $nomeA = isset($a->nomeCliente) ? trim($a->nomeCliente) : '';
+                    $nomeB = isset($b->nomeCliente) ? trim($b->nomeCliente) : '';
+                    return strcasecmp($nomeA, $nomeB);
+                }
+                return $res;
+            });
+        }
+
         $this->data['instrutores'] = $this->viagem_instrutores_model->getByViagem($id);
+
+        // Ordenação por Quarto e Nome para agrupamento na impressão (Instrutores)
+        if (!empty($this->data['instrutores'])) {
+            usort($this->data['instrutores'], function ($a, $b) {
+                $quartoA = isset($a->hospedagem_quarto_numero) ? trim($a->hospedagem_quarto_numero) : '';
+                $quartoB = isset($b->hospedagem_quarto_numero) ? trim($b->hospedagem_quarto_numero) : '';
+
+                $res = strnatcasecmp($quartoA, $quartoB);
+                if ($res === 0) {
+                    $nomeA = isset($a->nome_instrutor) ? trim($a->nome_instrutor) : (isset($a->nome) ? trim($a->nome) : '');
+                    $nomeB = isset($b->nome_instrutor) ? trim($b->nome_instrutor) : (isset($b->nome) ? trim($b->nome) : '');
+                    return strcasecmp($nomeA, $nomeB);
+                }
+                return $res;
+            });
+        }
+
         $this->data['custos'] = $this->viagem_custos_model->getByViagem($id);
         $this->data['cursos_associados'] = $this->viagem_cursos_model->getByViagem($id);
         $this->data['emitente'] = $this->mapos_model->getEmitente();
@@ -285,6 +319,68 @@ class Viagens extends MY_Controller
 
         $this->load->helper('mpdf');
         $html = $this->load->view('viagens/imprimirViagem', $this->data, true);
+
+        // Remove a coluna "Obs" ou "Observações" do HTML
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        @$dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+        $xpath = new DOMXPath($dom);
+
+        // Encontra índices das colunas de Observação
+        $headers = $xpath->query('//th');
+        $obsIndices = [];
+        foreach ($headers as $index => $th) {
+            if (stripos(trim($th->nodeValue), 'Obs') !== false) {
+                $obsIndices[] = $index;
+                $th->parentNode->removeChild($th);
+            }
+        }
+
+        // Remove as células correspondentes nas linhas
+        if (!empty($obsIndices)) {
+            $rows = $xpath->query('//tr');
+            foreach ($rows as $row) {
+                $cells = $xpath->query('td', $row);
+                // Remove de trás para frente para não afetar índices, ou verifica existência
+                foreach ($obsIndices as $idx) {
+                    if ($cells->length > $idx) {
+                        $cell = $cells->item($idx);
+                        if ($cell) $cell->parentNode->removeChild($cell);
+                    }
+                }
+            }
+        }
+        $html = $dom->saveHTML();
+
+        // CSS injetado para reduzir tamanho da fonte, espaçamento e adicionar numeração
+        $customCss = "<style>
+            @page { margin-top: 2mm; margin-bottom: 2mm; margin-left: 5mm; margin-right: 5mm; }
+            body { margin-top: 0px; }
+            body, table, th, td, div, span, p { font-size: 8px !important; }
+            p { margin: 0 !important; padding: 0 !important; }
+            h5 { font-size: 10px !important; margin: 0 !important; padding: 0 !important; line-height: 1 !important; }
+            .widget-title { margin-top: -20px !important; margin-bottom: 0 !important; padding: 0 !important; }
+            .widget-box { margin-top: 0 !important; margin-bottom: 2px !important; border: none !important; }
+            table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 2px !important; }
+            th, td { padding: 1px 2px !important; line-height: 1.0 !important; }
+            img { max-height: 25px !important; width: auto !important; margin: 0 !important; }
+            
+            /* Numeração das linhas */
+            table tbody { counter-reset: rowNumber; }
+            table tbody tr { counter-increment: rowNumber; }
+            table tbody tr td:first-child::before {
+                content: counter(rowNumber) '. ';
+                font-weight: bold;
+                margin-right: 3px;
+            }
+        </style>";
+
+        if (strpos($html, '</head>') !== false) {
+            $html = str_replace('</head>', $customCss . '</head>', $html);
+        } else {
+            $html = $customCss . $html;
+        }
+
         pdf_create($html, 'ficha_viagem_' . $id, true);
     }
 
