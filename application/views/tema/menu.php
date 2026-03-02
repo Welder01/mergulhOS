@@ -10,15 +10,18 @@
         z-index: 1000;
         transition: all 0.3s ease;
     }
+
     #content {
         margin-left: 220px !important;
         transition: all 0.3s ease;
     }
+
     /* Desativa transições durante o redimensionamento para evitar bugs de renderização */
     body.is-resizing #sidebar,
     body.is-resizing #content {
         transition: none !important;
     }
+
     .menu-bar {
         height: calc(100vh - 150px);
         overflow-y: auto;
@@ -26,25 +29,31 @@
         -ms-overflow-style: none;
         width: 100%;
     }
+
     .menu-bar::-webkit-scrollbar {
         display: none;
     }
+
     #sidebar .menu-links li {
         position: relative;
     }
+
     /* Estilos para o menu recolhido */
     #sidebar.hide-sidebar {
         width: 70px !important;
     }
+
     #content.hide-sidebar {
         margin-left: 70px !important;
     }
-    #sidebar.hide-sidebar .text, 
-    #sidebar.hide-sidebar .title, 
+
+    #sidebar.hide-sidebar .text,
+    #sidebar.hide-sidebar .title,
     #sidebar.hide-sidebar .search-box,
     #sidebar.hide-sidebar #newlog .title1 {
         display: none;
     }
+
     #sidebar.hide-sidebar .menu-links li a {
         text-align: center;
         padding: 10px 0 !important;
@@ -52,10 +61,12 @@
         justify-content: center;
         align-items: center;
     }
+
     #sidebar.hide-sidebar .menu-links li a i {
         margin: 0 !important;
         font-size: 20px;
     }
+
     /* Tooltip Flutuante no modo recolhido */
     .title-tooltip {
         display: none;
@@ -67,8 +78,9 @@
         border-radius: 4px;
         white-space: nowrap;
         z-index: 1001;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
+
     .toggle-menu {
         position: fixed;
         top: 15px;
@@ -81,12 +93,15 @@
         height: 35px;
         background-color: #2E363F;
         border-radius: 50%;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         color: #fff;
         transition: left 0.3s ease;
         text-decoration: none;
     }
-    .mode { cursor: pointer; }
+
+    .mode {
+        cursor: pointer;
+    }
 
     .menu-overlay {
         display: none;
@@ -95,110 +110,277 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0,0,0,0.5);
+        background: rgba(0, 0, 0, 0.5);
         z-index: 9998;
     }
 
     @media (max-width: 767px) {
-        #sidebar { 
-            display: block !important; 
+        #sidebar {
+            display: flex !important;
+            flex-direction: column !important;
             position: fixed !important;
-            left: -220px !important;
+            transform: translateX(-100%) !important;
             top: 0 !important;
             bottom: 0 !important;
-            z-index: 10001 !important;
-            background-color: #2E363F !important; /* Garante fundo escuro no mobile */
-            width: 220px !important;
-            transition: left 0.3s ease !important;
-            transform: none !important;
-        }
-        #sidebar.visible-on-mobile { 
             left: 0 !important;
+            margin-left: 0 !important;
+            /* Neutraliza o hide-sidebar do margin-left desktop */
+            z-index: 100000 !important;
+            width: 230px !important;
+            height: 100vh !important;
+            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
+            opacity: 1 !important;
+            visibility: visible !important;
         }
-        #content { margin-left: 0 !important; }
+
+        #sidebar.visible-on-mobile {
+            transform: translateX(0) !important;
+            z-index: 100000 !important;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        #sidebar.visible-on-mobile>ul,
+        #sidebar.visible-on-mobile .menu-links {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            height: 100% !important;
+            z-index: 100001 !important;
+            position: relative;
+        }
+
+        #sidebar.visible-on-mobile .menu-bar {
+            flex: 1 !important;
+            height: 0 !important; /* Ajuda o Flex a calcular a sobra de altura corretamente no iOS/Chrome */
+            overflow-y: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            visibility: visible !important;
+            z-index: 100001 !important;
+            width: 100% !important;
+            margin-left: 0 !important;
+            padding-top: 0 !important;
+        }
+        
+        #sidebar.visible-on-mobile .menu-bar .menu {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            padding-bottom: 80px !important;
+        }
+
+        #content {
+            margin-left: 0 !important;
+            overflow-x: hidden !important;
+            width: 100vw !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Flex wrap nas páginas de Dashboard para não esmagar componentes em modo celular */
+        .row-fluid[style*="display: flex"] {
+            flex-direction: column !important;
+            width: 100% !important;
+        }
+
+        .Sspan12 {
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+        }
+
+        .widget-box,
+        .widget-box0,
+        .widget-box2,
+        .widget-box-new,
+        .widget-box-statist {
+            max-width: 100% !important;
+            width: 100% !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+        }
+
         .toggle-menu {
-            left: 10px;
-            top: 100px;
-            background-color: #2E363F;
-            color: #fff;
-            border-radius: 50%;
-            padding: 0;
+            z-index: 100002 !important;
+            position: fixed !important;
+            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
         }
-        /* Forçar exibição dos itens no mobile quando o menu estiver aberto */
+
+        .toggle-menu.menu-closed-mobile {
+            left: 0 !important;
+            /* Sem posições negativas para não quebrar a responsividade da tela */
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            width: 20px !important;
+            height: 60px !important;
+            border-radius: 0 30px 30px 0 !important;
+            justify-content: center !important;
+            padding-right: 0 !important;
+            opacity: 0.8;
+            background-color: rgba(0, 0, 0, 0.5) !important;
+            color: #fff !important;
+            box-shadow: 3px 0 6px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .toggle-menu.menu-closed-mobile:active,
+        .toggle-menu.menu-closed-mobile:hover {
+            opacity: 1;
+            width: 25px !important;
+        }
+
+        .toggle-menu.menu-open-mobile {
+            left: 220px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 50% !important;
+            justify-content: center !important;
+            padding-right: 0 !important;
+            opacity: 1;
+            background-color: rgba(0, 0, 0, 0.5) !important;
+            color: #fff !important;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4) !important;
+        }
+
         #sidebar.visible-on-mobile .text,
         #sidebar.visible-on-mobile .title {
             display: inline-block !important;
+            opacity: 1 !important;
         }
+
+        #sidebar.visible-on-mobile .menu-links li a {
+            padding: 12px 15px !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
         #sidebar.visible-on-mobile .search-box,
         #sidebar.visible-on-mobile #newlog .title1 {
             display: block !important;
         }
 
-        /* Correção para abas responsivas (Clientes, etc) */
+        #sidebar.visible-on-mobile #newlog {
+            margin-left: 0 !important;
+            opacity: 1 !important;
+            position: relative !important;
+            display: flex !important;
+            align-items: center !important;
+            padding: 15px 15px 5px 15px !important;
+            margin-top: 0 !important;
+            background-color: inherit !important;
+            z-index: 100002 !important;
+        }
+
+        #sidebar.visible-on-mobile .search-box {
+            margin-left: 20px !important;
+            opacity: 1 !important;
+        }
+
+        #sidebar.visible-on-mobile li {
+            opacity: 1 !important;
+        }
+
+        .widget-content {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        .widget-content canvas {
+            max-width: 100% !important;
+            height: auto !important;
+        }
+
+        .table {
+            min-width: 100% !important;
+            width: max-content !important;
+            max-width: none !important;
+            white-space: nowrap !important;
+            /* Obriga o scroll horizontal na tabela grande */
+        }
+
         .widget-title {
             height: auto !important;
         }
+
         .nav-tabs {
             display: flex !important;
             flex-direction: column !important;
             border-bottom: 0 !important;
         }
+
         .nav-tabs li {
             width: 100% !important;
             margin-bottom: 2px !important;
             float: none !important;
         }
 
-        /* Ajuste para barra de progresso em mobile */
         .progress {
             height: 10px !important;
             margin-bottom: 10px !important;
         }
+
         .progress .bar {
             height: 100% !important;
             line-height: 10px !important;
             font-size: 9px !important;
         }
     }
+
     /* Fix para Tablet/Zoom: Forçar recolhimento visualmente via CSS para evitar delay do JS */
     @media (min-width: 768px) and (max-width: 1280px) {
-        #sidebar.hide-sidebar { width: 70px !important; }
-        #content.hide-sidebar { margin-left: 70px !important; }
-        #sidebar.hide-sidebar .text, 
-        #sidebar.hide-sidebar .title, 
-        #sidebar.hide-sidebar .search-box, 
+        #sidebar.hide-sidebar {
+            width: 70px !important;
+        }
+
+        #content.hide-sidebar {
+            margin-left: 70px !important;
+        }
+
+        #sidebar.hide-sidebar .text,
+        #sidebar.hide-sidebar .title,
+        #sidebar.hide-sidebar .search-box,
         #sidebar.hide-sidebar #newlog .title1 {
             display: none !important;
         }
+
         #sidebar.hide-sidebar .menu-links li a {
             padding: 10px 0 !important;
             display: flex !important;
             justify-content: center;
             align-items: center;
         }
+
         #sidebar.hide-sidebar .menu-links li a i {
             margin: 0 !important;
         }
-        
+
         /* Forçar exibição quando expandido neste modo */
         #sidebar:not(.hide-sidebar) {
             width: 220px !important;
         }
+
         #content:not(.hide-sidebar) {
             margin-left: 220px !important;
         }
+
         #sidebar:not(.hide-sidebar) .text,
         #sidebar:not(.hide-sidebar) .title {
             display: inline-block !important;
         }
+
         #sidebar:not(.hide-sidebar) .search-box,
         #sidebar:not(.hide-sidebar) #newlog .title1 {
             display: block !important;
         }
+
         #sidebar:not(.hide-sidebar) .menu-links li a {
             text-align: left !important;
             padding: 10px 15px !important;
         }
+
         #sidebar:not(.hide-sidebar) .menu-links li a i {
             margin-right: 10px !important;
         }
@@ -230,7 +412,8 @@
                 <!-- Start Pesquisar-->
                 <li class="search-box">
                     <form style="display: flex" action="<?= site_url('mapos/pesquisar') ?>">
-                        <button style="background:transparent;border:transparent" type="submit" class="tip-bottom" title="">
+                        <button style="background:transparent;border:transparent" type="submit" class="tip-bottom"
+                            title="">
                             <i class='bx bx-search iconX'></i></button>
                         <input
                             style="background:transparent;<?= $configuration['app_theme'] == 'white' ? 'color:#313030;' : 'color:#fff;' ?>border:transparent"
@@ -437,34 +620,37 @@
     </div>
 </nav>
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         function updateVisualState() {
-            let currentIsMobile = window.matchMedia("(max-width: 767px)").matches;
+            let currentIsMobile = window.matchMedia("(max-width: 767px)").matches || $(window).width() <= 767;
             if (currentIsMobile) {
                 $('#sidebar, #content').removeClass('hide-sidebar');
                 if (!$('#sidebar').hasClass('visible-on-mobile')) {
-                    $('.toggle-menu').css('left', '10px');
+                    $('.toggle-menu').removeClass('menu-open-mobile').addClass('menu-closed-mobile');
                     $('.open-2').show();
                     $('.close-2').hide();
                 } else {
-                    $('.toggle-menu').css('left', '202px');
+                    $('.toggle-menu').removeClass('menu-closed-mobile').addClass('menu-open-mobile');
                     $('.open-2').hide();
                     $('.close-2').show();
                 }
             } else {
                 $('.menu-overlay').hide();
+                $('.toggle-menu').removeClass('menu-open-mobile menu-closed-mobile');
                 // Lógica para Desktop e Tablet
-                if (localStorage.getItem('sidebar-collapsed') === 'true') {
-                    $('#sidebar, #content').addClass('hide-sidebar');
-                    $('.toggle-menu').css('left', '52px');
-                    $('.open-2').show();
-                    $('.close-2').hide();
-                } else {
-                    $('#sidebar, #content').removeClass('hide-sidebar');
-                    $('.toggle-menu').css('left', '202px');
-                    $('.open-2').hide();
-                    $('.close-2').show();
-                }
+                try {
+                    if (localStorage.getItem('sidebar-collapsed') === 'true') {
+                        $('#sidebar, #content').addClass('hide-sidebar');
+                        $('.toggle-menu').css({ 'left': '52px', 'top': '15px', 'transform': 'none', 'width': '35px', 'height': '35px', 'border-radius': '50%', 'justify-content': 'center', 'padding-right': '0' });
+                        $('.open-2').show();
+                        $('.close-2').hide();
+                    } else {
+                        $('#sidebar, #content').removeClass('hide-sidebar');
+                        $('.toggle-menu').css({ 'left': '202px', 'top': '15px', 'transform': 'none', 'width': '35px', 'height': '35px', 'border-radius': '50%', 'justify-content': 'center', 'padding-right': '0' });
+                        $('.open-2').hide();
+                        $('.close-2').show();
+                    }
+                } catch (e) { }
             }
         }
 
@@ -472,7 +658,7 @@
         updateVisualState();
 
         // Tooltip handling
-        $('#sidebar .menu-links li').hover(function() {
+        $('#sidebar .menu-links li').hover(function () {
             if ($('#sidebar').hasClass('hide-sidebar')) {
                 var $tooltip = $(this).find('.title-tooltip');
                 var rect = this.getBoundingClientRect();
@@ -482,20 +668,21 @@
                     display: 'block'
                 });
             }
-        }, function() {
+        }, function () {
             $(this).find('.title-tooltip').hide();
         });
-        
-        $('.menu-bar').scroll(function() { $('.title-tooltip').hide(); });
+
+        $('.menu-bar').scroll(function () { $('.title-tooltip').hide(); });
 
         // Toggle Click Handler
-        $('.toggle-menu').click(function(e) {
+        $(document).off('click', '.toggle-menu').on('click', '.toggle-menu', function (e) {
             e.preventDefault();
-            let currentIsMobile = window.matchMedia("(max-width: 767px)").matches;
-            
+            e.stopPropagation();
+            let currentIsMobile = window.matchMedia("(max-width: 767px)").matches || $(window).width() <= 767;
+
             if (!currentIsMobile) {
                 let isCollapsed = $('#sidebar').hasClass('hide-sidebar');
-                localStorage.setItem('sidebar-collapsed', !isCollapsed);
+                try { localStorage.setItem('sidebar-collapsed', !isCollapsed); } catch (e) { }
                 updateVisualState();
             } else {
                 // Remove conflitos de classes de desktop
@@ -507,13 +694,13 @@
                 if ($('#sidebar').hasClass('visible-on-mobile')) {
                     // Menu is now open
                     $('.menu-overlay').fadeIn();
-                    $('.toggle-menu').css('left', '202px');
+                    $('.toggle-menu').removeClass('menu-closed-mobile').addClass('menu-open-mobile');
                     $('.open-2').hide();
                     $('.close-2').show();
                 } else {
                     // Menu is now closed
                     $('.menu-overlay').fadeOut();
-                    $('.toggle-menu').css('left', '10px');
+                    $('.toggle-menu').removeClass('menu-open-mobile').addClass('menu-closed-mobile');
                     $('.open-2').show();
                     $('.close-2').hide();
                 }
@@ -521,12 +708,15 @@
         });
 
         // Fecha o menu ao clicar no overlay
-        $('.menu-overlay').click(function() {
-            $('#sidebar').removeClass('visible-on-mobile');
-            $('.menu-overlay').fadeOut();
-            $('.toggle-menu').css('left', '10px');
-            $('.open-2').show();
-            $('.close-2').hide();
+        $(document).off('click', '.menu-overlay').on('click', '.menu-overlay', function () {
+            let currentIsMobile = window.matchMedia("(max-width: 767px)").matches || $(window).width() <= 767;
+            if (currentIsMobile) {
+                $('#sidebar').removeClass('visible-on-mobile');
+                $('.menu-overlay').fadeOut();
+                $('.toggle-menu').removeClass('menu-open-mobile').addClass('menu-closed-mobile');
+                $('.open-2').show();
+                $('.close-2').hide();
+            }
         });
 
         // RESIZE LISTENER COM CONTROLE DE TRANSIÇÃO
@@ -541,15 +731,15 @@
         });
 
         // Fecha o menu ao clicar em um link no mobile
-        $('#sidebar a').click(function() {
-            if (window.matchMedia("(max-width: 767px)").matches) {
+        $('#sidebar a').click(function () {
+            let currentIsMobile = window.matchMedia("(max-width: 767px)").matches || $(window).width() <= 767;
+            if (currentIsMobile) {
                 if ($(this).closest('.submenu').length === 0) {
                     $('#sidebar').removeClass('visible-on-mobile');
                     $('.menu-overlay').fadeOut();
-                    $('.toggle-menu').css('left', '10px');
+                    $('.toggle-menu').removeClass('menu-open-mobile').addClass('menu-closed-mobile');
                     $('.open-2').show();
                     $('.close-2').hide();
-                    updateVisualState();
                 }
             }
         });
