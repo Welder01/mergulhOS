@@ -72,12 +72,27 @@
     shortcut.add("F12", function () { });
     window.BaseUrl = "<?= base_url() ?>";
   </script>
+  <?php if (in_array($configuration['app_theme'], ['white', 'whitegreen', 'whiteblack'])) : ?>
+    <style type="text/css">
+      .navebarn,
+      #user-nav.navbar {
+        background: #fff !important;
+        color: #333 !important;
+      }
+
+      @media (max-width: 767px) {
+        .navebarn {
+          position: relative !important;
+        }
+      }
+    </style>
+  <?php endif; ?>
 </head>
 
 <body>
   <!--top-Header-menu-->
   <div class="navebarn">
-    <div id="user-nav" class="navbar navbar-inverse">
+    <div id="user-nav" class="navbar <?php if (!in_array($configuration['app_theme'], ['white', 'whitegreen', 'whiteblack'])) { echo 'navbar-inverse'; } ?>">
       <ul class="nav">
         <li class="dropdown">
           <a href="#" class="tip-right dropdown-toggle" data-toggle="dropdown" title="Perfis"><i

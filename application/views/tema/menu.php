@@ -1,5 +1,19 @@
 <!--sidebar-menu-->
 <style>
+    #sidebar.light {
+        background-color: #fff !important;
+        color: #333 !important;
+    }
+    #sidebar.light .menu-links li a {
+        color: #333 !important;
+    }
+    #sidebar.light .iconX {
+        color: #333 !important;
+    }
+    #sidebar.light .search-box {
+        background-color: #f9f9f9 !important;
+    }
+
     #sidebar {
         position: fixed;
         top: 0;
@@ -406,13 +420,17 @@
     </div>
 </a>
 <div class="menu-overlay"></div>
-<nav id="sidebar">
+<nav id="sidebar" class="<?php
+    if (in_array($configuration['app_theme'], ['white', 'whitegreen', 'whiteblack'])) {
+        echo 'light';
+    }
+?>">
     <div id="newlog">
         <div class="icon2">
             <img src="<?php echo base_url() ?>assets/img/logo-two.png">
         </div>
         <div class="title1">
-            <?= $configuration['app_theme'] == 'white' || $configuration['app_theme'] == 'whitegreen' ? '<img src="' . base_url() . 'assets/img/logo-mapos.png">' : '<img src="' . base_url() . 'assets/img/logo-mapos-branco.png">'; ?>
+            <?= in_array($configuration['app_theme'], ['white', 'whitegreen', 'whiteblack']) ? '<img src="' . base_url() . 'assets/img/logo-mapos.png">' : '<img src="' . base_url() . 'assets/img/logo-mapos-branco.png">'; ?>
         </div>
     </div>
 
@@ -427,7 +445,7 @@
                             title="">
                             <i class='bx bx-search iconX'></i></button>
                         <input
-                            style="background:transparent;<?= $configuration['app_theme'] == 'white' ? 'color:#313030;' : 'color:#fff;' ?>border:transparent"
+                            style="background:transparent;<?= in_array($configuration['app_theme'], ['white', 'whitegreen', 'whiteblack']) ? 'color:#313030;' : 'color:#fff;' ?>border:transparent"
                             type="search" name="termo" placeholder="Pesquise aqui...">
                         <span class="title-tooltip">Pesquisar</span>
                     </form>
@@ -632,6 +650,9 @@
 </nav>
 <script>
     $(document).ready(function () {
+        const onClientArea = window.location.pathname.indexOf('/mine') > -1;
+        const storageKey = onClientArea ? 'sidebar-collapsed-client' : 'sidebar-collapsed-admin';
+
         function updateVisualState() {
             let currentIsMobile = window.matchMedia("(max-width: 767px)").matches || $(window).width() <= 767;
             if (currentIsMobile) {
@@ -650,7 +671,7 @@
                 $('.toggle-menu').removeClass('menu-open-mobile menu-closed-mobile');
                 // Lógica para Desktop e Tablet
                 try {
-                    if (localStorage.getItem('sidebar-collapsed') === 'true') {
+                    if (localStorage.getItem(storageKey) === 'true') {
                         $('#sidebar, #content').addClass('hide-sidebar');
                         $('.toggle-menu').css({ 'left': '52px', 'top': '15px', 'transform': 'none', 'width': '35px', 'height': '35px', 'border-radius': '50%', 'justify-content': 'center', 'padding-right': '0' });
                         $('.open-2').show();
@@ -693,7 +714,7 @@
 
             if (!currentIsMobile) {
                 let isCollapsed = $('#sidebar').hasClass('hide-sidebar');
-                try { localStorage.setItem('sidebar-collapsed', !isCollapsed); } catch (e) { }
+                try { localStorage.setItem(storageKey, !isCollapsed); } catch (e) { }
                 updateVisualState();
             } else {
                 // Remove conflitos de classes de desktop
