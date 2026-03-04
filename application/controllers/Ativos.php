@@ -28,6 +28,7 @@ class Ativos extends MY_Controller {
 
         $this->data['results'] = $this->ativos_model->get('ativos', '*', '', $this->data['configuration']['per_page'], $this->uri->segment(3));
         $this->data['bolsas'] = $this->ativos_model->getBolsas();
+        $this->data['pendentes'] = $this->ativos_model->getPendentes();
 
         $this->data['view'] = 'ativos/ativos';
         return $this->layout();
@@ -409,5 +410,15 @@ class Ativos extends MY_Controller {
         } else {
             echo json_encode(['result' => false]);
         }
+    }
+
+    public function get_itens_bolsa_json() {
+        $id = $this->input->post('id');
+        if (!$id) {
+            echo json_encode([]);
+            return;
+        }
+        $itens = $this->ativos_model->getItensBolsa($id);
+        echo json_encode($itens);
     }
 }

@@ -31,6 +31,50 @@
 
 <div class="widget-box">
     <div class="widget-title">
+        <span class="icon"><i class="fas fa-clock"></i></span>
+        <h5>Movimentações Pendentes (Em Uso / Viagem)</h5>
+    </div>
+    <div class="widget-content nopadding">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Item/Bolsa</th>
+                    <th>Código</th>
+                    <th>Responsável</th>
+                    <th>Data Saída</th>
+                    <th>Observações (Checkout)</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if(!$pendentes) { echo '<tr><td colspan="7">Nenhuma pendência encontrada.</td></tr>'; } ?>
+                <?php foreach($pendentes as $p) { 
+                    $tipoLabel = $p->tipo == 'ativo' ? '<span class="label label-info">Ativo</span>' : '<span class="label label-warning">Bolsa</span>';
+                    $responsavel = isset($p->nome_responsavel) ? $p->nome_responsavel : '-';
+                    $dataSaida = $p->data_acao ? date('d/m/Y H:i', strtotime($p->data_acao)) : '-';
+                    
+                    // Limpa a observação removendo o prefixo automático se existir
+                    $obs = str_replace('Checkout realizado. Obs: ', '', $p->observacao);
+                    $obs = str_replace('Checkout realizado. ', '', $obs);
+                ?>
+                <tr>
+                    <td><?= $tipoLabel ?></td>
+                    <td><?= $p->nome ?></td>
+                    <td><?= $p->codigo ?></td>
+                    <td><?= $responsavel ?></td>
+                    <td><?= $dataSaida ?></td>
+                    <td><?= $obs ?></td>
+                    <td><a href="<?= base_url() ?>index.php/ativos/movimentacao" class="btn btn-mini btn-inverse"><i class="fas fa-exchange-alt"></i> Devolver</a></td>
+                </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="widget-box">
+    <div class="widget-title">
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#tab1">Ativos</a></li>
             <li><a data-toggle="tab" href="#tab2">Bolsas/Caixas</a></li>
@@ -81,6 +125,15 @@
         </div>
         
         <div id="tab2" class="tab-pane">
+            <div style="padding: 10px;">
+                <label for="filtro-status-bolsa" style="display:inline-block; margin-right:5px;">Filtrar por Status:</label>
+                <select id="filtro-status-bolsa" style="width: 150px;">
+                    <option value="">Todos</option>
+                    <option value="estoque">Estoque</option>
+                    <option value="viagem">Viagem</option>
+                    <option value="manutencao">Manutenção</option>
+                </select>
+            </div>
             <table class="table table-bordered ">
                 <thead>
                     <tr>
@@ -104,7 +157,7 @@
                         if($b->status == 'viagem') $status_color = 'warning';
                         if($b->status == 'manutencao') $status_color = 'important';
                         
-                        echo '<tr>';
+                        echo '<tr class="linha-bolsa" data-status="'.$b->status.'">';
                         echo '<td>' . $b->idBolsa . '</td>';
                         echo '<td>' . $b->nome . '</td>';
                         echo '<td>' . $b->codigo_identificador . '</td>';
@@ -197,6 +250,17 @@
                     $('#conteudoBolsa').html(html ? html : '<tr><td colspan="3">Vazia</td></tr>');
                 }
             });
+        });
+
+        // Filtro de Bolsas
+        $('#filtro-status-bolsa').change(function() {
+            var status = $(this).val();
+            if(status) {
+                $('.linha-bolsa').hide();
+                $('.linha-bolsa[data-status="'+status+'"]').show();
+            } else {
+                $('.linha-bolsa').show();
+            }
         });
     });
 </script>

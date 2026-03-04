@@ -187,4 +187,36 @@ class Ativos_model extends CI_Model {
 
         return $this->edit($tabela, $data, $campo_id, $id);
     }
+
+    public function getPendentes() {
+        // Ativos em uso
+        $this->db->select('a.idAtivo as id, a.nome, a.patrimonio as codigo, a.status, "ativo" as tipo, 
+                           (SELECT detalhes FROM ativos_logs WHERE ativo_id = a.idAtivo AND acao = "checkout" ORDER BY idLog DESC LIMIT 1) as observacao,
+                           (SELECT data_acao FROM ativos_logs WHERE ativo_id = a.idAtivo AND acao = "checkout" ORDER BY idLog DESC LIMIT 1) as data_acao');
+        $this->db->from('ativos a');
+        $this->db->where('a.status', 'em_uso');
+        $ativos = $this->db->get()->result();
+
+        // Bolsas em viagem
+        $this->db->select('b.idBolsa as id, b.nome, b.codigo_identificador as codigo, b.status, "bolsa" as tipo, 
+                           (SELECT detalhes FROM ativos_logs WHERE bolsa_id = b.idBolsa AND acao = "checkout" ORDER BY idLog DESC LIMIT 1) as observacao,
+                           (SELECT data_acao FROM ativos_logs WHERE bolsa_id = b.idBolsa AND acao = "checkout" ORDER BY idLog DESC LIMIT 1) as data_acao,
+                           b.responsavel_tipo, b.responsavel_id');
+        $this->db->from('ativos_bolsas b');
+        $this->db->where('b.status', 'viagem');
+        $bolsas = $this->db->get()->result();
+
+        foreach($bolsas as $b) {
+            $b->nome_responsavel = 'N/A';
+            if($b->responsavel_tipo == 'cliente' && $b->responsavel_id) {
+                $c = $this->db->select('nomeCliente')->where('idClientes', $b->responsavel_id)->get('clientes')->row();
+                $b->nome_responsavel = $c ? $c->nomeCliente : 'Cliente não encontrado';
+            } elseif($b->responsavel_tipo == 'usuario' && $b->responsavel_id) {
+                $u = $this->db->select('nome')->where('idUsuarios', $b->responsavel_id)->get('usuarios')->row();
+                $b->nome_responsavel = $u ? $u->nome : 'Usuário não encontrado';
+            }
+        }
+        
+        return array_merge($ativos, $bolsas);
+    }
 }

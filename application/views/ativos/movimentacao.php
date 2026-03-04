@@ -53,7 +53,47 @@
     </div>
     <div class="modal-footer">
         <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+        <button class="btn btn-info" id="btnConferirItens" style="display:none;"><i class="fas fa-list-ol"></i> Conferir Itens</button>
         <button class="btn btn-primary" id="btnConfirmarMovimentacao">Confirmar</button>
+    </div>
+</div>
+
+<!-- Modal de Conferência -->
+<div id="modal-conferencia" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h5 id="tituloConferencia">Conferência de Bolsa</h5>
+    </div>
+    <div class="modal-body">
+        <div class="row-fluid">
+            <div class="span12">
+                <label><strong>Escanear/Digitar Item:</strong></label>
+                <input type="text" id="input-conferencia" class="span12" placeholder="Bipe o código do ativo aqui..." autocomplete="off">
+            </div>
+        </div>
+        
+        <div class="progress progress-striped active">
+            <div class="bar" id="progresso-conferencia" style="width: 0%;"></div>
+        </div>
+        <p id="texto-progresso" style="text-align: center; font-weight: bold;">0/0 Itens conferidos</p>
+
+        <div style="max-height: 300px; overflow-y: auto;">
+            <table class="table table-bordered table-condensed">
+                <thead>
+                    <tr>
+                        <th style="width: 10%">Status</th>
+                        <th>Patrimônio/Código</th>
+                        <th>Nome</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-itens-conferencia">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+        <button class="btn btn-success" id="btnFinalizarConferencia" disabled><i class="fas fa-check"></i> Finalizar Movimentação</button>
     </div>
 </div>
 
@@ -62,6 +102,10 @@
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <script type="text/javascript">
     $(document).ready(function() {
+        var dadosMovimentacaoPendente = {};
+        var itensConferencia = [];
+        var itensConferidosCount = 0;
+
         $("#termo_busca").autocomplete({
             source: function(request, response) {
                 $.ajax({
@@ -101,8 +145,10 @@
                     
                     if(acao == 'checkout' && item.tipo == 'bolsa') {
                         $('#divResponsavel').show();
+                        $('#btnConferirItens').show();
                     } else {
                         $('#divResponsavel').hide();
+                        if(item.tipo == 'bolsa') $('#btnConferirItens').show(); else $('#btnConferirItens').hide();
                     }
                     
                     $('#modal-acao').modal('show');
@@ -201,8 +247,12 @@
             select: function(event, ui) { $("#responsavel_id").val(ui.item.id); }
         });
 
-        $('#btnConfirmarMovimentacao').click(function() {
-            var dados = $('#formMovimentacao').serialize();
+        function finalizarMovimentacao(dados) {
+            // Se vier da conferência, adiciona observação automática
+            if(dados.conferencia) {
+                dados.observacoes = (dados.observacoes ? dados.observacoes + " " : "") + "[Conferência Realizada]";
+            }
+
             $.post('<?php echo base_url(); ?>index.php/ativos/processar_movimentacao', dados, function(data) {
                 var json = JSON.parse(data);
                 if(json.result) {
@@ -212,6 +262,7 @@
                         text: json.message
                     });
                     $('#modal-acao').modal('hide');
+                    $('#modal-conferencia').modal('hide');
                     $('#termo_busca').trigger('keyup'); // Recarrega a busca
                 } else {
                     Swal.fire({
@@ -221,6 +272,134 @@
                     });
                 }
             });
+        }
+
+        $('#btnConfirmarMovimentacao').click(function() {
+            var dados = $('#formMovimentacao').serializeArray().reduce(function(obj, item) {
+                obj[item.name] = item.value;
+                return obj;
+            }, {});
+            finalizarMovimentacao(dados);
+        });
+
+        // Lógica de Conferência
+        $('#btnConferirItens').click(function() {
+            var idBolsa = $('#mov_id').val();
+            var acao = $('#mov_acao').val();
+            
+            // Valida responsável se for checkout
+            if(acao == 'checkout' && ($('#responsavel_id').val() == '' && $('#responsavel_tipo').val() != '')) {
+                 Swal.fire('Atenção', 'Selecione um responsável válido antes de conferir.', 'warning');
+                 return;
+            }
+
+            // Salva dados do formulário atual
+            dadosMovimentacaoPendente = $('#formMovimentacao').serializeArray().reduce(function(obj, item) {
+                obj[item.name] = item.value;
+                return obj;
+            }, {});
+            dadosMovimentacaoPendente.conferencia = true;
+
+            $('#modal-acao').modal('hide');
+            
+            // Carrega itens
+            $.post('<?php echo base_url(); ?>index.php/ativos/get_itens_bolsa_json', {id: idBolsa}, function(data) {
+                itensConferencia = JSON.parse(data);
+                itensConferidosCount = 0;
+                atualizarInterfaceConferencia();
+                $('#modal-conferencia').modal('show');
+                setTimeout(function(){ $('#input-conferencia').focus(); }, 500);
+            });
+        });
+
+        function atualizarInterfaceConferencia() {
+            var html = '';
+            var total = itensConferencia.length;
+            
+            $.each(itensConferencia, function(i, item) {
+                var statusIcon = item.conferido ? '<i class="fas fa-check-circle" style="color:green"></i>' : '<i class="fas fa-circle" style="color:#ccc"></i>';
+                var rowClass = item.conferido ? 'success' : '';
+                
+                html += '<tr class="'+rowClass+' acao-conferir-item" data-index="'+i+'" style="cursor: pointer;">'+
+                        '<td style="text-align:center; font-size: 1.2em;">'+statusIcon+'</td>'+
+                        '<td>'+item.patrimonio+'</td>'+
+                        '<td>'+item.nome+'</td>'+
+                        '</tr>';
+            });
+            
+            $('#lista-itens-conferencia').html(html);
+            
+            var percent = total > 0 ? (itensConferidosCount / total) * 100 : 100;
+            $('#progresso-conferencia').css('width', percent + '%');
+            $('#texto-progresso').text(itensConferidosCount + '/' + total + ' Itens conferidos');
+
+            if(itensConferidosCount >= total) {
+                $('#btnFinalizarConferencia').prop('disabled', false).removeClass('btn-warning').addClass('btn-success').html('<i class="fas fa-check-double"></i> Finalizar Movimentação');
+                $('#progresso-conferencia').parent().removeClass('active').addClass('progress-success');
+            } else {
+                $('#btnFinalizarConferencia').prop('disabled', false).removeClass('btn-success').addClass('btn-warning').html('<i class="fas fa-exclamation-triangle"></i> Finalizar com Pendências');
+            }
+        }
+
+        $('#input-conferencia').on('keyup', function(e) {
+            if(e.key === 'Enter' || e.keyCode === 13) {
+                var codigo = $(this).val().trim();
+                if(codigo) {
+                    var encontrado = false;
+                    $.each(itensConferencia, function(i, item) {
+                        if((item.patrimonio == codigo || item.codigo_qr == codigo) && !item.conferido) {
+                            item.conferido = true;
+                            itensConferidosCount++;
+                            encontrado = true;
+                            return false; // break
+                        }
+                    });
+                    
+                    if(encontrado) {
+                        atualizarInterfaceConferencia();
+                        $(this).val('');
+                    } else {
+                        // Opcional: Som de erro ou alerta visual
+                    }
+                }
+            }
+        });
+
+        $(document).on('click', '.acao-conferir-item', function() {
+            var index = $(this).data('index');
+            if (itensConferencia[index]) {
+                if (!itensConferencia[index].conferido) {
+                    itensConferencia[index].conferido = true;
+                    itensConferidosCount++;
+                } else {
+                    itensConferencia[index].conferido = false;
+                    itensConferidosCount--;
+                }
+                atualizarInterfaceConferencia();
+            }
+        });
+
+        $('#btnFinalizarConferencia').click(function() {
+            var total = itensConferencia.length;
+            if(itensConferidosCount < total) {
+                Swal.fire({
+                    title: 'Itens Pendentes!',
+                    text: "Você conferiu apenas " + itensConferidosCount + " de " + total + " itens. Deseja finalizar mesmo assim?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sim, finalizar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        dadosMovimentacaoPendente.observacoes = (dadosMovimentacaoPendente.observacoes ? dadosMovimentacaoPendente.observacoes + ". " : "") + "Obs: Conferência parcial ("+itensConferidosCount+"/"+total+").";
+                        finalizarMovimentacao(dadosMovimentacaoPendente);
+                    }
+                });
+            } else {
+                finalizarMovimentacao(dadosMovimentacaoPendente);
+            }
         });
     });
 </script>
