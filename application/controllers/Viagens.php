@@ -1053,7 +1053,7 @@ class Viagens extends MY_Controller
     // Métodos para gerenciar custos da viagem
     public function adicionar_custo()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aViagem')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aCustoViagem')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para adicionar custos à viagem.');
             redirect(base_url());
         }
@@ -1070,7 +1070,7 @@ class Viagens extends MY_Controller
 
     public function remover_custo($id)
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dViagem')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dCustoViagem')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para remover custos da viagem.');
             redirect(base_url());
         }

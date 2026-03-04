@@ -610,6 +610,109 @@
                         <div class="accordion-group widget-box">
                             <div class="accordion-heading">
                                 <div class="widget-title">
+                                    <a data-parent="#collapse-group" href="#collapseGCurso" data-toggle="collapse">
+                                        <span><i class='fas fa-graduation-cap icon-cli'></i></span>
+                                        <h5 style="padding-left: 28px">Cursos</h5>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="collapse accordion-body" id="collapseGCurso">
+                                <div class="widget-content">
+                                    <table class="table table-bordered">
+                                        <tbody>
+                                            <tr>
+                                                <td><label><input name="vCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Visualizar Curso</span></label></td>
+                                                <td><label><input name="aCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Adicionar Curso</span></label></td>
+                                                <td><label><input name="eCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Curso</span></label></td>
+                                                <td><label><input name="dCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Curso</span></label></td>
+                                            </tr>
+                                            <tr>
+                                                <td><label><input name="aAlunoCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Add Aluno</span></label></td>
+                                                <td><label><input name="dAlunoCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Del Aluno</span></label></td>
+                                                <td><label><input name="aInstrutorCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Add Instrutor</span></label></td>
+                                                <td><label><input name="dInstrutorCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Del Instrutor</span></label></td>
+                                            </tr>
+                                            <tr>
+                                                <td><label><input name="aModuloCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Add Módulo</span></label></td>
+                                                <td><label><input name="dModuloCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Del Módulo</span></label></td>
+                                                <td><label><input name="eConclusaoModulo" class="marcar" type="checkbox" value="1" /><span class="lbl"> Concluir Módulo</span></label></td>
+                                                <td></td>
+                                            </tr>
+                                            <tr>
+                                                <td><label><input name="aInstrutorModulo" class="marcar" type="checkbox" value="1" /><span class="lbl"> Add Instrutor Aula</span></label></td>
+                                                <td><label><input name="dInstrutorModulo" class="marcar" type="checkbox" value="1" /><span class="lbl"> Del Instrutor Aula</span></label></td>
+                                                <td><label><input name="aRequisitoCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Add Requisito</span></label></td>
+                                                <td><label><input name="dRequisitoCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Del Requisito</span></label></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-group widget-box">
+                            <div class="accordion-heading">
+                                <div class="widget-title">
+                                    <a data-parent="#collapse-group" href="#collapseGViagem" data-toggle="collapse">
+                                        <span><i class='fas fa-route icon-cli'></i></span>
+                                        <h5 style="padding-left: 28px">Viagens</h5>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="collapse accordion-body" id="collapseGViagem">
+                                <div class="widget-content">
+                                    <table class="table table-bordered">
+                                        <tbody>
+                                            <tr>
+                                                <td><label><input name="vViagem" class="marcar" type="checkbox" value="1" /><span class="lbl"> Visualizar Viagem</span></label></td>
+                                                <td><label><input name="aViagem" class="marcar" type="checkbox" value="1" /><span class="lbl"> Adicionar Viagem</span></label></td>
+                                                <td><label><input name="eViagem" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Viagem</span></label></td>
+                                                <td><label><input name="dViagem" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Viagem</span></label></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <label>
+                                                        <input name="vClienteViagem" class="marcar" type="checkbox" value="1" />
+                                                        <span class="lbl"> Ver Clientes na Viagem</span>
+                                                    </label>
+                                                </td>
+                                                <td>
+                                                    <label>
+                                                        <input name="aClienteViagem" class="marcar" type="checkbox" value="1" />
+                                                        <span class="lbl"> Add Clientes na Viagem</span>
+                                                    </label>
+                                                </td>
+                                                <td>
+                                                    <label>
+                                                        <input name="eClienteViagem" class="marcar" type="checkbox" value="1" />
+                                                        <span class="lbl"> Editar Clientes na Viagem</span>
+                                                    </label>
+                                                </td>
+                                                <td>
+                                                    <label>
+                                                        <input name="dClienteViagem" class="marcar" type="checkbox" value="1" />
+                                                        <span class="lbl"> Remover Clientes na Viagem</span>
+                                                    </label>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><label><input name="aInstrutorViagem" class="marcar" type="checkbox" value="1" /><span class="lbl"> Add Instrutor na Viagem</span></label></td>
+                                                <td><label><input name="dInstrutorViagem" class="marcar" type="checkbox" value="1" /><span class="lbl"> Remover Instrutor na Viagem</span></label></td>
+                                                <td><label><input name="vFichaOperacao" class="marcar" type="checkbox" value="1" /><span class="lbl"> Emitir Ficha Operação</span></label></td>
+                                                <td><label><input name="vFichaViagem" class="marcar" type="checkbox" value="1" /><span class="lbl"> Emitir Ficha Viagem</span></label></td>
+                                            </tr>
+                                            <tr>
+                                                <td><label><input name="aCustoViagem" class="marcar" type="checkbox" value="1" /><span class="lbl"> Add Custo Extra</span></label></td>
+                                                <td><label><input name="dCustoViagem" class="marcar" type="checkbox" value="1" /><span class="lbl"> Remover Custo Extra</span></label></td>
+                                                <td colspan="2"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-group widget-box">
+                            <div class="accordion-heading">
+                                <div class="widget-title">
                                     <a data-parent="#collapse-group" href="#collapseGThree333338"
                                         data-toggle="collapse">
                                         <span><i class="bx bx-cog icon-cli"></i></span>

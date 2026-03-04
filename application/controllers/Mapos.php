@@ -559,150 +559,154 @@ class Mapos extends MY_Controller
 
     public function calendario()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vOs')) {
-            $this->session->set_flashdata('error', 'Você não tem permissão para visualizar O.S.');
-            redirect(base_url());
-        }
         $this->load->model('os_model');
         $status = $this->input->get('status') ?: null;
         $start = $this->input->get('start') ?: null;
         $end = $this->input->get('end') ?: null;
 
-        $allOs = $this->mapos_model->calendario(
-            $start,
-            $end,
-            $status
-        );
-        $allCursos = $this->mapos_model->calendarioCursos(
-            $start,
-            $end,
-            $status
-        );
-        $allViagens = $this->mapos_model->calendarioViagens(
-            $start,
-            $end,
-            $status
-        );
+        $events = [];
+        if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vOs')) {
+            $allOs = $this->mapos_model->calendario(
+                $start,
+                $end,
+                $status
+            );
+            $events = array_map(function ($os) {
+                switch ($os->status) {
+                    case 'Aberto':
+                        $cor = '#00cd00';
+                        break;
+                    case 'Negociação':
+                        $cor = '#AEB404';
+                        break;
+                    case 'Em Andamento':
+                        $cor = '#436eee';
+                        break;
+                    case 'Orçamento':
+                        $cor = '#CDB380';
+                        break;
+                    case 'Cancelado':
+                        $cor = '#CD0000';
+                        break;
+                    case 'Finalizado':
+                        $cor = '#256';
+                        break;
+                    case 'Faturado':
+                        $cor = '#B266FF';
+                        break;
+                    case 'Aguardando Peças':
+                        $cor = '#FF7F00';
+                        break;
+                    case 'Aprovado':
+                        $cor = '#808080';
+                        break;
+                    default:
+                        $cor = '#E0E4CC';
+                        break;
+                }
 
-        $this->load->model('treinos_model');
-        $this->db->select('treinos_agendados.*, clientes.nomeCliente, treinos_config.nome as nome_treino');
-        $this->db->from('treinos_agendados');
-        $this->db->join('treinos_config', 'treinos_config.id = treinos_agendados.config_id');
-        $this->db->join('clientes', 'clientes.idClientes = treinos_agendados.cliente_id');
-        $this->db->where('data_hora_inicio >=', $start);
-        $this->db->where('treinos_agendados.status !=', 'Cancelado');
-        $this->db->where('data_hora_fim <=', $end);
-        $allTreinos = $this->db->get()->result();
-
-        $events = array_map(function ($os) {
-            switch ($os->status) {
-                case 'Aberto':
-                    $cor = '#00cd00';
-                    break;
-                case 'Negociação':
-                    $cor = '#AEB404';
-                    break;
-                case 'Em Andamento':
-                    $cor = '#436eee';
-                    break;
-                case 'Orçamento':
-                    $cor = '#CDB380';
-                    break;
-                case 'Cancelado':
-                    $cor = '#CD0000';
-                    break;
-                case 'Finalizado':
-                    $cor = '#256';
-                    break;
-                case 'Faturado':
-                    $cor = '#B266FF';
-                    break;
-                case 'Aguardando Peças':
-                    $cor = '#FF7F00';
-                    break;
-                case 'Aprovado':
-                    $cor = '#808080';
-                    break;
-                default:
-                    $cor = '#E0E4CC';
-                    break;
-            }
-
-            return [
-                'title' => "OS: {$os->idOs}, Cliente: {$os->nomeCliente}",
-                'start' => $os->dataFinal,
-                'end' => $os->dataFinal,
-                'color' => $cor,
-                'extendedProps' => [
-                    'id' => $os->idOs,
-                    'cliente' => '<b>Cliente:</b> ' . $os->nomeCliente,
-                    'dataInicial' => '<b>Data Inicial:</b> ' . date('d/m/Y', strtotime($os->dataInicial)),
-                    'dataFinal' => '<b>Data Final:</b> ' . date('d/m/Y', strtotime($os->dataFinal)),
-                    'garantia' => '<b>Garantia:</b> ' . $os->garantia . ' dias',
-                    'status' => '<b>Status da OS:</b> ' . $os->status,
-                    'description' => '<b>Descrição/Produto:</b> ' . strip_tags(html_entity_decode($os->descricaoProduto)),
-                    'defeito' => '<b>Defeito:</b> ' . strip_tags(html_entity_decode($os->defeito)),
-                    'observacoes' => '<b>Observações:</b> ' . strip_tags(html_entity_decode($os->observacoes)),
-                    'subtotal' => '<br><b>Subtotal:</b> R$ ' . number_format($os->totalProdutos + $os->totalServicos, 2, ',', '.'),
-                    'desconto' => '<b>Desconto:</b> -R$ ' . (isset($os->valor_desconto) && $os->desconto > 0 ? number_format(($os->totalProdutos + $os->totalServicos) - $os->valor_desconto, 2, ',', '.') : number_format($os->desconto, 2, ',', '.')),
-                    'total' => '<b>Total:</b> R$ ' . (isset($os->valor_desconto) && $os->valor_desconto != 0 ? number_format($os->valor_desconto, 2, ',', '.') : number_format($os->totalProdutos + $os->totalServicos, 2, ',', '.')),
-                    'faturado' => '<br><b>Faturado:</b> ' . ($os->faturado ? 'SIM' : 'PENDENTE'),
-                    'editar' => $this->os_model->isEditable($os->idOs),
-                ],
-            ];
-        }, $allOs);
+                return [
+                    'title' => "OS: {$os->idOs}, Cliente: {$os->nomeCliente}",
+                    'start' => $os->dataFinal,
+                    'end' => $os->dataFinal,
+                    'color' => $cor,
+                    'extendedProps' => [
+                        'id' => $os->idOs,
+                        'cliente' => '<b>Cliente:</b> ' . $os->nomeCliente,
+                        'dataInicial' => '<b>Data Inicial:</b> ' . date('d/m/Y', strtotime($os->dataInicial)),
+                        'dataFinal' => '<b>Data Final:</b> ' . date('d/m/Y', strtotime($os->dataFinal)),
+                        'garantia' => '<b>Garantia:</b> ' . $os->garantia . ' dias',
+                        'status' => '<b>Status da OS:</b> ' . $os->status,
+                        'description' => '<b>Descrição/Produto:</b> ' . strip_tags(html_entity_decode($os->descricaoProduto)),
+                        'defeito' => '<b>Defeito:</b> ' . strip_tags(html_entity_decode($os->defeito)),
+                        'observacoes' => '<b>Observações:</b> ' . strip_tags(html_entity_decode($os->observacoes)),
+                        'subtotal' => '<br><b>Subtotal:</b> R$ ' . number_format($os->totalProdutos + $os->totalServicos, 2, ',', '.'),
+                        'desconto' => '<b>Desconto:</b> -R$ ' . (isset($os->valor_desconto) && $os->desconto > 0 ? number_format(($os->totalProdutos + $os->totalServicos) - $os->valor_desconto, 2, ',', '.') : number_format($os->desconto, 2, ',', '.')),
+                        'total' => '<b>Total:</b> R$ ' . (isset($os->valor_desconto) && $os->valor_desconto != 0 ? number_format($os->valor_desconto, 2, ',', '.') : number_format($os->totalProdutos + $os->totalServicos, 2, ',', '.')),
+                        'faturado' => '<br><b>Faturado:</b> ' . ($os->faturado ? 'SIM' : 'PENDENTE'),
+                        'editar' => $this->os_model->isEditable($os->idOs),
+                    ],
+                ];
+            }, $allOs);
+        }
 
         $eventosCursos = [];
-        foreach ($allCursos as $curso) {
-            // Evento de Início do Curso
-            $eventosCursos[] = [
-                'title' => "INÍCIO Curso: {$curso->nome_curso}",
-                'start' => $curso->data_inicio,
-                'color' => '#28a745', // Verde
-                'url' => base_url() . 'index.php/cursos/visualizar/' . $curso->id,
-            ];
-
-            // Evento de Fim do Curso
-            if ($curso->data_fim && $curso->data_fim != '0000-00-00') {
+        if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vCurso')) {
+            $allCursos = $this->mapos_model->calendarioCursos(
+                $start,
+                $end,
+                $status
+            );
+            foreach ($allCursos as $curso) {
+                // Evento de Início do Curso
                 $eventosCursos[] = [
-                    'title' => "FIM Curso: {$curso->nome_curso}",
-                    'start' => $curso->data_fim,
-                    'color' => '#dc3545', // Vermelho
+                    'title' => "INÍCIO Curso: {$curso->nome_curso}",
+                    'start' => $curso->data_inicio,
+                    'color' => '#28a745', // Verde
                     'url' => base_url() . 'index.php/cursos/visualizar/' . $curso->id,
                 ];
+
+                // Evento de Fim do Curso
+                if ($curso->data_fim && $curso->data_fim != '0000-00-00') {
+                    $eventosCursos[] = [
+                        'title' => "FIM Curso: {$curso->nome_curso}",
+                        'start' => $curso->data_fim,
+                        'color' => '#dc3545', // Vermelho
+                        'url' => base_url() . 'index.php/cursos/visualizar/' . $curso->id,
+                    ];
+                }
             }
         }
 
         $eventosViagens = [];
-        foreach ($allViagens as $viagem) {
-            // Evento de Partida da Viagem
-            $eventosViagens[] = [
-                'title' => "PARTIDA Viagem: {$viagem->nome_viagem}",
-                'start' => $viagem->data_partida,
-                'color' => '#17a2b8', // Azul
-                'url' => base_url() . 'index.php/viagens/visualizar/' . $viagem->id,
-            ];
-
-            // Evento de Retorno da Viagem
-            if ($viagem->data_retorno && $viagem->data_retorno != '0000-00-00') {
+        if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vViagem')) {
+            $allViagens = $this->mapos_model->calendarioViagens(
+                $start,
+                $end,
+                $status
+            );
+            foreach ($allViagens as $viagem) {
+                // Evento de Partida da Viagem
                 $eventosViagens[] = [
-                    'title' => "RETORNO Viagem: {$viagem->nome_viagem}",
-                    'start' => $viagem->data_retorno,
-                    'color' => '#ffc107', // Amarelo
+                    'title' => "PARTIDA Viagem: {$viagem->nome_viagem}",
+                    'start' => $viagem->data_partida,
+                    'color' => '#17a2b8', // Azul
                     'url' => base_url() . 'index.php/viagens/visualizar/' . $viagem->id,
                 ];
+
+                // Evento de Retorno da Viagem
+                if ($viagem->data_retorno && $viagem->data_retorno != '0000-00-00') {
+                    $eventosViagens[] = [
+                        'title' => "RETORNO Viagem: {$viagem->nome_viagem}",
+                        'start' => $viagem->data_retorno,
+                        'color' => '#ffc107', // Amarelo
+                        'url' => base_url() . 'index.php/viagens/visualizar/' . $viagem->id,
+                    ];
+                }
             }
         }
 
         $eventosTreinos = [];
-        foreach ($allTreinos as $treino) {
-            $eventosTreinos[] = [
-                'title' => "Treino ({$treino->nome_treino}): {$treino->nomeCliente}",
-                'start' => $treino->data_hora_inicio,
-                'end' => $treino->data_hora_fim,
-                'color' => '#ff69b4', // Rosa para treinos
-                'url' => site_url('treinos/visualizarTreino/' . $treino->id), // Link para detalhes do agendamento
-            ];
+        if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vTreino')) {
+            $this->load->model('treinos_model');
+            $this->db->select('treinos_agendados.*, clientes.nomeCliente, treinos_config.nome as nome_treino');
+            $this->db->from('treinos_agendados');
+            $this->db->join('treinos_config', 'treinos_config.id = treinos_agendados.config_id');
+            $this->db->join('clientes', 'clientes.idClientes = treinos_agendados.cliente_id');
+            $this->db->where('data_hora_inicio >=', $start);
+            $this->db->where('treinos_agendados.status !=', 'Cancelado');
+            $this->db->where('data_hora_fim <=', $end);
+            $allTreinos = $this->db->get()->result();
+
+            foreach ($allTreinos as $treino) {
+                $eventosTreinos[] = [
+                    'title' => "Treino ({$treino->nome_treino}): {$treino->nomeCliente}",
+                    'start' => $treino->data_hora_inicio,
+                    'end' => $treino->data_hora_fim,
+                    'color' => '#ff69b4', // Rosa para treinos
+                    'url' => site_url('treinos/visualizarTreino/' . $treino->id), // Link para detalhes do agendamento
+                ];
+            }
         }
 
         return $this->output

@@ -9,6 +9,17 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
+                    <strong>v4.53.12 - Correção de Permissões</strong><br>
+                    Ajuste na verificação de permissão para cancelamento de faturamento.
+                </div>
+
+                <h3>Correções</h3>
+                <hr>
+                <h4>1. Ordem de Serviço</h4>
+                <p>Corrigido o bloqueio indevido ao tentar cancelar o faturamento de uma OS. O sistema agora verifica corretamente as permissões de lançamentos financeiros como alternativa caso a permissão específica de faturamento não esteja atribuída.</p>
+                <br>
+
+                <div class="alert alert-success">
                     <strong>v4.53.11 - Melhorias em Impressão e Pagamentos</strong><br>
                     QR Code PIX na térmica, correções em gateways e ajustes visuais na OS.
                 </div>

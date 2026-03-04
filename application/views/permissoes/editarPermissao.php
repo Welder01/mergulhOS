@@ -841,7 +841,6 @@
                                                                     <span class="lbl"> Faturar Atribuição</span>
                                                                 </label>
                                                             </td>
-                                                            <td colspan="3"></td>
                                                             <td>
                                                                 <label>
                                                                     <input name="eEstorno" class="marcar" type="checkbox"
@@ -852,6 +851,7 @@
                                                                     <span class="lbl"> Estornar Pagamento</span>
                                                                 </label>
                                                             </td>
+                                                            <td colspan="2"></td>
                                                         </tr>
                                                     </table>
                                                 </div>
@@ -913,6 +913,24 @@
                                                                 </label>
                                                             </td>
                                                         </tr>
+                                                        <tr>
+                                                            <td><label><input <?php if (isset($permissoes['aAlunoCurso']) && $permissoes['aAlunoCurso'] == '1') { echo 'checked'; } ?> name="aAlunoCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Add Aluno</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['dAlunoCurso']) && $permissoes['dAlunoCurso'] == '1') { echo 'checked'; } ?> name="dAlunoCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Del Aluno</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['aInstrutorCurso']) && $permissoes['aInstrutorCurso'] == '1') { echo 'checked'; } ?> name="aInstrutorCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Add Instrutor</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['dInstrutorCurso']) && $permissoes['dInstrutorCurso'] == '1') { echo 'checked'; } ?> name="dInstrutorCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Del Instrutor</span></label></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><label><input <?php if (isset($permissoes['aModuloCurso']) && $permissoes['aModuloCurso'] == '1') { echo 'checked'; } ?> name="aModuloCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Add Módulo</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['dModuloCurso']) && $permissoes['dModuloCurso'] == '1') { echo 'checked'; } ?> name="dModuloCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Del Módulo</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['eConclusaoModulo']) && $permissoes['eConclusaoModulo'] == '1') { echo 'checked'; } ?> name="eConclusaoModulo" class="marcar" type="checkbox" value="1" /><span class="lbl"> Concluir Módulo</span></label></td>
+                                                            <td></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><label><input <?php if (isset($permissoes['aInstrutorModulo']) && $permissoes['aInstrutorModulo'] == '1') { echo 'checked'; } ?> name="aInstrutorModulo" class="marcar" type="checkbox" value="1" /><span class="lbl"> Add Instrutor Aula</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['dInstrutorModulo']) && $permissoes['dInstrutorModulo'] == '1') { echo 'checked'; } ?> name="dInstrutorModulo" class="marcar" type="checkbox" value="1" /><span class="lbl"> Del Instrutor Aula</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['aRequisitoCurso']) && $permissoes['aRequisitoCurso'] == '1') { echo 'checked'; } ?> name="aRequisitoCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Add Requisito</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['dRequisitoCurso']) && $permissoes['dRequisitoCurso'] == '1') { echo 'checked'; } ?> name="dRequisitoCurso" class="marcar" type="checkbox" value="1" /><span class="lbl"> Del Requisito</span></label></td>
+                                                        </tr>
                                                     </table>
                                                 </div>
                                             </div>
@@ -972,6 +990,103 @@
                                                                     <span class="lbl"> Excluir Viagem</span>
                                                                 </label>
                                                             </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <label>
+                                                                    <input <?php if (isset($permissoes['vClienteViagem']) && $permissoes['vClienteViagem'] == '1') {
+                                                                        echo 'checked';
+                                                                    } ?> name="vClienteViagem" class="marcar" type="checkbox"
+                                                                        value="1" />
+                                                                    <span class="lbl"> Ver Clientes na Viagem</span>
+                                                                </label>
+                                                            </td>
+                                                            <td>
+                                                                <label>
+                                                                    <input <?php if (isset($permissoes['aClienteViagem']) && $permissoes['aClienteViagem'] == '1') {
+                                                                        echo 'checked';
+                                                                    } ?> name="aClienteViagem" class="marcar" type="checkbox"
+                                                                        value="1" />
+                                                                    <span class="lbl"> Add Clientes na Viagem</span>
+                                                                </label>
+                                                            </td>
+                                                            <td>
+                                                                <label>
+                                                                    <input <?php if (isset($permissoes['eClienteViagem']) && $permissoes['eClienteViagem'] == '1') {
+                                                                        echo 'checked';
+                                                                    } ?> name="eClienteViagem" class="marcar" type="checkbox"
+                                                                        value="1" />
+                                                                    <span class="lbl"> Editar Clientes na Viagem</span>
+                                                                </label>
+                                                            </td>
+                                                            <td>
+                                                                <label>
+                                                                    <input <?php if (isset($permissoes['dClienteViagem']) && $permissoes['dClienteViagem'] == '1') {
+                                                                        echo 'checked';
+                                                                    } ?> name="dClienteViagem" class="marcar" type="checkbox"
+                                                                        value="1" />
+                                                                    <span class="lbl"> Remover Clientes na Viagem</span>
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <label>
+                                                                    <input <?php if (isset($permissoes['aInstrutorViagem']) && $permissoes['aInstrutorViagem'] == '1') {
+                                                                        echo 'checked';
+                                                                    } ?> name="aInstrutorViagem" class="marcar" type="checkbox"
+                                                                        value="1" />
+                                                                    <span class="lbl"> Add Instrutor na Viagem</span>
+                                                                </label>
+                                                            </td>
+                                                            <td>
+                                                                <label>
+                                                                    <input <?php if (isset($permissoes['dInstrutorViagem']) && $permissoes['dInstrutorViagem'] == '1') {
+                                                                        echo 'checked';
+                                                                    } ?> name="dInstrutorViagem" class="marcar" type="checkbox"
+                                                                        value="1" />
+                                                                    <span class="lbl"> Remover Instrutor na Viagem</span>
+                                                                </label>
+                                                            </td>
+                                                            <td>
+                                                                <label>
+                                                                    <input <?php if (isset($permissoes['vFichaOperacao']) && $permissoes['vFichaOperacao'] == '1') {
+                                                                        echo 'checked';
+                                                                    } ?> name="vFichaOperacao" class="marcar" type="checkbox"
+                                                                        value="1" />
+                                                                    <span class="lbl"> Emitir Ficha Operação</span>
+                                                                </label>
+                                                            </td>
+                                                            <td>
+                                                                <label>
+                                                                    <input <?php if (isset($permissoes['vFichaViagem']) && $permissoes['vFichaViagem'] == '1') {
+                                                                        echo 'checked';
+                                                                    } ?> name="vFichaViagem" class="marcar" type="checkbox"
+                                                                        value="1" />
+                                                                    <span class="lbl"> Emitir Ficha Viagem</span>
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <label>
+                                                                    <input <?php if (isset($permissoes['aCustoViagem']) && $permissoes['aCustoViagem'] == '1') {
+                                                                        echo 'checked';
+                                                                    } ?> name="aCustoViagem" class="marcar" type="checkbox"
+                                                                        value="1" />
+                                                                    <span class="lbl"> Add Custo Extra</span>
+                                                                </label>
+                                                            </td>
+                                                            <td>
+                                                                <label>
+                                                                    <input <?php if (isset($permissoes['dCustoViagem']) && $permissoes['dCustoViagem'] == '1') {
+                                                                        echo 'checked';
+                                                                    } ?> name="dCustoViagem" class="marcar" type="checkbox"
+                                                                        value="1" />
+                                                                    <span class="lbl"> Remover Custo Extra</span>
+                                                                </label>
+                                                            </td>
+                                                            <td colspan="2"></td>
                                                         </tr>
                                                     </table>
                                                 </div>
