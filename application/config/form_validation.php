@@ -479,7 +479,10 @@ $config = [
         [
             'field' => 'codigo_identificador',
             'label' => 'Código Identificador',
-            'rules' => 'required|trim|is_unique[ativos_bolsas.codigo_identificador]',
+            'rules' => 'required|trim|unique[ativos_bolsas.codigo_identificador.' . (get_instance()->uri->segment(3) ?: '0') . '.idBolsa]',
+            'errors' => [
+                'unique' => 'O campo %s deve conter um valor único.',
+            ],
         ],
         [
             'field' => 'status',

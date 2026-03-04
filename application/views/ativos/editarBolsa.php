@@ -22,6 +22,7 @@
                         <label for="codigo_identificador" class="control-label">Código Identificador<span class="required">*</span></label>
                         <div class="controls">
                             <input id="codigo_identificador" type="text" name="codigo_identificador" value="<?php echo $result->codigo_identificador; ?>" />
+                            <button id="gerarCodigo" type="button" class="btn btn-inverse btn-mini" style="margin-left: 5px;">Gerar</button>
                         </div>
                     </div>
 
@@ -60,6 +61,9 @@
                         <div class="controls">
                             <div id="qrcode" style="margin-top: 10px;"></div>
                             <input type="hidden" id="codigo_qr_valor" value="<?php echo (isset($result->codigo_qr)) ? $result->codigo_qr : ''; ?>">
+                            <?php if (empty($result->codigo_qr)) { ?>
+                                <span class="help-inline" style="color: #b94a48;">Salve a bolsa para gerar o QR Code.</span>
+                            <?php } ?>
                         </div>
                     </div>
 
@@ -86,10 +90,12 @@
                 <div class="control-group">
                     <label>Adicionar Ativo:</label>
                     <input type="text" id="add_ativo" placeholder="Digite o nome ou patrimônio do ativo" style="width: 70%;">
+                    <button id="btn-bulk-delete" class="btn btn-danger btn-mini" style="float: right; margin-right: 20px; display: none;"><i class="fas fa-trash"></i> Excluir Selecionados</button>
                 </div>
                 <table class="table table-bordered">
                     <thead>
                         <tr>
+                            <th><input type="checkbox" id="selectAll"></th>
                             <th>Patrimônio</th>
                             <th>Nome</th>
                             <th>Status</th>
@@ -98,7 +104,8 @@
                     </thead>
                     <tbody id="tabela_itens">
                         <?php foreach ($itens as $item) { ?>
-                            <tr>
+                            <tr id="tr-<?php echo $item->id_item_bolsa; ?>">
+                                <td><input type="checkbox" class="item-checkbox" value="<?php echo $item->id_item_bolsa; ?>"></td>
                                 <td><?php echo $item->patrimonio; ?></td>
                                 <td><?php echo $item->nome; ?></td>
                                 <td><?php echo ucfirst($item->status); ?></td>
@@ -115,6 +122,7 @@
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <script src="<?php echo base_url() ?>assets/js/jquery.validate.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script type="text/javascript">
     $(document).ready(function() {
         $('#formBolsa').validate({
@@ -151,14 +159,100 @@
             minLength: 1,
             select: function(event, ui) {
                 $.post("<?php echo base_url(); ?>index.php/ativos/adicionarItemBolsa", { bolsa_id: <?php echo $result->idBolsa; ?>, ativo_id: ui.item.id }, function(data) {
-                    location.reload();
+                    if(data.result) {
+                        var newRow = '<tr id="tr-'+data.id_item_bolsa+'">' +
+                            '<td><input type="checkbox" class="item-checkbox" value="'+data.id_item_bolsa+'"></td>' +
+                            '<td>'+data.ativo.patrimonio+'</td>' +
+                            '<td>'+data.ativo.nome+'</td>' +
+                            '<td>'+data.ativo.status.charAt(0).toUpperCase() + data.ativo.status.slice(1)+'</td>' +
+                            '<td><button class="btn btn-danger btn-mini btn-remove-item" data-id="'+data.id_item_bolsa+'" data-ativo="'+data.ativo.idAtivo+'"><i class="fas fa-trash"></i></button></td>' +
+                            '</tr>';
+                        $('#tabela_itens').prepend(newRow);
+                        Swal.fire({
+                            icon: "success",
+                            title: "Sucesso",
+                            text: "Item adicionado!"
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Erro",
+                            text: "Erro ao adicionar item."
+                        });
+                    }
                 }, "json");
                 $(this).val(""); return false;
             }
         });
 
-        $(".btn-remove-item").click(function() {
-            if(confirm("Remover este item da bolsa?")) { $.post("<?php echo base_url(); ?>index.php/ativos/removerItemBolsa", { id: $(this).data('id'), ativo_id: $(this).data('ativo'), bolsa_id: <?php echo $result->idBolsa; ?> }, function(data) { location.reload(); }, "json"); }
+        $(document).on('click', '.btn-remove-item', function() {
+            var id = $(this).data('id');
+            var ativo = $(this).data('ativo');
+            if(confirm("Remover este item da bolsa?")) { 
+                $.post("<?php echo base_url(); ?>index.php/ativos/removerItemBolsa", { id: id, ativo_id: ativo, bolsa_id: <?php echo $result->idBolsa; ?> }, function(data) { 
+                    if(data.result) {
+                        $('#tr-' + id).remove();
+                        Swal.fire({
+                            icon: "success",
+                            title: "Sucesso",
+                            text: "Item removido!"
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Erro",
+                            text: "Erro ao remover item."
+                        });
+                    }
+                }, "json"); 
+            }
+        });
+
+        // Gerar Código Manual/Automático
+        $('#gerarCodigo').click(function() {
+            var nome = $('#nome').val();
+            if (nome == '') {
+                alert('Por favor, preencha o campo Nome primeiro.');
+                $('#nome').focus();
+                return;
+            }
+            var prefixo = nome.substring(0, 3).toUpperCase().replace(/[^A-Z0-9]/g, 'X');
+            var sufixo = Date.now().toString().slice(-6);
+            $('#codigo_identificador').val(prefixo + '-' + sufixo);
+        });
+
+        // Exclusão em Massa
+        $('#selectAll').click(function() {
+            $('.item-checkbox').prop('checked', this.checked);
+            toggleBulkButton();
+        });
+
+        $(document).on('change', '.item-checkbox', function() {
+            toggleBulkButton();
+        });
+
+        function toggleBulkButton() {
+            if($('.item-checkbox:checked').length > 0) { $('#btn-bulk-delete').show(); } else { $('#btn-bulk-delete').hide(); }
+        }
+
+        $('#btn-bulk-delete').click(function(e) {
+            e.preventDefault();
+            if(confirm('Deseja excluir os itens selecionados?')) {
+                var ids = [];
+                $('.item-checkbox:checked').each(function() { ids.push($(this).val()); });
+                $.post("<?php echo base_url(); ?>index.php/ativos/removerItensBolsaMassa", { ids: ids, bolsa_id: <?php echo $result->idBolsa; ?> }, function(data) {
+                    if(data.result) {
+                        $.each(ids, function(i, id) { $('#tr-' + id).remove(); });
+                        $('#selectAll').prop('checked', false);
+                        toggleBulkButton();
+                        Swal.fire({
+                            icon: "success",
+                            title: "Sucesso",
+                            text: "Itens removidos!"
+                        });
+                    }
+                }, "json");
+            }
         });
     });
 </script>

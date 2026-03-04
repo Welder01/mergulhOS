@@ -91,6 +91,7 @@ class Ativos extends MY_Controller {
             $data = [
                 'nome' => $this->input->post('nome'),
                 'codigo_identificador' => $this->input->post('codigo_identificador'),
+                'codigo_qr' => md5(uniqid(rand(), true)),
                 'status' => $this->input->post('status'),
                 'responsavel_tipo' => $this->input->post('responsavel_tipo'),
                 'responsavel_id' => $this->input->post('responsavel_id'),
@@ -128,10 +129,16 @@ class Ativos extends MY_Controller {
         if ($this->form_validation->run('bolsas') == false) {
             $this->data['custom_error'] = (validation_errors() ? '<div class="form_error">' . validation_errors() . '</div>' : false);
         } else {
+            // Verifica se já existe QR Code para não sobrescrever
+            $bolsaAtual = $this->ativos_model->getByIdBolsa($this->input->post('idBolsa'));
+            $codigoQr = isset($bolsaAtual->codigo_qr) && !empty($bolsaAtual->codigo_qr) 
+                        ? $bolsaAtual->codigo_qr 
+                        : md5(uniqid(rand(), true));
+
             $data = [
                 'nome' => $this->input->post('nome'),
                 'codigo_identificador' => $this->input->post('codigo_identificador'),
-                'codigo_qr' => md5(uniqid(rand(), true)),
+                'codigo_qr' => $codigoQr,
                 'status' => $this->input->post('status'),
                 'responsavel_tipo' => $this->input->post('responsavel_tipo'),
                 'responsavel_id' => $this->input->post('responsavel_id'),
@@ -326,9 +333,11 @@ class Ativos extends MY_Controller {
     {
         $bolsa_id = $this->input->post('bolsa_id');
         $ativo_id = $this->input->post('ativo_id');
-        if ($this->ativos_model->add('ativos_itens_bolsa', ['bolsa_id' => $bolsa_id, 'ativo_id' => $ativo_id])) {
+        $id_item = $this->ativos_model->add('ativos_itens_bolsa', ['bolsa_id' => $bolsa_id, 'ativo_id' => $ativo_id]);
+        if ($id_item) {
              $this->ativos_model->log_acao($ativo_id, 'movimentacao', 'Ativo adicionado à bolsa ID: ' . $bolsa_id, $bolsa_id);
-             echo json_encode(['result' => true]);
+             $ativo = $this->ativos_model->getById($ativo_id);
+             echo json_encode(['result' => true, 'ativo' => $ativo, 'id_item_bolsa' => $id_item]);
         } else {
              echo json_encode(['result' => false, 'message' => 'Erro ao adicionar']);
         }
@@ -385,6 +394,20 @@ class Ativos extends MY_Controller {
             echo json_encode(['result' => true, 'message' => 'Movimentação realizada com sucesso!']);
         } else {
             echo json_encode(['result' => false, 'message' => 'Erro ao realizar movimentação.']);
+        }
+    }
+
+    public function removerItensBolsaMassa()
+    {
+        $ids = $this->input->post('ids');
+        $bolsa_id = $this->input->post('bolsa_id');
+        if (!empty($ids)) {
+            $this->db->where_in('id', $ids);
+            $this->db->delete('ativos_itens_bolsa');
+            $this->ativos_model->log_acao(null, 'movimentacao', 'Remoção em massa de itens da bolsa ID: ' . $bolsa_id, $bolsa_id);
+            echo json_encode(['result' => true]);
+        } else {
+            echo json_encode(['result' => false]);
         }
     }
 }

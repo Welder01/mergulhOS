@@ -58,6 +58,7 @@
 </div>
 
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 <script type="text/javascript">
     $(document).ready(function() {
@@ -106,7 +107,11 @@
                     
                     $('#modal-acao').modal('show');
                 } else {
-                    alert('Status inválido para movimentação: ' + item.status);
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Atenção",
+                        text: "Status inválido para movimentação: " + item.status
+                    });
                 }
                 $(this).val('');
                 return false;
@@ -201,11 +206,19 @@
             $.post('<?php echo base_url(); ?>index.php/ativos/processar_movimentacao', dados, function(data) {
                 var json = JSON.parse(data);
                 if(json.result) {
-                    alert(json.message);
+                    Swal.fire({
+                        icon: "success",
+                        title: "Sucesso",
+                        text: json.message
+                    });
                     $('#modal-acao').modal('hide');
                     $('#termo_busca').trigger('keyup'); // Recarrega a busca
                 } else {
-                    alert(json.message);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Erro",
+                        text: json.message
+                    });
                 }
             });
         });
