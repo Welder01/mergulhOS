@@ -151,6 +151,16 @@ class Permissoes extends MY_Controller
                 'eAtivo' => $this->input->post('eAtivo'),
                 'dAtivo' => $this->input->post('dAtivo'),
                 'vAtivo' => $this->input->post('vAtivo'),
+                
+                'aBolsa' => $this->input->post('aBolsa'),
+                'eBolsa' => $this->input->post('eBolsa'),
+                'dBolsa' => $this->input->post('dBolsa'),
+                'mItensBolsa' => $this->input->post('mItensBolsa'),
+                'mMovimentacao' => $this->input->post('mMovimentacao'),
+                'cCheckinCheckout' => $this->input->post('cCheckinCheckout'),
+                'rEntregarBolsa' => $this->input->post('rEntregarBolsa'),
+                'rBolsaSemConferir' => $this->input->post('rBolsaSemConferir'),
+                'tResponsavelBolsa' => $this->input->post('tResponsavelBolsa'),
 
                 'cUsuario' => $this->input->post('cUsuario'),
                 'cEmitente' => $this->input->post('cEmitente'),
@@ -304,6 +314,16 @@ class Permissoes extends MY_Controller
                 'eAtivo' => $this->input->post('eAtivo'),
                 'dAtivo' => $this->input->post('dAtivo'),
                 'vAtivo' => $this->input->post('vAtivo'),
+
+                'aBolsa' => $this->input->post('aBolsa'),
+                'eBolsa' => $this->input->post('eBolsa'),
+                'dBolsa' => $this->input->post('dBolsa'),
+                'mItensBolsa' => $this->input->post('mItensBolsa'),
+                'mMovimentacao' => $this->input->post('mMovimentacao'),
+                'cCheckinCheckout' => $this->input->post('cCheckinCheckout'),
+                'rEntregarBolsa' => $this->input->post('rEntregarBolsa'),
+                'rBolsaSemConferir' => $this->input->post('rBolsaSemConferir'),
+                'tResponsavelBolsa' => $this->input->post('tResponsavelBolsa'),
 
                 'cUsuario' => $this->input->post('cUsuario'),
                 'cEmitente' => $this->input->post('cEmitente'),

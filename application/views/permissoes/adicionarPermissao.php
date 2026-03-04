@@ -836,6 +836,22 @@
                                                     </label>
                                                 </td>
                                             </tr>
+                                            <tr>
+                                                <td><label><input name="aBolsa" class="marcar" type="checkbox" value="1" /><span class="lbl"> Criar Bolsa</span></label></td>
+                                                <td><label><input name="eBolsa" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Bolsa</span></label></td>
+                                                <td><label><input name="dBolsa" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Bolsa</span></label></td>
+                                                <td><label><input name="mItensBolsa" class="marcar" type="checkbox" value="1" /><span class="lbl"> Gerenciar Itens Bolsa</span></label></td>
+                                            </tr>
+                                            <tr>
+                                                <td><label><input name="mMovimentacao" class="marcar" type="checkbox" value="1" /><span class="lbl"> Movimentação</span></label></td>
+                                                <td><label><input name="cCheckinCheckout" class="marcar" type="checkbox" value="1" /><span class="lbl"> Check-in / Check-out</span></label></td>
+                                                <td><label><input name="rEntregarBolsa" class="marcar" type="checkbox" value="1" /><span class="lbl"> Receber / Entregar Bolsa</span></label></td>
+                                                <td><label><input name="rBolsaSemConferir" class="marcar" type="checkbox" value="1" /><span class="lbl"> Receber s/ Conferir</span></label></td>
+                                            </tr>
+                                            <tr>
+                                                <td><label><input name="tResponsavelBolsa" class="marcar" type="checkbox" value="1" /><span class="lbl"> Trocar Responsável</span></label></td>
+                                                <td colspan="3"></td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
