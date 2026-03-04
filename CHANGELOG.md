@@ -30,6 +30,10 @@ e [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Backup**: Ferramenta de backup do banco de dados.
 - **Atualização**: Sistema de atualização automática via GitHub.
 
+## [4.53.12] - 2026-03-04
+### Fixed
+- **OS**: Correção de permissão ao cancelar faturamento para administradores (fallback para permissão de lançamentos).
+
 ## [4.53.11] - 2026-02-25
 ### Added
 - **OS**: Adicionado QR Code PIX na impressão térmica (Cupom 80mm).

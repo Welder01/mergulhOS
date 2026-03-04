@@ -1158,7 +1158,14 @@
                                                                     <span class="lbl"> Sistema</span>
                                                                 </label>
                                                             </td>
-                                                            <td></td>
+                                                            <td>
+                                                                <label>
+                                                                    <input <?php echo (isset($permissoes['cIntegracao']) && $permissoes['cIntegracao'] == 1) ? 'checked' : ''; ?>
+                                                                        name="cIntegracao" class="marcar" type="checkbox"
+                                                                        value="1" />
+                                                                    <span class="lbl"> Integrações</span>
+                                                                </label>
+                                                            </td>
                                                         </tr>
                                                     </table>
                                                 </div>

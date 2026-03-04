@@ -672,6 +672,13 @@
                                                         <span class="lbl"> Sistema</span>
                                                     </label>
                                                 </td>
+                                                <td>
+                                                    <label>
+                                                        <input name="cIntegracao" class="marcar" type="checkbox"
+                                                            value="1" />
+                                                        <span class="lbl"> Integrações</span>
+                                                    </label>
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <td>

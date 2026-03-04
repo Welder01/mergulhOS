@@ -22,7 +22,7 @@ class Evolution extends MY_Controller
 
     public function gerenciar()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) { // Usando uma permissão genérica de configuração
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para configurar integrações.');
             redirect(base_url());
         }
@@ -53,7 +53,7 @@ class Evolution extends MY_Controller
 
     public function excluir_item_fila($id)
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para gerenciar a fila.');
             redirect('evolution/gerenciar#tabFila');
         }
@@ -68,7 +68,7 @@ class Evolution extends MY_Controller
 
     public function limpar_fila()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para limpar a fila.');
             redirect('evolution/gerenciar#tabFila');
         }
@@ -83,7 +83,7 @@ class Evolution extends MY_Controller
 
     public function fetch_instance()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             return $this->output->set_status_header(403)->set_output(json_encode(['error' => 'Acesso não autorizado.']));
         }
 
@@ -145,7 +145,7 @@ class Evolution extends MY_Controller
 
     public function enviar_item_fila($id)
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             return $this->output->set_status_header(403)->set_output(json_encode(['message' => 'Você não tem permissão para realizar esta ação.']));
         }
 
@@ -345,7 +345,7 @@ class Evolution extends MY_Controller
 
     public function adicionar_mensagem()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para adicionar mensagens.');
             redirect('evolution/gerenciar?tab=mensagens');
         }
@@ -380,7 +380,7 @@ class Evolution extends MY_Controller
 
     public function editar_mensagem()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar mensagens.');
             redirect('evolution/gerenciar#tabMensagens');
         }
@@ -414,7 +414,7 @@ class Evolution extends MY_Controller
 
     public function excluir_mensagem($id)
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para excluir mensagens.');
             redirect('evolution/gerenciar#tabMensagens');
         }
@@ -429,7 +429,7 @@ class Evolution extends MY_Controller
 
     public function excluir_logs()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) { // Usando uma permissão genérica
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para excluir logs.');
             redirect('evolution/gerenciar#tabLogs');
         }
@@ -449,7 +449,7 @@ class Evolution extends MY_Controller
 
     public function excluir_log($id)
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para excluir logs.');
             redirect('evolution/gerenciar#tabLogs');
         }
@@ -464,7 +464,7 @@ class Evolution extends MY_Controller
 
     public function limpar_logs()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para limpar logs.');
             redirect('evolution/gerenciar#tabLogs');
         }
@@ -481,7 +481,7 @@ class Evolution extends MY_Controller
 
     public function enviar_mensagem()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             return $this->output->set_status_header(403)->set_output(json_encode(['error' => 'Acesso não autorizado.']));
         }
 
@@ -625,7 +625,7 @@ class Evolution extends MY_Controller
 
     public function enviar_mensagem_novo()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             return $this->output->set_status_header(403)->set_output(json_encode(['message' => 'Acesso não autorizado.']));
         }
 
@@ -906,7 +906,7 @@ class Evolution extends MY_Controller
         // to capture all potential client-side issues.
         // If you need to restrict this, uncomment the permission check below.
         /*
-        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (! $this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             return $this->output->set_status_header(403)->set_output(json_encode(['message' => 'Acesso não autorizado para logar erros.']));
         }
         */
@@ -928,7 +928,7 @@ class Evolution extends MY_Controller
 
     public function salvar_eventos()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para configurar eventos.');
             redirect('evolution/gerenciar?tab=eventos');
         }
@@ -1090,7 +1090,7 @@ class Evolution extends MY_Controller
 
     public function refresh_queue()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cPermissao')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cIntegracao')) {
             return $this->output->set_status_header(403)->set_output('Acesso negado');
         }
 

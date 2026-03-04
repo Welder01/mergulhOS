@@ -1900,7 +1900,7 @@ class Os extends MY_Controller
 
     public function cancelar_faturamento()
     {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dFaturamento')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dFaturamento') && !$this->permission->checkPermission($this->session->userdata('permissao'), 'dLancamento')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para cancelar o faturamento.');
             redirect(base_url());
         }
