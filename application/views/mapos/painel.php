@@ -134,6 +134,20 @@
                 </a>
             </li>
         <?php endif ?>
+
+        <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vAtivo')): ?>
+            <li class="card">
+                <a class="cardLink" href="<?= site_url('ativos') ?>">
+                    <div class="grid-blak">
+                        <div class="numbers N-tittle">Ativos</div>
+                        <div class="cardName">F8</div>
+                    </div>
+                    <div class="lord-icon04">
+                        <i class='bx bx-box iconBx04'></i>
+                    </div>
+                </a>
+            </li>
+        <?php endif ?>
     </ul>
     <!-- End-Action boxes -->
 
@@ -245,6 +259,15 @@
                             <div>
                                 <div class="cardName2"><?= $this->db->count_all('vendas'); ?></div>
                                 <div class="cardName">Vendas</div>
+                            </div>
+                        </a>
+
+                        <a href="<?php echo base_url() ?>index.php/ativos/adicionar" class="card tip-top"
+                            title="Adicionar Ativo">
+                            <div><i class='bx bxs-box iconBx2'></i></div>
+                            <div>
+                                <div class="cardName2"><?= $this->db->count_all('ativos'); ?></div>
+                                <div class="cardName">Ativos</div>
                             </div>
                         </a>
 

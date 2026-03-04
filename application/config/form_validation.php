@@ -453,4 +453,38 @@ $config = [
             'rules' => 'required|trim',
         ],
     ],
+    'ativos' => [
+        [
+            'field' => 'nome',
+            'label' => 'Nome',
+            'rules' => 'required|trim',
+        ],
+        [
+            'field' => 'patrimonio',
+            'label' => 'Patrimônio',
+            'rules' => 'required|trim|unique[ativos.patrimonio.' . (get_instance()->uri->segment(3) ?: '0') . '.idAtivo]',
+        ],
+        [
+            'field' => 'status',
+            'label' => 'Status',
+            'rules' => 'required|trim',
+        ],
+    ],
+    'bolsas' => [
+        [
+            'field' => 'nome',
+            'label' => 'Nome',
+            'rules' => 'required|trim',
+        ],
+        [
+            'field' => 'codigo_identificador',
+            'label' => 'Código Identificador',
+            'rules' => 'required|trim|is_unique[ativos_bolsas.codigo_identificador]',
+        ],
+        [
+            'field' => 'status',
+            'label' => 'Status',
+            'rules' => 'required|trim',
+        ],
+    ],
 ];

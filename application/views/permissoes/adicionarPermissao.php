@@ -713,6 +713,50 @@
                         <div class="accordion-group widget-box">
                             <div class="accordion-heading">
                                 <div class="widget-title">
+                                    <a data-parent="#collapse-group" href="#collapseGAtivos" data-toggle="collapse">
+                                        <span><i class='fas fa-box icon-cli'></i></span>
+                                        <h5 style="padding-left: 28px">Ativos</h5>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="collapse accordion-body" id="collapseGAtivos">
+                                <div class="widget-content">
+                                    <table class="table table-bordered">
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <label>
+                                                        <input name="vAtivo" class="marcar" type="checkbox" value="1" />
+                                                        <span class="lbl"> Visualizar Ativo</span>
+                                                    </label>
+                                                </td>
+                                                <td>
+                                                    <label>
+                                                        <input name="aAtivo" class="marcar" type="checkbox" value="1" />
+                                                        <span class="lbl"> Adicionar Ativo</span>
+                                                    </label>
+                                                </td>
+                                                <td>
+                                                    <label>
+                                                        <input name="eAtivo" class="marcar" type="checkbox" value="1" />
+                                                        <span class="lbl"> Editar Ativo</span>
+                                                    </label>
+                                                </td>
+                                                <td>
+                                                    <label>
+                                                        <input name="dAtivo" class="marcar" type="checkbox" value="1" />
+                                                        <span class="lbl"> Excluir Ativo</span>
+                                                    </label>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-group widget-box">
+                            <div class="accordion-heading">
+                                <div class="widget-title">
                                     <a data-parent="#collapse-group" href="#collapseGThree333338"
                                         data-toggle="collapse">
                                         <span><i class="bx bx-cog icon-cli"></i></span>

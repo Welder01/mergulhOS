@@ -509,6 +509,18 @@
                     </li>
                 <?php } ?>
 
+                <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vAtivo')) { ?>
+                    <li class="<?php if (isset($menuAtivos)) {
+                        echo 'active';
+                    }
+                    ; ?>">
+                        <a class="tip-bottom" title="" href="<?= site_url('ativos') ?>"><i class='bx bx-box iconX'></i>
+                            <span class="title">Ativos</span>
+                            <span class="title-tooltip">Ativos</span>
+                        </a>
+                    </li>
+                <?php } ?>
+
                 <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vCurso')) { ?>
                     <li class="<?php if (isset($menuCursos)) {
                         echo 'active';

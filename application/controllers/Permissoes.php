@@ -147,6 +147,11 @@ class Permissoes extends MY_Controller
                 'dTreino' => $this->input->post('dTreino'),
                 'vTreino' => $this->input->post('vTreino'),
 
+                'aAtivo' => $this->input->post('aAtivo'),
+                'eAtivo' => $this->input->post('eAtivo'),
+                'dAtivo' => $this->input->post('dAtivo'),
+                'vAtivo' => $this->input->post('vAtivo'),
+
                 'cUsuario' => $this->input->post('cUsuario'),
                 'cEmitente' => $this->input->post('cEmitente'),
                 'cPermissao' => $this->input->post('cPermissao'),
@@ -294,6 +299,11 @@ class Permissoes extends MY_Controller
                 'eTreino' => $this->input->post('eTreino'),
                 'dTreino' => $this->input->post('dTreino'),
                 'vTreino' => $this->input->post('vTreino'),
+
+                'aAtivo' => $this->input->post('aAtivo'),
+                'eAtivo' => $this->input->post('eAtivo'),
+                'dAtivo' => $this->input->post('dAtivo'),
+                'vAtivo' => $this->input->post('vAtivo'),
 
                 'cUsuario' => $this->input->post('cUsuario'),
                 'cEmitente' => $this->input->post('cEmitente'),
