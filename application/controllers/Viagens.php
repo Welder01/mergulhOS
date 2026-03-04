@@ -1217,4 +1217,23 @@ class Viagens extends MY_Controller
 
         return $this->output->set_content_type('application/json')->set_output(json_encode($result));
     }
+
+    public function autoCompleteBolsa()
+    {
+        if (isset($_GET['term'])) {
+            $q = strtolower($this->input->get('term'));
+            $this->db->select('idBolsa, nome, codigo_identificador');
+            $this->db->group_start();
+            $this->db->like('nome', $q);
+            $this->db->or_like('codigo_identificador', $q);
+            $this->db->group_end();
+            $this->db->where('status', 'estoque');
+            $this->db->limit(10);
+            $query = $this->db->get('ativos_bolsas');
+            $result = array_map(function ($row) {
+                return ['id' => $row->idBolsa, 'label' => $row->nome . ' | Cód: ' . $row->codigo_identificador, 'value' => $row->idBolsa];
+            }, $query->result());
+            echo json_encode($result);
+        }
+    }
 }

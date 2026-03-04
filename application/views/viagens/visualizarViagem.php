@@ -77,6 +77,12 @@
         box-sizing: border-box;
         text-align: center;
     }
+    .ui-autocomplete {
+        z-index: 1060 !important;
+        max-height: 200px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
 </style>
 
 <div class="widget-box">
@@ -130,7 +136,7 @@
                         <div class="control-group">
                             <label class="control-label">Bolsa Nº</label>
                             <div class="controls">
-                                <input type="text" class="span4" name="numero_bolsa">
+                                <input type="text" class="span4" name="numero_bolsa" id="numero_bolsa" placeholder="Pesquise a bolsa...">
                             </div>
                         </div>
                         <div class="control-group">
@@ -413,7 +419,7 @@
                 <div class="control-group">
                     <label class="control-label">Bolsa Nº</label>
                     <div class="controls">
-                        <input type="text" class="span6" name="numero_bolsa_instrutor">
+                        <input type="text" class="span6" name="numero_bolsa_instrutor" id="numero_bolsa_instrutor" placeholder="Pesquise a bolsa...">
                     </div>
                 </div>
                 <div class="control-group">
@@ -1054,6 +1060,32 @@ $(document).ready(function() {
             $("#instrutor").val(ui.item.nome); // Preenche o campo com o nome
             $("#usuario_id").val(ui.item.id); // Guarda o ID no campo oculto
             $("#syncInstrutorBtn").prop('disabled', false); // Habilita o botão de sincronização
+        }
+    });
+    
+    // Autocomplete para Bolsas (Adição - Fora de Modal)
+    $("#numero_bolsa, #numero_bolsa_instrutor").autocomplete({
+        source: "<?= site_url('viagens/autoCompleteBolsa'); ?>",
+        minLength: 1,
+        select: function(event, ui) {
+        }
+    });
+
+    // Autocomplete para Bolsas (Edição Cliente - Dentro do Modal)
+    $("#edit_numero_bolsa").autocomplete({
+        source: "<?= site_url('viagens/autoCompleteBolsa'); ?>",
+        minLength: 1,
+        appendTo: "#modalEditarCliente",
+        select: function(event, ui) {
+        }
+    });
+
+    // Autocomplete para Bolsas (Edição Instrutor - Dentro do Modal)
+    $("#edit_instrutor_numero_bolsa").autocomplete({
+        source: "<?= site_url('viagens/autoCompleteBolsa'); ?>",
+        minLength: 1,
+        appendTo: "#modalEditarInstrutor",
+        select: function(event, ui) {
         }
     });
 
