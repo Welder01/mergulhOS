@@ -9,6 +9,23 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
+                    <strong>v4.54.1 - Melhorias no Módulo de Ativos</strong><br>
+                    Novas funcionalidades para gestão de ativos, incluindo detalhes de locação, impressão de etiquetas e interface modernizada.
+                </div>
+
+                <h3>Novidades e Melhorias</h3>
+                <hr>
+                <h4>1. Gestão de Ativos</h4>
+                <ul>
+                    <li><strong>Novos Campos:</strong> Adicionado suporte para Cor, Tamanho e Preço de Locação no cadastro de ativos.</li>
+                    <li><strong>Upload de Fotos:</strong> Implementado sistema de Drag-and-Drop para upload de imagens com redimensionamento automático.</li>
+                    <li><strong>Consulta Rápida:</strong> Nova interface de busca com autocomplete, exibição de foto, status e histórico recente do ativo.</li>
+                    <li><strong>Impressão de Etiquetas:</strong> Ferramenta de geração de etiquetas QR Code em massa com configurações personalizadas de layout (dimensões, margens, colunas).</li>
+                    <li><strong>Dashboard:</strong> Painel renovado com cards de resumo e gráficos interativos para melhor visualização do status e distribuição dos ativos.</li>
+                </ul>
+                <br>
+
+                <div class="alert alert-success">
                     <strong>v4.54.0 - Módulo de Ativos e Melhorias em Viagens</strong><br>
                     Novo módulo de Gestão de Ativos e Logística, conferência de bolsas e melhorias na interface de viagens.
                 </div>
