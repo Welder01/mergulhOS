@@ -1,3 +1,6 @@
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
+<script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
+
 <div class="row-fluid" style="margin-top:0">
     <div class="span12">
         <div class="widget-box">
@@ -9,34 +12,41 @@
                 <?php echo $custom_error; ?>
                 <form action="<?php echo current_url(); ?>" id="formBilhete" method="post" class="form-horizontal">
                     
-                    <!-- Seleção de Expedição e Cliente -->
-                    <div class="control-group">
-                        <label for="expedicao_id" class="control-label">Expedição<span class="required">*</span></label>
-                        <div class="controls">
-                            <select name="expedicao_id" id="expedicao_id" required>
-                                <option value="">Selecione...</option>
-                                <?php foreach ($expedicoes as $e) { ?>
-                                    <option value="<?= $e->idExpedicao ?>"><?= $e->titulo ?> (<?= date('d/m/Y', strtotime($e->data_ida)) ?>)</option>
-                                <?php } ?>
-                            </select>
+                    <!-- Linha 1: Expedição e Cliente -->
+                    <div class="row-fluid">
+                        <div class="span6">
+                            <div class="control-group">
+                                <label for="expedicao" class="control-label">Expedição <span class="required">*</span></label>
+                                <div class="controls">
+                                    <input id="expedicao" type="text" class="span11" placeholder="Digite para buscar a expedição..." required />
+                                    <input id="expedicao_id" type="hidden" name="expedicao_id" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="span6">
+                            <div class="control-group">
+                                <label for="cliente" class="control-label">Cliente <span class="required">*</span></label>
+                                <div class="controls">
+                                    <input id="cliente" type="text" name="cliente" class="span11" placeholder="Digite para buscar o cliente..." required />
+                                    <input id="cliente_id" type="hidden" name="cliente_id" />
+                                    <input id="nomeCliente" type="hidden" name="nomeCliente" />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="control-group">
-                        <label for="cliente" class="control-label">Cliente<span class="required">*</span></label>
-                        <div class="controls">
-                            <input id="cliente" type="text" name="cliente" class="span8" required />
-                            <input id="cliente_id" type="hidden" name="cliente_id" />
-                            <input id="nomeCliente" type="hidden" name="nomeCliente" />
-                        </div>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label for="viagem_id" class="control-label">Vincular Hospedagem (Viagem)</label>
-                        <div class="controls">
-                            <select name="viagem_id" id="viagem_id" class="span8">
-                                <option value="">Selecione um cliente primeiro...</option>
-                            </select>
+                    <!-- Linha 2: Hospedagem -->
+                    <div class="row-fluid">
+                        <div class="span12">
+                            <div class="control-group">
+                                <label for="viagem_id" class="control-label">Vincular Hospedagem</label>
+                                <div class="controls">
+                                    <select name="viagem_id" id="viagem_id" class="span11">
+                                        <option value="">Selecione um cliente primeiro...</option>
+                                    </select>
+                                    <span class="help-inline" style="color: #999; font-size: 0.9em;">(Opcional - Selecione o cliente para carregar)</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -55,18 +65,34 @@
                         </div>
                     </div>
 
-                    <div class="control-group">
-                        <label for="empresa_emissora" class="control-label">Empresa/Cia (Fretado/Externa)</label>
-                        <div class="controls"><input type="text" name="empresa_emissora" id="empresa_emissora" class="span6" /></div>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label for="codigo_bilhete" class="control-label">Localizador/Bilhete</label>
-                        <div class="controls">
-                            <input type="text" name="codigo_bilhete" id="codigo_bilhete" class="span4" />
-                            <span class="help-inline">Assento:</span>
-                            <button type="button" id="btn-selecionar-assento" class="btn btn-mini btn-info" style="display:none;"><i class="fas fa-chair"></i> Mapa</button>
-                            <input type="text" name="assento" class="span2" />
+                    <!-- Linha 4: Detalhes Transporte -->
+                    <div class="row-fluid" id="detalhes_transporte">
+                        <div class="span4">
+                            <div class="control-group">
+                                <label for="empresa_emissora" class="control-label">Empresa/Cia</label>
+                                <div class="controls">
+                                    <input type="text" name="empresa_emissora" id="empresa_emissora" class="span11" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="span4">
+                            <div class="control-group">
+                                <label for="codigo_bilhete" class="control-label">Localizador</label>
+                                <div class="controls">
+                                    <input type="text" name="codigo_bilhete" id="codigo_bilhete" class="span11" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="span4">
+                            <div class="control-group">
+                                <label for="assento" class="control-label">Assento</label>
+                                <div class="controls">
+                                    <div class="input-append">
+                                        <input type="text" name="assento" id="assento" class="span6" />
+                                        <button type="button" id="btn-selecionar-assento" class="btn btn-info" style="display:none;"><i class="fas fa-chair"></i> Mapa</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -76,55 +102,103 @@
                         <h5>Valores e Serviços</h5>
                     </div>
 
-                    <div class="control-group">
-                        <label class="control-label">Moeda Venda</label>
-                        <div class="controls">
-                            <select name="moeda_venda" id="moeda_venda" class="span2">
-                                <option value="BRL">BRL (R$)</option>
-                                <option value="USD">USD ($)</option>
-                                <option value="EUR">EUR (€)</option>
-                            </select>
-                            <span class="help-inline">Cotação:</span>
-                            <input type="text" name="cotacao_venda" id="cotacao_venda" value="1.0000" class="span2 money" readonly />
+                    <!-- Linha 5: Valores -->
+                    <div class="row-fluid">
+                        <div class="span3">
+                            <div class="control-group">
+                                <label class="control-label">Moeda</label>
+                                <div class="controls">
+                                    <select name="moeda_venda" id="moeda_venda" class="span11">
+                                        <option value="BRL">BRL (R$)</option>
+                                        <option value="USD">USD ($)</option>
+                                        <option value="EUR">EUR (€)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="span3">
+                            <div class="control-group">
+                                <label class="control-label">Cotação</label>
+                                <div class="controls">
+                                    <input type="text" name="cotacao_venda" id="cotacao_venda" value="1.0000" class="span11 money" readonly />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="span3">
+                            <div class="control-group">
+                                <label class="control-label">Valor Bilhete</label>
+                                <div class="controls">
+                                    <input type="text" name="valor_original" id="valor_original" class="span11 money" required />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="span3">
+                            <div class="control-group">
+                                <label class="control-label">Taxa Serviço</label>
+                                <div class="controls">
+                                    <input type="text" name="taxa_servico_emissao" class="span11 money" value="0.00" />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="control-group">
-                        <label for="valor_original" class="control-label">Valor Bilhete</label>
-                        <div class="controls">
-                            <input type="text" name="valor_original" id="valor_original" class="money" required />
-                            <span class="help-inline">Taxa Serviço:</span>
-                            <input type="text" name="taxa_servico_emissao" class="money span2" value="0.00" />
-                            <span class="help-inline">Bagagem Extra:</span>
-                            <input type="text" name="valor_bagagem_extra" class="money span2" value="0.00" />
+                    <!-- Linha 6: Adicionais -->
+                    <div class="row-fluid">
+                        <div class="span4">
+                            <div class="control-group">
+                                <label class="control-label">Bagagem Extra</label>
+                                <div class="controls">
+                                    <input type="text" name="valor_bagagem_extra" class="span11 money" value="0.00" />
+                                </div>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Serviços Adicionais -->
-                    <div class="control-group">
-                        <label class="control-label">Adicionais Mergulho</label>
-                        <div class="controls">
-                            <label class="checkbox inline">
-                                <input type="checkbox" name="pagou_taxa_parque" value="1"> Pagar Taxa Parque
-                            </label>
-                            <label class="checkbox inline">
-                                <input type="checkbox" name="estadia_estendida" value="1"> Estadia Estendida
-                            </label>
+                        <div class="span4">
+                            <div class="control-group">
+                                <label class="control-label">Dias Navegação</label>
+                                <div class="controls">
+                                    <input type="number" name="qtd_dias_navegacao" value="0" class="span11" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="span4">
+                            <div class="control-group">
+                                <label class="control-label">Opções</label>
+                                <div class="controls">
+                                    <label class="checkbox inline">
+                                        <input type="checkbox" name="pagou_taxa_parque" value="1"> Taxa Parque
+                                    </label>
+                                    <label class="checkbox inline">
+                                        <input type="checkbox" name="estadia_estendida" value="1"> Estadia Estendida
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
                     <div class="control-group">
-                        <label for="qtd_dias_navegacao" class="control-label">Dias Navegação</label>
                         <div class="controls">
-                            <input type="number" name="qtd_dias_navegacao" value="0" class="span2" />
                             <span class="help-inline text-info" id="info_valores_expedicao"></span>
                         </div>
                     </div>
-                    
+
+                    <div class="widget-title">
+                        <span class="icon"><i class="fas fa-swimmer"></i></span>
+                        <h5>Equipamentos</h5>
+                    </div>
+
                     <div class="control-group">
-                        <label for="equipamentos" class="control-label">Locação de Equipamentos</label>
+                        <label class="control-label">Locação</label>
                         <div class="controls">
-                            <select name="equipamentos[]" id="equipamentos" multiple class="span8" style="height: 100px;">
+                            <label class="checkbox">
+                                <input type="checkbox" id="chk_locar_equipamentos"> Desejo locar equipamentos para esta expedição
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="control-group" id="div_equipamentos" style="display:none;">
+                        <label for="equipamentos" class="control-label">Selecionar Itens</label>
+                        <div class="controls">
+                            <select name="equipamentos[]" id="equipamentos" multiple class="span11" style="height: 150px;">
                                 <?php foreach ($ativos_disponiveis as $ativo) { ?>
                                     <option value="<?= $ativo->idAtivo ?>"><?= $ativo->nome ?> (<?= $ativo->patrimonio ?>)</option>
                                 <?php } ?>
@@ -135,9 +209,9 @@
 
                     <div class="form-actions">
                         <div class="span12">
-                            <div class="span6 offset3">
-                                <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Emitir Bilhete</button>
-                                <a href="<?php echo base_url() ?>index.php/bilhetagem" class="btn"><i class="fas fa-arrow-left"></i> Voltar</a>
+                            <div class="span6 offset3" style="text-align: center">
+                                <button type="submit" class="btn btn-success btn-large"><i class="fas fa-check"></i> Emitir Bilhete</button>
+                                <a href="<?php echo base_url() ?>index.php/bilhetagem" class="btn btn-large"><i class="fas fa-arrow-left"></i> Voltar</a>
                             </div>
                         </div>
                     </div>
@@ -188,6 +262,16 @@
     $(document).ready(function() {
         $('.money').mask('#.##0,00', {reverse: true});
 
+        // Autocomplete Expedição
+        $("#expedicao").autocomplete({
+            source: "<?php echo base_url(); ?>index.php/bilhetagem/autoCompleteExpedicao",
+            minLength: 1,
+            select: function(event, ui) {
+                $("#expedicao_id").val(ui.item.id);
+                $('#info_valores_expedicao').text('Custo Barco/Dia: R$ ' + ui.item.preco_barco + ' | Taxa Parque: R$ ' + ui.item.taxa_parque);
+            }
+        });
+
         // Autocomplete Cliente
         $("#cliente").autocomplete({
             source: "<?php echo base_url(); ?>index.php/os/autoCompleteCliente",
@@ -212,17 +296,6 @@
             }
         });
 
-        // Busca detalhes da expedição para mostrar valores
-        $('#expedicao_id').change(function(){
-            var id = $(this).val();
-            if(id) {
-                $.post('<?php echo base_url(); ?>index.php/bilhetagem/get_expedicao_detalhes', {id: id}, function(data){
-                    var json = JSON.parse(data);
-                    $('#info_valores_expedicao').text('Custo Barco/Dia: R$ ' + json.preco_saida_barco_dia + ' | Taxa Parque: R$ ' + json.taxa_parque_unitaria);
-                });
-            }
-        });
-
         // Lógica Meios Próprios
         $('input[name=tipo_transporte]').change(function(){
             if($(this).val() == 'meios_proprios') {
@@ -242,6 +315,9 @@
             $.post('<?php echo base_url(); ?>index.php/bilhetagem/buscar_viagens_cliente', {cliente_id: clienteId}, function(data){
                 var viagens = JSON.parse(data);
                 var options = '<option value="">Selecione a Viagem...</option>';
+                if(viagens.length === 0) {
+                    options = '<option value="">Nenhuma viagem encontrada para este cliente</option>';
+                }
                 for(var i=0; i<viagens.length; i++) {
                     options += '<option value="'+viagens[i].id+'">'+viagens[i].nome_viagem+' ('+viagens[i].data_partida+')</option>';
                 }
@@ -307,5 +383,15 @@
             var onClick = isOccupied ? '' : 'onclick="$(\'input[name=assento]\').val('+num+'); $(\'#modal-assentos\').modal(\'hide\');"';
             return '<div class="seat ' + classOccupied + '" ' + onClick + '>' + num + '</div>';
         }
+
+        // Toggle Equipamentos
+        $('#chk_locar_equipamentos').change(function() {
+            if($(this).is(':checked')) {
+                $('#div_equipamentos').slideDown();
+            } else {
+                $('#div_equipamentos').slideUp();
+                $('#equipamentos').val(null); // Limpa seleção
+            }
+        });
     });
 </script>

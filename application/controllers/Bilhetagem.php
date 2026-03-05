@@ -290,4 +290,26 @@ class Bilhetagem extends MY_Controller {
         $ocupados = $this->bilhetagem_model->getAssentosOcupados($expedicao_id);
         echo json_encode($ocupados);
     }
+
+    public function autoCompleteExpedicao()
+    {
+        if (isset($_GET['term'])) {
+            $q = strtolower($_GET['term']);
+            $this->db->select('idExpedicao, titulo, data_ida, preco_saida_barco_dia, taxa_parque_unitaria');
+            $this->db->like('titulo', $q);
+            $this->db->limit(10);
+            $query = $this->db->get('expedicoes');
+            $result = [];
+            foreach ($query->result() as $row) {
+                $result[] = [
+                    'id' => $row->idExpedicao,
+                    'label' => $row->titulo . ' | Data: ' . date('d/m/Y', strtotime($row->data_ida)),
+                    'value' => $row->titulo,
+                    'preco_barco' => $row->preco_saida_barco_dia,
+                    'taxa_parque' => $row->taxa_parque_unitaria
+                ];
+            }
+            echo json_encode($result);
+        }
+    }
 }
