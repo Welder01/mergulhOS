@@ -55,7 +55,12 @@
                             <?php if ($result->foto) { ?>
                                 <img src="<?php echo base_url('assets/uploads/ativos/' . $result->foto); ?>" alt="Foto do Ativo" style="max-width: 150px; margin-bottom: 10px; display: block;" />
                             <?php } ?>
-                            <input type="file" name="userfile" id="userfile" />
+                            <div id="drop-zone" style="border: 2px dashed #ccc; padding: 20px; text-align: center; cursor: pointer; background: #f9f9f9; border-radius: 5px;">
+                                <p><i class="fas fa-cloud-upload-alt fa-3x" style="color: #ccc;"></i></p>
+                                <p>Arraste a nova foto aqui ou clique para alterar</p>
+                                <input type="file" name="userfile" id="userfile" style="display: none;" accept="image/*" />
+                                <div id="preview-container" style="margin-top: 10px;"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -99,6 +104,44 @@
                 width: 128,
                 height: 128
             });
+        }
+
+        // Drag and Drop Logic
+        var dropZone = document.getElementById('drop-zone');
+        var fileInput = document.getElementById('userfile');
+
+        dropZone.addEventListener('click', function() { fileInput.click(); });
+
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropZone.style.borderColor = '#000';
+            dropZone.style.background = '#e9e9e9';
+        });
+
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            dropZone.style.borderColor = '#ccc';
+            dropZone.style.background = '#f9f9f9';
+        });
+
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropZone.style.borderColor = '#ccc';
+            dropZone.style.background = '#f9f9f9';
+            fileInput.files = e.dataTransfer.files;
+            updatePreview(fileInput.files[0]);
+        });
+
+        fileInput.addEventListener('change', function() { updatePreview(this.files[0]); });
+
+        function updatePreview(file) {
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#preview-container').html('<img src="'+e.target.result+'" style="max-height: 150px; border: 1px solid #ddd; padding: 3px;"> <br> ' + file.name);
+                };
+                reader.readAsDataURL(file);
+            }
         }
     });
 </script>

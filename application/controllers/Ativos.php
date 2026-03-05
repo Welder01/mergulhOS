@@ -234,6 +234,37 @@ class Ativos extends MY_Controller {
         redirect(site_url('ativos/gerenciar/'));
     }
 
+    public function consultar_ativo() {
+        if (!$this->input->is_ajax_request()) {
+            exit('No direct script access allowed');
+        }
+
+        $termo = $this->input->post('termo');
+        
+        // Busca por ID, Patrimonio ou QR Code
+        $this->db->where('idAtivo', $termo);
+        $this->db->or_where('patrimonio', $termo);
+        $this->db->or_where('codigo_qr', $termo);
+        $ativo = $this->db->get('ativos')->row();
+
+        if ($ativo) {
+            // Busca histórico de logs para este ativo
+            // Assumindo que a tabela de logs é 'ativos_logs' conforme visto em Ativos_api.php
+            // ou usando o model se disponível, mas aqui faremos direto para garantir os campos
+            $this->db->select('al.*, u.nome as usuario_nome');
+            $this->db->from('ativos_logs al');
+            $this->db->join('usuarios u', 'u.idUsuarios = al.usuario_id_acao', 'left');
+            $this->db->where('al.ativo_id', $ativo->idAtivo);
+            $this->db->order_by('al.idLog', 'DESC');
+            $this->db->limit(5);
+            $historico = $this->db->get()->result();
+
+            echo json_encode(['found' => true, 'ativo' => $ativo, 'historico' => $historico]);
+        } else {
+            echo json_encode(['found' => false]);
+        }
+    }
+
     private function do_upload() {
         $config['upload_path'] = './assets/uploads/ativos/';
         $config['allowed_types'] = 'jpg|png|jpeg|gif';
@@ -249,7 +280,22 @@ class Ativos extends MY_Controller {
         if (!$this->upload->do_upload('userfile')) {
             return array('error' => $this->upload->display_errors());
         } else {
-            return array('upload_data' => $this->upload->data());
+            $data = $this->upload->data();
+            
+            // Redimensionamento automático (GD Library)
+            $config_resize['image_library'] = 'gd2';
+            $config_resize['source_image'] = $data['full_path'];
+            $config_resize['create_thumb'] = FALSE;
+            $config_resize['maintain_ratio'] = TRUE;
+            $config_resize['width'] = 800;
+            $config_resize['height'] = 600;
+            $config_resize['quality'] = '80%';
+
+            $this->load->library('image_lib', $config_resize);
+            $this->image_lib->resize();
+            $this->image_lib->clear();
+
+            return array('upload_data' => $data);
         }
     }
 
@@ -316,18 +362,34 @@ class Ativos extends MY_Controller {
     {
         if (isset($_GET['term'])) {
             $q = strtolower($_GET['term']);
-            $this->db->select('idAtivo, nome, patrimonio, status');
-            $this->db->like('nome', $q);
-            $this->db->or_like('patrimonio', $q);
+            $this->db->select('a.idAtivo, a.nome, a.patrimonio, a.status, a.foto, ab.nome as nome_bolsa, c.nomeCliente, u.nome as nome_usuario');
+            $this->db->from('ativos a');
+            $this->db->join('ativos_itens_bolsa aib', 'aib.ativo_id = a.idAtivo', 'left');
+            $this->db->join('ativos_bolsas ab', 'ab.idBolsa = aib.bolsa_id', 'left');
+            $this->db->join('clientes c', 'ab.responsavel_tipo = "cliente" AND ab.responsavel_id = c.idClientes', 'left');
+            $this->db->join('usuarios u', 'ab.responsavel_tipo = "usuario" AND ab.responsavel_id = u.idUsuarios', 'left');
+
+            $this->db->group_start();
+            $this->db->like('a.nome', $q);
+            $this->db->or_like('a.patrimonio', $q);
+            $this->db->or_like('a.codigo_qr', $q);
+            $this->db->group_end();
             $this->db->limit(10);
-            $query = $this->db->get('ativos');
+            $query = $this->db->get();
             $result = [];
             foreach ($query->result() as $row) {
+                $responsavel = $row->nomeCliente ? $row->nomeCliente : ($row->nome_usuario ? $row->nome_usuario : null);
+
                 $result[] = [
                     'id' => $row->idAtivo,
-                    'label' => $row->nome . ' | Pat: ' . $row->patrimonio . ' | Status: ' . $row->status,
-                    'value' => $row->nome,
-                    'status' => $row->status
+                    'label' => $row->nome . ' | Pat: ' . $row->patrimonio,
+                    'value' => $row->patrimonio,
+                    'nome' => $row->nome,
+                    'patrimonio' => $row->patrimonio,
+                    'status' => $row->status,
+                    'foto' => $row->foto,
+                    'bolsa' => $row->nome_bolsa,
+                    'responsavel' => $responsavel
                 ];
             }
             echo json_encode($result);

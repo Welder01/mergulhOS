@@ -4,6 +4,7 @@
     <a href="<?php echo base_url(); ?>index.php/ativos/movimentacao" class="btn btn-inverse"><i class="fas fa-exchange-alt"></i> Movimentação (Check-in/Out)</a>
     <a href="<?php echo base_url(); ?>index.php/ativos/auditoria" class="btn btn-info"><i class="fas fa-history"></i> Auditoria</a>
     <a href="<?php echo base_url(); ?>index.php/ativos/categorias" class="btn btn-primary"><i class="fas fa-tags"></i> Categorias</a>
+    <a href="#modal-consulta-rapida" role="button" data-toggle="modal" class="btn btn-warning"><i class="fas fa-qrcode"></i> Consulta Rápida</a>
 <?php } ?>
 
 <div class="row-fluid" style="margin-top: 20px;">
@@ -232,6 +233,54 @@
     </div>
 </div>
 
+<!-- Modal Consulta Rápida -->
+<div id="modal-consulta-rapida" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h5 id="myModalLabel">Consulta Rápida de Ativo</h5>
+    </div>
+    <div class="modal-body">
+        <div class="control-group">
+            <label><strong>Ler QR Code / Digitar Patrimônio:</strong></label>
+            <input type="text" id="input-consulta-qr" class="span12" placeholder="Bipe o código aqui..." autocomplete="off">
+        </div>
+        
+        <div id="resultado-consulta" style="display: none; margin-top: 15px;">
+            <div class="row-fluid">
+                <div class="span4">
+                    <img id="consulta-foto" src="" alt="Foto do Ativo" class="img-polaroid" style="max-width: 100%; display: none;">
+                    <div id="consulta-sem-foto" class="alert alert-info" style="display: none;">Sem foto</div>
+                </div>
+                <div class="span8">
+                    <h4><span id="consulta-nome"></span></h4>
+                    <p><strong>Patrimônio:</strong> <span id="consulta-patrimonio"></span></p>
+                    <p><strong>Status Atual:</strong> <span id="consulta-status" class="label"></span></p>
+                </div>
+            </div>
+            <hr>
+            <h5>Histórico Recente</h5>
+            <table class="table table-condensed table-striped">
+                <thead><tr><th>Data</th><th>Ação</th><th>Usuário</th><th>Detalhes</th></tr></thead>
+                <tbody id="consulta-historico"></tbody>
+            </table>
+        </div>
+        <div id="consulta-erro" class="alert alert-error" style="display: none;">Ativo não encontrado.</div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
+    </div>
+</div>
+
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
+<script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
+<style>
+    .ui-autocomplete { z-index: 2147483647; max-height: 200px; overflow-y: auto; overflow-x: hidden; background-color: #ffffff; }
+    .ui-menu-item a { display: flex !important; align-items: center; padding: 5px !important; }
+    .ui-menu-item .item-details { display: flex; flex-direction: column; margin-left: 10px; }
+    .ui-menu-item .item-name { font-weight: bold; font-size: 14px; }
+    .ui-menu-item .item-meta { font-size: 11px; color: #666; }
+</style>
+
 <script type="text/javascript">
     var base_url = '<?php echo base_url(); ?>';
     $(document).ready(function() {
@@ -266,6 +315,90 @@
                 $('.linha-bolsa[data-status="'+status+'"]').show();
             } else {
                 $('.linha-bolsa').show();
+            }
+        });
+
+        // Consulta Rápida
+        $('#modal-consulta-rapida').on('shown', function () {
+            $('#input-consulta-qr').focus();
+        });
+
+        // Função para buscar e exibir detalhes
+        function buscarDetalhesAtivo(termo) {
+            if(!termo) return;
+            
+            $('#resultado-consulta').hide();
+            $('#consulta-erro').hide();
+            
+            $.post(base_url + 'index.php/ativos/consultar_ativo', {termo: termo}, function(data) {
+                var json = JSON.parse(data);
+                if(json.found) {
+                    $('#consulta-erro').hide();
+                    $('#resultado-consulta').show();
+                    
+                    $('#consulta-nome').text(json.ativo.nome);
+                    $('#consulta-patrimonio').text(json.ativo.patrimonio);
+                    
+                    var statusClass = 'label-success';
+                    if(json.ativo.status == 'em_uso') statusClass = 'label-warning';
+                    if(json.ativo.status == 'manutencao') statusClass = 'label-important';
+                    if(json.ativo.status == 'baixado') statusClass = 'label-inverse';
+                    
+                    $('#consulta-status').text(json.ativo.status.toUpperCase().replace('_', ' ')).attr('class', 'label ' + statusClass);
+
+                    if(json.ativo.foto) {
+                        $('#consulta-foto').attr('src', base_url + 'assets/uploads/ativos/' + json.ativo.foto).show();
+                        $('#consulta-sem-foto').hide();
+                    } else {
+                        $('#consulta-foto').hide();
+                        $('#consulta-sem-foto').show();
+                    }
+
+                    var histHtml = '';
+                    $.each(json.historico, function(i, log) {
+                        histHtml += '<tr><td>'+new Date(log.data_acao).toLocaleDateString('pt-BR')+'</td><td>'+log.acao+'</td><td>'+(log.usuario_nome ? log.usuario_nome : 'Sistema')+'</td><td>'+log.detalhes+'</td></tr>';
+                    });
+                    $('#consulta-historico').html(histHtml ? histHtml : '<tr><td colspan="4">Sem histórico recente.</td></tr>');
+                } else {
+                    $('#resultado-consulta').hide();
+                    $('#consulta-erro').show();
+                }
+                $('#input-consulta-qr').val('');
+            });
+        }
+
+        // Autocomplete Moderno
+        var ac = $("#input-consulta-qr").autocomplete({
+            source: base_url + "index.php/ativos/autoCompleteAtivo",
+            minLength: 2,
+            select: function( event, ui ) {
+                buscarDetalhesAtivo(ui.item.value);
+            }
+        });
+
+        var acInstance = ac.data("ui-autocomplete") || ac.data("autocomplete");
+        if (acInstance) {
+            acInstance._renderItem = function(ul, item) {
+                var img = item.foto ? base_url + 'assets/uploads/ativos/' + item.foto : base_url + 'assets/img/sem_foto.png';
+                
+                var bolsaHtml = '';
+                if(item.bolsa) {
+                    var resp = item.responsavel ? ' (' + item.responsavel + ')' : '';
+                    bolsaHtml = '<br><span style="font-size: 10px; color: #e74c3c;"><i class="fas fa-suitcase"></i> ' + item.bolsa + resp + '</span>';
+                }
+
+                var inner = '<a>' +
+                            '<div><img src="' + img + '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;"></div>' +
+                            '<div class="item-details"><span class="item-name">' + item.nome + '</span>' +
+                            '<span class="item-meta">Pat: ' + item.patrimonio + ' | ' + item.status + '</span>' + bolsaHtml + '</div>' +
+                            '</a>';
+                return $("<li>").append(inner).appendTo(ul);
+            };
+        }
+
+        $('#input-consulta-qr').on('keyup', function(e) {
+            if(e.key === 'Enter' || e.keyCode === 13) {
+                buscarDetalhesAtivo($(this).val().trim());
             }
         });
     });
