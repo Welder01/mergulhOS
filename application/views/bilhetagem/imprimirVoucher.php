@@ -82,6 +82,13 @@
                         <?php if($result->pagou_taxa_parque) echo "<li>Taxa de Parque Nacional Paga</li>"; ?>
                         <?php if($result->estadia_estendida) echo "<li>Estadia Estendida</li>"; ?>
                         <?php if($result->valor_bagagem_extra > 0) echo "<li>Bagagem Extra Contratada</li>"; ?>
+                        
+                        <?php if(!empty($equipamentos)): ?>
+                            <li style="margin-top: 5px;"><strong>Equipamentos Alugados:</strong></li>
+                            <?php foreach($equipamentos as $eq): ?>
+                                <li style="margin-left: 10px;">- <?= $eq->nome ?> (<?= $eq->patrimonio ?>)</li>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </ul>
                 </div>
             </div>

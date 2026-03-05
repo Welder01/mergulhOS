@@ -1,152 +1,81 @@
+<?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'aBilhete')) { ?>
+    <a href="<?php echo base_url(); ?>index.php/expedicoes/adicionar" class="btn btn-success"><i class="fas fa-plus"></i> Adicionar Expedição</a>
+    <a href="<?php echo base_url(); ?>index.php/bilhetagem" class="btn btn-info"><i class="fas fa-ticket-alt"></i> Voltar para Bilhetagem</a>
+<?php } ?>
+
 <div class="widget-box">
     <div class="widget-title">
-        <span class="icon"><i class="fas fa-rocket"></i></span>
-        <h5>Integração com Evolution API</h5>
+        <span class="icon">
+            <i class="fas fa-map-marked-alt"></i>
+        </span>
+        <h5>Expedições</h5>
     </div>
-    <div class="widget-content">
-        <div class="span12 well">
-            <p>Nesta seção, você pode verificar o status de conexão de uma instância da Evolution API.</p>
-            <p>Certifique-se de que a <strong>URL da API</strong> e a <strong>Chave (apikey)</strong> estejam salvas corretamente em <strong>Configurações -> Sistema</strong>.</p>
-        </div>
-
-        <div class="span12 alert alert-info" style="margin-left: 0">
-            <h4>Automação da Fila de Mensagens (Cron Job)</h4>
-            <p>Para que as mensagens sejam enviadas automaticamente, configure uma tarefa agendada (Cron Job) no seu painel de hospedagem.</p>
-            <p><strong>Comando para Execução:</strong><br>
-            <code>/usr/bin/php8.3 /home/mergulhar/web/bhdivers.com.br/public_html/index.php evolution_cron process</code></p>
-            <p><strong>Frequência:</strong> A cada minuto (<code>* * * * *</code>)</p>
-            <button id="btn-force-process" class="btn btn-inverse btn-small" style="margin-top: 10px;"><i class="fas fa-sync"></i> Forçar Envio Agora</button>
-        </div>
-
-        <div class="span12" style="margin-left: 0">
-            <form id="formVerificar" class="form-horizontal">
-                <div class="control-group">
-                    <label for="instance_name" class="control-label">Nome da Instância<span class="required">*</span></label>
-                    <div class="controls">
-                        <input id="instance_name" type="text" name="instance_name" class="span6" required placeholder="Ex: meu-whatsapp" />
-                        <button type="submit" class="btn btn-primary" id="btnVerificar">Verificar Status</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <div class="span12" style="margin-left: 0; margin-top: 20px;">
-            <div id="resultado" style="display:none;">
-                <h4>Resultado:</h4>
-                <pre id="json-resultado"></pre>
-            </div>
-            <div id="loading" style="display:none; text-align: center;">
-                <img src="<?= base_url('assets/img/loading.gif') ?>" alt="Carregando...">
-                <p>Verificando...</p>
-            </div>
-        </div>
-
-        <div class="span12" style="margin-left: 0; margin-top: 20px;">
-            <div class="widget-box">
-                <div class="widget-title">
-                    <span class="icon"><i class="fas fa-list"></i></span>
-                    <h5>Fila de Envio</h5>
-                </div>
-                <div class="widget-content nopadding">
-                    <table class="table table-bordered" id="tabelaFila">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Número</th>
-                                <th>Mensagem</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php $this->load->view('evolution/fila_rows', ['fila' => $fila ?? []]); ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+    <div class="widget-content nopadding">
+        <table class="table table-bordered ">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Título</th>
+                    <th>Data Ida</th>
+                    <th>Data Volta</th>
+                    <th>Moeda</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                if (!$results) {
+                    echo '<tr>
+                                <td colspan="6">Nenhuma Expedição Cadastrada</td>
+                            </tr>';
+                }
+                foreach ($results as $r) {
+                    echo '<tr>';
+                    echo '<td>' . $r->idExpedicao . '</td>';
+                    echo '<td>' . $r->titulo . '</td>';
+                    echo '<td>' . date('d/m/Y H:i', strtotime($r->data_ida)) . '</td>';
+                    echo '<td>' . date('d/m/Y H:i', strtotime($r->data_volta)) . '</td>';
+                    echo '<td>' . $r->moeda_base . '</td>';
+                    echo '<td>';
+                    if ($this->permission->checkPermission($this->session->userdata('permissao'), 'eBilhete')) {
+                        echo '<a href="' . base_url() . 'index.php/expedicoes/editar/' . $r->idExpedicao . '" class="btn btn-info tip-top" title="Editar Expedição"><i class="fas fa-edit"></i></a>';
+                    }
+                    if ($this->permission->checkPermission($this->session->userdata('permissao'), 'dBilhete')) {
+                        echo '<a href="#modal-excluir" role="button" data-toggle="modal" expedicao="' . $r->idExpedicao . '" class="btn btn-danger tip-top" title="Excluir Expedição"><i class="fas fa-trash-alt"></i></a>';
+                    }
+                    echo '</td>';
+                    echo '</tr>';
+                } ?>
+            </tbody>
+        </table>
     </div>
 </div>
 
-<script src="<?php echo base_url() ?>assets/js/sweetalert2.all.min.js"></script>
+<?php echo $this->pagination->create_links(); ?>
+
+<!-- Modal Excluir -->
+<div id="modal-excluir" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <form action="<?php echo base_url() ?>index.php/expedicoes/excluir" method="post">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h5 id="myModalLabel">Excluir Expedição</h5>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="idExpedicao" name="id" value="" />
+            <h5 style="text-align: center">Deseja realmente excluir esta expedição?</h5>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+            <button class="btn btn-danger">Excluir</button>
+        </div>
+    </form>
+</div>
+
 <script type="text/javascript">
     $(document).ready(function() {
-        $('#formVerificar').on('submit', function(e) {
-            e.preventDefault();
-
-            var instanceName = $('#instance_name').val();
-            if (!instanceName) {
-                Swal.fire('Atenção', 'Por favor, informe o nome da instância.', 'warning');
-                return;
-            }
-
-            $('#btnVerificar').prop('disabled', true);
-            $('#resultado').hide();
-            $('#loading').show();
-
-            $.ajax({
-                url: '<?= base_url() ?>index.php/evolution/fetch_instance',
-                type: 'POST',
-                data: {
-                    instance_name: instanceName,
-                    '<?= $this->security->get_csrf_token_name(); ?>': '<?= $this->security->get_csrf_hash(); ?>'
-                },
-                dataType: 'json',
-                success: function(response) {
-                    var jsonString = JSON.stringify(response, null, 2);
-                    $('#json-resultado').text(jsonString);
-                    $('#resultado').show();
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    var errorMessage = 'Ocorreu um erro desconhecido.';
-                    if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
-                        errorMessage = jqXHR.responseJSON.error;
-                    } else if (jqXHR.responseText) {
-                        try {
-                            var response = JSON.parse(jqXHR.responseText);
-                            errorMessage = response.error || response.message || jqXHR.responseText;
-                        } catch (e) {
-                            errorMessage = jqXHR.responseText;
-                        }
-                    }
-                    Swal.fire('Erro!', errorMessage, 'error');
-                },
-                complete: function() {
-                    $('#loading').hide();
-                    $('#btnVerificar').prop('disabled', false);
-                }
-            });
+        $(document).on('click', 'a', function(event) {
+            var expedicao = $(this).attr('expedicao');
+            $('#idExpedicao').val(expedicao);
         });
-
-        $('#btn-force-process').click(function() {
-            var btn = $(this);
-            var originalText = btn.html();
-            btn.prop('disabled', true).html('<i class="fas fa-sync fa-spin"></i> Processando...');
-            
-            $.ajax({
-                url: '<?= base_url() ?>index.php/evolution/process_queue',
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    Swal.fire('Sucesso', 'Processamento concluído.\nEnviados: ' + (data.processed || 0) + '\nFalhas: ' + (data.failed || 0), 'success');
-                    refreshQueueTable();
-                },
-                error: function() {
-                    Swal.fire('Erro', 'Erro ao processar fila.', 'error');
-                },
-                complete: function() {
-                    btn.prop('disabled', false).html(originalText);
-                }
-            });
-        });
-
-        function refreshQueueTable() {
-            $.ajax({
-                url: '<?= base_url() ?>index.php/evolution/refresh_queue',
-                success: function(response) {
-                    $('#tabelaFila tbody').html(response);
-                }
-            });
-        }
     });
 </script>

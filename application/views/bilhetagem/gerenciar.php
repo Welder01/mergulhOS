@@ -1,3 +1,8 @@
+<?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'aBilhete')) { ?>
+    <a href="<?php echo base_url(); ?>index.php/bilhetagem/adicionar" class="btn btn-success"><i class="fas fa-plus"></i> Emitir Bilhete</a>
+    <a href="<?php echo base_url(); ?>index.php/expedicoes" class="btn btn-primary"><i class="fas fa-map-marked-alt"></i> Gerenciar Expedições</a>
+<?php } ?>
+
 <div class="widget-box">
     <div class="widget-title">
         <span class="icon">
@@ -38,6 +43,9 @@
                     if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vBilhete')) {
                         echo '<a href="' . base_url() . 'index.php/bilhetagem/visualizar/' . $r->idBilhete . '" class="btn btn-inverse tip-top" title="Visualizar"><i class="fas fa-eye"></i></a>';
                         echo '<a href="' . base_url() . 'index.php/bilhetagem/imprimirVoucher/' . $r->idBilhete . '" target="_blank" class="btn btn-info tip-top" title="Imprimir Voucher"><i class="fas fa-print"></i></a>';
+                    }
+                    if ($this->permission->checkPermission($this->session->userdata('permissao'), 'eBilhete')) {
+                        echo '<a href="' . base_url() . 'index.php/bilhetagem/editar/' . $r->idBilhete . '" class="btn btn-primary tip-top" title="Editar"><i class="fas fa-edit"></i></a>';
                     }
                     echo '</td>';
                     echo '</tr>';

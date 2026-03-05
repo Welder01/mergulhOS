@@ -30,6 +30,10 @@ class Ativos_model extends CI_Model {
         
         $query = $this->db->get();
         
+        if (!$query) {
+            return $one ? false : [];
+        }
+        
         $result =  !$one ? $query->result() : $query->row();
         return $result;
     }

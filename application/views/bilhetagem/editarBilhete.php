@@ -3,11 +3,12 @@
         <div class="widget-box">
             <div class="widget-title">
                 <span class="icon"><i class="fas fa-ticket-alt"></i></span>
-                <h5>Emissão de Bilhete</h5>
+                <h5>Editar Bilhete #<?php echo $result->idBilhete; ?></h5>
             </div>
             <div class="widget-content nopadding">
                 <?php echo $custom_error; ?>
                 <form action="<?php echo current_url(); ?>" id="formBilhete" method="post" class="form-horizontal">
+                    <?php echo form_hidden('idBilhete', $result->idBilhete) ?>
                     
                     <!-- Seleção de Expedição e Cliente -->
                     <div class="control-group">
@@ -16,7 +17,7 @@
                             <select name="expedicao_id" id="expedicao_id" required>
                                 <option value="">Selecione...</option>
                                 <?php foreach ($expedicoes as $e) { ?>
-                                    <option value="<?= $e->idExpedicao ?>"><?= $e->titulo ?> (<?= date('d/m/Y', strtotime($e->data_ida)) ?>)</option>
+                                    <option value="<?= $e->idExpedicao ?>" <?= ($result->expedicao_id == $e->idExpedicao) ? 'selected' : '' ?>><?= $e->titulo ?> (<?= date('d/m/Y', strtotime($e->data_ida)) ?>)</option>
                                 <?php } ?>
                             </select>
                         </div>
@@ -25,9 +26,8 @@
                     <div class="control-group">
                         <label for="cliente" class="control-label">Cliente<span class="required">*</span></label>
                         <div class="controls">
-                            <input id="cliente" type="text" name="cliente" class="span8" required />
-                            <input id="cliente_id" type="hidden" name="cliente_id" />
-                            <input id="nomeCliente" type="hidden" name="nomeCliente" />
+                            <input id="cliente" type="text" name="cliente" class="span8" value="<?php echo $result->nomeCliente; ?>" required />
+                            <input id="cliente_id" type="hidden" name="cliente_id" value="<?php echo $result->cliente_id; ?>" />
                         </div>
                     </div>
                     
@@ -35,7 +35,10 @@
                         <label for="viagem_id" class="control-label">Vincular Hospedagem (Viagem)</label>
                         <div class="controls">
                             <select name="viagem_id" id="viagem_id" class="span8">
-                                <option value="">Selecione um cliente primeiro...</option>
+                                <option value="">Selecione...</option>
+                                <?php if($result->viagem_id && $result->nome_viagem): ?>
+                                    <option value="<?= $result->viagem_id ?>" selected><?= $result->nome_viagem ?></option>
+                                <?php endif; ?>
                             </select>
                         </div>
                     </div>
@@ -49,24 +52,24 @@
                     <div class="control-group">
                         <label class="control-label">Tipo Transporte</label>
                         <div class="controls">
-                            <label class="radio inline"><input type="radio" name="tipo_transporte" value="fretado" checked> Fretado</label>
-                            <label class="radio inline"><input type="radio" name="tipo_transporte" value="companhia_externa"> Cia Externa</label>
-                            <label class="radio inline"><input type="radio" name="tipo_transporte" value="meios_proprios"> Meios Próprios</label>
+                            <label class="radio inline"><input type="radio" name="tipo_transporte" value="fretado" <?= ($result->tipo_transporte == 'fretado') ? 'checked' : '' ?>> Fretado</label>
+                            <label class="radio inline"><input type="radio" name="tipo_transporte" value="companhia_externa" <?= ($result->tipo_transporte == 'companhia_externa') ? 'checked' : '' ?>> Cia Externa</label>
+                            <label class="radio inline"><input type="radio" name="tipo_transporte" value="meios_proprios" <?= ($result->tipo_transporte == 'meios_proprios') ? 'checked' : '' ?>> Meios Próprios</label>
                         </div>
                     </div>
 
                     <div class="control-group">
                         <label for="empresa_emissora" class="control-label">Empresa/Cia (Fretado/Externa)</label>
-                        <div class="controls"><input type="text" name="empresa_emissora" id="empresa_emissora" class="span6" /></div>
+                        <div class="controls"><input type="text" name="empresa_emissora" id="empresa_emissora" class="span6" value="<?php echo $result->empresa_emissora; ?>" /></div>
                     </div>
                     
                     <div class="control-group">
                         <label for="codigo_bilhete" class="control-label">Localizador/Bilhete</label>
                         <div class="controls">
-                            <input type="text" name="codigo_bilhete" id="codigo_bilhete" class="span4" />
+                            <input type="text" name="codigo_bilhete" id="codigo_bilhete" class="span4" value="<?php echo $result->codigo_bilhete; ?>" />
                             <span class="help-inline">Assento:</span>
                             <button type="button" id="btn-selecionar-assento" class="btn btn-mini btn-info" style="display:none;"><i class="fas fa-chair"></i> Mapa</button>
-                            <input type="text" name="assento" class="span2" />
+                            <input type="text" name="assento" class="span2" value="<?php echo $result->assento; ?>" />
                         </div>
                     </div>
 
@@ -80,23 +83,27 @@
                         <label class="control-label">Moeda Venda</label>
                         <div class="controls">
                             <select name="moeda_venda" id="moeda_venda" class="span2">
-                                <option value="BRL">BRL (R$)</option>
-                                <option value="USD">USD ($)</option>
-                                <option value="EUR">EUR (€)</option>
+                                <option value="BRL" <?= ($result->moeda_venda == 'BRL') ? 'selected' : '' ?>>BRL (R$)</option>
+                                <option value="USD" <?= ($result->moeda_venda == 'USD') ? 'selected' : '' ?>>USD ($)</option>
+                                <option value="EUR" <?= ($result->moeda_venda == 'EUR') ? 'selected' : '' ?>>EUR (€)</option>
                             </select>
                             <span class="help-inline">Cotação:</span>
-                            <input type="text" name="cotacao_venda" id="cotacao_venda" value="1.0000" class="span2 money" readonly />
+                            <input type="text" name="cotacao_venda" id="cotacao_venda" value="<?php echo $result->cotacao_venda; ?>" class="span2 money" readonly />
                         </div>
                     </div>
 
                     <div class="control-group">
-                        <label for="valor_original" class="control-label">Valor Bilhete</label>
+                        <label for="valor_original" class="control-label">Valor Bilhete (Original)</label>
                         <div class="controls">
-                            <input type="text" name="valor_original" id="valor_original" class="money" required />
+                            <!-- Recalculando valor original aproximado se não salvo, ou usando valor_bilhete_brl se moeda for BRL -->
+                            <?php 
+                                $val_orig = ($result->moeda_venda == 'BRL') ? $result->valor_bilhete_brl : ($result->valor_bilhete_brl / $result->cotacao_venda);
+                            ?>
+                            <input type="text" name="valor_original" id="valor_original" class="money" value="<?php echo number_format($val_orig, 2, ',', '.'); ?>" required />
                             <span class="help-inline">Taxa Serviço:</span>
-                            <input type="text" name="taxa_servico_emissao" class="money span2" value="0.00" />
+                            <input type="text" name="taxa_servico_emissao" class="money span2" value="<?php echo number_format($result->taxa_servico_emissao, 2, ',', '.'); ?>" />
                             <span class="help-inline">Bagagem Extra:</span>
-                            <input type="text" name="valor_bagagem_extra" class="money span2" value="0.00" />
+                            <input type="text" name="valor_bagagem_extra" class="money span2" value="<?php echo number_format($result->valor_bagagem_extra, 2, ',', '.'); ?>" />
                         </div>
                     </div>
 
@@ -105,10 +112,10 @@
                         <label class="control-label">Adicionais Mergulho</label>
                         <div class="controls">
                             <label class="checkbox inline">
-                                <input type="checkbox" name="pagou_taxa_parque" value="1"> Pagar Taxa Parque
+                                <input type="checkbox" name="pagou_taxa_parque" value="1" <?= ($result->pagou_taxa_parque) ? 'checked' : '' ?>> Pagar Taxa Parque
                             </label>
                             <label class="checkbox inline">
-                                <input type="checkbox" name="estadia_estendida" value="1"> Estadia Estendida
+                                <input type="checkbox" name="estadia_estendida" value="1" <?= ($result->estadia_estendida) ? 'checked' : '' ?>> Estadia Estendida
                             </label>
                         </div>
                     </div>
@@ -116,7 +123,7 @@
                     <div class="control-group">
                         <label for="qtd_dias_navegacao" class="control-label">Dias Navegação</label>
                         <div class="controls">
-                            <input type="number" name="qtd_dias_navegacao" value="0" class="span2" />
+                            <input type="number" name="qtd_dias_navegacao" value="<?php echo $result->qtd_dias_navegacao; ?>" class="span2" />
                             <span class="help-inline text-info" id="info_valores_expedicao"></span>
                         </div>
                     </div>
@@ -125,8 +132,10 @@
                         <label for="equipamentos" class="control-label">Locação de Equipamentos</label>
                         <div class="controls">
                             <select name="equipamentos[]" id="equipamentos" multiple class="span8" style="height: 100px;">
-                                <?php foreach ($ativos_disponiveis as $ativo) { ?>
-                                    <option value="<?= $ativo->idAtivo ?>"><?= $ativo->nome ?> (<?= $ativo->patrimonio ?>)</option>
+                                <?php foreach ($ativos_disponiveis as $ativo) { 
+                                    $selected = in_array($ativo->idAtivo, $equipamentos_selecionados) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $ativo->idAtivo ?>" <?= $selected ?>><?= $ativo->nome ?> (<?= $ativo->patrimonio ?>)</option>
                                 <?php } ?>
                             </select>
                             <span class="help-block">Segure Ctrl para selecionar múltiplos itens.</span>
@@ -136,7 +145,7 @@
                     <div class="form-actions">
                         <div class="span12">
                             <div class="span6 offset3">
-                                <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Emitir Bilhete</button>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-sync-alt"></i> Atualizar</button>
                                 <a href="<?php echo base_url() ?>index.php/bilhetagem" class="btn"><i class="fas fa-arrow-left"></i> Voltar</a>
                             </div>
                         </div>
@@ -212,17 +221,6 @@
             }
         });
 
-        // Busca detalhes da expedição para mostrar valores
-        $('#expedicao_id').change(function(){
-            var id = $(this).val();
-            if(id) {
-                $.post('<?php echo base_url(); ?>index.php/bilhetagem/get_expedicao_detalhes', {id: id}, function(data){
-                    var json = JSON.parse(data);
-                    $('#info_valores_expedicao').text('Custo Barco/Dia: R$ ' + json.preco_saida_barco_dia + ' | Taxa Parque: R$ ' + json.taxa_parque_unitaria);
-                });
-            }
-        });
-
         // Lógica Meios Próprios
         $('input[name=tipo_transporte]').change(function(){
             if($(this).val() == 'meios_proprios') {
@@ -232,22 +230,14 @@
                 $('#btn-selecionar-assento').hide();
             } else {
                 $('#valor_original').prop('readonly', false);
-                $('#empresa_emissora').val('').prop('readonly', false);
+                $('#empresa_emissora').prop('readonly', false);
                 $('#codigo_bilhete').prop('readonly', false);
                 toggleMapaButton();
             }
         });
-
-        function buscarViagens(clienteId) {
-            $.post('<?php echo base_url(); ?>index.php/bilhetagem/buscar_viagens_cliente', {cliente_id: clienteId}, function(data){
-                var viagens = JSON.parse(data);
-                var options = '<option value="">Selecione a Viagem...</option>';
-                for(var i=0; i<viagens.length; i++) {
-                    options += '<option value="'+viagens[i].id+'">'+viagens[i].nome_viagem+' ('+viagens[i].data_partida+')</option>';
-                }
-                $("#viagem_id").html(options);
-            });
-        }
+        
+        // Trigger change on load to set initial state
+        $('input[name=tipo_transporte]:checked').trigger('change');
 
         // Lógica do Mapa de Assentos
         function toggleMapaButton() {
@@ -258,18 +248,9 @@
                 $('#btn-selecionar-assento').hide();
             }
         }
-        
-        // Inicializa estado do botão
-        toggleMapaButton();
-        $('input[name=tipo_transporte]').change(toggleMapaButton);
 
         $('#btn-selecionar-assento').click(function() {
             var expedicaoId = $('#expedicao_id').val();
-            if (!expedicaoId) {
-                alert('Por favor, selecione uma expedição primeiro.');
-                return;
-            }
-
             $('#modal-assentos').modal('show');
             $('#bus-map').html('<div style="text-align:center"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>');
 
@@ -281,30 +262,30 @@
 
         function renderBusMap(ocupados) {
             var html = '<div class="driver-area"><i class="fas fa-dharmachakra steering-wheel"></i> Motorista</div>';
-            var totalSeats = 46; // Padrão ônibus executivo/leito
+            var totalSeats = 46;
             var seatsPerRow = 4;
+            var currentSeat = $('input[name=assento]').val();
             
             for (var i = 1; i <= totalSeats; i += seatsPerRow) {
                 html += '<div class="bus-row">';
-                // Lado Esquerdo (Janela, Corredor)
-                html += renderSeat(i, ocupados);
-                html += renderSeat(i + 1, ocupados);
-                
+                html += renderSeat(i, ocupados, currentSeat);
+                html += renderSeat(i + 1, ocupados, currentSeat);
                 html += '<div class="aisle"></div>';
-                
-                // Lado Direito (Corredor, Janela)
-                html += renderSeat(i + 2, ocupados);
-                html += renderSeat(i + 3, ocupados);
+                html += renderSeat(i + 2, ocupados, currentSeat);
+                html += renderSeat(i + 3, ocupados, currentSeat);
                 html += '</div>';
             }
             $('#bus-map').html(html);
         }
 
-        function renderSeat(num, ocupados) {
-            if (num > 46) return '<div class="seat" style="visibility:hidden"></div>'; // Espaço vazio se passar do total
-            var isOccupied = ocupados.includes(num.toString());
-            var classOccupied = isOccupied ? 'occupied' : '';
+        function renderSeat(num, ocupados, current) {
+            if (num > 46) return '<div class="seat" style="visibility:hidden"></div>';
+            var isOccupied = ocupados.includes(num.toString()) && num.toString() != current; // Não marca como ocupado se for o assento atual do bilhete sendo editado
+            var isSelected = num.toString() == current;
+            
+            var classOccupied = isOccupied ? 'occupied' : (isSelected ? 'selected' : '');
             var onClick = isOccupied ? '' : 'onclick="$(\'input[name=assento]\').val('+num+'); $(\'#modal-assentos\').modal(\'hide\');"';
+            
             return '<div class="seat ' + classOccupied + '" ' + onClick + '>' + num + '</div>';
         }
     });
