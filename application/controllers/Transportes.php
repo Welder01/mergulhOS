@@ -131,4 +131,20 @@ class Transportes extends MY_Controller {
 
         redirect(site_url('transportes/gerenciar/'));
     }
+
+    public function autoComplete() {
+        if (isset($_GET['term'])) {
+            $q = strtolower($_GET['term']);
+            $this->db->select('idTransporte, nome, qtd_assentos, placa');
+            $this->db->like('nome', $q);
+            $this->db->limit(10);
+            $query = $this->db->get('transportes');
+            $result = [];
+            foreach ($query->result() as $row) {
+                $label = $row->nome . ' (' . $row->qtd_assentos . ' lug.)' . ($row->placa ? ' - ' . $row->placa : '');
+                $result[] = ['id' => $row->idTransporte, 'label' => $label, 'value' => $row->nome, 'assentos' => $row->qtd_assentos];
+            }
+            echo json_encode($result);
+        }
+    }
 }

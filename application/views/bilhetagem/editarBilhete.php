@@ -242,12 +242,40 @@
         // Lógica do Mapa de Assentos
         function toggleMapaButton() {
             var tipo = $('input[name=tipo_transporte]:checked').val();
+            var labelEmpresa = $("label[for='empresa_emissora']");
+
             if (tipo == 'fretado') {
                 $('#btn-selecionar-assento').show();
+                labelEmpresa.text('Transporte (Busca)');
+                $('#empresa_emissora').attr('placeholder', 'Digite para buscar o transporte...');
             } else {
                 $('#btn-selecionar-assento').hide();
+                labelEmpresa.text('Empresa/Cia');
+                $('#empresa_emissora').attr('placeholder', 'Ex: Latam, Gol...');
+
+                if ($("#empresa_emissora").data('autocomplete')) {
+                    $("#empresa_emissora").autocomplete("destroy");
+                }
+            }
+            
+            if (tipo == 'fretado') {
+                $("#empresa_emissora").autocomplete({
+                    source: "<?php echo base_url(); ?>index.php/transportes/autoComplete",
+                    minLength: 1
+                });
             }
         }
+
+        // Atualiza transporte ao mudar expedição na edição
+        $('#expedicao_id').change(function() {
+            var id = $(this).val();
+            if(id && $('input[name=tipo_transporte]:checked').val() == 'fretado') {
+                $.post('<?php echo base_url(); ?>index.php/bilhetagem/get_expedicao_detalhes', {id: id}, function(data){
+                    var exp = JSON.parse(data);
+                    if(exp.nome_transporte) $('#empresa_emissora').val(exp.nome_transporte);
+                });
+            }
+        });
 
         $('#btn-selecionar-assento').click(function() {
             var expedicaoId = $('#expedicao_id').val();

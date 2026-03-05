@@ -260,6 +260,13 @@ class Bilhetagem extends MY_Controller {
     public function get_expedicao_detalhes() {
         $id = $this->input->post('id');
         $expedicao = $this->bilhetagem_model->getExpedicaoById($id);
+        
+        if ($expedicao) {
+            $ocupados = $this->bilhetagem_model->countBilhetesByExpedicao($id);
+            $expedicao->assentos_ocupados = $ocupados;
+            $expedicao->assentos_disponiveis = ($expedicao->capacidade_transporte > 0) ? ($expedicao->capacidade_transporte - $ocupados) : null;
+        }
+        
         echo json_encode($expedicao);
     }
 

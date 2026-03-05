@@ -1,3 +1,6 @@
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
+<script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
+
 <div class="row-fluid" style="margin-top:0">
     <div class="span12">
         <div class="widget-box">
@@ -25,6 +28,14 @@
                                 <option value="USD">USD ($)</option>
                                 <option value="EUR">EUR (€)</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="transporte" class="control-label">Transporte Padrão</label>
+                        <div class="controls">
+                            <input id="transporte" type="text" class="span8" placeholder="Digite para buscar o transporte..." />
+                            <input id="transporte_id" type="hidden" name="transporte_id" />
                         </div>
                     </div>
 
@@ -87,6 +98,14 @@
             rules: { titulo: { required: true }, data_ida: { required: true }, data_volta: { required: true } },
             messages: { titulo: { required: 'Campo Requerido.' }, data_ida: { required: 'Campo Requerido.' }, data_volta: { required: 'Campo Requerido.' } },
             errorClass: "help-inline", errorElement: "span", highlight: function(element, errorClass, validClass) { $(element).parents('.control-group').addClass('error'); }, unhighlight: function(element, errorClass, validClass) { $(element).parents('.control-group').removeClass('error'); $(element).parents('.control-group').addClass('success'); }
+        });
+
+        $("#transporte").autocomplete({
+            source: "<?php echo base_url(); ?>index.php/transportes/autoComplete",
+            minLength: 1,
+            select: function(event, ui) {
+                $("#transporte_id").val(ui.item.id);
+            }
         });
     });
 </script>

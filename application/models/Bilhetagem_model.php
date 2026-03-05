@@ -55,8 +55,17 @@ class Bilhetagem_model extends CI_Model {
     }
     
     public function getExpedicaoById($id) {
-        $this->db->where('idExpedicao', $id);
-        return $this->db->get('expedicoes')->row();
+        $this->db->select('expedicoes.*, transportes.nome as nome_transporte, transportes.qtd_assentos as capacidade_transporte');
+        $this->db->from('expedicoes');
+        $this->db->join('transportes', 'transportes.idTransporte = expedicoes.transporte_id', 'left');
+        $this->db->where('expedicoes.idExpedicao', $id);
+        return $this->db->get()->row();
+    }
+
+    public function countBilhetesByExpedicao($expedicao_id) {
+        $this->db->where('expedicao_id', $expedicao_id);
+        $this->db->where('status !=', 'cancelado');
+        return $this->db->count_all_results('bilhetes');
     }
 
     public function getCotacao($moeda) {

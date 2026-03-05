@@ -57,6 +57,7 @@ class Expedicoes extends MY_Controller {
                 'preco_saida_barco_dia' => $this->input->post('preco_saida_barco_dia'),
                 'cancelamento_tipo' => $this->input->post('cancelamento_tipo'),
                 'cancelamento_limite' => $this->input->post('cancelamento_limite'),
+                'transporte_id' => $this->input->post('transporte_id'),
             ];
 
             if ($this->expedicoes_model->add('expedicoes', $data) == true) {
@@ -101,6 +102,7 @@ class Expedicoes extends MY_Controller {
                 'preco_saida_barco_dia' => $this->input->post('preco_saida_barco_dia'),
                 'cancelamento_tipo' => $this->input->post('cancelamento_tipo'),
                 'cancelamento_limite' => $this->input->post('cancelamento_limite'),
+                'transporte_id' => $this->input->post('transporte_id'),
             ];
 
             if ($this->expedicoes_model->edit('expedicoes', $data, 'idExpedicao', $this->input->post('idExpedicao')) == true) {

@@ -95,6 +95,13 @@
                                 <div class="controls">
                                     <input id="expedicao" type="text" class="span12" placeholder="Digite para buscar a expedição..." required />
                                     <input id="expedicao_id" type="hidden" name="expedicao_id" />
+                                    <div id="info_assentos" style="display:none; margin-top: 5px;">
+                                        <span class="badge badge-info tip-top" title="Capacidade Total" id="badge_capacidade">0</span>
+                                        <span class="badge badge-important tip-top" title="Ocupados" id="badge_ocupados">0</span>
+                                        <span class="badge badge-success tip-top" title="Disponíveis" id="badge_disponiveis">0</span>
+                                        <span class="help-inline" style="font-size: 11px; color: #666;">Assentos Disponíveis</span>
+                                        <div class="progress progress-striped active" style="height: 10px; margin-top: 5px; margin-bottom: 0;"><div class="bar" id="bar_ocupacao" style="width: 0%;"></div></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -348,6 +355,27 @@
             select: function(event, ui) {
                 $("#expedicao_id").val(ui.item.id);
                 $('#info_valores_expedicao').text('Custo Barco/Dia: R$ ' + ui.item.preco_barco + ' | Taxa Parque: R$ ' + ui.item.taxa_parque);
+                
+                // Buscar detalhes de ocupação
+                $.post('<?php echo base_url(); ?>index.php/bilhetagem/get_expedicao_detalhes', {id: ui.item.id}, function(data){
+                    var exp = JSON.parse(data);
+                    if(exp.capacidade_transporte > 0) {
+                        // Preenche o transporte automaticamente se for Fretado e houver vínculo
+                        if ($('input[name=tipo_transporte]:checked').val() == 'fretado' && exp.nome_transporte) {
+                            $('#empresa_emissora').val(exp.nome_transporte);
+                        }
+
+                        $('#info_assentos').show();
+                        $('#badge_capacidade').text(exp.capacidade_transporte);
+                        $('#badge_ocupados').text(exp.assentos_ocupados);
+                        $('#badge_disponiveis').text(exp.assentos_disponiveis);
+                        
+                        var percent = (exp.assentos_ocupados / exp.capacidade_transporte) * 100;
+                        $('#bar_ocupacao').css('width', percent + '%');
+                    } else {
+                        $('#info_assentos').hide();
+                    }
+                });
             }
         });
 
@@ -407,10 +435,34 @@
         // Lógica do Mapa de Assentos
         function toggleMapaButton() {
             var tipo = $('input[name=tipo_transporte]:checked').val();
+            var labelEmpresa = $("label[for='empresa_emissora']");
+
             if (tipo == 'fretado') {
                 $('#btn-selecionar-assento').show();
+                labelEmpresa.text('Transporte (Busca)');
+                $('#empresa_emissora').attr('placeholder', 'Digite para buscar o transporte...');
             } else {
                 $('#btn-selecionar-assento').hide();
+                labelEmpresa.text('Empresa/Cia');
+                $('#empresa_emissora').attr('placeholder', 'Ex: Latam, Gol...');
+
+                // Remove autocomplete se não for fretado
+                if ($("#empresa_emissora").data('autocomplete')) {
+                    $("#empresa_emissora").autocomplete("destroy");
+                    $("#empresa_emissora").removeData('autocomplete');
+                }
+            }
+            
+            if (tipo == 'fretado') {
+                // Ativa autocomplete de transportes
+                $("#empresa_emissora").autocomplete({
+                    source: "<?php echo base_url(); ?>index.php/transportes/autoComplete",
+                    minLength: 1,
+                    select: function(event, ui) {
+                        $("#empresa_emissora").val(ui.item.value);
+                        // Opcional: Atualizar mapa se o transporte mudar dinamicamente
+                    }
+                });
             }
         }
         
