@@ -47,6 +47,9 @@ class Expedicoes_model extends CI_Model {
     }
 
     public function count($table) {
+        if (!$this->db->table_exists($table)) {
+            return 0;
+        }
         return $this->db->count_all($table);
     }
 }

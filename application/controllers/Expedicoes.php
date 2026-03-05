@@ -22,6 +22,7 @@ class Expedicoes extends MY_Controller {
 
         $this->data['configuration']['base_url'] = site_url('expedicoes/gerenciar/');
         $this->data['configuration']['total_rows'] = $this->expedicoes_model->count('expedicoes');
+        $this->data['configuration']['per_page'] = 10;
 
         $this->pagination->initialize($this->data['configuration']);
 
