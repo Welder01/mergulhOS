@@ -757,6 +757,30 @@
                         <div class="accordion-group widget-box">
                             <div class="accordion-heading">
                                 <div class="widget-title">
+                                    <a data-parent="#collapse-group" href="#collapseGBilhetagem" data-toggle="collapse">
+                                        <span><i class='fas fa-ticket-alt icon-cli'></i></span>
+                                        <h5 style="padding-left: 28px">Bilhetagem</h5>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="collapse accordion-body" id="collapseGBilhetagem">
+                                <div class="widget-content">
+                                    <table class="table table-bordered">
+                                        <tbody>
+                                            <tr>
+                                                <td><label><input name="vBilhete" class="marcar" type="checkbox" value="1" /><span class="lbl"> Visualizar Bilhete</span></label></td>
+                                                <td><label><input name="aBilhete" class="marcar" type="checkbox" value="1" /><span class="lbl"> Adicionar Bilhete</span></label></td>
+                                                <td><label><input name="eBilhete" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Bilhete</span></label></td>
+                                                <td><label><input name="dBilhete" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Bilhete</span></label></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-group widget-box">
+                            <div class="accordion-heading">
+                                <div class="widget-title">
                                     <a data-parent="#collapse-group" href="#collapseGThree333338"
                                         data-toggle="collapse">
                                         <span><i class="bx bx-cog icon-cli"></i></span>

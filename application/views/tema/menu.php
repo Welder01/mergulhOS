@@ -546,6 +546,18 @@
                     </li>
                 <?php } ?>
 
+                <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vBilhete')) { ?>
+                    <li class="<?php if (isset($menuBilhetagem)) {
+                        echo 'active';
+                    }
+                    ; ?>">
+                        <a class="tip-bottom" title="" href="<?= site_url('bilhetagem') ?>"><i class='fas fa-ticket-alt iconX'></i>
+                            <span class="title">Bilhetagem</span>
+                            <span class="title-tooltip">Bilhetagem</span>
+                        </a>
+                    </li>
+                <?php } ?>
+
                 <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vTreino')) { ?>
                     <li class="<?php if (isset($menuTreinos)) {
                         echo 'active';
