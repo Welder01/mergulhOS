@@ -46,12 +46,19 @@ class Ativos extends MY_Controller {
         if ($this->form_validation->run('ativos') == false) {
             $this->data['custom_error'] = (validation_errors() ? '<div class="form_error">' . validation_errors() . '</div>' : false);
         } else {
+            $preco_locacao = $this->input->post('preco_locacao');
+            $preco_locacao = str_replace('.', '', $preco_locacao);
+            $preco_locacao = str_replace(',', '.', $preco_locacao);
+
             $data = [
                 'nome' => $this->input->post('nome'),
                 'patrimonio' => $this->input->post('patrimonio'),
                 'codigo_qr' => md5(uniqid(rand(), true)), // Temporário, ideal é gerar URL curta
                 'status' => $this->input->post('status'),
                 'categoria_id' => $this->input->post('categoria_id'),
+                'cor' => $this->input->post('cor'),
+                'tamanho' => $this->input->post('tamanho'),
+                'preco_locacao' => $preco_locacao,
                 'data_cadastro' => date('Y-m-d H:i:s')
             ];
 
@@ -180,11 +187,18 @@ class Ativos extends MY_Controller {
         if ($this->form_validation->run('ativos') == false) {
             $this->data['custom_error'] = (validation_errors() ? '<div class="form_error">' . validation_errors() . '</div>' : false);
         } else {
+            $preco_locacao = $this->input->post('preco_locacao');
+            $preco_locacao = str_replace('.', '', $preco_locacao);
+            $preco_locacao = str_replace(',', '.', $preco_locacao);
+
             $data = [
                 'nome' => $this->input->post('nome'),
                 'patrimonio' => $this->input->post('patrimonio'),
                 'status' => $this->input->post('status'),
                 'categoria_id' => $this->input->post('categoria_id'),
+                'cor' => $this->input->post('cor'),
+                'tamanho' => $this->input->post('tamanho'),
+                'preco_locacao' => $preco_locacao,
             ];
 
             if (!empty($_FILES['userfile']['name'])) {
@@ -334,10 +348,22 @@ class Ativos extends MY_Controller {
         
         $status = $this->ativos_model->getEstatisticasStatus();
         $responsaveis = $this->ativos_model->getEstatisticasResponsavel();
+
+        // Estatísticas por Categoria
+        $this->db->select('c.nome, COUNT(a.idAtivo) as total');
+        $this->db->from('ativos a');
+        $this->db->join('ativos_categorias c', 'c.idAtivoCategoria = a.categoria_id', 'left');
+        $this->db->group_by('c.nome');
+        $this->db->order_by('total', 'DESC');
+        $categorias = $this->db->get()->result();
+
+        $total = $this->db->count_all('ativos');
         
         echo json_encode([
             'status' => $status,
-            'responsaveis' => $responsaveis
+            'responsaveis' => $responsaveis,
+            'categorias' => $categorias,
+            'total' => $total
         ]);
     }
 
@@ -508,6 +534,35 @@ class Ativos extends MY_Controller {
 
         $this->data['result'] = $this->ativos_model->getByIdBolsa($id);
         $this->load->view('ativos/imprimirEtiquetaBolsa', $this->data);
+    }
+
+    public function gerarEtiquetas() {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vAtivo')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para visualizar ativos.');
+            redirect(base_url());
+        }
+
+        $results = $this->ativos_model->get('ativos', '*', '', 999999, 0);
+        $this->data['results'] = $results ?: [];
+        
+        $this->data['config'] = [
+            'largura' => $this->input->post('largura') ?: 50,
+            'altura' => $this->input->post('altura') ?: 30,
+            'colunas' => $this->input->post('colunas') ?: 3,
+            'tamanho_qr' => $this->input->post('tamanho_qr') ?: 80,
+            'margem_topo' => $this->input->post('margem_topo') ?: 10,
+            'margem_esq' => $this->input->post('margem_esq') ?: 10,
+            'espacamento_h' => $this->input->post('espacamento_h') ?: 2,
+            'espacamento_v' => $this->input->post('espacamento_v') ?: 2,
+            'mostrar_nome' => $this->input->post('mostrar_nome') ? true : false,
+            'mostrar_patrimonio' => $this->input->post('mostrar_patrimonio') ? true : false,
+            'fonte_tamanho' => $this->input->post('fonte_tamanho') ?: 10,
+        ];
+
+        // Filtra apenas ativos ativos se necessário, mas o pedido foi "todos".
+        // Se quiser filtrar por status: $this->db->where('status !=', 'baixado');
+
+        $this->load->view('ativos/imprimirEtiquetas', $this->data);
     }
 
     public function auditoria() {

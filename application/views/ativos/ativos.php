@@ -5,28 +5,74 @@
     <a href="<?php echo base_url(); ?>index.php/ativos/auditoria" class="btn btn-info"><i class="fas fa-history"></i> Auditoria</a>
     <a href="<?php echo base_url(); ?>index.php/ativos/categorias" class="btn btn-primary"><i class="fas fa-tags"></i> Categorias</a>
     <a href="#modal-consulta-rapida" role="button" data-toggle="modal" class="btn btn-warning"><i class="fas fa-qrcode"></i> Consulta Rápida</a>
+    <a href="#modal-imprimir-etiquetas" role="button" data-toggle="modal" class="btn btn-inverse"><i class="fas fa-print"></i> Imprimir Etiquetas</a>
 <?php } ?>
 
-<div class="row-fluid" style="margin-top: 20px;">
-    <div class="span6">
+<style>
+    .card-stats {
+        background: #fff;
+        border: 1px solid #e3e3e3;
+        border-radius: 6px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        transition: transform 0.2s;
+    }
+    .card-stats:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .card-stats .content { text-align: right; }
+    .card-stats h3 { margin: 0; font-size: 26px; font-weight: bold; color: #333; }
+    .card-stats p { margin: 0; color: #888; font-size: 13px; text-transform: uppercase; font-weight: 600; }
+    .card-stats .icon-stat {
+        width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 22px; color: #fff;
+    }
+    .bg-blue { background: #3498db; }
+    .bg-green { background: #2ecc71; }
+    .bg-orange { background: #f39c12; }
+    .bg-red { background: #e74c3c; }
+</style>
+
+<div class="row-fluid" style="margin-top: 20px;" id="dashboard-cards">
+    <!-- Cards serão injetados via JS -->
+</div>
+
+<div class="row-fluid">
+    <div class="span4">
         <div class="widget-box">
             <div class="widget-title">
                 <span class="icon"><i class="fas fa-chart-pie"></i></span>
-                <h5>Status Global dos Ativos</h5>
+                <h5>Distribuição por Status</h5>
             </div>
             <div class="widget-content">
-                <canvas id="chartStatus" style="max-height: 300px;"></canvas>
+                <canvas id="chartStatus" style="height: 250px;"></canvas>
             </div>
         </div>
     </div>
-    <div class="span6">
+    <div class="span8">
         <div class="widget-box">
             <div class="widget-title">
                 <span class="icon"><i class="fas fa-chart-bar"></i></span>
-                <h5>Ativos por Responsável (Em Bolsas)</h5>
+                <h5>Ativos por Categoria</h5>
             </div>
             <div class="widget-content">
-                <canvas id="chartResponsavel" style="max-height: 300px;"></canvas>
+                <canvas id="chartCategorias" style="height: 250px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row-fluid">
+    <div class="span12">
+        <div class="widget-box">
+            <div class="widget-title">
+                <span class="icon"><i class="fas fa-users"></i></span>
+                <h5>Top Responsáveis (Ativos em Bolsas)</h5>
+            </div>
+            <div class="widget-content">
+                <canvas id="chartResponsavel" style="height: 300px;"></canvas>
             </div>
         </div>
     </div>
@@ -233,6 +279,76 @@
     </div>
 </div>
 
+<!-- Modal Imprimir Etiquetas -->
+<div id="modal-imprimir-etiquetas" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <form action="<?php echo base_url() ?>index.php/ativos/gerarEtiquetas" method="post" target="_blank">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h5 id="myModalLabel">Imprimir Etiquetas de Ativos</h5>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Ajuste as dimensões para impressão em Aço Inox/Policarbonato.
+            </div>
+            
+            <div class="row-fluid">
+                <div class="span6">
+                    <label>Largura Etiqueta (mm)</label>
+                    <input type="number" name="largura" value="50" class="span12" required>
+                </div>
+                <div class="span6">
+                    <label>Altura Etiqueta (mm)</label>
+                    <input type="number" name="altura" value="30" class="span12" required>
+                </div>
+            </div>
+            
+            <div class="row-fluid">
+                <div class="span4">
+                    <label>Colunas</label>
+                    <input type="number" name="colunas" value="4" class="span12" required>
+                </div>
+                <div class="span4">
+                    <label>Tam. QR (px)</label>
+                    <input type="number" name="tamanho_qr" value="80" class="span12" required>
+                </div>
+                <div class="span4">
+                    <label>Fonte (px)</label>
+                    <input type="number" name="fonte_tamanho" value="10" class="span12" required>
+                </div>
+            </div>
+
+            <div class="row-fluid">
+                <div class="span6">
+                    <label>Margem Topo (mm)</label>
+                    <input type="number" name="margem_topo" value="10" class="span12" required>
+                </div>
+                <div class="span6">
+                    <label>Margem Esquerda (mm)</label>
+                    <input type="number" name="margem_esq" value="10" class="span12" required>
+                </div>
+            </div>
+
+            <div class="row-fluid">
+                <div class="span6">
+                    <label>Espaçamento H (mm)</label>
+                    <input type="number" name="espacamento_h" value="2" class="span12" required>
+                </div>
+                <div class="span6">
+                    <label>Espaçamento V (mm)</label>
+                    <input type="number" name="espacamento_v" value="2" class="span12" required>
+                </div>
+            </div>
+            
+            <label class="checkbox inline"><input type="checkbox" name="mostrar_nome" value="1" checked> Nome</label>
+            <label class="checkbox inline"><input type="checkbox" name="mostrar_patrimonio" value="1" checked> Patrimônio</label>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+            <button class="btn btn-primary"><i class="fas fa-print"></i> Gerar PDF/Impressão</button>
+        </div>
+    </form>
+</div>
+
 <!-- Modal Consulta Rápida -->
 <div id="modal-consulta-rapida" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-header">
@@ -407,18 +523,33 @@
 <script type="text/javascript">
     document.addEventListener("DOMContentLoaded", function() {
         var ctxStatus = document.getElementById('chartStatus').getContext('2d');
+        var ctxCategorias = document.getElementById('chartCategorias').getContext('2d');
         var ctxResponsavel = document.getElementById('chartResponsavel').getContext('2d');
         
         var chartStatus = new Chart(ctxStatus, {
-            type: 'pie',
-            data: { labels: [], datasets: [{ data: [], backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c', '#34495e'] }] },
-            options: { responsive: true, maintainAspectRatio: false }
+            type: 'doughnut',
+            data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 0, hoverOffset: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '60%' }
+        });
+
+        var chartCategorias = new Chart(ctxCategorias, {
+            type: 'bar',
+            data: { labels: [], datasets: [{ label: 'Quantidade', data: [], backgroundColor: '#3498db', borderRadius: 4 }] },
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, grid: { borderDash: [2, 4] } }, x: { grid: { display: false } } }
+            }
         });
         
         var chartResponsavel = new Chart(ctxResponsavel, {
             type: 'bar',
-            data: { labels: [], datasets: [{ label: 'Qtd. Ativos', data: [], backgroundColor: '#3498db' }] },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            data: { labels: [], datasets: [{ label: 'Qtd. Ativos', data: [], backgroundColor: '#9b59b6', borderRadius: 4 }] },
+            options: { 
+                indexAxis: 'y', responsive: true, maintainAspectRatio: false, 
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true } } 
+            }
         });
 
         function updateDashboard() {
@@ -426,6 +557,9 @@
                 .then(response => response.json())
                 .then(data => {
                     if(data.error) return;
+
+                    // Atualiza Cards
+                    updateCards(data);
 
                     // Atualiza Gráfico de Status
                     var statusLabels = data.status.map(item => item.status.charAt(0).toUpperCase() + item.status.slice(1).replace('_', ' '));
@@ -447,6 +581,13 @@
                     chartStatus.data.datasets[0].backgroundColor = statusColors;
                     chartStatus.update();
 
+                    // Atualiza Gráfico de Categorias
+                    if(data.categorias) {
+                        chartCategorias.data.labels = data.categorias.map(c => c.nome || 'Sem Categoria');
+                        chartCategorias.data.datasets[0].data = data.categorias.map(c => c.total);
+                        chartCategorias.update();
+                    }
+
                     // Atualiza Gráfico de Responsáveis
                     var respLabels = data.responsaveis.map(item => item.nome);
                     var respData = data.responsaveis.map(item => item.total);
@@ -456,6 +597,35 @@
                     chartResponsavel.update();
                 })
                 .catch(err => console.error('Erro dashboard:', err));
+        }
+
+        function updateCards(data) {
+            var total = data.total || 0;
+            var disponivel = 0;
+            var em_uso = 0;
+            var manutencao = 0;
+
+            data.status.forEach(s => {
+                if(s.status == 'disponivel') disponivel = s.total;
+                if(s.status == 'em_uso') em_uso = s.total;
+                if(s.status == 'manutencao') manutencao = s.total;
+            });
+
+            var html = `
+                <div class="span3">
+                    <div class="card-stats"><div class="icon-stat bg-blue"><i class="fas fa-box"></i></div><div class="content"><p>Total Ativos</p><h3>${total}</h3></div></div>
+                </div>
+                <div class="span3">
+                    <div class="card-stats"><div class="icon-stat bg-green"><i class="fas fa-check"></i></div><div class="content"><p>Disponíveis</p><h3>${disponivel}</h3></div></div>
+                </div>
+                <div class="span3">
+                    <div class="card-stats"><div class="icon-stat bg-orange"><i class="fas fa-user-clock"></i></div><div class="content"><p>Em Uso</p><h3>${em_uso}</h3></div></div>
+                </div>
+                <div class="span3">
+                    <div class="card-stats"><div class="icon-stat bg-red"><i class="fas fa-tools"></i></div><div class="content"><p>Manutenção</p><h3>${manutencao}</h3></div></div>
+                </div>
+            `;
+            document.getElementById('dashboard-cards').innerHTML = html;
         }
 
         updateDashboard(); // Carregamento inicial

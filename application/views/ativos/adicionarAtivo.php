@@ -38,6 +38,27 @@
                     </div>
 
                     <div class="control-group">
+                        <label for="cor" class="control-label">Cor</label>
+                        <div class="controls">
+                            <input id="cor" type="text" name="cor" value="<?php echo set_value('cor'); ?>" />
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="tamanho" class="control-label">Tamanho</label>
+                        <div class="controls">
+                            <input id="tamanho" type="text" name="tamanho" value="<?php echo set_value('tamanho'); ?>" />
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="preco_locacao" class="control-label">Preço Locação (R$)</label>
+                        <div class="controls">
+                            <input id="preco_locacao" type="text" name="preco_locacao" value="<?php echo set_value('preco_locacao'); ?>" class="money" />
+                        </div>
+                    </div>
+
+                    <div class="control-group">
                         <label for="status" class="control-label">Status<span class="required">*</span></label>
                         <div class="controls">
                             <select name="status" id="status">
@@ -75,8 +96,10 @@
     </div>
 </div>
 <script src="<?php echo base_url() ?>assets/js/jquery.validate.js"></script>
+<script src="<?php echo base_url(); ?>assets/js/jquery.mask.min.js"></script>
 <script type="text/javascript">
     $(document).ready(function() {
+        $('.money').mask('#.##0,00', {reverse: true});
         $('#formAtivo').validate({
             rules: { nome: { required: true }, patrimonio: { required: true } },
             messages: { nome: { required: 'Campo Requerido.' }, patrimonio: { required: 'Campo Requerido.' } },
