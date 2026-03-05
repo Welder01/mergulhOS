@@ -773,6 +773,12 @@
                                                 <td><label><input name="eBilhete" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Bilhete</span></label></td>
                                                 <td><label><input name="dBilhete" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Bilhete</span></label></td>
                                             </tr>
+                                            <tr>
+                                                <td><label><input name="vTransporte" class="marcar" type="checkbox" value="1" /><span class="lbl"> Visualizar Transporte</span></label></td>
+                                                <td><label><input name="aTransporte" class="marcar" type="checkbox" value="1" /><span class="lbl"> Adicionar Transporte</span></label></td>
+                                                <td><label><input name="eTransporte" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Transporte</span></label></td>
+                                                <td><label><input name="dTransporte" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Transporte</span></label></td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>

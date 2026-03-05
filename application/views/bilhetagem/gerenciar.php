@@ -1,6 +1,7 @@
 <?php if ($this->permission->checkPermission($this->session->userdata('permissao'), 'aBilhete')) { ?>
     <a href="<?php echo base_url(); ?>index.php/bilhetagem/adicionar" class="btn btn-success"><i class="fas fa-plus"></i> Emitir Bilhete</a>
     <a href="<?php echo base_url(); ?>index.php/expedicoes" class="btn btn-primary"><i class="fas fa-map-marked-alt"></i> Gerenciar Expedições</a>
+    <a href="<?php echo base_url(); ?>index.php/transportes" class="btn btn-inverse"><i class="fas fa-bus"></i> Gerenciar Transportes</a>
 <?php } ?>
 
 <div class="widget-box">

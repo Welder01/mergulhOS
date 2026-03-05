@@ -1279,6 +1279,12 @@
                                                             <td><label><input <?php if (isset($permissoes['eBilhete']) && $permissoes['eBilhete'] == '1') { echo 'checked'; } ?> name="eBilhete" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Bilhete</span></label></td>
                                                             <td><label><input <?php if (isset($permissoes['dBilhete']) && $permissoes['dBilhete'] == '1') { echo 'checked'; } ?> name="dBilhete" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Bilhete</span></label></td>
                                                         </tr>
+                                                        <tr>
+                                                            <td><label><input <?php if (isset($permissoes['vTransporte']) && $permissoes['vTransporte'] == '1') { echo 'checked'; } ?> name="vTransporte" class="marcar" type="checkbox" value="1" /><span class="lbl"> Visualizar Transporte</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['aTransporte']) && $permissoes['aTransporte'] == '1') { echo 'checked'; } ?> name="aTransporte" class="marcar" type="checkbox" value="1" /><span class="lbl"> Adicionar Transporte</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['eTransporte']) && $permissoes['eTransporte'] == '1') { echo 'checked'; } ?> name="eTransporte" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Transporte</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['dTransporte']) && $permissoes['dTransporte'] == '1') { echo 'checked'; } ?> name="dTransporte" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Transporte</span></label></td>
+                                                        </tr>
                                                     </table>
                                                 </div>
                                             </div>

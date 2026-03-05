@@ -193,6 +193,11 @@ class Permissoes extends MY_Controller
                 'aBilhete' => $this->input->post('aBilhete'),
                 'eBilhete' => $this->input->post('eBilhete'),
                 'dBilhete' => $this->input->post('dBilhete'),
+
+                'vTransporte' => $this->input->post('vTransporte'),
+                'aTransporte' => $this->input->post('aTransporte'),
+                'eTransporte' => $this->input->post('eTransporte'),
+                'dTransporte' => $this->input->post('dTransporte'),
             ];
             $permissoes = serialize($permissoes);
 
@@ -367,6 +372,11 @@ class Permissoes extends MY_Controller
                 'aBilhete' => $this->input->post('aBilhete'),
                 'eBilhete' => $this->input->post('eBilhete'),
                 'dBilhete' => $this->input->post('dBilhete'),
+
+                'vTransporte' => $this->input->post('vTransporte'),
+                'aTransporte' => $this->input->post('aTransporte'),
+                'eTransporte' => $this->input->post('eTransporte'),
+                'dTransporte' => $this->input->post('dTransporte'),
 
             ];
             $permissoes = serialize($permissoes);

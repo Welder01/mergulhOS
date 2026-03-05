@@ -1,6 +1,81 @@
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/js/jquery-ui/css/smoothness/jquery-ui-1.9.2.custom.css" />
 <script type="text/javascript" src="<?php echo base_url() ?>assets/js/jquery-ui/js/jquery-ui-1.9.2.custom.js"></script>
 
+<style>
+    /* Estilos para corrigir responsividade e alinhamento */
+    .form-horizontal .control-group {
+        margin-bottom: 15px;
+    }
+    
+    input, textarea, select, .uneditable-input {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Ajustes para Desktop */
+    @media (min-width: 980px) {
+        .form-horizontal .control-label {
+            width: 130px;
+        }
+        .form-horizontal .controls {
+            margin-left: 150px;
+        }
+        /* Ajuste específico para colunas menores */
+        .row-fluid .span3 .control-label,
+        .row-fluid .span4 .control-label {
+            width: 100px;
+            font-size: 12px;
+        }
+        .row-fluid .span3 .controls,
+        .row-fluid .span4 .controls {
+            margin-left: 110px;
+        }
+    }
+
+    /* Ajustes para Tablet e Mobile (Retrato e Paisagem) */
+    @media (max-width: 979px) {
+        .form-horizontal .control-label {
+            float: none;
+            width: auto;
+            text-align: left;
+            margin-bottom: 3px;
+            padding-top: 0;
+        }
+        .form-horizontal .controls {
+            margin-left: 0;
+        }
+        .row-fluid [class*="span"] {
+            margin-left: 0 !important;
+            width: 100% !important;
+            margin-bottom: 15px;
+            display: block;
+        }
+        .form-actions {
+            padding-left: 10px;
+            padding-right: 10px;
+            text-align: center;
+        }
+    }
+
+    .input-append {
+        display: flex;
+        width: 100%;
+    }
+    .input-append input {
+        border-radius: 4px 0 0 4px !important;
+        flex: 1;
+        width: auto !important;
+    }
+    .input-append button {
+        border-radius: 0 4px 4px 0 !important;
+        margin-left: -1px;
+    }
+    
+    .widget-content {
+        padding: 20px !important;
+    }
+</style>
+
 <div class="row-fluid" style="margin-top:0">
     <div class="span12">
         <div class="widget-box">
@@ -18,7 +93,7 @@
                             <div class="control-group">
                                 <label for="expedicao" class="control-label">Expedição <span class="required">*</span></label>
                                 <div class="controls">
-                                    <input id="expedicao" type="text" class="span11" placeholder="Digite para buscar a expedição..." required />
+                                    <input id="expedicao" type="text" class="span12" placeholder="Digite para buscar a expedição..." required />
                                     <input id="expedicao_id" type="hidden" name="expedicao_id" />
                                 </div>
                             </div>
@@ -27,7 +102,7 @@
                             <div class="control-group">
                                 <label for="cliente" class="control-label">Cliente <span class="required">*</span></label>
                                 <div class="controls">
-                                    <input id="cliente" type="text" name="cliente" class="span11" placeholder="Digite para buscar o cliente..." required />
+                                    <input id="cliente" type="text" name="cliente" class="span12" placeholder="Digite para buscar o cliente..." required />
                                     <input id="cliente_id" type="hidden" name="cliente_id" />
                                     <input id="nomeCliente" type="hidden" name="nomeCliente" />
                                 </div>
@@ -41,27 +116,31 @@
                             <div class="control-group">
                                 <label for="viagem_id" class="control-label">Vincular Hospedagem</label>
                                 <div class="controls">
-                                    <select name="viagem_id" id="viagem_id" class="span11">
+                                    <select name="viagem_id" id="viagem_id" class="span12">
                                         <option value="">Selecione um cliente primeiro...</option>
                                     </select>
-                                    <span class="help-inline" style="color: #999; font-size: 0.9em;">(Opcional - Selecione o cliente para carregar)</span>
+                                    <span class="help-block" style="color: #999; font-size: 0.9em; margin-top: 2px;">(Opcional - Selecione o cliente para carregar)</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Dados do Transporte -->
-                    <div class="widget-title">
+                    <div class="widget-title" style="margin-top: 10px; margin-bottom: 15px;">
                         <span class="icon"><i class="fas fa-plane"></i></span>
                         <h5>Dados do Transporte</h5>
                     </div>
                     
-                    <div class="control-group">
-                        <label class="control-label">Tipo Transporte</label>
-                        <div class="controls">
-                            <label class="radio inline"><input type="radio" name="tipo_transporte" value="fretado" checked> Fretado</label>
-                            <label class="radio inline"><input type="radio" name="tipo_transporte" value="companhia_externa"> Cia Externa</label>
-                            <label class="radio inline"><input type="radio" name="tipo_transporte" value="meios_proprios"> Meios Próprios</label>
+                    <div class="row-fluid">
+                        <div class="span12">
+                            <div class="control-group">
+                                <label class="control-label">Tipo Transporte</label>
+                                <div class="controls">
+                                    <label class="radio inline"><input type="radio" name="tipo_transporte" value="fretado" checked> Fretado</label>
+                                    <label class="radio inline"><input type="radio" name="tipo_transporte" value="companhia_externa"> Cia Externa</label>
+                                    <label class="radio inline"><input type="radio" name="tipo_transporte" value="meios_proprios"> Meios Próprios</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -71,7 +150,7 @@
                             <div class="control-group">
                                 <label for="empresa_emissora" class="control-label">Empresa/Cia</label>
                                 <div class="controls">
-                                    <input type="text" name="empresa_emissora" id="empresa_emissora" class="span11" />
+                                    <input type="text" name="empresa_emissora" id="empresa_emissora" class="span12" />
                                 </div>
                             </div>
                         </div>
@@ -79,7 +158,7 @@
                             <div class="control-group">
                                 <label for="codigo_bilhete" class="control-label">Localizador</label>
                                 <div class="controls">
-                                    <input type="text" name="codigo_bilhete" id="codigo_bilhete" class="span11" />
+                                    <input type="text" name="codigo_bilhete" id="codigo_bilhete" class="span12" />
                                 </div>
                             </div>
                         </div>
@@ -88,7 +167,7 @@
                                 <label for="assento" class="control-label">Assento</label>
                                 <div class="controls">
                                     <div class="input-append">
-                                        <input type="text" name="assento" id="assento" class="span6" />
+                                        <input type="text" name="assento" id="assento" />
                                         <button type="button" id="btn-selecionar-assento" class="btn btn-info" style="display:none;"><i class="fas fa-chair"></i> Mapa</button>
                                     </div>
                                 </div>
@@ -97,7 +176,7 @@
                     </div>
 
                     <!-- Financeiro e Câmbio -->
-                    <div class="widget-title">
+                    <div class="widget-title" style="margin-top: 10px; margin-bottom: 15px;">
                         <span class="icon"><i class="fas fa-money-bill-wave"></i></span>
                         <h5>Valores e Serviços</h5>
                     </div>
@@ -108,7 +187,7 @@
                             <div class="control-group">
                                 <label class="control-label">Moeda</label>
                                 <div class="controls">
-                                    <select name="moeda_venda" id="moeda_venda" class="span11">
+                                    <select name="moeda_venda" id="moeda_venda" class="span12">
                                         <option value="BRL">BRL (R$)</option>
                                         <option value="USD">USD ($)</option>
                                         <option value="EUR">EUR (€)</option>
@@ -120,7 +199,7 @@
                             <div class="control-group">
                                 <label class="control-label">Cotação</label>
                                 <div class="controls">
-                                    <input type="text" name="cotacao_venda" id="cotacao_venda" value="1.0000" class="span11 money" readonly />
+                                    <input type="text" name="cotacao_venda" id="cotacao_venda" value="1.0000" class="span12 money" readonly />
                                 </div>
                             </div>
                         </div>
@@ -128,7 +207,7 @@
                             <div class="control-group">
                                 <label class="control-label">Valor Bilhete</label>
                                 <div class="controls">
-                                    <input type="text" name="valor_original" id="valor_original" class="span11 money" required />
+                                    <input type="text" name="valor_original" id="valor_original" class="span12 money" required />
                                 </div>
                             </div>
                         </div>
@@ -136,7 +215,7 @@
                             <div class="control-group">
                                 <label class="control-label">Taxa Serviço</label>
                                 <div class="controls">
-                                    <input type="text" name="taxa_servico_emissao" class="span11 money" value="0.00" />
+                                    <input type="text" name="taxa_servico_emissao" class="span12 money" value="0.00" />
                                 </div>
                             </div>
                         </div>
@@ -148,7 +227,7 @@
                             <div class="control-group">
                                 <label class="control-label">Bagagem Extra</label>
                                 <div class="controls">
-                                    <input type="text" name="valor_bagagem_extra" class="span11 money" value="0.00" />
+                                    <input type="text" name="valor_bagagem_extra" class="span12 money" value="0.00" />
                                 </div>
                             </div>
                         </div>
@@ -156,7 +235,7 @@
                             <div class="control-group">
                                 <label class="control-label">Dias Navegação</label>
                                 <div class="controls">
-                                    <input type="number" name="qtd_dias_navegacao" value="0" class="span11" />
+                                    <input type="number" name="qtd_dias_navegacao" value="0" class="span12" />
                                 </div>
                             </div>
                         </div>
@@ -164,10 +243,10 @@
                             <div class="control-group">
                                 <label class="control-label">Opções</label>
                                 <div class="controls">
-                                    <label class="checkbox inline">
+                                    <label class="checkbox">
                                         <input type="checkbox" name="pagou_taxa_parque" value="1"> Taxa Parque
                                     </label>
-                                    <label class="checkbox inline">
+                                    <label class="checkbox">
                                         <input type="checkbox" name="estadia_estendida" value="1"> Estadia Estendida
                                     </label>
                                 </div>
@@ -181,7 +260,7 @@
                         </div>
                     </div>
 
-                    <div class="widget-title">
+                    <div class="widget-title" style="margin-top: 10px; margin-bottom: 15px;">
                         <span class="icon"><i class="fas fa-swimmer"></i></span>
                         <h5>Equipamentos</h5>
                     </div>
@@ -198,7 +277,7 @@
                     <div class="control-group" id="div_equipamentos" style="display:none;">
                         <label for="equipamentos" class="control-label">Selecionar Itens</label>
                         <div class="controls">
-                            <select name="equipamentos[]" id="equipamentos" multiple class="span11" style="height: 150px;">
+                            <select name="equipamentos[]" id="equipamentos" multiple class="span12" style="height: 150px;">
                                 <?php foreach ($ativos_disponiveis as $ativo) { ?>
                                     <option value="<?= $ativo->idAtivo ?>"><?= $ativo->nome ?> (<?= $ativo->patrimonio ?>)</option>
                                 <?php } ?>
@@ -210,8 +289,8 @@
                     <div class="form-actions">
                         <div class="span12">
                             <div class="span6 offset3" style="text-align: center">
-                                <button type="submit" class="btn btn-success btn-large"><i class="fas fa-check"></i> Emitir Bilhete</button>
-                                <a href="<?php echo base_url() ?>index.php/bilhetagem" class="btn btn-large"><i class="fas fa-arrow-left"></i> Voltar</a>
+                                <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Emitir Bilhete</button>
+                                <a href="<?php echo base_url() ?>index.php/bilhetagem" class="btn"><i class="fas fa-arrow-left"></i> Voltar</a>
                             </div>
                         </div>
                     </div>
