@@ -151,6 +151,11 @@ class Permissoes extends MY_Controller
                 'eAtivo' => $this->input->post('eAtivo'),
                 'dAtivo' => $this->input->post('dAtivo'),
                 'vAtivo' => $this->input->post('vAtivo'),
+
+                'aAtivoCategoria' => $this->input->post('aAtivoCategoria'),
+                'eAtivoCategoria' => $this->input->post('eAtivoCategoria'),
+                'dAtivoCategoria' => $this->input->post('dAtivoCategoria'),
+                'vAtivoCategoria' => $this->input->post('vAtivoCategoria'),
                 
                 'aBolsa' => $this->input->post('aBolsa'),
                 'eBolsa' => $this->input->post('eBolsa'),
@@ -161,6 +166,7 @@ class Permissoes extends MY_Controller
                 'rEntregarBolsa' => $this->input->post('rEntregarBolsa'),
                 'rBolsaSemConferir' => $this->input->post('rBolsaSemConferir'),
                 'tResponsavelBolsa' => $this->input->post('tResponsavelBolsa'),
+                'dAuditoriaAtivo' => $this->input->post('dAuditoriaAtivo'),
 
                 'cUsuario' => $this->input->post('cUsuario'),
                 'cEmitente' => $this->input->post('cEmitente'),
@@ -315,6 +321,11 @@ class Permissoes extends MY_Controller
                 'dAtivo' => $this->input->post('dAtivo'),
                 'vAtivo' => $this->input->post('vAtivo'),
 
+                'aAtivoCategoria' => $this->input->post('aAtivoCategoria'),
+                'eAtivoCategoria' => $this->input->post('eAtivoCategoria'),
+                'dAtivoCategoria' => $this->input->post('dAtivoCategoria'),
+                'vAtivoCategoria' => $this->input->post('vAtivoCategoria'),
+
                 'aBolsa' => $this->input->post('aBolsa'),
                 'eBolsa' => $this->input->post('eBolsa'),
                 'dBolsa' => $this->input->post('dBolsa'),
@@ -324,6 +335,7 @@ class Permissoes extends MY_Controller
                 'rEntregarBolsa' => $this->input->post('rEntregarBolsa'),
                 'rBolsaSemConferir' => $this->input->post('rBolsaSemConferir'),
                 'tResponsavelBolsa' => $this->input->post('tResponsavelBolsa'),
+                'dAuditoriaAtivo' => $this->input->post('dAuditoriaAtivo'),
 
                 'cUsuario' => $this->input->post('cUsuario'),
                 'cEmitente' => $this->input->post('cEmitente'),

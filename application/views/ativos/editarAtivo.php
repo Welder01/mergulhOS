@@ -19,6 +19,18 @@
                     </div>
 
                     <div class="control-group">
+                        <label for="categoria_id" class="control-label">Categoria</label>
+                        <div class="controls">
+                            <select name="categoria_id" id="categoria_id">
+                                <option value="">Selecione...</option>
+                                <?php foreach ($categorias as $cat) { ?>
+                                    <option value="<?php echo $cat->idAtivoCategoria; ?>" <?php echo ($result->categoria_id == $cat->idAtivoCategoria) ? 'selected' : ''; ?>><?php echo $cat->nome; ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
                         <label for="patrimonio" class="control-label">Patrimônio<span class="required">*</span></label>
                         <div class="controls">
                             <input id="patrimonio" type="text" name="patrimonio" value="<?php echo $result->patrimonio; ?>" />

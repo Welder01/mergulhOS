@@ -9,6 +9,36 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
+                    <strong>v4.54.0 - Módulo de Ativos e Melhorias em Viagens</strong><br>
+                    Novo módulo de Gestão de Ativos e Logística, conferência de bolsas e melhorias na interface de viagens.
+                </div>
+
+                <h3>Novidades e Melhorias</h3>
+                <hr>
+                <h4>1. Módulo de Ativos e Logística</h4>
+                <ul>
+                    <li><strong>Gestão de Bolsas/Caixas:</strong> Criação e gerenciamento de recipientes para agrupar ativos.</li>
+                    <li><strong>Movimentação (Check-in/Check-out):</strong> Controle de saída e retorno de ativos e bolsas, com registro de responsável e data.</li>
+                    <li><strong>Conferência de Itens:</strong> Nova interface para conferência item a item do conteúdo de uma bolsa durante a movimentação, suportando leitor de código de barras/QR Code.</li>
+                    <li><strong>Dashboard de Ativos:</strong> Novos gráficos de status global e por responsável, além de lista de movimentações pendentes.</li>
+                    <li><strong>QR Code:</strong> Geração automática de QR Code para Ativos e Bolsas para facilitar a identificação.</li>
+                    <li><strong>Permissões Granulares:</strong> Novas permissões específicas para criar, editar, excluir bolsas, movimentar itens e realizar conferências.</li>
+                    <li><strong>Auditoria de Ativos:</strong> Registro histórico de ações (criação, edição, movimentação) com filtros de pesquisa e permissão especial para exclusão de logs.</li>
+                    <li><strong>Categorias de Ativos:</strong> Gerenciamento completo de categorias para classificação de ativos.</li>
+                </ul>
+
+                <h4>2. Módulo de Viagens</h4>
+                <ul>
+                    <li><strong>Associação de Bolsas:</strong> Novo campo com busca automática (autocomplete) para vincular uma bolsa a um Cliente ou Instrutor dentro da viagem.</li>
+                    <li><strong>Interface Aprimorada:</strong> Reorganização das abas de Clientes e Instrutores para melhor aproveitamento de espaço e responsividade em dispositivos móveis e tablets.</li>
+                    <li><strong>Ficha de Operação:</strong> Novo layout de impressão detalhando mergulhadores, instrutores e resumo de equipamentos necessários.</li>
+                </ul>
+
+                <h4>3. Sistema</h4>
+                <p>Ajustes gerais em modais e formulários para melhor visualização em modo paisagem (landscape) em tablets e celulares.</p>
+                <br>
+
+                <div class="alert alert-success">
                     <strong>v4.53.12 - Correção de Permissões</strong><br>
                     Ajuste na verificação de permissão para cancelamento de faturamento.
                 </div>

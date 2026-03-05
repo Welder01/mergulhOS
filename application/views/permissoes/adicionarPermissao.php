@@ -837,6 +837,12 @@
                                                 </td>
                                             </tr>
                                             <tr>
+                                                <td><label><input name="vAtivoCategoria" class="marcar" type="checkbox" value="1" /><span class="lbl"> Visualizar Categoria</span></label></td>
+                                                <td><label><input name="aAtivoCategoria" class="marcar" type="checkbox" value="1" /><span class="lbl"> Adicionar Categoria</span></label></td>
+                                                <td><label><input name="eAtivoCategoria" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Categoria</span></label></td>
+                                                <td><label><input name="dAtivoCategoria" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Categoria</span></label></td>
+                                            </tr>
+                                            <tr>
                                                 <td><label><input name="aBolsa" class="marcar" type="checkbox" value="1" /><span class="lbl"> Criar Bolsa</span></label></td>
                                                 <td><label><input name="eBolsa" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Bolsa</span></label></td>
                                                 <td><label><input name="dBolsa" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Bolsa</span></label></td>
@@ -850,7 +856,8 @@
                                             </tr>
                                             <tr>
                                                 <td><label><input name="tResponsavelBolsa" class="marcar" type="checkbox" value="1" /><span class="lbl"> Trocar Responsável</span></label></td>
-                                                <td colspan="3"></td>
+                                                <td><label><input name="dAuditoriaAtivo" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Auditoria</span></label></td>
+                                                <td colspan="2"></td>
                                             </tr>
                                         </tbody>
                                     </table>

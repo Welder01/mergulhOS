@@ -1230,6 +1230,12 @@
                                                             </td>
                                                         </tr>
                                                         <tr>
+                                                            <td><label><input <?php if (isset($permissoes['vAtivoCategoria']) && $permissoes['vAtivoCategoria'] == '1') { echo 'checked'; } ?> name="vAtivoCategoria" class="marcar" type="checkbox" value="1" /><span class="lbl"> Visualizar Categoria</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['aAtivoCategoria']) && $permissoes['aAtivoCategoria'] == '1') { echo 'checked'; } ?> name="aAtivoCategoria" class="marcar" type="checkbox" value="1" /><span class="lbl"> Adicionar Categoria</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['eAtivoCategoria']) && $permissoes['eAtivoCategoria'] == '1') { echo 'checked'; } ?> name="eAtivoCategoria" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Categoria</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['dAtivoCategoria']) && $permissoes['dAtivoCategoria'] == '1') { echo 'checked'; } ?> name="dAtivoCategoria" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Categoria</span></label></td>
+                                                        </tr>
+                                                        <tr>
                                                             <td><label><input <?php if (isset($permissoes['aBolsa']) && $permissoes['aBolsa'] == '1') { echo 'checked'; } ?> name="aBolsa" class="marcar" type="checkbox" value="1" /><span class="lbl"> Criar Bolsa</span></label></td>
                                                             <td><label><input <?php if (isset($permissoes['eBolsa']) && $permissoes['eBolsa'] == '1') { echo 'checked'; } ?> name="eBolsa" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Bolsa</span></label></td>
                                                             <td><label><input <?php if (isset($permissoes['dBolsa']) && $permissoes['dBolsa'] == '1') { echo 'checked'; } ?> name="dBolsa" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Bolsa</span></label></td>
@@ -1243,7 +1249,8 @@
                                                         </tr>
                                                         <tr>
                                                             <td><label><input <?php if (isset($permissoes['tResponsavelBolsa']) && $permissoes['tResponsavelBolsa'] == '1') { echo 'checked'; } ?> name="tResponsavelBolsa" class="marcar" type="checkbox" value="1" /><span class="lbl"> Trocar Responsável</span></label></td>
-                                                            <td colspan="3"></td>
+                                                            <td><label><input <?php if (isset($permissoes['dAuditoriaAtivo']) && $permissoes['dAuditoriaAtivo'] == '1') { echo 'checked'; } ?> name="dAuditoriaAtivo" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Auditoria</span></label></td>
+                                                            <td colspan="2"></td>
                                                         </tr>
                                                     </table>
                                                 </div>

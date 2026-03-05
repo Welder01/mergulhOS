@@ -8,7 +8,21 @@ class Ativos_model extends CI_Model {
     public function get($table, $fields, $where = '', $perpage = 0, $start = 0, $one = false, $array = 'array') {
         $this->db->select($fields);
         $this->db->from($table);
-        $this->db->order_by('idAtivo', 'desc');
+        
+        if ($table == 'ativos') {
+            $this->db->select('ativos_categorias.nome as categoria');
+            $this->db->join('ativos_categorias', 'ativos_categorias.idAtivoCategoria = ativos.categoria_id', 'left');
+            $this->db->order_by('idAtivo', 'desc');
+        } elseif ($table == 'ativos_categorias') {
+            $this->db->order_by('idAtivoCategoria', 'desc');
+        } elseif ($table == 'ativos_bolsas') {
+            $this->db->order_by('idBolsa', 'desc');
+        } elseif ($table == 'ativos_logs') {
+            $this->db->order_by('idLog', 'desc');
+        } else {
+            $this->db->order_by('idAtivo', 'desc');
+        }
+
         $this->db->limit($perpage, $start);
         if ($where) {
             $this->db->where($where);
@@ -24,6 +38,12 @@ class Ativos_model extends CI_Model {
         $this->db->where('idAtivo', $id);
         $this->db->limit(1);
         return $this->db->get('ativos')->row();
+    }
+
+    public function getByIdCategoria($id) {
+        $this->db->where('idAtivoCategoria', $id);
+        $this->db->limit(1);
+        return $this->db->get('ativos_categorias')->row();
     }
 
     public function getByIdBolsa($id) {
@@ -218,5 +238,76 @@ class Ativos_model extends CI_Model {
         }
         
         return array_merge($ativos, $bolsas);
+    }
+
+    public function getLogs($perpage = 0, $start = 0, $where = []) {
+        $this->db->select('al.*, u.nome as usuario, a.nome as ativo_nome, ab.nome as bolsa_nome');
+        $this->db->from('ativos_logs al');
+        $this->db->join('usuarios u', 'u.idUsuarios = al.usuario_id_acao', 'left');
+        $this->db->join('ativos a', 'a.idAtivo = al.ativo_id', 'left');
+        $this->db->join('ativos_bolsas ab', 'ab.idBolsa = al.bolsa_id', 'left');
+        
+        if (!empty($where)) {
+            if (!empty($where['data_inicial'])) {
+                $this->db->where('DATE(al.data_acao) >=', $where['data_inicial']);
+            }
+            if (!empty($where['data_final'])) {
+                $this->db->where('DATE(al.data_acao) <=', $where['data_final']);
+            }
+            if (!empty($where['usuario'])) {
+                $this->db->like('u.nome', $where['usuario']);
+            }
+            if (!empty($where['termo'])) {
+                $this->db->group_start();
+                $this->db->like('al.acao', $where['termo']);
+                $this->db->or_like('al.detalhes', $where['termo']);
+                $this->db->or_like('a.nome', $where['termo']);
+                $this->db->or_like('ab.nome', $where['termo']);
+                $this->db->group_end();
+            }
+        }
+
+        $this->db->order_by('al.data_acao', 'desc');
+        if ($perpage > 0) {
+            $this->db->limit($perpage, $start);
+        }
+        return $this->db->get()->result();
+    }
+
+    public function countLogs($where = []) {
+        $this->db->from('ativos_logs al');
+        $this->db->join('usuarios u', 'u.idUsuarios = al.usuario_id_acao', 'left');
+        $this->db->join('ativos a', 'a.idAtivo = al.ativo_id', 'left');
+        $this->db->join('ativos_bolsas ab', 'ab.idBolsa = al.bolsa_id', 'left');
+
+        if (!empty($where)) {
+             if (!empty($where['data_inicial'])) {
+                $this->db->where('DATE(al.data_acao) >=', $where['data_inicial']);
+            }
+            if (!empty($where['data_final'])) {
+                $this->db->where('DATE(al.data_acao) <=', $where['data_final']);
+            }
+            if (!empty($where['usuario'])) {
+                $this->db->like('u.nome', $where['usuario']);
+            }
+            if (!empty($where['termo'])) {
+                $this->db->group_start();
+                $this->db->like('al.acao', $where['termo']);
+                $this->db->or_like('al.detalhes', $where['termo']);
+                $this->db->or_like('a.nome', $where['termo']);
+                $this->db->or_like('ab.nome', $where['termo']);
+                $this->db->group_end();
+            }
+        }
+        return $this->db->count_all_results();
+    }
+
+    public function deleteLog($id) {
+        $this->db->where('idLog', $id);
+        return $this->db->delete('ativos_logs');
+    }
+
+    public function deleteAllLogs() {
+        return $this->db->empty_table('ativos_logs');
     }
 }

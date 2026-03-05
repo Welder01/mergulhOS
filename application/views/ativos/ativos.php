@@ -2,6 +2,8 @@
     <a href="<?php echo base_url(); ?>index.php/ativos/adicionar" class="btn btn-success"><i class="fas fa-plus"></i> Adicionar Ativo</a>
     <a href="<?php echo base_url(); ?>index.php/ativos/adicionarBolsa" class="btn btn-success"><i class="fas fa-plus"></i> Adicionar Bolsa/Caixa</a>
     <a href="<?php echo base_url(); ?>index.php/ativos/movimentacao" class="btn btn-inverse"><i class="fas fa-exchange-alt"></i> Movimentação (Check-in/Out)</a>
+    <a href="<?php echo base_url(); ?>index.php/ativos/auditoria" class="btn btn-info"><i class="fas fa-history"></i> Auditoria</a>
+    <a href="<?php echo base_url(); ?>index.php/ativos/categorias" class="btn btn-primary"><i class="fas fa-tags"></i> Categorias</a>
 <?php } ?>
 
 <div class="row-fluid" style="margin-top: 20px;">
@@ -87,6 +89,7 @@
                     <tr>
                         <th>#</th>
                         <th>Nome</th>
+                        <th>Categoria</th>
                         <th>Patrimônio</th>
                         <th>Status</th>
                         <th>Ações</th>
@@ -108,6 +111,7 @@
                         echo '<tr>';
                         echo '<td>' . $r->idAtivo . '</td>';
                         echo '<td>' . $r->nome . '</td>';
+                        echo '<td>' . $r->categoria . '</td>';
                         echo '<td>' . $r->patrimonio . '</td>';
                         echo '<td><span class="label label-'.$status_color.'">' . ucfirst(str_replace('_', ' ', $r->status)) . '</span></td>';
                         echo '<td>';
@@ -117,6 +121,7 @@
                         if ($this->permission->checkPermission($this->session->userdata('permissao'), 'dAtivo')) {
                             echo '<a style="margin-right: 1%" href="#modal-excluir" role="button" data-toggle="modal" ativo="' . $r->idAtivo . '" class="btn btn-danger btn-mini tip-top" title="Excluir Ativo"><i class="fas fa-trash-alt"></i></a>';
                         }
+                    echo '<a style="margin-right: 1%" href="' . base_url() . 'index.php/ativos/imprimirEtiqueta/' . $r->idAtivo . '" target="_blank" class="btn btn-inverse btn-mini tip-top" title="Imprimir Etiqueta"><i class="fas fa-print"></i></a>';
                         echo '</td>';
                         echo '</tr>';
                     } ?>
@@ -170,6 +175,7 @@
                         if ($this->permission->checkPermission($this->session->userdata('permissao'), 'eAtivo')) {
                             echo '<a style="margin-right: 1%" href="' . base_url() . 'index.php/ativos/editarBolsa/' . $b->idBolsa . '" class="btn btn-info btn-mini tip-top" title="Editar Bolsa"><i class="fas fa-edit"></i></a>';
                         }
+                        echo '<a style="margin-right: 1%" href="' . base_url() . 'index.php/ativos/imprimirEtiquetaBolsa/' . $b->idBolsa . '" target="_blank" class="btn btn-inverse btn-mini tip-top" title="Imprimir Etiqueta"><i class="fas fa-print"></i></a>';
                         // Adicionar exclusão de bolsa se necessário
                         echo '</td>';
                         echo '</tr>';

@@ -490,4 +490,11 @@ $config = [
             'rules' => 'required|trim',
         ],
     ],
+    'ativos_categorias' => [
+        [
+            'field' => 'nome',
+            'label' => 'Nome',
+            'rules' => 'required|trim',
+        ],
+    ],
 ];

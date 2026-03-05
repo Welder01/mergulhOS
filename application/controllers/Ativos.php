@@ -51,6 +51,7 @@ class Ativos extends MY_Controller {
                 'patrimonio' => $this->input->post('patrimonio'),
                 'codigo_qr' => md5(uniqid(rand(), true)), // Temporário, ideal é gerar URL curta
                 'status' => $this->input->post('status'),
+                'categoria_id' => $this->input->post('categoria_id'),
                 'data_cadastro' => date('Y-m-d H:i:s')
             ];
 
@@ -73,6 +74,7 @@ class Ativos extends MY_Controller {
             }
         }
 
+        $this->data['categorias'] = $this->ativos_model->get('ativos_categorias', '*');
         $this->data['view'] = 'ativos/adicionarAtivo';
         return $this->layout();
     }
@@ -182,6 +184,7 @@ class Ativos extends MY_Controller {
                 'nome' => $this->input->post('nome'),
                 'patrimonio' => $this->input->post('patrimonio'),
                 'status' => $this->input->post('status'),
+                'categoria_id' => $this->input->post('categoria_id'),
             ];
 
             if (!empty($_FILES['userfile']['name'])) {
@@ -204,6 +207,7 @@ class Ativos extends MY_Controller {
         }
 
         $this->data['result'] = $this->ativos_model->getById($this->uri->segment(3));
+        $this->data['categorias'] = $this->ativos_model->get('ativos_categorias', '*');
         $this->data['view'] = 'ativos/editarAtivo';
         return $this->layout();
     }
@@ -420,5 +424,193 @@ class Ativos extends MY_Controller {
         }
         $itens = $this->ativos_model->getItensBolsa($id);
         echo json_encode($itens);
+    }
+
+    public function imprimirEtiqueta($id)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vAtivo')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para visualizar ativos.');
+            redirect(base_url());
+        }
+
+        $this->data['result'] = $this->ativos_model->getById($id);
+        $this->load->view('ativos/imprimirEtiqueta', $this->data);
+    }
+
+    public function imprimirEtiquetaBolsa($id)
+    {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vAtivo')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para visualizar bolsas.');
+            redirect(base_url());
+        }
+
+        $this->data['result'] = $this->ativos_model->getByIdBolsa($id);
+        $this->load->view('ativos/imprimirEtiquetaBolsa', $this->data);
+    }
+
+    public function auditoria() {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vAtivo')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para visualizar auditoria de ativos.');
+            redirect(base_url());
+        }
+
+        $this->load->library('pagination');
+
+        $dataInicial = $this->input->get('data_inicial');
+        $dataFinal = $this->input->get('data_final');
+        $usuario = $this->input->get('usuario');
+        $termo = $this->input->get('termo');
+
+        $where = [
+            'data_inicial' => $dataInicial,
+            'data_final' => $dataFinal,
+            'usuario' => $usuario,
+            'termo' => $termo
+        ];
+
+        $queryString = http_build_query(array_filter($where));
+
+        $this->data['configuration']['base_url'] = site_url('ativos/auditoria');
+        $this->data['configuration']['total_rows'] = $this->ativos_model->countLogs($where);
+        $this->data['configuration']['suffix'] = '?' . $queryString;
+        $this->data['configuration']['first_url'] = site_url('ativos/auditoria') . '?' . $queryString;
+
+        $this->pagination->initialize($this->data['configuration']);
+
+        $this->data['results'] = $this->ativos_model->getLogs($this->data['configuration']['per_page'], $this->uri->segment(3), $where);
+
+        $this->data['view'] = 'ativos/auditoria';
+        return $this->layout();
+    }
+
+    public function excluirLog() {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dAuditoriaAtivo')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para excluir logs.');
+            redirect(site_url('ativos/auditoria'));
+        }
+        
+        $id = $this->input->post('id');
+        if ($this->ativos_model->deleteLog($id)) {
+            $this->session->set_flashdata('success', 'Log excluído com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao excluir log.');
+        }
+        redirect(site_url('ativos/auditoria'));
+    }
+
+    public function excluirTodosLogs() {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dAuditoriaAtivo')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para excluir logs.');
+            redirect(site_url('ativos/auditoria'));
+        }
+
+        if ($this->ativos_model->deleteAllLogs()) {
+            $this->session->set_flashdata('success', 'Todos os logs foram excluídos com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao excluir logs.');
+        }
+        redirect(site_url('ativos/auditoria'));
+    }
+
+    public function categorias() {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vAtivoCategoria')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para visualizar categorias de ativos.');
+            redirect(base_url());
+        }
+
+        $this->load->library('pagination');
+
+        $this->data['configuration']['base_url'] = site_url('ativos/categorias/');
+        $this->data['configuration']['total_rows'] = $this->ativos_model->count('ativos_categorias');
+
+        $this->pagination->initialize($this->data['configuration']);
+
+        $this->data['results'] = $this->ativos_model->get('ativos_categorias', '*', '', $this->data['configuration']['per_page'] ?? 10, $this->uri->segment(3));
+
+        $this->data['view'] = 'ativos/categorias';
+        return $this->layout();
+    }
+
+    public function adicionarCategoria() {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aAtivoCategoria')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para adicionar categorias de ativos.');
+            redirect(base_url());
+        }
+
+        $this->load->library('form_validation');
+        $this->data['custom_error'] = '';
+
+        if ($this->form_validation->run('ativos_categorias') == false) {
+            $this->data['custom_error'] = (validation_errors() ? '<div class="form_error">' . validation_errors() . '</div>' : false);
+        } else {
+            $data = [
+                'nome' => $this->input->post('nome'),
+            ];
+
+            if ($this->ativos_model->add('ativos_categorias', $data)) {
+                $this->session->set_flashdata('success', 'Categoria adicionada com sucesso!');
+                redirect(site_url('ativos/categorias/'));
+            } else {
+                $this->data['custom_error'] = '<div class="form_error"><p>Ocorreu um erro.</p></div>';
+            }
+        }
+
+        $this->data['view'] = 'ativos/adicionarCategoria';
+        return $this->layout();
+    }
+
+    public function editarCategoria() {
+        if (!$this->uri->segment(3) || !is_numeric($this->uri->segment(3))) {
+            $this->session->set_flashdata('error', 'Item não pode ser encontrado, parâmetro não foi passado corretamente.');
+            redirect('mapos');
+        }
+
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eAtivoCategoria')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para editar categorias de ativos.');
+            redirect(base_url());
+        }
+
+        $this->load->library('form_validation');
+        $this->data['custom_error'] = '';
+
+        if ($this->form_validation->run('ativos_categorias') == false) {
+            $this->data['custom_error'] = (validation_errors() ? '<div class="form_error">' . validation_errors() . '</div>' : false);
+        } else {
+            $data = [
+                'nome' => $this->input->post('nome'),
+            ];
+
+            if ($this->ativos_model->edit('ativos_categorias', $data, 'idAtivoCategoria', $this->input->post('idAtivoCategoria')) == true) {
+                $this->session->set_flashdata('success', 'Categoria editada com sucesso!');
+                redirect(site_url('ativos/editarCategoria/') . $this->input->post('idAtivoCategoria'));
+            } else {
+                $this->data['custom_error'] = '<div class="form_error"><p>Ocorreu um erro.</p></div>';
+            }
+        }
+
+        $this->data['result'] = $this->ativos_model->getByIdCategoria($this->uri->segment(3));
+        $this->data['view'] = 'ativos/editarCategoria';
+        return $this->layout();
+    }
+
+    public function excluirCategoria() {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dAtivoCategoria')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para excluir categorias de ativos.');
+            redirect(base_url());
+        }
+
+        $id = $this->input->post('id');
+        if ($id == null) {
+            $this->session->set_flashdata('error', 'Erro ao tentar excluir categoria.');
+            redirect(site_url('ativos/categorias/'));
+        }
+
+        if ($this->ativos_model->delete('ativos_categorias', 'idAtivoCategoria', $id)) {
+            $this->session->set_flashdata('success', 'Categoria excluída com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao tentar excluir categoria. Verifique se não há ativos vinculados.');
+        }
+
+        redirect(site_url('ativos/categorias/'));
     }
 }
