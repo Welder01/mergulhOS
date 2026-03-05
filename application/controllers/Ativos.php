@@ -525,7 +525,7 @@ class Ativos extends MY_Controller {
 
         $this->pagination->initialize($this->data['configuration']);
 
-        $this->data['results'] = $this->ativos_model->get('ativos_categorias', '*', '', $this->data['configuration']['per_page'] ?? 10, $this->uri->segment(3));
+        $this->data['results'] = $this->ativos_model->get('ativos_categorias', '*', '', isset($this->data['configuration']['per_page']) ? $this->data['configuration']['per_page'] : 10, $this->uri->segment(3));
 
         $this->data['view'] = 'ativos/categorias';
         return $this->layout();
@@ -540,7 +540,9 @@ class Ativos extends MY_Controller {
         $this->load->library('form_validation');
         $this->data['custom_error'] = '';
 
-        if ($this->form_validation->run('ativos_categorias') == false) {
+        $this->form_validation->set_rules('nome', 'Nome', 'trim|required');
+
+        if ($this->form_validation->run() == false) {
             $this->data['custom_error'] = (validation_errors() ? '<div class="form_error">' . validation_errors() . '</div>' : false);
         } else {
             $data = [
@@ -573,7 +575,9 @@ class Ativos extends MY_Controller {
         $this->load->library('form_validation');
         $this->data['custom_error'] = '';
 
-        if ($this->form_validation->run('ativos_categorias') == false) {
+        $this->form_validation->set_rules('nome', 'Nome', 'trim|required');
+
+        if ($this->form_validation->run() == false) {
             $this->data['custom_error'] = (validation_errors() ? '<div class="form_error">' . validation_errors() . '</div>' : false);
         } else {
             $data = [
