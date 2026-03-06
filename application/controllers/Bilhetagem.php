@@ -91,6 +91,7 @@ class Bilhetagem extends MY_Controller {
                 'cliente_id' => $this->input->post('cliente_id'),
                 'viagem_id' => $this->input->post('viagem_id') ?: null,
                 'tipo_transporte' => $tipo_transporte,
+                'tipo_veiculo' => $this->input->post('tipo_veiculo'),
                 'empresa_emissora' => $this->input->post('empresa_emissora'),
                 'codigo_bilhete' => $this->input->post('codigo_bilhete'),
                 'numero_seguranca' => $this->input->post('numero_seguranca'),
@@ -103,6 +104,11 @@ class Bilhetagem extends MY_Controller {
                 'qtd_dias_navegacao' => $qtd_dias_navegacao,
                 'pagou_taxa_parque' => $pagou_taxa_parque,
                 'estadia_estendida' => $estadia_estendida,
+                'terminal' => $this->input->post('terminal'),
+                'plataforma' => $this->input->post('plataforma'),
+                'portao' => $this->input->post('portao'),
+                'ponto_encontro' => $this->input->post('ponto_encontro'),
+                'numero_antt_anac' => $this->input->post('numero_antt_anac'),
                 'status' => 'ativo'
             ];
 
@@ -191,6 +197,7 @@ class Bilhetagem extends MY_Controller {
                 'cliente_id' => $this->input->post('cliente_id'),
                 'viagem_id' => $this->input->post('viagem_id') ?: null,
                 'tipo_transporte' => $tipo_transporte,
+                'tipo_veiculo' => $this->input->post('tipo_veiculo'),
                 'empresa_emissora' => $this->input->post('empresa_emissora'),
                 'codigo_bilhete' => $this->input->post('codigo_bilhete'),
                 'numero_seguranca' => $this->input->post('numero_seguranca'),
@@ -203,6 +210,11 @@ class Bilhetagem extends MY_Controller {
                 'qtd_dias_navegacao' => $this->input->post('qtd_dias_navegacao') ?: 0,
                 'pagou_taxa_parque' => $this->input->post('pagou_taxa_parque') ? 1 : 0,
                 'estadia_estendida' => $this->input->post('estadia_estendida') ? 1 : 0,
+                'terminal' => $this->input->post('terminal'),
+                'plataforma' => $this->input->post('plataforma'),
+                'portao' => $this->input->post('portao'),
+                'ponto_encontro' => $this->input->post('ponto_encontro'),
+                'numero_antt_anac' => $this->input->post('numero_antt_anac'),
             ];
 
             if ($this->bilhetagem_model->edit('bilhetes', $data, 'idBilhete', $this->input->post('idBilhete')) == true) {
@@ -342,5 +354,29 @@ class Bilhetagem extends MY_Controller {
             }
             echo json_encode($result);
         }
+    }
+
+    public function excluir() {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dBilhete')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para excluir bilhetes.');
+            redirect(base_url());
+        }
+
+        $id = $this->input->post('id');
+        if ($id == null) {
+            $this->session->set_flashdata('error', 'Erro ao tentar excluir bilhete.');
+            redirect(site_url('bilhetagem/gerenciar/'));
+        }
+
+        // Remove equipamentos vinculados antes
+        $this->db->delete('bilhetes_equipamentos', ['bilhete_id' => $id]);
+
+        if ($this->bilhetagem_model->delete('bilhetes', 'idBilhete', $id)) {
+            $this->session->set_flashdata('success', 'Bilhete excluído com sucesso!');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao tentar excluir bilhete.');
+        }
+
+        redirect(site_url('bilhetagem/gerenciar/'));
     }
 }

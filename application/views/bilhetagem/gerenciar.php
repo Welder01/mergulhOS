@@ -42,11 +42,14 @@
                     echo '<td><span class="label ' . $status_label . '">' . ucfirst($r->status) . '</span></td>';
                     echo '<td>';
                     if ($this->permission->checkPermission($this->session->userdata('permissao'), 'vBilhete')) {
-                        echo '<a style="margin-right: 1%" href="' . base_url() . 'index.php/bilhetagem/visualizar/' . $r->idBilhete . '" class="btn btn-inverse tip-top" title="Visualizar"><i class="fas fa-eye"></i></a>';
-                        echo '<a style="margin-right: 1%" href="' . base_url() . 'index.php/bilhetagem/imprimirVoucher/' . $r->idBilhete . '" target="_blank" class="btn btn-info tip-top" title="Imprimir Voucher"><i class="fas fa-print"></i></a>';
+                        echo '<a style="margin-right: 1%" href="' . base_url() . 'index.php/bilhetagem/visualizar/' . $r->idBilhete . '" class="btn btn-inverse btn-mini tip-top" title="Visualizar"><i class="fas fa-eye"></i></a>';
+                        echo '<a style="margin-right: 1%" href="' . base_url() . 'index.php/bilhetagem/imprimirVoucher/' . $r->idBilhete . '" target="_blank" class="btn btn-info btn-mini tip-top" title="Imprimir Voucher"><i class="fas fa-print"></i></a>';
                     }
                     if ($this->permission->checkPermission($this->session->userdata('permissao'), 'eBilhete')) {
-                        echo '<a style="margin-right: 1%" href="' . base_url() . 'index.php/bilhetagem/editar/' . $r->idBilhete . '" class="btn btn-info tip-top" title="Editar Bilhete"><i class="fas fa-edit"></i></a>';
+                        echo '<a style="margin-right: 1%" href="' . base_url() . 'index.php/bilhetagem/editar/' . $r->idBilhete . '" class="btn btn-info btn-mini tip-top" title="Editar Bilhete"><i class="fas fa-edit"></i></a>';
+                    }
+                    if ($this->permission->checkPermission($this->session->userdata('permissao'), 'dBilhete')) {
+                        echo '<a href="#modal-excluir" role="button" data-toggle="modal" bilhete="' . $r->idBilhete . '" class="btn btn-danger btn-mini tip-top" title="Excluir Bilhete"><i class="fas fa-trash-alt"></i></a>';
                     }
                     echo '</td>';
                     echo '</tr>';
@@ -57,3 +60,30 @@
 </div>
 
 <?php echo $this->pagination->create_links(); ?>
+
+<!-- Modal Excluir -->
+<div id="modal-excluir" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <form action="<?php echo base_url() ?>index.php/bilhetagem/excluir" method="post">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h5 id="myModalLabel">Excluir Bilhete</h5>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="idBilhete" name="id" value="" />
+            <h5 style="text-align: center">Deseja realmente excluir este bilhete?</h5>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+            <button class="btn btn-danger">Excluir</button>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $(document).on('click', 'a', function(event) {
+            var bilhete = $(this).attr('bilhete');
+            $('#idBilhete').val(bilhete);
+        });
+    });
+</script>

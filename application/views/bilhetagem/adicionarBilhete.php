@@ -4,57 +4,26 @@
 <style>
     /* Estilos para corrigir responsividade e alinhamento */
     .form-horizontal .control-group {
-        margin-bottom: 15px;
+        margin-bottom: 10px !important;
     }
     
+    .form-horizontal .control-label {
+        text-align: left;
+        width: 100%;
+        font-weight: bold;
+        padding-top: 5px;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-horizontal .controls {
+        margin-left: 0;
+    }
+
     input, textarea, select, .uneditable-input {
         max-width: 100%;
         box-sizing: border-box;
-    }
-
-    /* Ajustes para Desktop */
-    @media (min-width: 980px) {
-        .form-horizontal .control-label {
-            width: 130px;
-        }
-        .form-horizontal .controls {
-            margin-left: 150px;
-        }
-        /* Ajuste específico para colunas menores */
-        .row-fluid .span3 .control-label,
-        .row-fluid .span4 .control-label {
-            width: 100px;
-            font-size: 12px;
-        }
-        .row-fluid .span3 .controls,
-        .row-fluid .span4 .controls {
-            margin-left: 110px;
-        }
-    }
-
-    /* Ajustes para Tablet e Mobile (Retrato e Paisagem) */
-    @media (max-width: 979px) {
-        .form-horizontal .control-label {
-            float: none;
-            width: auto;
-            text-align: left;
-            margin-bottom: 3px;
-            padding-top: 0;
-        }
-        .form-horizontal .controls {
-            margin-left: 0;
-        }
-        .row-fluid [class*="span"] {
-            margin-left: 0 !important;
-            width: 100% !important;
-            margin-bottom: 15px;
-            display: block;
-        }
-        .form-actions {
-            padding-left: 10px;
-            padding-right: 10px;
-            text-align: center;
-        }
+        height: 32px !important;
     }
 
     .input-append {
@@ -65,17 +34,21 @@
         border-radius: 4px 0 0 4px !important;
         flex: 1;
         width: auto !important;
-        height: 30px !important;
     }
     .input-append button {
         border-radius: 0 4px 4px 0 !important;
         margin-left: -1px;
+        height: 32px !important;
     }
     
     .widget-content {
-        padding: 20px !important;
+        padding: 15px !important;
     }
 
+    .row-fluid {
+        margin-bottom: 10px;
+    }
+    
     #info_valores_expedicao {
         font-weight: bold;
         color: #2980b9;
@@ -85,6 +58,80 @@
         border-radius: 4px;
         border: 1px solid #d6eaf8;
         display: inline-block;
+    }
+
+    .checkbox.inline {
+        margin-top: 5px;
+        font-size: 14px;
+    }
+
+    /* Custom Radio Buttons */
+    .radio-btn {
+        display: inline-block;
+        margin-right: 10px;
+        cursor: pointer;
+        position: relative;
+    }
+    .radio-btn input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+    }
+    .radio-btn span {
+        display: inline-block;
+        padding: 6px 12px;
+        background-color: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #333;
+        transition: all 0.2s;
+    }
+    .radio-btn input:checked + span {
+        background-color: #2ecc71;
+        color: white;
+        border-color: #27ae60;
+    }
+
+    /* Custom Switch */
+    .switch-container {
+        display: inline-flex;
+        align-items: center;
+        margin-right: 20px;
+        cursor: pointer;
+        margin-bottom: 0;
+    }
+    .switch-container input {
+        display: none;
+    }
+    .switch-container .slider {
+        position: relative;
+        width: 34px;
+        height: 18px;
+        background-color: #ccc;
+        border-radius: 34px;
+        transition: .4s;
+        margin-right: 8px;
+    }
+    .switch-container .slider:before {
+        position: absolute;
+        content: "";
+        height: 14px;
+        width: 14px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        border-radius: 50%;
+        transition: .4s;
+    }
+    .switch-container input:checked + .slider {
+        background-color: #2ecc71;
+    }
+    .switch-container input:checked + .slider:before {
+        transform: translateX(16px);
+    }
+    .switch-container .text {
+        font-size: 12px;
     }
 </style>
 
@@ -99,7 +146,7 @@
                 <?php echo $custom_error; ?>
                 <form action="<?php echo current_url(); ?>" id="formBilhete" method="post" class="form-horizontal">
                     
-                    <!-- Linha 1: Expedição e Cliente -->
+                    <!-- Linha 1 -->
                     <div class="row-fluid">
                         <div class="span6">
                             <div class="control-group">
@@ -107,13 +154,6 @@
                                 <div class="controls">
                                     <input id="expedicao" type="text" class="span12" placeholder="Digite para buscar a expedição..." required />
                                     <input id="expedicao_id" type="hidden" name="expedicao_id" />
-                                    <div id="info_assentos" style="display:none; margin-top: 5px;">
-                                        <span class="badge badge-info tip-top" title="Capacidade Total" id="badge_capacidade">0</span>
-                                        <span class="badge badge-important tip-top" title="Ocupados" id="badge_ocupados">0</span>
-                                        <span class="badge badge-success tip-top" title="Disponíveis" id="badge_disponiveis">0</span>
-                                        <span class="help-inline" style="font-size: 11px; color: #666;">Assentos Disponíveis</span>
-                                        <div class="progress progress-striped active" style="height: 10px; margin-top: 5px; margin-bottom: 0;"><div class="bar" id="bar_ocupacao" style="width: 0%;"></div></div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -129,7 +169,21 @@
                         </div>
                     </div>
 
-                    <!-- Linha 2: Hospedagem -->
+                    <!-- Info Assentos (Hidden by default) -->
+                    <div class="row-fluid" id="info_assentos" style="display:none; margin-bottom: 10px;">
+                        <div class="span12">
+                            <div class="alert alert-info" style="margin-bottom: 0; padding: 8px;">
+                                <strong>Capacidade:</strong> <span id="badge_capacidade">0</span> | 
+                                <strong>Ocupados:</strong> <span id="badge_ocupados">0</span> | 
+                                <strong>Disponíveis:</strong> <span id="badge_disponiveis">0</span>
+                                <div class="progress progress-striped active" style="height: 8px; margin-top: 5px; margin-bottom: 0; background: #fff;">
+                                    <div class="bar" id="bar_ocupacao" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Linha 2 -->
                     <div class="row-fluid">
                         <div class="span12">
                             <div class="control-group">
@@ -138,32 +192,37 @@
                                     <select name="viagem_id" id="viagem_id" class="span12">
                                         <option value="">Selecione um cliente primeiro...</option>
                                     </select>
-                                    <span class="help-block" style="color: #999; font-size: 0.9em; margin-top: 2px;">(Opcional - Selecione o cliente para carregar)</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Dados do Transporte -->
-                    <div class="widget-title" style="margin-top: 10px; margin-bottom: 15px;">
+                    <div class="widget-title" style="margin: 15px 0 10px 0;">
                         <span class="icon"><i class="fas fa-plane"></i></span>
                         <h5>Dados do Transporte</h5>
                     </div>
                     
+                    <!-- Linha 3 -->
                     <div class="row-fluid">
                         <div class="span12">
                             <div class="control-group">
                                 <label class="control-label">Tipo Transporte</label>
                                 <div class="controls">
-                                    <label class="radio inline"><input type="radio" name="tipo_transporte" value="fretado" checked> Fretado</label>
-                                    <label class="radio inline"><input type="radio" name="tipo_transporte" value="companhia_externa"> Cia Externa</label>
-                                    <label class="radio inline"><input type="radio" name="tipo_transporte" value="meios_proprios"> Meios Próprios</label>
+                                    <label class="radio-btn">
+                                        <input type="radio" name="tipo_transporte" value="fretado" checked> <span>Fretado</span>
+                                    </label>
+                                    <label class="radio-btn">
+                                        <input type="radio" name="tipo_transporte" value="companhia_externa"> <span>Cia Externa</span>
+                                    </label>
+                                    <label class="radio-btn">
+                                        <input type="radio" name="tipo_transporte" value="meios_proprios"> <span>Meios Próprios</span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Linha 4: Detalhes Transporte -->
+                    <!-- Linha 4 -->
                     <div class="row-fluid" id="detalhes_transporte">
                         <div class="span4">
                             <div class="control-group">
@@ -174,7 +233,19 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="span4">
+                        <div class="span3" id="div_tipo_veiculo" style="display:none;">
+                            <div class="control-group">
+                                <label for="tipo_veiculo" class="control-label">Tipo Veículo</label>
+                                <div class="controls">
+                                    <select name="tipo_veiculo" id="tipo_veiculo" class="span12">
+                                        <option value="onibus">Ônibus</option>
+                                        <option value="van">Van</option>
+                                        <option value="aviao">Avião</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="span3">
                             <div class="control-group">
                                 <label for="codigo_bilhete" class="control-label">Localizador</label>
                                 <div class="controls">
@@ -182,7 +253,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="span4">
+                        <div class="span2">
                             <div class="control-group">
                                 <label for="assento" class="control-label">Assento</label>
                                 <div class="controls">
@@ -195,15 +266,58 @@
                         </div>
                     </div>
 
-                    <!-- Financeiro e Câmbio -->
-                    <div class="widget-title" style="margin-top: 10px; margin-bottom: 15px;">
+                    <!-- Linha 5 (Detalhes Específicos) -->
+                    <div class="row-fluid" id="detalhes_especificos" style="display:none;">
+                        <div class="span2">
+                            <div class="control-group">
+                                <label for="terminal" class="control-label">Terminal</label>
+                                <div class="controls">
+                                    <input type="text" name="terminal" id="terminal" class="span12" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="span2" id="div_plataforma">
+                            <div class="control-group">
+                                <label for="plataforma" class="control-label">Plataforma</label>
+                                <div class="controls">
+                                    <input type="text" name="plataforma" id="plataforma" class="span12" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="span2" id="div_portao" style="display:none;">
+                            <div class="control-group">
+                                <label for="portao" class="control-label">Portão</label>
+                                <div class="controls">
+                                    <input type="text" name="portao" id="portao" class="span12" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="span3">
+                            <div class="control-group">
+                                <label for="ponto_encontro" class="control-label">Ponto Encontro</label>
+                                <div class="controls">
+                                    <input type="text" name="ponto_encontro" id="ponto_encontro" class="span12" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="span3">
+                            <div class="control-group">
+                                <label for="numero_antt_anac" class="control-label">ANTT/ANAC</label>
+                                <div class="controls">
+                                    <input type="text" name="numero_antt_anac" id="numero_antt_anac" class="span12" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="widget-title" style="margin: 15px 0 10px 0;">
                         <span class="icon"><i class="fas fa-money-bill-wave"></i></span>
                         <h5>Valores e Serviços</h5>
                     </div>
 
-                    <!-- Linha 5: Valores -->
+                    <!-- Linha 6 -->
                     <div class="row-fluid">
-                        <div class="span3">
+                        <div class="span2">
                             <div class="control-group">
                                 <label class="control-label">Moeda</label>
                                 <div class="controls">
@@ -215,7 +329,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="span3">
+                        <div class="span2">
                             <div class="control-group">
                                 <label class="control-label">Cotação</label>
                                 <div class="controls">
@@ -231,7 +345,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="span3">
+                        <div class="span2">
                             <div class="control-group">
                                 <label class="control-label">Taxa Serviço</label>
                                 <div class="controls">
@@ -239,11 +353,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Linha 6: Adicionais -->
-                    <div class="row-fluid">
-                        <div class="span4">
+                        <div class="span3">
                             <div class="control-group">
                                 <label class="control-label">Bagagem Extra</label>
                                 <div class="controls">
@@ -251,7 +361,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="span4">
+                    </div>
+
+                    <!-- Linha 7 -->
+                    <div class="row-fluid">
+                        <div class="span3">
                             <div class="control-group">
                                 <label class="control-label">Dias Navegação</label>
                                 <div class="controls">
@@ -259,48 +373,57 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="span4">
+                        <div class="span9">
                             <div class="control-group">
-                                <label class="control-label">Opções</label>
+                                <label class="control-label">Adicionais</label>
                                 <div class="controls">
-                                    <label class="checkbox">
-                                        <input type="checkbox" name="pagou_taxa_parque" value="1"> Taxa Parque
+                                    <label class="switch-container">
+                                        <input type="checkbox" name="pagou_taxa_parque" value="1">
+                                        <div class="slider"></div> <span class="text">Taxa Parque</span>
                                     </label>
-                                    <label class="checkbox">
-                                        <input type="checkbox" name="estadia_estendida" value="1"> Estadia Estendida
+                                    
+                                    <label class="switch-container">
+                                        <input type="checkbox" name="estadia_estendida" value="1">
+                                        <div class="slider"></div> <span class="text">Estadia Estendida</span>
                                     </label>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="control-group">
-                        <div class="controls">
-                            <span class="help-inline text-info" id="info_valores_expedicao"></span>
+                    <div class="row-fluid">
+                        <div class="span12">
+                            <span class="help-block text-info" id="info_valores_expedicao" style="font-weight:bold;"></span>
                         </div>
                     </div>
 
-                    <div class="widget-title" style="margin-top: 10px; margin-bottom: 15px;">
+                    <div class="widget-title" style="margin: 15px 0 10px 0;">
                         <span class="icon"><i class="fas fa-swimmer"></i></span>
                         <h5>Equipamentos</h5>
                     </div>
 
-                    <div class="control-group">
-                        <label class="control-label">Locação</label>
-                        <div class="controls">
-                            <label class="checkbox">
-                                <input type="checkbox" id="chk_locar_equipamentos"> Desejo locar equipamentos para esta expedição
-                            </label>
+                    <div class="row-fluid">
+                        <div class="span12">
+                            <div class="control-group">
+                                <div class="controls">
+                                    <label class="switch-container">
+                                        <input type="checkbox" id="chk_locar_equipamentos">
+                                        <div class="slider"></div> <span class="text">Desejo locar equipamentos para esta expedição</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="control-group" id="div_equipamentos" style="display:none;">
-                        <label for="busca_equipamento" class="control-label">Buscar Equipamento</label>
-                        <div class="controls">
-                            <input type="text" id="busca_equipamento" class="span12" placeholder="Digite o nome ou patrimônio do equipamento...">
-                        </div>
-                        <div class="controls" style="margin-top: 10px;">
-                            <table class="table table-bordered table-condensed" id="tabela_equipamentos">
+                    <div class="row-fluid" id="div_equipamentos" style="display:none;">
+                        <div class="span12">
+                            <div class="control-group">
+                                <label for="busca_equipamento" class="control-label">Buscar Equipamento</label>
+                                <div class="controls">
+                                    <input type="text" id="busca_equipamento" class="span12" placeholder="Digite o nome ou patrimônio do equipamento...">
+                                </div>
+                            </div>
+                            <table class="table table-bordered table-condensed" id="tabela_equipamentos" style="margin-top: 10px;">
                                 <thead>
                                     <tr>
                                         <th>Nome</th>
@@ -315,13 +438,9 @@
                         </div>
                     </div>
 
-                    <div class="form-actions">
-                        <div class="span12">
-                            <div class="span6 offset3" style="text-align: center">
-                                <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Emitir Bilhete</button>
-                                <a href="<?php echo base_url() ?>index.php/bilhetagem" class="btn"><i class="fas fa-arrow-left"></i> Voltar</a>
-                            </div>
-                        </div>
+                    <div class="form-actions" style="background:none; border-top:none; text-align:center;">
+                        <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Emitir Bilhete</button>
+                        <a href="<?php echo base_url() ?>index.php/bilhetagem" class="btn"><i class="fas fa-arrow-left"></i> Voltar</a>
                     </div>
                 </form>
             </div>
@@ -388,7 +507,7 @@
                         if (exp.transportes && exp.transportes.length > 1) {
                             var options = '<option value="">Selecione o Transporte...</option>';
                             exp.transportes.forEach(function(t) {
-                                options += '<option value="'+t.nome+'" data-assentos="'+t.qtd_assentos+'">'+t.nome+' ('+t.qtd_assentos+' lug.)</option>';
+                                options += '<option value="'+t.nome+'" data-assentos="'+t.qtd_assentos+'" data-tipo="'+t.tipo+'">'+t.nome+' ('+t.qtd_assentos+' lug.)</option>';
                             });
                             
                             $('#empresa_emissora').hide().removeAttr('name');
@@ -408,6 +527,8 @@
                                 // Se for único, já define a capacidade dele
                                 if(exp.transportes && exp.transportes.length == 1) {
                                     capacidadeAtual = parseInt(exp.transportes[0].qtd_assentos);
+                                    // Define o tipo do veículo automaticamente
+                                    $('#tipo_veiculo').val(exp.transportes[0].tipo).trigger('change');
                                 }
                             }
                         }
@@ -432,6 +553,10 @@
             var assentos = selected.data('assentos');
             if(assentos) {
                 capacidadeAtual = parseInt(assentos);
+            }
+            var tipo = selected.data('tipo');
+            if(tipo) {
+                $('#tipo_veiculo').val(tipo).trigger('change');
             }
         });
 
@@ -496,15 +621,23 @@
             // Reset visual state
             $('#select_transporte').hide().removeAttr('name');
             $('#empresa_emissora').show().attr('name', 'empresa_emissora');
+            $('#div_tipo_veiculo').hide();
+            $('#detalhes_especificos').hide();
 
             if (tipo == 'fretado') {
                 $('#btn-selecionar-assento').show();
                 labelEmpresa.text('Transporte');
                 $('#empresa_emissora').attr('placeholder', 'Selecione ou busque o transporte...');
+                $('#detalhes_especificos').show();
             } else {
                 $('#btn-selecionar-assento').hide();
                 labelEmpresa.text('Empresa/Cia');
                 $('#empresa_emissora').attr('placeholder', 'Ex: Latam, Gol...');
+                
+                if (tipo == 'companhia_externa') {
+                    $('#div_tipo_veiculo').show();
+                    $('#detalhes_especificos').show();
+                }
 
                 // Remove autocomplete se não for fretado
                 if ($("#empresa_emissora").data('autocomplete')) {
@@ -524,8 +657,21 @@
                     }
                 });
             }
+            $('#tipo_veiculo').trigger('change');
         }
         
+        // Lógica de campos específicos por tipo de veículo
+        $('#tipo_veiculo').change(function() {
+            var tipo = $(this).val();
+            if (tipo == 'aviao') {
+                $('#div_plataforma').hide();
+                $('#div_portao').show();
+            } else {
+                $('#div_plataforma').show();
+                $('#div_portao').hide();
+            }
+        });
+
         // Inicializa estado do botão
         toggleMapaButton();
         $('input[name=tipo_transporte]').change(toggleMapaButton);
