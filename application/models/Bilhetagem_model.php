@@ -39,7 +39,8 @@ class Bilhetagem_model extends CI_Model {
         $this->db->join('transportes', 'transportes.idTransporte = expedicoes.transporte_id', 'left');
         $this->db->join('viagens', 'viagens.id = bilhetes.viagem_id', 'left');
         $this->db->where('bilhetes.idBilhete', $id);
-        return $this->db->get()->row();
+        $query = $this->db->get();
+        return $query ? $query->row() : null;
     }
 
     public function getEquipamentosByBilhete($id) {
@@ -47,12 +48,14 @@ class Bilhetagem_model extends CI_Model {
         $this->db->from('bilhetes_equipamentos be');
         $this->db->join('ativos a', 'a.idAtivo = be.ativo_id');
         $this->db->where('be.bilhete_id', $id);
-        return $this->db->get()->result();
+        $query = $this->db->get();
+        return $query ? $query->result() : [];
     }
 
     public function getExpedicoesAtivas() {
         $this->db->where('data_ida >=', date('Y-m-d'));
-        return $this->db->get('expedicoes')->result();
+        $query = $this->db->get('expedicoes');
+        return $query ? $query->result() : [];
     }
     
     public function getExpedicaoById($id) {
@@ -60,7 +63,8 @@ class Bilhetagem_model extends CI_Model {
         $this->db->from('expedicoes');
         $this->db->join('transportes', 'transportes.idTransporte = expedicoes.transporte_id', 'left');
         $this->db->where('expedicoes.idExpedicao', $id);
-        return $this->db->get()->row();
+        $query = $this->db->get();
+        return $query ? $query->row() : null;
     }
 
     public function countBilhetesByExpedicao($expedicao_id) {
@@ -133,11 +137,14 @@ class Bilhetagem_model extends CI_Model {
         return $diferencaHoras >= $limiteHoras;
     }
 
-    public function getAssentosOcupados($expedicao_id) {
+    public function getAssentosOcupados($expedicao_id, $transporte_nome = null) {
         $this->db->select('assento');
         $this->db->from('bilhetes');
         $this->db->where('expedicao_id', $expedicao_id);
         $this->db->where('status !=', 'cancelado');
+        if ($transporte_nome) {
+            $this->db->where('empresa_emissora', $transporte_nome);
+        }
         $query = $this->db->get();
         
         $ocupados = [];

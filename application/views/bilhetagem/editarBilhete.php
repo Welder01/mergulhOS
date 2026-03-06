@@ -129,16 +129,32 @@
                     </div>
                     
                     <div class="control-group">
-                        <label for="equipamentos" class="control-label">Locação de Equipamentos</label>
+                        <label for="busca_equipamento" class="control-label">Locação de Equipamentos</label>
                         <div class="controls">
-                            <select name="equipamentos[]" id="equipamentos" multiple class="span8" style="height: 100px;">
-                                <?php foreach ($ativos_disponiveis as $ativo) { 
-                                    $selected = in_array($ativo->idAtivo, $equipamentos_selecionados) ? 'selected' : '';
-                                ?>
-                                    <option value="<?= $ativo->idAtivo ?>" <?= $selected ?>><?= $ativo->nome ?> (<?= $ativo->patrimonio ?>)</option>
-                                <?php } ?>
-                            </select>
-                            <span class="help-block">Segure Ctrl para selecionar múltiplos itens.</span>
+                            <input type="text" id="busca_equipamento" class="span12" placeholder="Digite o nome ou patrimônio do equipamento...">
+                        </div>
+                        <div class="controls" style="margin-top: 10px;">
+                            <table class="table table-bordered table-condensed" id="tabela_equipamentos">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Patrimônio</th>
+                                        <th style="width: 50px;">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if(isset($equipamentos_atuais)) { foreach($equipamentos_atuais as $eq) { ?>
+                                    <tr id="equipamento_<?= $eq->ativo_id ?>">
+                                        <td><?= $eq->nome ?></td>
+                                        <td><?= $eq->patrimonio ?></td>
+                                        <td>
+                                            <input type="hidden" name="equipamentos[]" value="<?= $eq->ativo_id ?>" />
+                                            <button type="button" class="btn btn-mini btn-danger" onclick="$(this).closest('tr').remove();"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <?php } } ?>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
@@ -189,6 +205,22 @@
     .aisle { width: 40px; text-align: center; font-size: 10px; color: #999; line-height: 40px; }
     .driver-area { text-align: right; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
     .steering-wheel { font-size: 24px; color: #555; }
+
+    /* Fix input height in append group */
+    .input-append input {
+        height: 30px !important;
+    }
+    
+    #info_valores_expedicao {
+        font-weight: bold;
+        color: #2980b9;
+        font-size: 1.1em;
+        background: #eaf2f8;
+        padding: 8px 15px;
+        border-radius: 4px;
+        border: 1px solid #d6eaf8;
+        display: inline-block;
+    }
 </style>
 
 <script src="<?php echo base_url() ?>assets/js/jquery.validate.js"></script>
@@ -283,10 +315,11 @@
 
         $('#btn-selecionar-assento').click(function() {
             var expedicaoId = $('#expedicao_id').val();
+            var transporteNome = $('#empresa_emissora').val();
             $('#modal-assentos').modal('show');
             $('#bus-map').html('<div style="text-align:center"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>');
 
-            $.post('<?php echo base_url(); ?>index.php/bilhetagem/get_assentos_ocupados', {expedicao_id: expedicaoId}, function(data) {
+            $.post('<?php echo base_url(); ?>index.php/bilhetagem/get_assentos_ocupados', {expedicao_id: expedicaoId, transporte: transporteNome}, function(data) {
                 var ocupados = JSON.parse(data);
                 renderBusMap(ocupados);
             });
@@ -320,5 +353,26 @@
             
             return '<div class="seat ' + classOccupied + '" ' + onClick + '>' + num + '</div>';
         }
+
+        // Autocomplete Equipamento
+        $("#busca_equipamento").autocomplete({
+            source: "<?php echo base_url(); ?>index.php/ativos/autoCompleteAtivo",
+            minLength: 1,
+            select: function(event, ui) {
+                if ($("#equipamento_" + ui.item.id).length == 0) {
+                    var html = '<tr id="equipamento_' + ui.item.id + '">' +
+                               '<td>' + ui.item.nome + '</td>' +
+                               '<td>' + ui.item.patrimonio + '</td>' +
+                               '<td>' +
+                               '<input type="hidden" name="equipamentos[]" value="' + ui.item.id + '" />' +
+                               '<button type="button" class="btn btn-mini btn-danger" onclick="$(this).closest(\'tr\').remove();"><i class="fas fa-trash"></i></button>' +
+                               '</td>' +
+                               '</tr>';
+                    $("#tabela_equipamentos tbody").append(html);
+                }
+                $(this).val("");
+                return false;
+            }
+        });
     });
 </script>

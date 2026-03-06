@@ -57,7 +57,9 @@ class Bilhetagem extends MY_Controller {
             $tipo_transporte = $this->input->post('tipo_transporte');
             
             // Regra: Meios Próprios = Valor Zero
-            $valor_original = ($tipo_transporte == 'meios_proprios') ? 0.00 : $this->input->post('valor_original');
+            $valor_original = $this->input->post('valor_original');
+            $valor_original = str_replace(['.', ','], ['', '.'], $valor_original);
+            $valor_original = ($tipo_transporte == 'meios_proprios') ? 0.00 : floatval($valor_original);
             
             // Conversão para BRL
             // $valor_bilhete_brl = ($moeda == 'BRL') ? $valor_original : ($valor_original * $cotacao);
@@ -71,10 +73,16 @@ class Bilhetagem extends MY_Controller {
             $estadia_estendida = $this->input->post('estadia_estendida') ? 1 : 0;
             
             // Cálculos Adicionais
+            $taxa_servico = $this->input->post('taxa_servico_emissao');
+            $taxa_servico = str_replace(['.', ','], ['', '.'], $taxa_servico);
+            $taxa_servico = floatval($taxa_servico);
+
+            $bagagem_extra = $this->input->post('valor_bagagem_extra');
+            $bagagem_extra = str_replace(['.', ','], ['', '.'], $bagagem_extra);
+            $bagagem_extra = floatval($bagagem_extra);
+
             $total_navegacao = $qtd_dias_navegacao * $expedicao->preco_saida_barco_dia;
             $total_parque = $pagou_taxa_parque ? $expedicao->taxa_parque_unitaria : 0;
-            $taxa_servico = $this->input->post('taxa_servico_emissao');
-            $bagagem_extra = $this->input->post('valor_bagagem_extra');
 
             $valor_total_lancamento = $valor_bilhete_brl + $total_navegacao + $total_parque + $taxa_servico + $bagagem_extra;
 
@@ -134,7 +142,7 @@ class Bilhetagem extends MY_Controller {
         }
 
         $this->data['expedicoes'] = $this->bilhetagem_model->getExpedicoesAtivas();
-        $this->data['ativos_disponiveis'] = $this->ativos_model->get('ativos', 'idAtivo, ativos.nome, patrimonio', 'status = "disponivel"');
+        $this->data['ativos_disponiveis'] = $this->ativos_model->get('ativos', 'idAtivo, ativos.nome, patrimonio', 'ativos.status = "disponivel"');
         $this->data['view'] = 'bilhetagem/adicionarBilhete';
         return $this->layout();
     }
@@ -165,8 +173,18 @@ class Bilhetagem extends MY_Controller {
             $cotacao = $this->input->post('cotacao_venda');
             $tipo_transporte = $this->input->post('tipo_transporte');
             
-            $valor_original = ($tipo_transporte == 'meios_proprios') ? 0.00 : $this->input->post('valor_original');
+            $valor_original = $this->input->post('valor_original');
+            $valor_original = str_replace(['.', ','], ['', '.'], $valor_original);
+            $valor_original = ($tipo_transporte == 'meios_proprios') ? 0.00 : floatval($valor_original);
             $valor_bilhete_brl = $this->currencyconverter->convert($valor_original, $moeda, 'BRL', $cotacao);
+
+            $taxa_servico = $this->input->post('taxa_servico_emissao');
+            $taxa_servico = str_replace(['.', ','], ['', '.'], $taxa_servico);
+            $taxa_servico = floatval($taxa_servico);
+
+            $bagagem_extra = $this->input->post('valor_bagagem_extra');
+            $bagagem_extra = str_replace(['.', ','], ['', '.'], $bagagem_extra);
+            $bagagem_extra = floatval($bagagem_extra);
 
             $data = [
                 'expedicao_id' => $expedicao_id,
@@ -180,8 +198,8 @@ class Bilhetagem extends MY_Controller {
                 'moeda_venda' => $moeda,
                 'cotacao_venda' => $cotacao,
                 'valor_bilhete_brl' => $valor_bilhete_brl,
-                'taxa_servico_emissao' => $this->input->post('taxa_servico_emissao'),
-                'valor_bagagem_extra' => $this->input->post('valor_bagagem_extra'),
+                'taxa_servico_emissao' => $taxa_servico,
+                'valor_bagagem_extra' => $bagagem_extra,
                 'qtd_dias_navegacao' => $this->input->post('qtd_dias_navegacao') ?: 0,
                 'pagou_taxa_parque' => $this->input->post('pagou_taxa_parque') ? 1 : 0,
                 'estadia_estendida' => $this->input->post('estadia_estendida') ? 1 : 0,
@@ -207,7 +225,7 @@ class Bilhetagem extends MY_Controller {
 
         $this->data['result'] = $this->bilhetagem_model->getById($this->uri->segment(3));
         $this->data['expedicoes'] = $this->bilhetagem_model->getExpedicoesAtivas();
-        $this->data['ativos_disponiveis'] = $this->ativos_model->get('ativos', 'idAtivo, ativos.nome, patrimonio', 'status = "disponivel"');
+        $this->data['ativos_disponiveis'] = $this->ativos_model->get('ativos', 'idAtivo, ativos.nome, patrimonio', 'ativos.status = "disponivel"');
         
         // Equipamentos selecionados
         $equipamentos_atuais = $this->bilhetagem_model->getEquipamentosByBilhete($this->uri->segment(3));
@@ -215,6 +233,7 @@ class Bilhetagem extends MY_Controller {
         foreach($equipamentos_atuais as $eq) {
             $this->data['equipamentos_selecionados'][] = $eq->ativo_id;
         }
+        $this->data['equipamentos_atuais'] = $equipamentos_atuais;
 
         $this->data['view'] = 'bilhetagem/editarBilhete';
         return $this->layout();
@@ -260,6 +279,10 @@ class Bilhetagem extends MY_Controller {
     public function get_expedicao_detalhes() {
         $id = $this->input->post('id');
         $expedicao = $this->bilhetagem_model->getExpedicaoById($id);
+
+        // Busca transportes vinculados
+        $this->load->model('expedicoes_model');
+        $expedicao->transportes = $this->expedicoes_model->getTransportes($id);
         
         if ($expedicao) {
             $ocupados = $this->bilhetagem_model->countBilhetesByExpedicao($id);
@@ -294,7 +317,8 @@ class Bilhetagem extends MY_Controller {
 
     public function get_assentos_ocupados() {
         $expedicao_id = $this->input->post('expedicao_id');
-        $ocupados = $this->bilhetagem_model->getAssentosOcupados($expedicao_id);
+        $transporte = $this->input->post('transporte');
+        $ocupados = $this->bilhetagem_model->getAssentosOcupados($expedicao_id, $transporte);
         echo json_encode($ocupados);
     }
 

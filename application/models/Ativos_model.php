@@ -23,7 +23,9 @@ class Ativos_model extends CI_Model {
             $this->db->order_by('idAtivo', 'desc');
         }
 
-        $this->db->limit($perpage, $start);
+        if ($perpage > 0) {
+            $this->db->limit($perpage, $start);
+        }
         if ($where) {
             $this->db->where($where);
         }

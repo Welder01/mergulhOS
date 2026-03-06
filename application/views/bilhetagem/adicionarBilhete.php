@@ -65,6 +65,7 @@
         border-radius: 4px 0 0 4px !important;
         flex: 1;
         width: auto !important;
+        height: 30px !important;
     }
     .input-append button {
         border-radius: 0 4px 4px 0 !important;
@@ -73,6 +74,17 @@
     
     .widget-content {
         padding: 20px !important;
+    }
+
+    #info_valores_expedicao {
+        font-weight: bold;
+        color: #2980b9;
+        font-size: 1.1em;
+        background: #eaf2f8;
+        padding: 8px 15px;
+        border-radius: 4px;
+        border: 1px solid #d6eaf8;
+        display: inline-block;
     }
 </style>
 
@@ -158,6 +170,7 @@
                                 <label for="empresa_emissora" class="control-label">Empresa/Cia</label>
                                 <div class="controls">
                                     <input type="text" name="empresa_emissora" id="empresa_emissora" class="span12" />
+                                    <select id="select_transporte" class="span12" style="display:none;"></select>
                                 </div>
                             </div>
                         </div>
@@ -282,14 +295,23 @@
                     </div>
 
                     <div class="control-group" id="div_equipamentos" style="display:none;">
-                        <label for="equipamentos" class="control-label">Selecionar Itens</label>
+                        <label for="busca_equipamento" class="control-label">Buscar Equipamento</label>
                         <div class="controls">
-                            <select name="equipamentos[]" id="equipamentos" multiple class="span12" style="height: 150px;">
-                                <?php foreach ($ativos_disponiveis as $ativo) { ?>
-                                    <option value="<?= $ativo->idAtivo ?>"><?= $ativo->nome ?> (<?= $ativo->patrimonio ?>)</option>
-                                <?php } ?>
-                            </select>
-                            <span class="help-block">Segure Ctrl para selecionar múltiplos itens.</span>
+                            <input type="text" id="busca_equipamento" class="span12" placeholder="Digite o nome ou patrimônio do equipamento...">
+                        </div>
+                        <div class="controls" style="margin-top: 10px;">
+                            <table class="table table-bordered table-condensed" id="tabela_equipamentos">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Patrimônio</th>
+                                        <th style="width: 50px;">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Itens adicionados via JS -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
@@ -361,10 +383,33 @@
                 $.post('<?php echo base_url(); ?>index.php/bilhetagem/get_expedicao_detalhes', {id: ui.item.id}, function(data){
                     var exp = JSON.parse(data);
                     if(exp.capacidade_transporte > 0) {
-                        capacidadeAtual = parseInt(exp.capacidade_transporte);
-                        // Preenche o transporte automaticamente se for Fretado e houver vínculo
-                        if ($('input[name=tipo_transporte]:checked').val() == 'fretado' && exp.nome_transporte) {
-                            $('#empresa_emissora').val(exp.nome_transporte);
+                        
+                        // Lógica para Múltiplos Transportes
+                        if (exp.transportes && exp.transportes.length > 1) {
+                            var options = '<option value="">Selecione o Transporte...</option>';
+                            exp.transportes.forEach(function(t) {
+                                options += '<option value="'+t.nome+'" data-assentos="'+t.qtd_assentos+'">'+t.nome+' ('+t.qtd_assentos+' lug.)</option>';
+                            });
+                            
+                            $('#empresa_emissora').hide().removeAttr('name');
+                            $('#select_transporte').html(options).show().attr('name', 'empresa_emissora');
+                            
+                            // Resetar capacidade até selecionar
+                            capacidadeAtual = 0;
+                        } else {
+                            // Transporte Único ou Nenhum vinculado
+                            $('#select_transporte').hide().removeAttr('name');
+                            $('#empresa_emissora').show().attr('name', 'empresa_emissora');
+                            
+                            capacidadeAtual = parseInt(exp.capacidade_transporte);
+                            
+                            if ($('input[name=tipo_transporte]:checked').val() == 'fretado' && exp.nome_transporte) {
+                                $('#empresa_emissora').val(exp.nome_transporte);
+                                // Se for único, já define a capacidade dele
+                                if(exp.transportes && exp.transportes.length == 1) {
+                                    capacidadeAtual = parseInt(exp.transportes[0].qtd_assentos);
+                                }
+                            }
                         }
 
                         $('#info_assentos').show();
@@ -378,6 +423,15 @@
                         $('#info_assentos').hide();
                     }
                 });
+            }
+        });
+
+        // Atualiza capacidade ao selecionar transporte no dropdown
+        $('#select_transporte').change(function() {
+            var selected = $(this).find('option:selected');
+            var assentos = selected.data('assentos');
+            if(assentos) {
+                capacidadeAtual = parseInt(assentos);
             }
         });
 
@@ -439,10 +493,14 @@
             var tipo = $('input[name=tipo_transporte]:checked').val();
             var labelEmpresa = $("label[for='empresa_emissora']");
 
+            // Reset visual state
+            $('#select_transporte').hide().removeAttr('name');
+            $('#empresa_emissora').show().attr('name', 'empresa_emissora');
+
             if (tipo == 'fretado') {
                 $('#btn-selecionar-assento').show();
-                labelEmpresa.text('Transporte (Busca)');
-                $('#empresa_emissora').attr('placeholder', 'Digite para buscar o transporte...');
+                labelEmpresa.text('Transporte');
+                $('#empresa_emissora').attr('placeholder', 'Selecione ou busque o transporte...');
             } else {
                 $('#btn-selecionar-assento').hide();
                 labelEmpresa.text('Empresa/Cia');
@@ -474,15 +532,22 @@
 
         $('#btn-selecionar-assento').click(function() {
             var expedicaoId = $('#expedicao_id').val();
+            var transporteNome = $('[name="empresa_emissora"]').val();
+
             if (!expedicaoId) {
                 alert('Por favor, selecione uma expedição primeiro.');
+                return;
+            }
+            
+            if ($('#select_transporte').is(':visible') && !transporteNome) {
+                alert('Por favor, selecione um transporte.');
                 return;
             }
 
             $('#modal-assentos').modal('show');
             $('#bus-map').html('<div style="text-align:center"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>');
 
-            $.post('<?php echo base_url(); ?>index.php/bilhetagem/get_assentos_ocupados', {expedicao_id: expedicaoId}, function(data) {
+            $.post('<?php echo base_url(); ?>index.php/bilhetagem/get_assentos_ocupados', {expedicao_id: expedicaoId, transporte: transporteNome}, function(data) {
                 var ocupados = JSON.parse(data);
                 renderBusMap(ocupados);
             });
@@ -517,13 +582,34 @@
             return '<div class="seat ' + classOccupied + '" ' + onClick + '>' + num + '</div>';
         }
 
+        // Autocomplete Equipamento
+        $("#busca_equipamento").autocomplete({
+            source: "<?php echo base_url(); ?>index.php/ativos/autoCompleteAtivo",
+            minLength: 1,
+            select: function(event, ui) {
+                if ($("#equipamento_" + ui.item.id).length == 0) {
+                    var html = '<tr id="equipamento_' + ui.item.id + '">' +
+                               '<td>' + ui.item.nome + '</td>' +
+                               '<td>' + ui.item.patrimonio + '</td>' +
+                               '<td>' +
+                               '<input type="hidden" name="equipamentos[]" value="' + ui.item.id + '" />' +
+                               '<button type="button" class="btn btn-mini btn-danger" onclick="$(this).closest(\'tr\').remove();"><i class="fas fa-trash"></i></button>' +
+                               '</td>' +
+                               '</tr>';
+                    $("#tabela_equipamentos tbody").append(html);
+                }
+                $(this).val("");
+                return false;
+            }
+        });
+
         // Toggle Equipamentos
         $('#chk_locar_equipamentos').change(function() {
             if($(this).is(':checked')) {
                 $('#div_equipamentos').slideDown();
             } else {
                 $('#div_equipamentos').slideUp();
-                $('#equipamentos').val(null); // Limpa seleção
+                $('#tabela_equipamentos tbody').empty(); // Limpa seleção
             }
         });
     });
