@@ -57,10 +57,13 @@ class Expedicoes extends MY_Controller {
                 'preco_saida_barco_dia' => $this->input->post('preco_saida_barco_dia'),
                 'cancelamento_tipo' => $this->input->post('cancelamento_tipo'),
                 'cancelamento_limite' => $this->input->post('cancelamento_limite'),
-                'transporte_id' => $this->input->post('transporte_id'),
+                // 'transporte_id' => $this->input->post('transporte_id'), // Campo antigo descontinuado ou mantido como principal se desejar
             ];
 
-            if ($this->expedicoes_model->add('expedicoes', $data) == true) {
+            if ($id = $this->expedicoes_model->add('expedicoes', $data)) {
+                $transportes = $this->input->post('transportes_id');
+                $this->expedicoes_model->updateTransportes($id, $transportes);
+
                 $this->session->set_flashdata('success', 'Expedição adicionada com sucesso!');
                 redirect(site_url('expedicoes/gerenciar/'));
             } else {
@@ -102,10 +105,13 @@ class Expedicoes extends MY_Controller {
                 'preco_saida_barco_dia' => $this->input->post('preco_saida_barco_dia'),
                 'cancelamento_tipo' => $this->input->post('cancelamento_tipo'),
                 'cancelamento_limite' => $this->input->post('cancelamento_limite'),
-                'transporte_id' => $this->input->post('transporte_id'),
+                // 'transporte_id' => $this->input->post('transporte_id'),
             ];
 
             if ($this->expedicoes_model->edit('expedicoes', $data, 'idExpedicao', $this->input->post('idExpedicao')) == true) {
+                $transportes = $this->input->post('transportes_id');
+                $this->expedicoes_model->updateTransportes($this->input->post('idExpedicao'), $transportes);
+
                 $this->session->set_flashdata('success', 'Expedição editada com sucesso!');
                 redirect(site_url('expedicoes/editar/') . $this->input->post('idExpedicao'));
             } else {
@@ -114,6 +120,7 @@ class Expedicoes extends MY_Controller {
         }
 
         $this->data['result'] = $this->expedicoes_model->getById($this->uri->segment(3));
+        $this->data['transportes'] = $this->expedicoes_model->getTransportes($this->uri->segment(3));
         $this->data['view'] = 'expedicoes/editarExpedicao';
         return $this->layout();
     }

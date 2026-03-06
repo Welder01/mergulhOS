@@ -196,6 +196,7 @@
 <script type="text/javascript">
     $(document).ready(function() {
         $('.money').mask('#.##0,00', {reverse: true});
+        var capacidadeAtual = <?php echo (isset($result->capacidade_transporte) && $result->capacidade_transporte > 0) ? $result->capacidade_transporte : 46; ?>;
 
         // Autocomplete Cliente
         $("#cliente").autocomplete({
@@ -272,7 +273,10 @@
             if(id && $('input[name=tipo_transporte]:checked').val() == 'fretado') {
                 $.post('<?php echo base_url(); ?>index.php/bilhetagem/get_expedicao_detalhes', {id: id}, function(data){
                     var exp = JSON.parse(data);
-                    if(exp.nome_transporte) $('#empresa_emissora').val(exp.nome_transporte);
+                    if(exp.nome_transporte) {
+                        $('#empresa_emissora').val(exp.nome_transporte);
+                        if(exp.capacidade_transporte > 0) capacidadeAtual = parseInt(exp.capacidade_transporte);
+                    }
                 });
             }
         });
@@ -290,7 +294,7 @@
 
         function renderBusMap(ocupados) {
             var html = '<div class="driver-area"><i class="fas fa-dharmachakra steering-wheel"></i> Motorista</div>';
-            var totalSeats = 46;
+            var totalSeats = capacidadeAtual;
             var seatsPerRow = 4;
             var currentSeat = $('input[name=assento]').val();
             
@@ -307,7 +311,7 @@
         }
 
         function renderSeat(num, ocupados, current) {
-            if (num > 46) return '<div class="seat" style="visibility:hidden"></div>';
+            if (num > capacidadeAtual) return '<div class="seat" style="visibility:hidden"></div>';
             var isOccupied = ocupados.includes(num.toString()) && num.toString() != current; // Não marca como ocupado se for o assento atual do bilhete sendo editado
             var isSelected = num.toString() == current;
             

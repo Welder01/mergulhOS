@@ -134,7 +134,7 @@ class Bilhetagem extends MY_Controller {
         }
 
         $this->data['expedicoes'] = $this->bilhetagem_model->getExpedicoesAtivas();
-        $this->data['ativos_disponiveis'] = $this->ativos_model->get('ativos', 'idAtivo, nome, patrimonio', 'status = "disponivel"');
+        $this->data['ativos_disponiveis'] = $this->ativos_model->get('ativos', 'idAtivo, ativos.nome, patrimonio', 'status = "disponivel"');
         $this->data['view'] = 'bilhetagem/adicionarBilhete';
         return $this->layout();
     }
@@ -207,7 +207,7 @@ class Bilhetagem extends MY_Controller {
 
         $this->data['result'] = $this->bilhetagem_model->getById($this->uri->segment(3));
         $this->data['expedicoes'] = $this->bilhetagem_model->getExpedicoesAtivas();
-        $this->data['ativos_disponiveis'] = $this->ativos_model->get('ativos', 'idAtivo, nome, patrimonio', 'status = "disponivel"');
+        $this->data['ativos_disponiveis'] = $this->ativos_model->get('ativos', 'idAtivo, ativos.nome, patrimonio', 'status = "disponivel"');
         
         // Equipamentos selecionados
         $equipamentos_atuais = $this->bilhetagem_model->getEquipamentosByBilhete($this->uri->segment(3));

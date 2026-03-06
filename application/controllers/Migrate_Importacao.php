@@ -13,7 +13,6 @@ class Migrate_Importacao extends CI_Controller
             $fields = array(
                 'importacao_inconsistente' => array(
                     'type' => 'TINYINT',
-                    'constraint' => 1,
                     'default' => 0,
                     'null' => FALSE,
                     'after' => 'documento' // Position it after document

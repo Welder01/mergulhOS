@@ -32,10 +32,12 @@
                     </div>
 
                     <div class="control-group">
-                        <label for="transporte" class="control-label">Transporte Padrão</label>
+                        <label for="transporte" class="control-label">Transportes</label>
                         <div class="controls">
-                            <input id="transporte" type="text" class="span8" placeholder="Digite para buscar o transporte..." />
-                            <input id="transporte_id" type="hidden" name="transporte_id" />
+                            <input id="transporte" type="text" class="span8" placeholder="Digite para adicionar transportes..." />
+                            <div id="listaTransportes" style="margin-top: 10px;">
+                                <!-- Transportes selecionados aparecerão aqui -->
+                            </div>
                         </div>
                     </div>
 
@@ -104,7 +106,14 @@
             source: "<?php echo base_url(); ?>index.php/transportes/autoComplete",
             minLength: 1,
             select: function(event, ui) {
-                $("#transporte_id").val(ui.item.id);
+                if ($('#transporte_' + ui.item.id).length == 0) {
+                    var html = '<div id="transporte_' + ui.item.id + '" style="margin-bottom: 5px;">' +
+                               '<input type="hidden" name="transportes_id[]" value="' + ui.item.id + '" />' +
+                               '<span class="label label-info" style="font-size: 12px; padding: 5px;">' + ui.item.label + ' <i class="fas fa-times" style="cursor: pointer;" onclick="$(this).parent().parent().remove();"></i></span></div>';
+                    $('#listaTransportes').append(html);
+                }
+                $(this).val('');
+                return false;
             }
         });
     });

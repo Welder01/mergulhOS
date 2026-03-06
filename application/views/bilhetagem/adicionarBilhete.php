@@ -347,6 +347,7 @@
 <script type="text/javascript">
     $(document).ready(function() {
         $('.money').mask('#.##0,00', {reverse: true});
+        var capacidadeAtual = 46; // Valor padrão
 
         // Autocomplete Expedição
         $("#expedicao").autocomplete({
@@ -360,6 +361,7 @@
                 $.post('<?php echo base_url(); ?>index.php/bilhetagem/get_expedicao_detalhes', {id: ui.item.id}, function(data){
                     var exp = JSON.parse(data);
                     if(exp.capacidade_transporte > 0) {
+                        capacidadeAtual = parseInt(exp.capacidade_transporte);
                         // Preenche o transporte automaticamente se for Fretado e houver vínculo
                         if ($('input[name=tipo_transporte]:checked').val() == 'fretado' && exp.nome_transporte) {
                             $('#empresa_emissora').val(exp.nome_transporte);
@@ -488,7 +490,7 @@
 
         function renderBusMap(ocupados) {
             var html = '<div class="driver-area"><i class="fas fa-dharmachakra steering-wheel"></i> Motorista</div>';
-            var totalSeats = 46; // Padrão ônibus executivo/leito
+            var totalSeats = capacidadeAtual; 
             var seatsPerRow = 4;
             
             for (var i = 1; i <= totalSeats; i += seatsPerRow) {
@@ -508,7 +510,7 @@
         }
 
         function renderSeat(num, ocupados) {
-            if (num > 46) return '<div class="seat" style="visibility:hidden"></div>'; // Espaço vazio se passar do total
+            if (num > capacidadeAtual) return '<div class="seat" style="visibility:hidden"></div>'; // Espaço vazio se passar do total
             var isOccupied = ocupados.includes(num.toString());
             var classOccupied = isOccupied ? 'occupied' : '';
             var onClick = isOccupied ? '' : 'onclick="$(\'input[name=assento]\').val('+num+'); $(\'#modal-assentos\').modal(\'hide\');"';

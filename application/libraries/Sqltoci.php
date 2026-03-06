@@ -235,6 +235,11 @@ class Sqltoci
                     } else {
                         $column['Type'] = substr($column['Type'], strpos($column['Type'], '(') + 1);
                         $column_constraint = substr($column['Type'], 0, -1);
+
+                        // Remove constraint for integer types to avoid MySQL 8.0.17+ warnings
+                        if (in_array($column_type, ['INT', 'TINYINT', 'SMALLINT', 'MEDIUMINT', 'BIGINT'])) {
+                            $column_constraint = false;
+                        }
                     }
                 } else {
                     $column_type = strtoupper($column['Type']);

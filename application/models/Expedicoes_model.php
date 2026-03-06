@@ -52,4 +52,21 @@ class Expedicoes_model extends CI_Model {
         }
         return $this->db->count_all($table);
     }
+
+    public function getTransportes($idExpedicao) {
+        $this->db->select('t.*');
+        $this->db->from('transportes t');
+        $this->db->join('expedicoes_transportes et', 'et.transporte_id = t.idTransporte');
+        $this->db->where('et.expedicao_id', $idExpedicao);
+        return $this->db->get()->result();
+    }
+
+    public function updateTransportes($idExpedicao, $transportes) {
+        $this->db->delete('expedicoes_transportes', ['expedicao_id' => $idExpedicao]);
+        if (!empty($transportes)) {
+            foreach ($transportes as $tId) {
+                $this->db->insert('expedicoes_transportes', ['expedicao_id' => $idExpedicao, 'transporte_id' => $tId]);
+            }
+        }
+    }
 }

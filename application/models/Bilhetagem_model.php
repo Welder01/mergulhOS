@@ -32,10 +32,11 @@ class Bilhetagem_model extends CI_Model {
     }
 
     public function getById($id) {
-        $this->db->select('bilhetes.*, clientes.nomeCliente, clientes.documento, clientes.email, clientes.telefone, expedicoes.titulo as expedicao, expedicoes.data_ida, expedicoes.data_volta, viagens.nome_viagem');
+        $this->db->select('bilhetes.*, clientes.nomeCliente, clientes.documento, clientes.email, clientes.telefone, expedicoes.titulo as expedicao, expedicoes.data_ida, expedicoes.data_volta, expedicoes.transporte_id, transportes.qtd_assentos as capacidade_transporte, viagens.nome_viagem');
         $this->db->from('bilhetes');
         $this->db->join('clientes', 'clientes.idClientes = bilhetes.cliente_id');
         $this->db->join('expedicoes', 'expedicoes.idExpedicao = bilhetes.expedicao_id');
+        $this->db->join('transportes', 'transportes.idTransporte = expedicoes.transporte_id', 'left');
         $this->db->join('viagens', 'viagens.id = bilhetes.viagem_id', 'left');
         $this->db->where('bilhetes.idBilhete', $id);
         return $this->db->get()->row();
