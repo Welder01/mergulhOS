@@ -9,6 +9,22 @@
             </div>
             <div class="widget-content">
                 <div class="alert alert-success">
+                    <strong>v4.54.2 - Módulo de Bilhetagem e Transportes</strong><br>
+                    Implementação completa do sistema de emissão de bilhetes, gestão de expedições e cadastro de transportes.
+                </div>
+
+                <h3>Novidades e Melhorias</h3>
+                <hr>
+                <h4>1. Bilhetagem e Expedições</h4>
+                <ul>
+                    <li><strong>Emissão de Bilhetes:</strong> Sistema completo para venda de passagens com suporte a múltiplos tipos de transporte (Fretado, Cia Externa, Meios Próprios).</li>
+                    <li><strong>Mapa de Assentos:</strong> Visualização gráfica e interativa para seleção de assentos em transportes fretados, respeitando a capacidade do veículo.</li>
+                    <li><strong>Gestão de Transportes:</strong> Cadastro de veículos (Ônibus, Vans, Aviões) com controle de capacidade e categorias.</li>
+                    <li><strong>Expedições:</strong> Criação de eventos de viagem com múltiplos transportes vinculados, regras de cancelamento e integração financeira.</li>
+                    <li><strong>Locação de Equipamentos:</strong> Integração direta na emissão do bilhete para locar ativos disponíveis, com busca inteligente e controle de estoque.</li>
+                </ul>
+                <br>
+                <div class="alert alert-success">
                     <strong>v4.54.1 - Melhorias no Módulo de Ativos</strong><br>
                     Novas funcionalidades para gestão de ativos, incluindo detalhes de locação, impressão de etiquetas e interface modernizada.
                 </div>
