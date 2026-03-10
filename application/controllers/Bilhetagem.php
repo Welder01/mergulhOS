@@ -275,6 +275,11 @@ class Bilhetagem extends MY_Controller {
             redirect('mapos');
         }
 
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'imprimirBilhete')) {
+            $this->session->set_flashdata('error', 'Você não tem permissão para imprimir bilhetes.');
+            redirect(base_url());
+        }
+
         $this->data['result'] = $this->bilhetagem_model->getById($this->uri->segment(3));
         $this->data['equipamentos'] = $this->bilhetagem_model->getEquipamentosByBilhete($this->uri->segment(3));
         $this->data['emitente'] = $this->mapos_model->getEmitente();
@@ -318,6 +323,11 @@ class Bilhetagem extends MY_Controller {
     }
 
     public function cancelar() {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'cancelarBilhete')) {
+            echo json_encode(['result' => false, 'message' => 'Você não tem permissão para cancelar bilhetes.']);
+            return;
+        }
+
         $id = $this->input->post('id');
         if ($this->bilhetagem_model->verificarCancelamento($id)) {
             $this->bilhetagem_model->edit('bilhetes', ['status' => 'cancelado'], 'idBilhete', $id);

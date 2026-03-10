@@ -13,7 +13,7 @@ class Expedicoes extends MY_Controller {
     }
 
     public function gerenciar() {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vBilhete')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'vExpedicao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para visualizar expedições.');
             redirect(base_url());
         }
@@ -33,7 +33,7 @@ class Expedicoes extends MY_Controller {
     }
 
     public function adicionar() {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aBilhete')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'aExpedicao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para adicionar expedições.');
             redirect(base_url());
         }
@@ -81,7 +81,7 @@ class Expedicoes extends MY_Controller {
             redirect('mapos');
         }
 
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eBilhete')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'eExpedicao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para editar expedições.');
             redirect(base_url());
         }
@@ -126,7 +126,7 @@ class Expedicoes extends MY_Controller {
     }
 
     public function excluir() {
-        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dBilhete')) {
+        if (!$this->permission->checkPermission($this->session->userdata('permissao'), 'dExpedicao')) {
             $this->session->set_flashdata('error', 'Você não tem permissão para excluir expedições.');
             redirect(base_url());
         }

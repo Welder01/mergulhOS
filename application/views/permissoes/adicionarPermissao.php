@@ -779,6 +779,17 @@
                                                 <td><label><input name="eTransporte" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Transporte</span></label></td>
                                                 <td><label><input name="dTransporte" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Transporte</span></label></td>
                                             </tr>
+                                            <tr>
+                                                <td><label><input name="vExpedicao" class="marcar" type="checkbox" value="1" /><span class="lbl"> Visualizar Expedição</span></label></td>
+                                                <td><label><input name="aExpedicao" class="marcar" type="checkbox" value="1" /><span class="lbl"> Adicionar Expedição</span></label></td>
+                                                <td><label><input name="eExpedicao" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Expedição</span></label></td>
+                                                <td><label><input name="dExpedicao" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Expedição</span></label></td>
+                                            </tr>
+                                            <tr>
+                                                <td><label><input name="imprimirBilhete" class="marcar" type="checkbox" value="1" /><span class="lbl"> Imprimir Bilhete</span></label></td>
+                                                <td><label><input name="cancelarBilhete" class="marcar" type="checkbox" value="1" /><span class="lbl"> Cancelar Bilhete</span></label></td>
+                                                <td colspan="2"></td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>

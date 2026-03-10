@@ -1285,6 +1285,17 @@
                                                             <td><label><input <?php if (isset($permissoes['eTransporte']) && $permissoes['eTransporte'] == '1') { echo 'checked'; } ?> name="eTransporte" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Transporte</span></label></td>
                                                             <td><label><input <?php if (isset($permissoes['dTransporte']) && $permissoes['dTransporte'] == '1') { echo 'checked'; } ?> name="dTransporte" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Transporte</span></label></td>
                                                         </tr>
+                                                        <tr>
+                                                            <td><label><input <?php if (isset($permissoes['vExpedicao']) && $permissoes['vExpedicao'] == '1') { echo 'checked'; } ?> name="vExpedicao" class="marcar" type="checkbox" value="1" /><span class="lbl"> Visualizar Expedição</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['aExpedicao']) && $permissoes['aExpedicao'] == '1') { echo 'checked'; } ?> name="aExpedicao" class="marcar" type="checkbox" value="1" /><span class="lbl"> Adicionar Expedição</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['eExpedicao']) && $permissoes['eExpedicao'] == '1') { echo 'checked'; } ?> name="eExpedicao" class="marcar" type="checkbox" value="1" /><span class="lbl"> Editar Expedição</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['dExpedicao']) && $permissoes['dExpedicao'] == '1') { echo 'checked'; } ?> name="dExpedicao" class="marcar" type="checkbox" value="1" /><span class="lbl"> Excluir Expedição</span></label></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><label><input <?php if (isset($permissoes['imprimirBilhete']) && $permissoes['imprimirBilhete'] == '1') { echo 'checked'; } ?> name="imprimirBilhete" class="marcar" type="checkbox" value="1" /><span class="lbl"> Imprimir Bilhete</span></label></td>
+                                                            <td><label><input <?php if (isset($permissoes['cancelarBilhete']) && $permissoes['cancelarBilhete'] == '1') { echo 'checked'; } ?> name="cancelarBilhete" class="marcar" type="checkbox" value="1" /><span class="lbl"> Cancelar Bilhete</span></label></td>
+                                                            <td colspan="2"></td>
+                                                        </tr>
                                                     </table>
                                                 </div>
                                             </div>
